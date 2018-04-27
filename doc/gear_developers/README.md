@@ -1,37 +1,37 @@
-# Documentation for gear developers
+# For Gear Developers
 
-### [Getting Started Guide](../getting_started.md)
+## [Getting Started Guide](https://hexdocs.pm/antikythera/getting_started.html)
 
-### [Setting up your development environment](../development_environment.md)
+## [Setting up your development environment](https://hexdocs.pm/antikythera/development_environment.html)
 
-### [Library dependencies](../library_dependencies.md)
+## [Library dependencies](https://hexdocs.pm/antikythera/library_dependencies.html)
 
-### [Automatic deployment](deployment.md)
+## [Automatic deployment](https://hexdocs.pm/antikythera/deployment.html)
 
-### [Web request routing](routing.md)
+## [Web request routing](https://hexdocs.pm/antikythera/routing.html)
 
-### [Gear to gear communication](g2g.md)
+## [Gear to gear communication](https://hexdocs.pm/antikythera/g2g.html)
 
-### [Implementing controller action](controller.md)
+## [Implementing controller action](https://hexdocs.pm/antikythera/controller.html)
 
-### [Dynamic HTML generation using templates](dynamic_html.md)
+## [Dynamic HTML generation using templates](https://hexdocs.pm/antikythera/dynamic_html.html)
 
-### [Implementing websocket server](websocket.md)
+## [Implementing websocket server](https://hexdocs.pm/antikythera/websocket.html)
 
-### [Asynchronous jobs](async_job.md)
+## [Asynchronous jobs](https://hexdocs.pm/antikythera/async_job.html)
 
-### [Executor pool for controlling computing resources](executor_pool.md)
+## [Executor pool for controlling computing resources](https://hexdocs.pm/antikythera/executor_pool.html)
 
-### [Logging](logging.md)
+## [Logging](https://hexdocs.pm/antikythera/logging.html)
 
-### [Metrics Reporting](metrics_reporting.md)
+## [Metrics Reporting](https://hexdocs.pm/antikythera/metrics_reporting.html)
 
-### [Alerting](alerting.md)
+## [Alerting](https://hexdocs.pm/antikythera/alerting.html)
 
-### [Gear config](gear_config.md)
+## [Gear config](https://hexdocs.pm/antikythera/gear_config.html)
 
-### [Internationalization](i18n.md)
+## [Internationalization](https://hexdocs.pm/antikythera/i18n.html)
 
-### [Testing](testing.md)
+## [Testing](https://hexdocs.pm/antikythera/testing.html)
 
-### [What gear implementations must not do](must_nots.md)
+## [What gear implementations must not do](https://hexdocs.pm/antikythera/must_nots.html)

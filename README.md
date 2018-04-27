@@ -56,8 +56,9 @@ See our [Getting Started](https://hexdocs.pm/antikythera/getting_started.html) g
 
 ## Documentation
 
-- For antikythera instance administrators (TBD)
-- [For gear developers (i.e. developers of web services)](./doc/gear_developers/)
+- [For antikythera instance administrators](https://hexdocs.pm/antikythera/instance_administrators.html) (TBD)
+- [For gear developers (i.e. developers of web services)](https://hexdocs.pm/antikythera/gear_developers.html)
+- [API Reference](https://hexdocs.pm/antikythera/api-reference.html)
 
 ## Contributing
 
