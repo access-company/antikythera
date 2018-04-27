@@ -7,6 +7,8 @@ defmodule AntikytheraCore.TerminationManagerTest do
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraCore.ClusterHostsPoller
 
+  @zone AntikytheraEal.ClusterConfiguration.zone_of_this_host()
+
   defp mock_running_hosts(f) do
     :meck.new(ClusterHostsPoller, [:passthrough])
     :meck.expect(ClusterHostsPoller, :current_hosts, fn -> {:ok, %{}} end)
@@ -14,9 +16,21 @@ defmodule AntikytheraCore.TerminationManagerTest do
     :meck.unload()
   end
 
+  defp wait_until_activated(count \\ 0) do
+    if count >= 5 do
+      flunk "this node isn't included in `RaftFleet.active_nodes()`!"
+    else
+      :timer.sleep(100)
+      if RaftFleet.active_nodes() == %{@zone => [Node.self()]} do
+        :ok
+      else
+        wait_until_activated(count + 1)
+      end
+    end
+  end
+
   test "should activate RaftFleet on startup; deactivate RaftFleet on terminating and deactivate all AsyncJobBroker's" do
-    zone = AntikytheraEal.ClusterConfiguration.zone_of_this_host()
-    assert RaftFleet.active_nodes() == %{zone => [Node.self()]}
+    assert RaftFleet.active_nodes() == %{@zone => [Node.self()]}
     TerminationManager.register_broker()
 
     mock_running_hosts(fn ->
@@ -31,8 +45,7 @@ defmodule AntikytheraCore.TerminationManagerTest do
 
     # discard all raft snapshot & log files and manually re-activate RaftFleet
     File.rm_rf!(CorePath.raft_persistence_dir_parent())
-    :ok = RaftFleet.activate(zone)
-    :timer.sleep(100)
-    assert RaftFleet.active_nodes() == %{zone => [Node.self()]}
+    :ok = RaftFleet.activate(@zone)
+    wait_until_activated()
   end
 end
