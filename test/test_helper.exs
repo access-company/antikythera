@@ -60,5 +60,8 @@ defmodule ExecutorPoolHelper do
     end
     send(RaftFleet.Manager, :adjust_members) # accelerate termination of consensus member process
     ProcessHelper.monitor_wait(queue_pid)
+    # discard all generated snapshot & log files of async job queue
+    persist_dir = Path.join(AntikytheraCore.Path.raft_persistence_dir_parent(), Atom.to_string(queue_name))
+    File.rm_rf!(persist_dir)
   end
 end

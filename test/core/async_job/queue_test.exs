@@ -4,7 +4,6 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
   use Croma.TestCase
   alias Antikythera.{Time, Cron}
   alias Antikythera.Test.GenServerHelper
-  alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraCore.ExecutorPool
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
@@ -48,9 +47,6 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
 
     on_exit(fn ->
       ExecutorPoolHelper.kill_and_wait(@epool_id)
-      # discard all generated snapshot & log files and start from scratch in the subsequent test
-      persist_dir = Path.join(CorePath.raft_persistence_dir_parent(), Atom.to_string(@queue_name))
-      File.rm_rf!(persist_dir)
     end)
   end
 
@@ -203,7 +199,7 @@ defmodule AntikytheraCore.AsyncJob.QueueCommandTest do
   alias AntikytheraCore.AsyncJob
   alias AntikytheraCore.AsyncJob.Queue
 
-  @now_millis System.system_time(:milli_seconds)
+  @now_millis System.system_time(:milliseconds)
   @now        Time.from_epoch_milliseconds(@now_millis)
   @cron       Cron.parse!("* * * * *")
   @job_id     Id.generate()
