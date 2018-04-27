@@ -106,7 +106,7 @@ All of them are helpful! Follow the guidelines provided here.
     - Such a large patch is hard to read and review, leads to blocking of reviewers' activities.
     - Keep your components (modules/functions) loosely-coupled, and follow single responsibility principle.
       So that they can be implemented/tested separately, thus can be reviewed/merged steadily.
-- Make use of our [style guide](./STYLE_GUIDE.md).
+- Make use of our [style guide](https://github.com/access-company/antikythera/blob/master/STYLE_GUIDE.md).
 
 #### Use `testgear` for testing antikythera's features
 
@@ -138,7 +138,7 @@ All of them are helpful! Follow the guidelines provided here.
 - Branches are Pull Requested against (mostly) `master` branch, then reviewed by core team, and merged when approved by **ALL MEMBERS**.
 - When you are confident about your development chunk, prepare your Pull Request.
     - First, you **MUST** self-review the changes you made in the branch. This is particularly important.
-        - Follow the coding conventions described in the [style guide](./STYLE_GUIDE.md).
+        - Follow the coding conventions described in the [style guide](https://github.com/access-company/antikythera/blob/master/STYLE_GUIDE.md).
         - Make sure your code fit in existing antikythera code.
     - Provide sufficient `@moduledoc`, `@doc` and `@typedoc`, especially if it is publicly available.
     - If your code contains workaround or hacky solution, put an explanation comments.

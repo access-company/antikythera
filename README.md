@@ -61,9 +61,9 @@ See our [Getting Started](./doc/getting_started.md) guide!
 
 ## Contributing
 
-We encourage you to contribute to antikythera! Please check out our [Contributing Guide](./CONTRIBUTING.md).
+We encourage you to contribute to antikythera! Please check out our [Contributing Guide](https://github.com/access-company/antikythera/blob/master/CONTRIBUTING.md).
 
-For both core and gear development, please make use of our [Style Guide](./STYLE_GUIDE.md).
+For both core and gear development, please make use of our [Style Guide](https://github.com/access-company/antikythera/blob/master/STYLE_GUIDE.md).
 
 - [Issue Tracker](https://github.com/access-company/antikythera/issues)
 - [Users Mailing List](https://groups.google.com/forum/#!forum/antikythera_users)
