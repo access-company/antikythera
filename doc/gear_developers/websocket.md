@@ -9,10 +9,10 @@
 - To use websocket in your gear you need to
     1. declare a websocket route in `web/router.ex`
         - The route is for handshake; GET requests that match the path pattern are processed as websocket handshake requests.
-        - See [reference of `Antikythera.Router`](https://ac-console.solomondev.access-company.com/exdoc/antikythera/Antikythera.Router.html).
+        - See [reference of `Antikythera.Router`](https://hexdocs.pm/antikythera/Antikythera.Router.html).
     2. implement a callback module of `Antikythera.Websocket` behaviour in `web/websocket.ex`
         - For detailed explanations of specifications of `Antikythera.Websocket` callbacks
-          see the [ExDoc document](https://ac-console.solomondev.access-company.com/exdoc/antikythera/Antikythera.Websocket.html) of the module.
+          see the [ExDoc document](https://hexdocs.pm/antikythera/Antikythera.Websocket.html) of the module.
 
 ## Websocket connection process
 

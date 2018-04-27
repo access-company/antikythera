@@ -15,7 +15,7 @@ All of them are helpful! Follow the guidelines provided here.
 ## Surveying and Discussions
 
 - First, read up [Documentations](./doc) before asking questions/making suggestions.
-- Also, search in [antikythera API reference](https://ac-console.solomondev.access-company.com/exdoc/solomon/api-reference.html)
+- Also, search in [antikythera API reference](https://hexdocs.pm/antikythera/api-reference.html)
   to find detailed information about modules/functions.
 - Make sure you are using latest antikythera with latest supported Erlang/Elixir version.
     - Refresh dependencies if dependency/compile related error occurred:

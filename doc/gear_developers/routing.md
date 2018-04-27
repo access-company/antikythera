@@ -21,4 +21,4 @@
 - Once an appropriate gear for an web request is determined based on the domain part,
   antikythera then routes the request to a controller action by matching URL path and HTTP method.
 - Gears must define the routing rules in `web/router.ex`.
-    - Refer to [ExDoc document](https://ac-console.solomondev.access-company.com/exdoc/antikythera/Antikythera.Router.html) of [`Antikythera.Router`](../../lib/web/router/router.ex) for details of the routing DSL.
+    - Refer to [ExDoc document](https://hexdocs.pm/antikythera/Antikythera.Router.html) of [`Antikythera.Router`](../../lib/web/router/router.ex) for details of the routing DSL.

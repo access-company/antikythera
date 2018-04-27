@@ -50,7 +50,7 @@
       b (end-user) | b (stub) | O | X | none
       b (end-user) | c (yes)  | X | O | `@blackbox_only`
 
-- Reference: See also [`Antikythera.Test.Config`](../../lib/test/config.ex) ([ExDoc document](https://ac-console.solomondev.access-company.com/exdoc/antikythera/Antikythera.Test.Config.html))
+- Reference: See also [`Antikythera.Test.Config`](../../lib/test/config.ex) ([ExDoc document](https://hexdocs.pm/antikythera/Antikythera.Test.Config.html))
 
 ## Secret in blackbox testing
 

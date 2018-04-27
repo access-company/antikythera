@@ -75,7 +75,7 @@ thus simultaneous task executions are capped by the number of processes in each 
 ### [Async jobs](./async_job.md)
 
 - When you register your async jobs, you must specify which executor pool to use as arguments to `YourGear.SomeAsyncJob.register/3`.
-  See [API reference](https://ac-console.solomondev.access-company.com/exdoc/antikythera/Antikythera.AsyncJob.html) for detailed explanation.
+  See [API reference](https://hexdocs.pm/antikythera/Antikythera.AsyncJob.html) for detailed explanation.
 
 ## Associations between gears and tenant executor pools
 

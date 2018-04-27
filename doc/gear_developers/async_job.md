@@ -52,4 +52,4 @@ and then the following call to `YourGear.SomeAsyncJob.run/3` is evaluated within
 YourGear.SomeAsyncJob.run(%{"arbitrary" => "map"}, job_metadata, context_for_this_job_execution)
 ```
 
-For details of the async job API please refer to [`Antikythera.AsyncJob`](https://ac-console.solomondev.access-company.com/exdoc/antikythera/Antikythera.AsyncJob.html).
+For details of the async job API please refer to [`Antikythera.AsyncJob`](https://hexdocs.pm/antikythera/Antikythera.AsyncJob.html).
