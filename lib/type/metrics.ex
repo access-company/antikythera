@@ -1,0 +1,19 @@
+# Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
+
+use Croma
+
+defmodule SolomonLib.Metrics.Data do
+  alias AntikytheraCore.Metrics.Buffer
+  alias AntikytheraCore.Metrics.AggregateStrategy, as: Strategy
+
+  @type t :: {String.t, Strategy.Name.t, Buffer.metrics_value}
+
+  defun valid?(v :: term) :: boolean do
+    {n, s, v} when is_binary(n) and is_number(v) -> Strategy.Name.valid?(s)
+    _                                            -> false
+  end
+end
+
+defmodule SolomonLib.Metrics.DataList do
+  use Croma.SubtypeOfList, elem_module: SolomonLib.Metrics.Data, min_length: 1
+end

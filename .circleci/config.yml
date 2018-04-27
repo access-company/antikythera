@@ -1,0 +1,323 @@
+version: 2
+
+# Note that each `run` command is executed by a separate bash process.
+# We have to use `$BASH_ENV`, which contains file path to `.bashrc` file, to pass information to the subsequent bash processes.
+references:
+  container_config: &container_config
+    docker:
+      - image: erlang:20.2.2 # Using pre-built official image since erlang installation takes long time
+        environment:
+          ANTIKYTHERA_INSTANCE_DEP: '{:antikythera_instance_example, [git: "git@github.com:access-company/antikythera_instance_example.git"]}'
+  install_prerequisites: &install_prerequisites
+    run:
+      name: Install required apt packages and generate locale
+      # Installing `locales` automatically triggers `locale-gen` once in postinstall step
+      command: |
+        echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen
+        apt-get update && apt-get install -y unzip locales
+        echo 'export LANG=en_US.UTF-8' >> $BASH_ENV
+  restore_asdf_directory: &restore_asdf_directory
+    restore_cache:
+      keys:
+        - asdf_directory-{{ .Branch }}-{{ .Revision }}
+        - asdf_directory-{{ .Branch }}-
+        - asdf_directory-
+  enable_asdf_and_elixir: &enable_asdf_and_elixir
+    run:
+      name: Enable asdf and elixir by loading asdf.sh
+      # Global Elixir version is required for projects that depends on antikythera,
+      # since symlinked `.tool-versions` file is not available at the first `mix` invocation.
+      command: |
+        echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
+        source $BASH_ENV
+        asdf global elixir 1.5.3
+  add_github_hostkey: &add_github_hostkey
+    run:
+      name: Add GitHub's server host key to known_hosts
+      # Ported from CircleCI's official `checkout` script. You may check original implementation in CircleCI's build result UI.
+      # This is required BEFORE `git` command is invoked without involving CircleCI's official `checkout` step.
+      command: |
+        mkdir -p ~/.ssh
+        cat << EOF >> ~/.ssh/known_hosts
+        github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+        EOF
+  checkout_external: &checkout_external
+    name: Checkout master of external repository
+    command: |
+      if [ -d .git ]; then
+        git checkout master
+        git pull "$EXTERNAL_GIT_REPOSITORY" master
+      else
+        git clone "$EXTERNAL_GIT_REPOSITORY" .
+      fi
+  restore_updated_antikythera_instance_example_directory: &restore_updated_antikythera_instance_example_directory
+    restore_cache:
+      keys:
+        - antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Revision }}
+  restore_testgear_directory: &restore_testgear_directory
+    restore_cache:
+      keys:
+        - testgear-repo-{{ .Branch }}-{{ .Revision }}
+  edit_etc_hosts: &edit_etc_hosts
+    run:
+      name: Add testgear.localhost and <hostname>.local to /etc/hosts
+      command: echo "127.0.0.1 testgear.localhost $(hostname).local" >> /etc/hosts
+  restore_updated_testgear_directory: &restore_updated_testgear_directory
+    restore_cache:
+      keys:
+        - testgear-updated_repo-{{ .Branch }}-{{ .Revision }}
+
+jobs:
+  prepare_elixir:
+    <<: *container_config
+    working_directory: /tmp/antikythera
+    steps:
+      - *install_prerequisites
+      - *restore_asdf_directory
+      - run:
+          name: Make sure asdf, elixir and local hex/rebar installed
+          command: |
+            [ -d /usr/local/asdf ] || git clone https://github.com/asdf-vm/asdf.git /usr/local/asdf --branch v0.4.3
+            echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
+            source $BASH_ENV
+            asdf plugin-add elixir || asdf plugin-update elixir
+            asdf install elixir 1.5.3
+            asdf global elixir 1.5.3
+            mix local.hex --force
+            mix local.rebar --force
+      - save_cache:
+          key: asdf_directory-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - /usr/local/asdf
+  antikythera_whitebox_test:
+    <<: *container_config
+    working_directory: /tmp/antikythera
+    steps:
+      - *install_prerequisites
+      - *restore_asdf_directory
+      - *enable_asdf_and_elixir
+      - restore_cache:
+          keys:
+            - antikythera-repo-{{ .Branch }}-{{ .Revision }}
+            - antikythera-repo-{{ .Branch }}-
+      - checkout
+      - run: mix deps.get
+      - run: mix test
+      - save_cache:
+          # Save deps here, since rebar3 may perform additional fetching/caching
+          key: antikythera-repo-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .
+            - ~/.cache
+  update_antikythera_instance_example:
+    <<: *container_config
+    working_directory: /tmp/antikythera_instance_example
+    steps:
+      - *install_prerequisites
+      - *restore_asdf_directory
+      - *enable_asdf_and_elixir
+      - restore_cache:
+          keys:
+            - antikythera_instance_example-repo-{{ .Branch }}-{{ .Revision }}
+            - antikythera_instance_example-repo-{{ .Branch }}-
+            - antikythera_instance_example-repo-
+      - *add_github_hostkey
+      - run:
+          <<: *checkout_external
+          environment:
+            EXTERNAL_GIT_REPOSITORY: git@github.com:access-company/antikythera_instance_example.git
+      - run:
+          name: Compile antikythera_instance_example
+          # Compile beforehand in order to create cache for later builds/jobs.
+          command: |
+            mix deps.get || mix deps.get
+            mix deps.get
+            MIX_ENV=dev mix compile
+            MIX_ENV=test mix compile
+            MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
+      - save_cache:
+          key: antikythera_instance_example-repo-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .
+            - ~/.cache
+      - run:
+          name: Update antikythera
+          # A commit made in this step is not pushed yet, just persists in cache
+          # (notice a difference in cache key name, `updated_repo`).
+          # It will be pushed later if
+          #  (a) currently building branch is "master",
+          #  (b) upgrade_compatibility_test and version_upgrade_test are successful.
+          # `CIRCLE_SHA1` env var refers to current commit hash of building project (antikythera)
+          # Note that antikythera_instance_example does not have any test yet,
+          # though artifacts compiled for MIX_ENV=test will be used in upgrade_compatibility_test.
+          command: |
+            sed -E -i -e "s/(^antikythera_dep .+ ref: )\".+\"/\1\"${CIRCLE_SHA1}\"/" mix.exs
+            mix deps.get || mix deps.get
+            mix deps.get
+            git --no-pager diff
+            git -c user.name='AntikytheraCI' -c user.email='solomon_a-gr@access-company.com' commit -a -m '[CI] Update antikythera'
+            MIX_ENV=dev mix compile
+            MIX_ENV=test mix compile
+            MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
+      - save_cache:
+          key: antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .
+            - ~/.cache
+  prepare_testgear:
+    <<: *container_config
+    working_directory: /tmp/testgear
+    steps:
+      - *install_prerequisites
+      - *restore_asdf_directory
+      - *enable_asdf_and_elixir
+      - restore_cache:
+          keys:
+            - testgear-repo-{{ .Branch }}-{{ .Revision }}
+            - testgear-repo-{{ .Branch }}-
+            - testgear-repo-
+      - *add_github_hostkey
+      - run:
+          <<: *checkout_external
+          environment:
+            EXTERNAL_GIT_REPOSITORY: git@github.com:access-company/testgear.git
+      - run:
+          name: Fetch dependencies with latest antikythera_instance_example and compile
+          command: |
+            mix deps.update antikythera_instance_example
+            mix deps.get || mix deps.get
+            mix deps.get
+            MIX_ENV=dev mix compile
+            MIX_ENV=test mix compile
+            MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
+      - save_cache:
+          key: testgear-repo-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .
+            - ~/.cache
+  upgrade_compatibility_test:
+    <<: *container_config
+    working_directory: /tmp/antikythera_instance_example
+    steps:
+      - *install_prerequisites
+      - *restore_asdf_directory
+      - *enable_asdf_and_elixir
+      - *restore_updated_antikythera_instance_example_directory
+      - *restore_testgear_directory
+      - *add_github_hostkey
+      - *edit_etc_hosts
+      - run: mix antikythera_local.upgrade_compatibility_test ../testgear
+  version_upgrade_test:
+    <<: *container_config
+    working_directory: /tmp/antikythera_instance_example
+    steps:
+      - *install_prerequisites
+      - *restore_asdf_directory
+      - *enable_asdf_and_elixir
+      - *restore_updated_antikythera_instance_example_directory
+      - *restore_testgear_directory
+      - *edit_etc_hosts
+      - run: mix antikythera_local.version_upgrade_test ../testgear
+  publish_updated_antikythera_instance_example:
+    <<: *container_config
+    working_directory: /tmp/antikythera_instance_example
+    steps:
+      - *restore_updated_antikythera_instance_example_directory
+      - *add_github_hostkey
+      - run: git --no-pager show
+      - run: git push git@github.com:access-company/antikythera_instance_example.git HEAD:master
+  update_testgear:
+    <<: *container_config
+    working_directory: /tmp/testgear
+    steps:
+      - *install_prerequisites
+      - *restore_asdf_directory
+      - *enable_asdf_and_elixir
+      - *restore_testgear_directory
+      - *add_github_hostkey
+      - run:
+          name: Fetch dependencies with updated (now published) antikythera_instance_example
+          command: |
+            mix deps.update antikythera_instance_example
+            mix deps.get || mix deps.get
+            mix deps.get
+            MIX_ENV=dev mix compile
+            MIX_ENV=test mix compile
+      - save_cache:
+          key: testgear-updated_repo-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .
+            - ~/.cache
+  testgear_whitebox_test:
+    <<: *container_config
+    working_directory: /tmp/testgear
+    steps:
+      - *install_prerequisites
+      - *restore_asdf_directory
+      - *enable_asdf_and_elixir
+      - *restore_updated_testgear_directory
+      - *edit_etc_hosts
+      - run: mix test
+  testgear_blackbox_test:
+    <<: *container_config
+    working_directory: /tmp/testgear
+    steps:
+      - *install_prerequisites
+      - *restore_asdf_directory
+      - *enable_asdf_and_elixir
+      - *restore_updated_testgear_directory
+      - *edit_etc_hosts
+      - run:
+          name: Run testgear in background
+          command: iex -S mix
+          background: true
+      - run:
+          name: Wait until testgear starts (up to 30 seconds)
+          command: |
+            for _ in $(seq 1 30); do
+              if curl -s -o /dev/null http://testgear.localhost:8080; then
+                exit 0
+              fi
+              sleep 1
+            done
+            exit 1
+      - run: TEST_MODE=blackbox_local mix test
+
+workflows:
+  version: 2
+  antikythera:
+    jobs:
+      - prepare_elixir
+      - antikythera_whitebox_test:
+          requires:
+            - prepare_elixir
+      - update_antikythera_instance_example:
+          requires:
+            - antikythera_whitebox_test
+      - prepare_testgear:
+          requires:
+            - antikythera_whitebox_test
+      - upgrade_compatibility_test:
+          requires:
+            - prepare_testgear
+            - update_antikythera_instance_example
+      - version_upgrade_test:
+          requires:
+            - prepare_testgear
+            - update_antikythera_instance_example
+      - publish_updated_antikythera_instance_example:
+          requires:
+            - upgrade_compatibility_test
+            - version_upgrade_test
+          filters:
+            branches:
+              only: master
+      - update_testgear:
+          requires:
+            - publish_updated_antikythera_instance_example
+      - testgear_whitebox_test:
+          requires:
+            - update_testgear
+      - testgear_blackbox_test:
+          requires:
+            - update_testgear
