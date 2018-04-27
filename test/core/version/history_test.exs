@@ -7,9 +7,9 @@ defmodule AntikytheraCore.Version.HistoryTest do
   alias AntikytheraCore.Cluster
 
   @v1   Mix.Project.config[:version]
-  @v2   String.replace(@v1, "0.0.1", "0.0.2")
-  @v3   String.replace(@v1, "0.0.1", "0.0.3")
-  @v4   String.replace(@v1, "0.0.1", "0.0.4")
+  @v2   Version.parse!(@v1) |> Map.update!(:patch, &(&1 + 1)) |> to_string()
+  @v3   Version.parse!(@v2) |> Map.update!(:patch, &(&1 + 1)) |> to_string()
+  @v4   Version.parse!(@v3) |> Map.update!(:patch, &(&1 + 1)) |> to_string()
   @host Cluster.node_to_host(Node.self())
 
   defp make_line_patterns(v) do
