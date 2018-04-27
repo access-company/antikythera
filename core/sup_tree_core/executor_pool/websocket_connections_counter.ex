@@ -12,7 +12,7 @@ defmodule AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter do
   """
 
   use GenServer
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
 
   defun start_link(max :: v[non_neg_integer], name :: v[atom]) :: {:ok, pid} do
@@ -65,8 +65,8 @@ defmodule AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter do
   #
   # terminating websocket connection processes
   #
-  @random_wait_time_max             (if SolomonLib.Env.compiling_for_cloud?(), do: 10 * 60_000, else: 10)
-  @deadline_to_kill_all_connections (if SolomonLib.Env.compiling_for_cloud?(), do: 30 * 60_000, else: 50)
+  @random_wait_time_max             (if Antikythera.Env.compiling_for_cloud?(), do: 10 * 60_000, else: 10)
+  @deadline_to_kill_all_connections (if Antikythera.Env.compiling_for_cloud?(), do: 30 * 60_000, else: 50)
 
   defun start_terminating_all_ws_connections() :: :ok do
     spawn(&gradually_terminate_all_ws_connections/0)

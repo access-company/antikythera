@@ -11,7 +11,7 @@ defmodule AntikytheraCore.GearTask do
   Also this version does not send stacktrace to error_logger (since it doesn't use :proc_lib functions to start child process).
   """
 
-  alias SolomonLib.ErrorReason
+  alias Antikythera.ErrorReason
   alias AntikytheraCore.GearProcess
 
   @type mod_fun_args :: {module, atom, [any]}

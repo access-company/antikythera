@@ -5,7 +5,7 @@ defmodule AntikytheraCore.Request do
 
   def make_from_cowboy_req(req, method, path_info, path_matches, qparams, {raw_body, body}) do
     headers = :cowboy_req.headers(req) |> Map.delete("cookie")
-    %SolomonLib.Request{
+    %Antikythera.Request{
       method:       method,
       path_info:    path_info,
       path_matches: path_matches,

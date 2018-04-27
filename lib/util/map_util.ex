@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.MapUtil do
+defmodule Antikythera.MapUtil do
   @moduledoc """
   Utility functions to work with maps.
   """

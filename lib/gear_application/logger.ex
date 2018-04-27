@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.GearApplication.Logger do
+defmodule Antikythera.GearApplication.Logger do
   @moduledoc """
   Helper module to define each gear's `Logger` module.
   """

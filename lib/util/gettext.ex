@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.Gettext do
+defmodule Antikythera.Gettext do
   @moduledoc """
   A thin wrapper around `Gettext.__using__/1` to forward error logs to each gear's logger.
 

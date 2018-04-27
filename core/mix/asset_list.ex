@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Mix.AssetList do
-  alias SolomonLib.{GearName, Time}
+  alias Antikythera.{GearName, Time}
 
   @typep keyset :: MapSet.t(String.t)
 

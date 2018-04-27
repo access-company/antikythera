@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Handler.CowboyRouting do
-  alias SolomonLib.{Env, Domain, GearName, GearNameStr}
+  alias Antikythera.{Env, Domain, GearName, GearNameStr}
   alias AntikytheraCore.GearModule
   alias AntikytheraCore.Config.Gear, as: GearConfig
   alias AntikytheraCore.Ets.ConfigCache
@@ -79,7 +79,7 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
   #
   # Handling domains
   #
-  @deployments         Application.fetch_env!(:solomon, :deployments)
+  @deployments         Application.fetch_env!(:antikythera, :deployments)
   @current_compile_env Env.compile_env()
 
   # Also used by ac_console

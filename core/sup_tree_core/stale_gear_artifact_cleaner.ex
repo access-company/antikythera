@@ -15,11 +15,11 @@ defmodule AntikytheraCore.StaleGearArtifactCleaner do
 
   use GenServer
   alias Croma.Result, as: R
-  alias SolomonLib.{GearName, GearNameStr, VersionStr}
+  alias Antikythera.{GearName, GearNameStr, VersionStr}
   alias AntikytheraCore.GearManager
   alias AntikytheraCore.Version.Artifact
 
-  @interval (if SolomonLib.Env.compile_env() == :local, do: 1_000, else: 24 * 60 * 60 * 1_000)
+  @interval (if Antikythera.Env.compile_env() == :local, do: 1_000, else: 24 * 60 * 60 * 1_000)
 
   def start_link() do
     GenServer.start_link(__MODULE__, :ok)

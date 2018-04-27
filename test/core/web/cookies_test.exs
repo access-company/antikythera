@@ -2,7 +2,7 @@
 
 defmodule AntikytheraCore.CookiesTest do
   use Croma.TestCase
-  alias SolomonLib.Http.SetCookie
+  alias Antikythera.Http.SetCookie
 
   test "convert_to_cowboy_cookie_opts" do
     base_cookie = %SetCookie{value: "", path: "/"}

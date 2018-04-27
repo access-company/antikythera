@@ -3,11 +3,11 @@
 use Croma
 
 defmodule AntikytheraCore.GearLog.FileHandle do
-  alias SolomonLib.Time
+  alias Antikythera.Time
   alias AntikytheraCore.GearLog.{Level, Message}
 
   defmodule SizeCheck do
-    @interval (if SolomonLib.Env.compiling_for_release?(), do: 60_000, else: 100)
+    @interval (if Antikythera.Env.compiling_for_release?(), do: 60_000, else: 100)
     @max_size (if Mix.env() == :test, do: 4_096, else: 104_857_600) # 100MB
 
     defun check_now?(now :: v[Time.t], last_checked_at :: v[Time.t]) :: boolean do
@@ -77,13 +77,13 @@ defmodule AntikytheraCore.GearLog.FileHandle do
   end
 
   defunp rotated_file_path(base_file_path :: Path.t) :: Path.t do
-    import SolomonLib.StringFormat
+    import Antikythera.StringFormat
     {Time, {y, mon, d}, {h, minute, s}, _ms} = Time.now()
     now_str_with_ext = "#{y}#{pad2(mon)}#{pad2(d)}#{pad2(h)}#{pad2(minute)}#{pad2(s)}.gz"
     String.replace(base_file_path, ~r/gz$/, now_str_with_ext)
   end
 
-  if SolomonLib.Env.compiling_for_release?() do
+  if Antikythera.Env.compiling_for_release?() do
     defunp write_debug_log(_ :: Level.t, _ :: String.t) :: :ok, do: :ok
   else
     defunp write_debug_log(level :: v[Level.t], formatted :: v[String.t]) :: :ok do

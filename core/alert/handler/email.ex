@@ -16,14 +16,14 @@ defmodule AntikytheraCore.Alert.Handler.Email do
     Details of errors beyond this threshold will be omitted. Defaults to #{@default_errors_per_body}.
   """
 
-  alias SolomonLib.{Email, Time, Env}
+  alias Antikythera.{Email, Time, Env}
   alias AntikytheraCore.Cluster.NodeId
   alias AntikytheraCore.Alert.HandlerConfig
   alias AntikytheraEal.AlertMailer, as: AM
 
   @behaviour AntikytheraCore.Alert.Handler
 
-  @from Application.fetch_env!(:solomon, :alert) |> get_in([:email, :from])
+  @from Application.fetch_env!(:antikythera, :alert) |> get_in([:email, :from])
   if !Email.valid?(@from) do
     raise "please set a valid email address in application config (as nested keyword list of `[:alert, :email, :from]`)"
   end

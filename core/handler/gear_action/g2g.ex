@@ -3,9 +3,9 @@
 use Croma
 
 defmodule AntikytheraCore.Handler.GearAction.G2g do
-  alias SolomonLib.G2gRequest , as: GReq
-  alias SolomonLib.G2gResponse, as: GRes
-  alias SolomonLib.{Env, Conn, Context, GearName}
+  alias Antikythera.G2gRequest , as: GReq
+  alias Antikythera.G2gResponse, as: GRes
+  alias Antikythera.{Env, Conn, Context, GearName}
   alias AntikytheraCore.{GearModule, GearTask}
   alias AntikytheraCore.Conn, as: CoreConn
   alias AntikytheraCore.Handler.{GearAction, GearError, HelperModules}

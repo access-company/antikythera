@@ -6,7 +6,7 @@ defmodule AntikytheraCore.TemplateEngine do
   """
 
   use EEx.Engine
-  alias SolomonLib.TemplateSanitizer
+  alias Antikythera.TemplateSanitizer
 
   def init(_opts), do: {:safe, ""}
 

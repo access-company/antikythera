@@ -34,14 +34,14 @@ config :raft_fleet, [
 repo_tmp_dir_basename = if System.get_env("ANTIKYTHERA_COMPILE_ENV") == "local", do: "local", else: :os.getpid()
 repo_tmp_dir = Path.join([__DIR__, "..", "tmp", repo_tmp_dir_basename]) |> Path.expand()
 
-config :solomon, [
+config :antikythera, [
   # Name of the OTP application that runs as an antikythera instance.
-  antikythera_instance_name: :solomon, # `:solomon` is used here only for testing.
+  antikythera_instance_name: :antikythera, # `:antikythera` is used here only for testing.
 
   # Directory (which can be in a NFS volume) where antikythera's configuration files, build artifacts, etc. are stored.
   antikythera_root_dir: Path.join(repo_tmp_dir, "root"),
 
-  # Directory where `SolomonLib.Tmpdir.make/2` creates temporary workspaces for gear implementations.
+  # Directory where `Antikythera.Tmpdir.make/2` creates temporary workspaces for gear implementations.
   gear_tmp_dir: Path.join(repo_tmp_dir, "gear_tmp"),
 
   # Directory where log/snapshot files of persistent Raft consensus groups are stored.

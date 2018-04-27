@@ -11,12 +11,12 @@ defmodule AntikytheraCore do
     add_gears_dir_to_erl_libs()
     AntikytheraCore.FileSetup.setup_files_and_ets_tables()
     AntikytheraCore.Config.Core.load()
-    if not SolomonLib.Env.no_listen?() do # Just to suppress log messages by :syn.init()
+    if not Antikythera.Env.no_listen?() do # Just to suppress log messages by :syn.init()
       establish_connections_to_other_nodes()
       :syn.init()
     end
     activate_raft_fleet(fn ->
-      if not SolomonLib.Env.no_listen?() do
+      if not Antikythera.Env.no_listen?() do
         start_cowboy_http()
       end
       {:ok, pid} = start_sup()
@@ -66,14 +66,14 @@ defmodule AntikytheraCore do
       env:             %{dispatch: dispatch_rules},
       stream_handlers: [:cowboy_compress_h, :cowboy_stream_h],
     }
-    port = SolomonLib.Env.port_to_listen()
+    port = Antikythera.Env.port_to_listen()
     {:ok, _} = :cowboy.start_clear(:antikythera_http_listener, [port: port], cowboy_proto_opts)
   end
 
   defp start_sup() do
     children = [
       Spec.worker(    AntikytheraCore.ErrorCountsAccumulator    , []),
-      Spec.worker(    AntikytheraCore.Alert.Manager             , [:solomon, AntikytheraCore.Alert.Manager]),
+      Spec.worker(    AntikytheraCore.Alert.Manager             , [:antikythera, AntikytheraCore.Alert.Manager]),
       Spec.worker(    AntikytheraCore.GearManager               , []),
       Spec.worker(    AntikytheraCore.ClusterHostsPoller        , []),
       Spec.worker(    AntikytheraCore.ClusterNodesConnector     , []),
@@ -85,7 +85,7 @@ defmodule AntikytheraCore do
       Spec.worker(    AntikytheraCore.VersionUpgradeTaskQueue   , []),
       Spec.worker(    AntikytheraCore.VersionSynchronizer       , []),
       Spec.worker(    AntikytheraCore.StaleGearArtifactCleaner  , []),
-      Spec.worker(    AntikytheraCore.MetricsUploader           , [:solomon, AntikytheraCore.MetricsUploader]),
+      Spec.worker(    AntikytheraCore.MetricsUploader           , [:antikythera, AntikytheraCore.MetricsUploader]),
       Spec.worker(    AntikytheraCore.SystemMetricsReporter     , [AntikytheraCore.MetricsUploader]),
       Spec.supervisor(AntikytheraCore.ExecutorPool.Sup          , []),
       Spec.worker(    AntikytheraCore.GearExecutorPoolsManager  , []),

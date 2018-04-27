@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.HttpcTest do
+defmodule Antikythera.HttpcTest do
   use Croma.TestCase
   use ExUnitProperties
 

@@ -2,24 +2,24 @@
 
 use Croma
 
-defmodule SolomonLib.TemplatePrecompiler do
+defmodule Antikythera.TemplatePrecompiler do
   @moduledoc """
   Definition of macro to precompile HAML templates.
 
   Each gear's template module (web/template.ex) must use this module as follows:
 
       defmodule YourGear.Template do
-        use SolomonLib.TemplatePrecompiler
+        use Antikythera.TemplatePrecompiler
       end
 
   HAML files whose paths match `web/template/**/*.html.haml` are loaded and converted into function clauses at compile time.
-  To render HAML files in controller actions, use `SolomonLib.Conn.render/5`.
+  To render HAML files in controller actions, use `Antikythera.Conn.render/5`.
 
   As all macro-generated function clauses of `content_for/2` reside in `YourGear.Template`,
-  you can, for example, put `alias` before `use SolomonLib.TemplatePrecompiler` so that it takes effect in all HAML templates.
+  you can, for example, put `alias` before `use Antikythera.TemplatePrecompiler` so that it takes effect in all HAML templates.
   """
 
-  alias SolomonLib.MacroUtil
+  alias Antikythera.MacroUtil
   alias AntikytheraCore.TemplateEngine
 
   defmacro __using__(_) do
@@ -59,7 +59,7 @@ defmodule SolomonLib.TemplatePrecompiler do
     quote do
       # file modifications are tracked by `PropagateFileModifications`; `@external_resource` here would be redundant
       def content_for(unquote(name), params) do
-        import SolomonLib.TemplateSanitizer
+        import Antikythera.TemplateSanitizer
         unquote(Enum.map(var_names, &Macro.var(&1, nil))) = Enum.map(unquote(var_names), &Keyword.fetch!(params, &1))
         unquote(quoted_content)
       end

@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.EnumUtilTest do
+defmodule Antikythera.EnumUtilTest do
   use Croma.TestCase
 
   test "map_with_context/3" do

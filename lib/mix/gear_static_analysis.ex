@@ -13,7 +13,7 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   """
 
   use Mix.Task # change this to `Mix.Task.Compiler` when upgrading to Elixir v1.6.0
-  alias SolomonLib.MacroUtil
+  alias Antikythera.MacroUtil
 
   def run(_) do
     Mix.Project.config()[:elixirc_paths]
@@ -113,7 +113,7 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   defp check_use_within_module(mod, _kw, _meta, file, _tool?) do
     cond do
       mod == Gettext ->
-        {:error, file, [], "directly invoking `use Gettext` is not allowed (`use SolomonLib.Gettext` instead)"}
+        {:error, file, [], "directly invoking `use Gettext` is not allowed (`use Antikythera.Gettext` instead)"}
       true ->
         nil
     end
@@ -190,7 +190,7 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   defp check_test_only_modules(mod_str, meta, file, tool?) do
     if !tool? do
       case String.split(mod_str, ".") do
-        ["SolomonLib", "Test" | _] -> {:error, file, meta, "using `SolomonLib.Test.*` in production code is prohibited"}
+        ["Antikythera", "Test" | _] -> {:error, file, meta, "using `Antikythera.Test.*` in production code is prohibited"}
         _                          -> nil
       end
     end
@@ -199,7 +199,7 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   defp check_task_only_modules(mod_str, meta, file, tool?) do
     if !tool? do
       case String.split(mod_str, ".") do
-        ["SolomonLib", "Mix", "Task" | _] -> {:error, file, meta, "`SolomonLib.Mix.Task.*` can only be used in mix tasks"}
+        ["Antikythera", "Mix", "Task" | _] -> {:error, file, meta, "`Antikythera.Mix.Task.*` can only be used in mix tasks"}
         _                                 -> nil
       end
     end
@@ -212,7 +212,7 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
 
   defp check_atom(atom, file) do
     case atom do
-      :hackney -> {:warning, file, [], "directly depending on `:hackney` is not allowed (for `SolomonLib.Httpc` use other options; for initialization of HTTP client library in your mix tasks use `SolomonLib.Mix.Task.prepare_antikythera_instance/0`)"}
+      :hackney -> {:warning, file, [], "directly depending on `:hackney` is not allowed (for `Antikythera.Httpc` use other options; for initialization of HTTP client library in your mix tasks use `Antikythera.Mix.Task.prepare_antikythera_instance/0`)"}
       _        -> nil
     end
   end

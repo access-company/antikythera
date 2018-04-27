@@ -18,7 +18,7 @@ defmodule Strategy.RequestCount do
   """
 
   @behaviour Strategy.Behaviour
-  alias SolomonLib.Http.Status
+  alias Antikythera.Http.Status
 
   @typep data_t :: {pos_integer, non_neg_integer, non_neg_integer}
 

@@ -120,8 +120,8 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
   # where many newly-started AsyncJobBroker processes crashed due to timeout in `PoolSup.checkout_nonblocking/1`.
   # Although the issue is automatically resolved by supervisor restarts,
   # we try to prevent it by introducing random delay on startup of AsyncJobBroker processes.
-  @base_wait_time_before_accepting_jobs       (if SolomonLib.Env.compiling_for_cloud?(), do:  5_000, else: 0)
-  @random_wait_time_max_before_accepting_jobs (if SolomonLib.Env.compiling_for_cloud?(), do: 60_000, else: 1)
+  @base_wait_time_before_accepting_jobs       (if Antikythera.Env.compiling_for_cloud?(), do:  5_000, else: 0)
+  @random_wait_time_max_before_accepting_jobs (if Antikythera.Env.compiling_for_cloud?(), do: 60_000, else: 1)
 
   defp become_active(state1) do
     wait_time = @base_wait_time_before_accepting_jobs + :rand.uniform(@random_wait_time_max_before_accepting_jobs)

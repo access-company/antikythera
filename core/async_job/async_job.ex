@@ -4,9 +4,9 @@ use Croma
 
 defmodule AntikytheraCore.AsyncJob do
   alias Croma.Result, as: R
-  alias SolomonLib.{Time, Cron, GearName, Context, MilliSecondsSinceEpoch}
-  alias SolomonLib.AsyncJob.{Id, Schedule, MaxDuration, Attempts, RetryInterval}
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.{Time, Cron, GearName, Context, MilliSecondsSinceEpoch}
+  alias Antikythera.AsyncJob.{Id, Schedule, MaxDuration, Attempts, RetryInterval}
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.ExecutorPool.Id, as: CoreEPoolId
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.AsyncJob.Queue
@@ -25,7 +25,7 @@ defmodule AntikytheraCore.AsyncJob do
     payload:            Croma.Map, # opaque data given and used by gear
   ]
 
-  @typep option :: SolomonLib.AsyncJob.option
+  @typep option :: Antikythera.AsyncJob.option
 
   defun register(gear_name           :: v[GearName.t],
                  module              :: v[module],

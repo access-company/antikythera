@@ -1,11 +1,11 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.Test.HttpClient do
+defmodule Antikythera.Test.HttpClient do
   defmacro __using__(_) do
     quote do
-      @default_base_url SolomonLib.Test.Config.base_url()
+      @default_base_url Antikythera.Test.Config.base_url()
 
-      alias SolomonLib.Httpc
+      alias Antikythera.Httpc
 
       def get(path, headers \\ %{}, options \\ []) do
         Httpc.get!(base_url() <> path, headers, options)

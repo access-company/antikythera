@@ -2,10 +2,10 @@
 
 use Croma
 
-defmodule SolomonLib.Controller.Json do
+defmodule Antikythera.Controller.Json do
   @moduledoc """
-  [DEPRECATED] Defines `SolomonLib.Controller.Json.json/3`.
+  [DEPRECATED] Defines `Antikythera.Controller.Json.json/3`.
   """
 
-  defdelegate json(conn, status, body), to: SolomonLib.Conn
+  defdelegate json(conn, status, body), to: Antikythera.Conn
 end

@@ -4,7 +4,7 @@ use Croma
 alias Croma.Result, as: R
 
 defmodule AntikytheraCore.Handler.BodyParser do
-  alias SolomonLib.Http.{RawBody, Body}
+  alias Antikythera.Http.{RawBody, Body}
   require AntikytheraCore.Logger, as: L
 
   @typep ok_tuple      :: {:ok, :cowboy_req.req, RawBody.t, Body.t}

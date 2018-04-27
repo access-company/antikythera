@@ -1,19 +1,19 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.Test.WebsocketClient do
+defmodule Antikythera.Test.WebsocketClient do
   @moduledoc """
   Websocket client for gear tests.
 
   Prepare your client module with:
 
       defmodule YourGear.Socket do
-        use SolomonLib.Test.WebsocketClient
+        use Antikythera.Test.WebsocketClient
       end
 
   Then, call `YourGear.Socket.spawn_link("/ws")` to open Websocket connection at "ws(s)://<host_name>/ws" endpoint.
   It will return pid of Websocket connection handling process if successful.
 
-  By default, it connects to the server specified by `SolomonLib.Test.Config.base_url/0`,
+  By default, it connects to the server specified by `Antikythera.Test.Config.base_url/0`,
   and redirects received frame to the caller (test running) process, in `{frame, handler_pid}` form.
 
   These default behavior can be overridable with two overridable functions:
@@ -26,7 +26,7 @@ defmodule SolomonLib.Test.WebsocketClient do
     quote do
       @behaviour :websocket_client
 
-      @default_base_url SolomonLib.Test.Config.base_url() |> String.replace_prefix("http://" , "ws://" ) |> String.replace_prefix("https://", "wss://")
+      @default_base_url Antikythera.Test.Config.base_url() |> String.replace_prefix("http://" , "ws://" ) |> String.replace_prefix("https://", "wss://")
 
       def spawn_link(path, timeout \\ 5_000) do
         url = String.to_charlist(base_url() <> path)

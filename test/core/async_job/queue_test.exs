@@ -2,8 +2,8 @@
 
 defmodule AntikytheraCore.AsyncJob.QueueTest do
   use Croma.TestCase
-  alias SolomonLib.{Time, Cron}
-  alias SolomonLib.Test.GenServerHelper
+  alias Antikythera.{Time, Cron}
+  alias Antikythera.Test.GenServerHelper
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraCore.ExecutorPool
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
@@ -12,7 +12,7 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
   alias AntikytheraCore.AsyncJob
 
   defmodule TestJob do
-    use SolomonLib.AsyncJob
+    use Antikythera.AsyncJob
 
     @impl true
     def run(_payload, _metadata, _context) do
@@ -198,8 +198,8 @@ end
 defmodule AntikytheraCore.AsyncJob.QueueCommandTest do
   use ExUnit.Case
   alias Croma.Result, as: R
-  alias SolomonLib.{Time, Cron}
-  alias SolomonLib.AsyncJob.{Id, MaxDuration}
+  alias Antikythera.{Time, Cron}
+  alias Antikythera.AsyncJob.{Id, MaxDuration}
   alias AntikytheraCore.AsyncJob
   alias AntikytheraCore.AsyncJob.Queue
 

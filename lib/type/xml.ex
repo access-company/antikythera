@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Xml do
+defmodule Antikythera.Xml do
   el = inspect(__MODULE__.Element)
   @moduledoc """
   Convenient XML parser module wrapping [fast_xml](https://github.com/processone/fast_xml).
@@ -80,7 +80,7 @@ defmodule SolomonLib.Xml do
   alias Croma.Result, as: R
 
   defmodule Content do
-    alias SolomonLib.Xml.Element
+    alias Antikythera.Xml.Element
 
     @type t :: String.t | Element.t
 

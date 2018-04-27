@@ -10,7 +10,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   This mix task is called right before compilations of the gear in antikythera's auto-deploy script.
   It ensures all static assets of your gear reside in `priv/static/` directory before compilations of `YourGear.Asset` module.
   Assets in `priv/static/` directory will then be uploaded to cloud storage for serving via CDN.
-  See `SolomonLib.Asset` for details.
+  See `Antikythera.Asset` for details.
 
   If your gear uses some kind of preprocessing tools to generate asset files (JS, CSS, etc.),
   you have to set up any of the supported asset preparation methods described in the next section.
@@ -23,7 +23,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   Though you may do so in order to confirm asset preparation is working as you intended.
 
   This mix task invokes the chosen preprocessing tools with `ANTIKYTHERA_COMPILE_ENV` environment variable
-  (see also `SolomonLib.Env`).
+  (see also `Antikythera.Env`).
   You can use this environment variable to distinguish for which environment current script is running.
 
   ## Supported Asset Preparation Methods
@@ -52,11 +52,11 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
 
   #### 1. Using [npm-scripts](https://docs.npmjs.com/misc/scripts)
 
-  - Prerequisite: `solomon_prepare_assets` script in `package.json` file
-  - Command: `npm run solomon_prepare_assets`
+  - Prerequisite: `antikythera_prepare_assets` script in `package.json` file
+  - Command: `npm run antikythera_prepare_assets`
   - This is the recommended method.
   - **This method takes precedance over `gulp`**.
-  - Within `solomon_prepare_assets` script, you may execute any asset-related actions such as:
+  - Within `antikythera_prepare_assets` script, you may execute any asset-related actions such as:
       - Linting
       - Type Checking
       - Testing
@@ -74,14 +74,14 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
       - `default` gulp task will be executed.
   - This is the old and deprecated method, kept for backward compatibility. Use npm-scripts method for new gears.
   - As is the case in npm-scripts, you may execute any asset-related actions in your `default` gulp task.
-  - You can safely migrate to npm-scripts by putting `solomon_prepare_assets` script in your `package.json` file like this:
+  - You can safely migrate to npm-scripts by putting `antikythera_prepare_assets` script in your `package.json` file like this:
 
   ```
   {
     ...
     "scripts": {
       ...
-      "solomon_prepare_assets": "gulp"
+      "antikythera_prepare_assets": "gulp"
     }
   }
   ```
@@ -100,7 +100,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   """
 
   use Mix.Task
-  alias SolomonLib.Asset
+  alias Antikythera.Asset
 
   @impl true
   def run(args) do
@@ -111,7 +111,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
     case find_build_step_in_project(env) do
       nil ->
         IO.puts("Skipping. Asset preparation is not configured.")
-        IO.puts("Define `solomon_prepare_assets` npm-script if you want antikythera to prepare assets for your gear.")
+        IO.puts("Define `antikythera_prepare_assets` npm-script if you want antikythera to prepare assets for your gear.")
       step ->
         install_packages!(env)
         build_assets!(step, env)
@@ -130,7 +130,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   defp npm_script_available?(env) do
     run_command!("npm", ["run"], env)
     |> String.split("\n", trim: true)
-    |> Enum.member?("  solomon_prepare_assets")
+    |> Enum.member?("  antikythera_prepare_assets")
   end
 
   defp install_packages!(env) do
@@ -162,7 +162,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   end
 
   defp build_assets!(:npm_script, env) do
-    run_command!("npm", ["run", "solomon_prepare_assets"], env)
+    run_command!("npm", ["run", "antikythera_prepare_assets"], env)
   end
   defp build_assets!(:gulp, env) do
     local_gulp_abs_path = Path.expand(Path.join(["node_modules", ".bin", "gulp"]))

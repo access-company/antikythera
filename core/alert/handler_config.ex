@@ -9,12 +9,12 @@ defmodule AntikytheraCore.Alert.HandlerConfig do
   Fields are treated as opaque at this layer; details are defined by each handler implementation.
   """
 
-  alias SolomonLib.GearName
+  alias Antikythera.GearName
   alias AntikytheraCore.Alert.HandlerConfigsMap
 
   use Croma.SubtypeOfMap, key_module: Croma.String, value_module: Croma.Any
 
-  defun get(handler :: v[module], otp_app_name :: v[:solomon | GearName.t]) :: t do
+  defun get(handler :: v[module], otp_app_name :: v[:antikythera | GearName.t]) :: t do
     HandlerConfigsMap.get(otp_app_name)
     |> Map.get(key(handler), %{})
   end
@@ -35,14 +35,14 @@ defmodule AntikytheraCore.Alert.HandlerConfigsMap do
   These maps are stored in core/gear configs.
   """
 
-  alias SolomonLib.GearName
+  alias Antikythera.GearName
   alias AntikytheraCore.Ets.ConfigCache
 
   use Croma.SubtypeOfMap, key_module: Croma.String, value_module: AntikytheraCore.Alert.HandlerConfig
 
-  defun get(otp_app_name :: v[:solomon | GearName.t]) :: t do
+  defun get(otp_app_name :: v[:antikythera | GearName.t]) :: t do
     case otp_app_name do
-      :solomon  -> ConfigCache.Core.read() |> Map.get(:alerts, %{})
+      :antikythera  -> ConfigCache.Core.read() |> Map.get(:alerts, %{})
       gear_name -> ConfigCache.Gear.read(gear_name).alerts
     end
   end

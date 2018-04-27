@@ -16,8 +16,8 @@ defmodule AntikytheraCore.SystemMetricsReporter do
   """
 
   use GenServer
-  alias SolomonLib.Metrics.DataList
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.Metrics.DataList
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.MetricsUploader
 
   @interval 300_000

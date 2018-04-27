@@ -2,24 +2,24 @@
 
 use Croma
 
-defmodule SolomonLib.Time do
+defmodule Antikythera.Time do
   @moduledoc """
   Data structure to represent date and time in milli-seconds resolution.
 
-  Note that all values of `SolomonLib.Time.t` are in UTC.
+  Note that all values of `Antikythera.Time.t` are in UTC.
 
-  `Poison.Encoder` protocol is implemented for `SolomonLib.Time.t`,
-  so that values of this type can be directly converted to `SolomonLib.IsoTimestamp.t` on `Poison.encode/1`.
+  `Poison.Encoder` protocol is implemented for `Antikythera.Time.t`,
+  so that values of this type can be directly converted to `Antikythera.IsoTimestamp.t` on `Poison.encode/1`.
 
-      iex> Poison.encode(%{time: {SolomonLib.Time, {2017, 1, 1}, {0, 0, 0}, 0}})
+      iex> Poison.encode(%{time: {Antikythera.Time, {2017, 1, 1}, {0, 0, 0}, 0}})
       {:ok, "{\"time\":\"2017-01-01T00:00:00.000+00:00\"}"}
 
   See also `new/1`.
   """
 
   alias Croma.Result, as: R
-  alias SolomonLib.{IsoTimestamp, ImfFixdate}
-  alias SolomonLib.IsoTimestamp.Basic, as: IsoBasic
+  alias Antikythera.{IsoTimestamp, ImfFixdate}
+  alias Antikythera.IsoTimestamp.Basic, as: IsoBasic
 
   @typep milliseconds :: 0..999
   @type t :: {__MODULE__, :calendar.date, :calendar.time, milliseconds}
@@ -30,9 +30,9 @@ defmodule SolomonLib.Time do
   end
 
   @doc """
-  Convert timestamps into `SolomonLib.Time.t`, leveraging `recursive_new?` option of `Croma.Struct`.
+  Convert timestamps into `Antikythera.Time.t`, leveraging `recursive_new?` option of `Croma.Struct`.
 
-  Only `SolomonLib.IsoTimestamp.t` can be converted.
+  Only `Antikythera.IsoTimestamp.t` can be converted.
   """
   defun new(s :: v[IsoTimestamp.t]) :: R.t(t), do: from_iso_timestamp(s)
 
@@ -48,12 +48,12 @@ defmodule SolomonLib.Time do
   end
 
   defun to_iso_timestamp({__MODULE__, {y, mon, d}, {h, min, s}, millis} :: t) :: IsoTimestamp.t do
-    import SolomonLib.StringFormat
+    import Antikythera.StringFormat
     "#{y}-#{pad2(mon)}-#{pad2(d)}T#{pad2(h)}:#{pad2(min)}:#{pad2(s)}.#{pad3(millis)}+00:00"
   end
 
   defun to_iso_basic({__MODULE__, {y, mon, d}, {h, min, s}, _} :: t) :: IsoBasic.t do
-    import SolomonLib.StringFormat
+    import Antikythera.StringFormat
     "#{y}#{pad2(mon)}#{pad2(d)}T#{pad2(h)}#{pad2(min)}#{pad2(s)}Z"
   end
 
@@ -168,14 +168,14 @@ defmodule SolomonLib.Time do
   """
   defun to_http_date({__MODULE__, {y, mon, d} = date, {h, min, s}, _} :: t) :: ImfFixdate.t do
     # Not using `:httpd_util.rfc1123_date/2` since it reads inputs as localtime and forcibly perform UTC conversion
-    import SolomonLib.StringFormat
+    import Antikythera.StringFormat
     day_str = :httpd_util.day(:calendar.day_of_the_week(date))
     mon_str = :httpd_util.month(mon)
     "#{day_str}, #{pad2(d)} #{mon_str} #{y} #{pad2(h)}:#{pad2(min)}:#{pad2(s)} GMT"
   end
 
   @doc """
-  Parses HTTP-date formats into SolomonLib.Time.t.
+  Parses HTTP-date formats into Antikythera.Time.t.
 
   Supports IMF-fixdate format, RFC 850 format and ANSI C's `asctime()` format for compatibility.
 

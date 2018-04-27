@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.Test.ProcessHelper do
+defmodule Antikythera.Test.ProcessHelper do
   @moduledoc """
   Helper functions to work with processes in test code.
   """

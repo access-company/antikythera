@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Crypto do
+defmodule Antikythera.Crypto do
   @doc """
   Checks equality of the given two binaries in constant-time to avoid [timing attacks](http://codahale.com/a-lesson-in-timing-attacks/).
   """

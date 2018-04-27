@@ -2,8 +2,8 @@
 
 defmodule AntikytheraCore.GearLog.WriterTest do
   use Croma.TestCase
-  alias SolomonLib.Time
-  alias SolomonLib.Test.GearConfigHelper
+  alias Antikythera.Time
+  alias Antikythera.Test.GearConfigHelper
   alias AntikytheraCore.Context
 
   @dir         Path.join([__DIR__, "..", "..", "..", "_build", "test", "log", "testgear"]) |> Path.expand()

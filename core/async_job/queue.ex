@@ -9,8 +9,8 @@ defmodule AntikytheraCore.AsyncJob.Queue do
 
   alias Croma.Result, as: R
   alias RaftedValue.Data, as: RVData
-  alias SolomonLib.{Time, Cron, MilliSecondsSinceEpoch}
-  alias SolomonLib.AsyncJob.{Id, MaxDuration, StateLabel, Status}
+  alias Antikythera.{Time, Cron, MilliSecondsSinceEpoch}
+  alias Antikythera.AsyncJob.{Id, MaxDuration, StateLabel, Status}
   alias AntikytheraCore.AsyncJob
   alias AntikytheraCore.ExecutorPool.AsyncJobBroker, as: Broker
 
@@ -303,7 +303,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   defmodule Hook do
-    alias SolomonLib.ContextId
+    alias Antikythera.ContextId
     alias AntikytheraCore.AsyncJob.Queue
     alias AntikytheraCore.GearLog.Writer
     alias AntikytheraCore.GearModule

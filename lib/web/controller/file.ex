@@ -2,10 +2,10 @@
 
 use Croma
 
-defmodule SolomonLib.Controller.File do
+defmodule Antikythera.Controller.File do
   @moduledoc """
-  [DEPRECATED] Defines `SolomonLib.Controller.File.send_priv_file/3`.
+  [DEPRECATED] Defines `Antikythera.Controller.File.send_priv_file/3`.
   """
 
-  defdelegate send_priv_file(conn, status, path), to: SolomonLib.Conn
+  defdelegate send_priv_file(conn, status, path), to: Antikythera.Conn
 end

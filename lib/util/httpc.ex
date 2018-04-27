@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Httpc do
+defmodule Antikythera.Httpc do
   @default_max_body  10 * 1024 * 1024
   @maximum_max_body 100 * 1024 * 1024
 
@@ -50,12 +50,12 @@ defmodule SolomonLib.Httpc do
   """
 
   alias Croma.Result, as: R
-  alias SolomonLib.{MapUtil, Url}
-  alias SolomonLib.Http.{Status, Method, Headers, SetCookie, SetCookiesMap}
+  alias Antikythera.{MapUtil, Url}
+  alias Antikythera.Http.{Status, Method, Headers, SetCookie, SetCookiesMap}
 
   defmodule ReqBody do
     @moduledoc """
-    Type for `SolomonLib.Httpc`'s request body.
+    Type for `Antikythera.Httpc`'s request body.
     """
 
     @type json_obj :: %{(atom | String.t) => any}
@@ -87,8 +87,8 @@ defmodule SolomonLib.Httpc do
     @moduledoc """
     A struct to represent an HTTP response.
 
-    Response headers are converted to a `SolomonLib.Http.Headers.t` and all header names are lower-cased.
-    `set-cookie` response headers are handled separately and stored in `cookies` field as a `SolomonLib.Http.SetCookiesMap.t`.
+    Response headers are converted to a `Antikythera.Http.Headers.t` and all header names are lower-cased.
+    `set-cookie` response headers are handled separately and stored in `cookies` field as a `Antikythera.Http.SetCookiesMap.t`.
     """
 
     use Croma.Struct, recursive_new?: true, fields: [
@@ -258,20 +258,20 @@ defmodule SolomonLib.Httpc do
   end
 end
 
-defmodule SolomonLib.Httpc.Mockable do
+defmodule Antikythera.Httpc.Mockable do
   @moduledoc """
   Just wrapping `Httpc` without any modification.
   Can be mocked with `:meck.expect(Httpc.Mockable, :request, ...)` without interfering other Httpc action.
   """
 
-  defdelegate request( method, url, body, headers, options), to: SolomonLib.Httpc
-  defdelegate request!(method, url, body, headers, options), to: SolomonLib.Httpc
+  defdelegate request( method, url, body, headers, options), to: Antikythera.Httpc
+  defdelegate request!(method, url, body, headers, options), to: Antikythera.Httpc
   Enum.each([:get, :delete, :options, :head], fn method ->
-    defdelegate unquote(method       )(url, headers, options), to: SolomonLib.Httpc
-    defdelegate unquote(:"#{method}!")(url, headers, options), to: SolomonLib.Httpc
+    defdelegate unquote(method       )(url, headers, options), to: Antikythera.Httpc
+    defdelegate unquote(:"#{method}!")(url, headers, options), to: Antikythera.Httpc
   end)
   Enum.each([:post, :put, :patch], fn method ->
-    defdelegate unquote(method       )(url, body, headers, options), to: SolomonLib.Httpc
-    defdelegate unquote(:"#{method}!")(url, body, headers, options), to: SolomonLib.Httpc
+    defdelegate unquote(method       )(url, body, headers, options), to: Antikythera.Httpc
+    defdelegate unquote(:"#{method}!")(url, body, headers, options), to: Antikythera.Httpc
   end)
 end

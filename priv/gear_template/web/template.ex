@@ -1,3 +1,3 @@
 defmodule <%= gear_name_camel %>.Template do
-  use SolomonLib.TemplatePrecompiler
+  use Antikythera.TemplatePrecompiler
 end

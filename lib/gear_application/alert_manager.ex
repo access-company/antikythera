@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.GearApplication.AlertManager do
+defmodule Antikythera.GearApplication.AlertManager do
   @moduledoc """
   Helper module to define interface module for alerting.
   """

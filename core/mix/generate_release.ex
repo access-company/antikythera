@@ -35,7 +35,7 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
   alias AntikytheraCore.Release.Appup
 
   otp_major_version = :erlang.system_info(:otp_release)
-  @release_output_dir_basename (if SolomonLib.Env.compile_env() == :local, do: "rel_local", else: "rel") <> "_erlang-#{otp_major_version}"
+  @release_output_dir_basename (if Antikythera.Env.compile_env() == :local, do: "rel_local", else: "rel") <> "_erlang-#{otp_major_version}"
   antikythera_repo_rel_dir = Path.expand(Path.join([__DIR__, "..", "..", "rel"]))
   @vm_args_path              Path.join(antikythera_repo_rel_dir, "vm.args")
   @boot_script_patch_path    Path.join(antikythera_repo_rel_dir, "boot_script.patch")

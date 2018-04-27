@@ -2,15 +2,15 @@
 
 use Croma
 
-defmodule SolomonLib.Context do
+defmodule Antikythera.Context do
   @moduledoc """
-  Definition of `SolomonLib.Context` struct which represents a context for an execution of gear code.
+  Definition of `Antikythera.Context` struct which represents a context for an execution of gear code.
 
   Note that `gear_entry_point` is basically of type `{module, atom}`, it is `nil` during
   (1) `executor_pool_web_request/1` and (2) `no_route/1` error handler.
   """
 
-  alias SolomonLib.{Time, GearName, ContextId, ExecutorPool}
+  alias Antikythera.{Time, GearName, ContextId, ExecutorPool}
 
   defmodule GearEntryPoint do
     use Croma.SubtypeOfTuple, elem_modules: [Croma.Atom, Croma.Atom]

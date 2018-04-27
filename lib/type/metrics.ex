@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Metrics.Data do
+defmodule Antikythera.Metrics.Data do
   alias AntikytheraCore.Metrics.Buffer
   alias AntikytheraCore.Metrics.AggregateStrategy, as: Strategy
 
@@ -14,6 +14,6 @@ defmodule SolomonLib.Metrics.Data do
   end
 end
 
-defmodule SolomonLib.Metrics.DataList do
-  use Croma.SubtypeOfList, elem_module: SolomonLib.Metrics.Data, min_length: 1
+defmodule Antikythera.Metrics.DataList do
+  use Croma.SubtypeOfList, elem_module: Antikythera.Metrics.Data, min_length: 1
 end

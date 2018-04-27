@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.XmlTest do
+defmodule Antikythera.XmlTest do
   use Croma.TestCase
   alias Xml.Element, as: E
   doctest Xml

@@ -1,10 +1,10 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.ConnTypesTest do
+defmodule Antikythera.ConnTypesTest do
   use ExUnit.Case
-  alias SolomonLib.Request, as: Req
-  alias SolomonLib.Context
-  alias SolomonLib.Conn
+  alias Antikythera.Request, as: Req
+  alias Antikythera.Context
+  alias Antikythera.Conn
 
   test "validate PathMatches" do
     assert Req.PathMatches.valid?(%{foo: "bar"})
@@ -58,10 +58,10 @@ defmodule SolomonLib.ConnTypesTest do
       sender:       {:gear, :testgear},
     ]) == {:ok, %Req{base_req | query_params: %{"foo" => "bar"}, headers: %{"foo" => "bar"}, cookies: %{"foo" => "bar"}, body: "hoge", sender: {:gear, :testgear}}}
 
-    assert Req.new([path_info: ["hoge"], path_matches: %{foo: "bar"}, sender: {:web, "127.0.0.1"}]) == {:error, {:value_missing, [Req, {SolomonLib.Http.Method, :method}]}}
-    assert Req.new([method: :get, path_matches: %{foo: "bar"}, sender: {:web, "127.0.0.1"}])        == {:error, {:value_missing, [Req, {SolomonLib.PathInfo, :path_info}]}}
+    assert Req.new([path_info: ["hoge"], path_matches: %{foo: "bar"}, sender: {:web, "127.0.0.1"}]) == {:error, {:value_missing, [Req, {Antikythera.Http.Method, :method}]}}
+    assert Req.new([method: :get, path_matches: %{foo: "bar"}, sender: {:web, "127.0.0.1"}])        == {:error, {:value_missing, [Req, {Antikythera.PathInfo, :path_info}]}}
     assert Req.new([method: :get, path_info: ["hoge"], sender: {:web, "127.0.0.1"}])                == {:error, {:value_missing, [Req, {Req.PathMatches, :path_matches}]}}
-    assert Req.new([])                                                                              == {:error, {:value_missing, [Req, {SolomonLib.Http.Method, :method}]}}
+    assert Req.new([])                                                                              == {:error, {:value_missing, [Req, {Antikythera.Http.Method, :method}]}}
     assert Req.new([method: :get, path_info: ["hoge"], path_matches: %{foo: "bar"}])                == {:error, {:value_missing, [Req, {Req.Sender, :sender}]}}
   end
 
@@ -78,6 +78,6 @@ defmodule SolomonLib.ConnTypesTest do
     assert Conn.new([context: context]) == {:error, {:value_missing, [Conn, {Req, :request}]}}
     assert Conn.new([])                 == {:error, {:value_missing, [Conn, {Req, :request}]}}
     {:error, reason} = Conn.new([request: req, context: context, status: :ok])
-    assert reason == {:invalid_value, [Conn, {Croma.TypeGen.Nilable.SolomonLib.Http.Status.Int, :status}]}
+    assert reason == {:invalid_value, [Conn, {Croma.TypeGen.Nilable.Antikythera.Http.Status.Int, :status}]}
   end
 end

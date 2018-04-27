@@ -8,9 +8,9 @@ defmodule AntikytheraCore.MetricsUploader do
   """
 
   use GenServer
-  alias SolomonLib.{Time, Context}
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
-  alias SolomonLib.Metrics.DataList
+  alias Antikythera.{Time, Context}
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.Metrics.DataList
   alias AntikytheraCore.Metrics.{Buffer, Results, AggregateStrategy}
   alias AntikytheraEal.MetricsStorage, as: Storage
   require AntikytheraCore.Logger, as: L

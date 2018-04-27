@@ -1,8 +1,8 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.CronTest do
+defmodule Antikythera.CronTest do
   use Croma.TestCase
-  alias SolomonLib.Time
+  alias Antikythera.Time
 
   test "parse/1 should reject invalid cron format" do
     [

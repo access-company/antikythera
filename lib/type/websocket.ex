@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Websocket.Frame do
+defmodule Antikythera.Websocket.Frame do
   @moduledoc """
   Simplified data type for websocket frames.
   """
@@ -23,6 +23,6 @@ defmodule SolomonLib.Websocket.Frame do
   end
 end
 
-defmodule SolomonLib.Websocket.FrameList do
-  use Croma.SubtypeOfList, elem_module: SolomonLib.Websocket.Frame
+defmodule Antikythera.Websocket.FrameList do
+  use Croma.SubtypeOfList, elem_module: Antikythera.Websocket.Frame
 end

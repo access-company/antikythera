@@ -2,8 +2,8 @@
 
 defmodule AntikytheraCore.SystemMetricsReporterTest do
   use Croma.TestCase
-  alias SolomonLib.Time
-  alias SolomonLib.Test.GenServerHelper
+  alias Antikythera.Time
+  alias Antikythera.Test.GenServerHelper
   alias AntikytheraCore.Metrics.AggregateStrategy.Gauge
 
   setup do

@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.MacroUtil do
+defmodule Antikythera.MacroUtil do
   @moduledoc """
   Utilities to manipulate Elixir AST.
   """

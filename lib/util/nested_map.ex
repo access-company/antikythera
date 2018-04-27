@@ -2,12 +2,12 @@
 
 use Croma
 
-defmodule SolomonLib.NestedMap do
+defmodule Antikythera.NestedMap do
   @moduledoc """
   Utility functions to work with nested maps.
   """
 
-  alias SolomonLib.MapUtil
+  alias Antikythera.MapUtil
 
   defun deep_merge(m1 :: v[map], m2 :: v[map]) :: map do
     Map.merge(m1, m2, fn

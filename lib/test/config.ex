@@ -1,12 +1,12 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.Test.Config do
+defmodule Antikythera.Test.Config do
   @moduledoc """
   Helpers to be used in each gear's `test/test_helper.exs`.
 
   At the top of `test/test_helper.exs`, all gears must place the following line:
 
-      SolomonLib.Test.Config.init()
+      Antikythera.Test.Config.init()
 
   This line will start [`ExUnit`](http://elixir-lang.org/docs/stable/ex_unit/) and
   set configurations for whitebox/blackbox test mode.
@@ -14,7 +14,7 @@ defmodule SolomonLib.Test.Config do
 
   alias AntikytheraCore.Handler.CowboyRouting
 
-  deployment_envs = Application.fetch_env!(:solomon, :deployments) |> Keyword.keys()
+  deployment_envs = Application.fetch_env!(:antikythera, :deployments) |> Keyword.keys()
 
   def init() do
     ExUnit.start()
@@ -29,7 +29,7 @@ defmodule SolomonLib.Test.Config do
   def base_url() do
     gear_name = Mix.Project.config()[:app]
     case test_mode() do
-      :whitebox       -> "http://#{CowboyRouting.default_domain(gear_name, :local)}:#{SolomonLib.Env.port_to_listen()}"
+      :whitebox       -> "http://#{CowboyRouting.default_domain(gear_name, :local)}:#{Antikythera.Env.port_to_listen()}"
       :blackbox_local -> "http://#{CowboyRouting.default_domain(gear_name, :local)}:#{System.get_env("TEST_PORT") || 8080}"
       other_env       -> base_url_for_deployment(gear_name, other_env)
     end

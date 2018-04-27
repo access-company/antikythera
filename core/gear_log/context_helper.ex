@@ -11,7 +11,7 @@ defmodule AntikytheraCore.GearLog.ContextHelper do
   context ID is stored in each process's process dictionary and fetched when a process emits a log message.
   """
 
-  alias SolomonLib.{Conn, Context, ContextId}
+  alias Antikythera.{Conn, Context, ContextId}
 
   @key :antikythera_context_id
 

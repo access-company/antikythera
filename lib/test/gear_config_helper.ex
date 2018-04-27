@@ -2,12 +2,12 @@
 
 use Croma
 
-defmodule SolomonLib.Test.GearConfigHelper do
+defmodule Antikythera.Test.GearConfigHelper do
   @moduledoc """
   Helper functions to set gear configs from within gears' test code.
   """
 
-  alias SolomonLib.GearName
+  alias Antikythera.GearName
   alias AntikytheraCore.Config.Gear, as: GearConfig
   alias AntikytheraCore.Ets.ConfigCache
 

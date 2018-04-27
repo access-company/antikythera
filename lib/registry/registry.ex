@@ -2,9 +2,9 @@
 
 use Croma
 
-defmodule SolomonLib.Registry do
-  alias SolomonLib.{GearName, TenantId, Context}
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+defmodule Antikythera.Registry do
+  alias Antikythera.{GearName, TenantId, Context}
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias __MODULE__
 
   @type name :: {:gear, GearName.t, String.t} | {:tenant, TenantId.t, String.t}

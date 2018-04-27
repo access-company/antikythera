@@ -12,7 +12,7 @@ defmodule AntikytheraCore.VersionUpgradeTaskQueue do
   """
 
   use GenServer
-  alias SolomonLib.GearName
+  alias Antikythera.GearName
   alias AntikytheraCore.Version
 
   def start_link() do

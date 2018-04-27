@@ -22,7 +22,7 @@ defmodule AntikytheraCore.TenantExecutorPoolsManager do
   """
 
   use GenServer
-  alias SolomonLib.{MapUtil, GearName, TenantId, SecondsSinceEpoch}
+  alias Antikythera.{MapUtil, GearName, TenantId, SecondsSinceEpoch}
   alias AntikytheraCore.ExecutorPool
   alias AntikytheraCore.Ets.TenantToGearsMapping
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting

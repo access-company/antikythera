@@ -1,9 +1,9 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.Plug.IpFilteringTest do
+defmodule Antikythera.Plug.IpFilteringTest do
   use Croma.TestCase
-  alias SolomonLib.IpAddress
-  alias SolomonLib.Test.{ConnHelper, GearConfigHelper}
+  alias Antikythera.IpAddress
+  alias Antikythera.Test.{ConnHelper, GearConfigHelper}
 
   @range_strings ["10.5.134.56/32", "10.5.136.0/24"]
   @patterns [

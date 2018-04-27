@@ -3,10 +3,10 @@
 use Croma
 
 defmodule AntikytheraCore.Handler.WebsocketState do
-  alias SolomonLib.{Time, Conn, Context, ErrorReason}
-  alias SolomonLib.Websocket
-  alias SolomonLib.Websocket.{Frame, FrameList}
-  alias SolomonLib.Context.GearEntryPoint
+  alias Antikythera.{Time, Conn, Context, ErrorReason}
+  alias Antikythera.Websocket
+  alias Antikythera.Websocket.{Frame, FrameList}
+  alias Antikythera.Context.GearEntryPoint
   alias AntikytheraCore.Handler.HelperModules
   alias AntikytheraCore.GearLog.{Writer, ContextHelper}
   alias AntikytheraCore.{MetricsUploader, GearProcess}

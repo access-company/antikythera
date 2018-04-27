@@ -2,9 +2,9 @@
 
 use Croma
 
-defmodule SolomonLib.Router.Reverse do
+defmodule Antikythera.Router.Reverse do
   @moduledoc """
-  Internal helper functions for macros in `SolomonLib.Router`, to generate/implement reverse routing functions.
+  Internal helper functions for macros in `Antikythera.Router`, to generate/implement reverse routing functions.
   """
 
   @typep placeholder_filler :: String.t | [String.t]
@@ -24,7 +24,7 @@ defmodule SolomonLib.Router.Reverse do
       fun_name = :"#{path_name}_path"
       @spec unquote(fun_name)(unquote_splicing(placeholder_types), %{String.t => String.t}) :: String.t
       def unquote(fun_name)(unquote_splicing(placeholder_vars), query_params \\ %{}) do
-        SolomonLib.Router.Reverse.make_path(unquote(path), [unquote_splicing(placeholder_vars)], query_params)
+        Antikythera.Router.Reverse.make_path(unquote(path), [unquote_splicing(placeholder_vars)], query_params)
       end
     end
   end

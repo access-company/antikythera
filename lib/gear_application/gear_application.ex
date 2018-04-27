@@ -2,11 +2,11 @@
 
 use Croma
 
-defmodule SolomonLib.GearApplication do
+defmodule Antikythera.GearApplication do
   @moduledoc """
   Template for gear application module.
 
-  Invoking `use SolomonLib.GearApplication` generates bunch of code, including (but not limited to)
+  Invoking `use Antikythera.GearApplication` generates bunch of code, including (but not limited to)
 
   - `Application` callbacks
   - `Logger` module for the gear
@@ -20,8 +20,8 @@ defmodule SolomonLib.GearApplication do
   """
 
   alias Supervisor.Spec
-  alias SolomonLib.{GearName, Conn}
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.{GearName, Conn}
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.{MetricsUploader, ExecutorPool}
   alias AntikytheraCore.Alert.Manager, as: AlertManager
   alias AntikytheraCore.{GearManager, GearModule}
@@ -69,24 +69,24 @@ defmodule SolomonLib.GearApplication do
   defmacro __using__(_) do
     quote do
       use Application
-      @behaviour SolomonLib.GearApplication
+      @behaviour Antikythera.GearApplication
 
       @gear_name Mix.Project.config()[:app]
 
       def start(_type, _args) do
-        SolomonLib.GearApplication.start(@gear_name, children())
+        Antikythera.GearApplication.start(@gear_name, children())
       end
 
       def stop(_state) do
-        SolomonLib.GearApplication.stop(@gear_name)
+        Antikythera.GearApplication.stop(@gear_name)
       end
 
-      use SolomonLib.GearApplication.ConfigGetter
-      use SolomonLib.GearApplication.ErrorHandler
-      use SolomonLib.GearApplication.Logger
-      use SolomonLib.GearApplication.G2g
-      use SolomonLib.GearApplication.MetricsUploader
-      use SolomonLib.GearApplication.AlertManager
+      use Antikythera.GearApplication.ConfigGetter
+      use Antikythera.GearApplication.ErrorHandler
+      use Antikythera.GearApplication.Logger
+      use Antikythera.GearApplication.G2g
+      use Antikythera.GearApplication.MetricsUploader
+      use Antikythera.GearApplication.AlertManager
     end
   end
 end

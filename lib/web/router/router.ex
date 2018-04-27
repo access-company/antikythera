@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.Router do
+defmodule Antikythera.Router do
   @moduledoc """
   Defines the antikythera routing DSL.
 
@@ -25,7 +25,7 @@ defmodule SolomonLib.Router do
   If you define the following router module,
 
       defmodule MyGear.Router do
-        use SolomonLib.Router
+        use Antikythera.Router
 
         static_prefix "/static"
 
@@ -44,15 +44,15 @@ defmodule SolomonLib.Router do
 
   Note that
 
-  - Each controller action is expected to receive a `SolomonLib.Conn` struct and returns a `SolomonLib.Conn` struct.
-  - `SolomonLib.Conn` struct has a field `request` which is a `SolomonLib.Request` struct.
-  - Matched segments are URL-decoded and stored in `path_matches` field in `SolomonLib.Request`.
+  - Each controller action is expected to receive a `Antikythera.Conn` struct and returns a `Antikythera.Conn` struct.
+  - `Antikythera.Conn` struct has a field `request` which is a `Antikythera.Request` struct.
+  - Matched segments are URL-decoded and stored in `path_matches` field in `Antikythera.Request`.
     If the result of URL-decoding is nonprintable binary, the request is rejected.
 
   ## Websocket endpoint
 
   To enable websocket interaction with clients, you must first define `MyGear.Websocket` module.
-  See `SolomonLib.Websocket` for more details about websocket handler module.
+  See `Antikythera.Websocket` for more details about websocket handler module.
   Then invoke `websocket/1` macro in your router.
 
       websocket "/ws_path_pattern"
@@ -78,7 +78,7 @@ defmodule SolomonLib.Router do
   even if `acceept-encoding: gzip` request header is set.
   It is recommended to use CDN to deliver large static assets in production.
 
-  See also `SolomonLib.Asset` for usage of CDN in delivery of static assets.
+  See also `Antikythera.Asset` for usage of CDN in delivery of static assets.
 
   ## Web requests and gear-to-gear (g2g) requests
 
@@ -106,7 +106,7 @@ defmodule SolomonLib.Router do
   For example, you have the following router module
 
       defmodule MyGear.Router do
-        use SolomonLib.Router
+        use Antikythera.Router
 
         get "/foo/:a/:b/*c", Hello, :placeholders, as: :myroute
       end
@@ -125,15 +125,15 @@ defmodule SolomonLib.Router do
   Also if static file serving is enabled, path prefix for static files can be obtained by `MyGear.Router.static_prefix/0`.
   """
 
-  alias SolomonLib.Router.Impl
+  alias Antikythera.Router.Impl
 
   defmacro __using__(_) do
     quote do
-      import SolomonLib.Router
+      import Antikythera.Router
       Module.register_attribute(__MODULE__, :antikythera_web_routes , accumulate: true)
       Module.register_attribute(__MODULE__, :antikythera_gear_routes, accumulate: true)
       Module.put_attribute(__MODULE__, :from_option, nil)
-      @before_compile SolomonLib.Router
+      @before_compile Antikythera.Router
     end
   end
 
@@ -148,7 +148,7 @@ defmodule SolomonLib.Router do
   end
 
   defp reverse_routing_quotes(web_source, gear_source) do
-    alias SolomonLib.Router.Reverse
+    alias Antikythera.Router.Reverse
     Enum.uniq(web_source ++ gear_source)
     |> Enum.reject(fn {_verb, _path, _controller, _action, opts} -> is_nil(opts[:as]) end)
     |> Enum.map(fn {_verb, path, _controller, _action, opts} -> Reverse.define_path_helper(opts[:as], path) end)
@@ -166,7 +166,7 @@ defmodule SolomonLib.Router do
     end
   end
 
-  for verb <- SolomonLib.Http.Method.all() do
+  for verb <- Antikythera.Http.Method.all() do
     defmacro unquote(verb)(path, controller, action, opts \\ []) do
       %Macro.Env{module: router_module} = __CALLER__
       add_route(router_module, unquote(verb), path, controller, action, opts)
@@ -175,7 +175,7 @@ defmodule SolomonLib.Router do
 
   defp add_route(router_module, verb, path, controller_given, action, opts) do
     quote bind_quoted: [r_m: router_module, verb: verb, path: path, c_g: controller_given, action: action, opts: opts] do
-      controller     = SolomonLib.Router.fully_qualified_controller_module(r_m, c_g, opts)
+      controller     = Antikythera.Router.fully_qualified_controller_module(r_m, c_g, opts)
       from_grouped   = Module.get_attribute(__MODULE__, :from_option)
       from_per_route = opts[:from]
       if from_grouped && from_per_route, do: raise "using :from option within `only_from_*` block is not allowed"

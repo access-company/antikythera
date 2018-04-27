@@ -2,12 +2,12 @@
 
 use Croma
 
-defmodule SolomonLib.GearApplication.G2g do
+defmodule Antikythera.GearApplication.G2g do
   @moduledoc """
   Helper module to define each gear's `G2g` module that contains interface for gear-to-gear communication.
   """
 
-  alias SolomonLib.{Conn, Context, G2gRequest, G2gResponse}
+  alias Antikythera.{Conn, Context, G2gRequest, G2gResponse}
 
   defmacro __using__(_) do
     quote do

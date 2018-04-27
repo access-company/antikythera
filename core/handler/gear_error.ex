@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Handler.GearError do
-  alias SolomonLib.{Conn, Request, Http.Method, ErrorReason}
+  alias Antikythera.{Conn, Request, Http.Method, ErrorReason}
   alias AntikytheraCore.Conn, as: CoreConn
   alias AntikytheraCore.GearModule
 
@@ -52,7 +52,7 @@ defmodule AntikytheraCore.Handler.GearError do
     gear_logger_module.error(log_message)
   end
 
-  if Application.fetch_env!(:solomon, :return_detailed_info_on_error?) do
+  if Application.fetch_env!(:antikythera, :return_detailed_info_on_error?) do
     defun internal_error_body(conn :: Conn.t, reason :: reason, stacktrace :: stacktrace) :: String.t do
       [
         "InternalError",

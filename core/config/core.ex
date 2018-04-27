@@ -4,8 +4,8 @@ use Croma
 
 defmodule AntikytheraCore.Config.Core do
   alias Croma.Result, as: R
-  alias SolomonLib.SecondsSinceEpoch
-  alias SolomonLib.Crypto.Aes
+  alias Antikythera.SecondsSinceEpoch
+  alias Antikythera.Crypto.Aes
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraCore.Ets.ConfigCache
   alias AntikytheraCore.Config.EncryptionKey
@@ -48,7 +48,7 @@ defmodule AntikytheraCore.Config.Core do
         L.info("found change in core config")
         ConfigCache.Core.write(new_config)
         alert_config = Map.get(new_config, :alerts, %{})
-        CoreAlertManager.update_handler_installations(:solomon, alert_config)
+        CoreAlertManager.update_handler_installations(:antikythera, alert_config)
         checked_at
     end
   end

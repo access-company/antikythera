@@ -4,10 +4,10 @@ use Croma
 
 defmodule AntikytheraCore.Handler.CowboyReq do
   alias Croma.Result, as: R
-  alias SolomonLib.{Time, GearName, PathInfo, Conn, Context}
-  alias SolomonLib.Http.{Method, QueryParams, Body}
-  alias SolomonLib.Request.PathMatches
-  alias SolomonLib.Context.GearEntryPoint
+  alias Antikythera.{Time, GearName, PathInfo, Conn, Context}
+  alias Antikythera.Http.{Method, QueryParams, Body}
+  alias Antikythera.Request.PathMatches
+  alias Antikythera.Context.GearEntryPoint
   alias AntikytheraCore.Conn, as: CoreConn
   alias AntikytheraCore.Handler.{GearError, BodyParser, HelperModules}
   alias AntikytheraCore.GearLog.{ContextHelper, Writer}

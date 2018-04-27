@@ -65,7 +65,7 @@ We encourage you to contribute to antikythera! Please check out our [Contributin
 
 For both core and gear development, please make use of our [Style Guide](./STYLE_GUIDE.md).
 
-- [Issue Tracker](https://github.com/access-company/solomon/issues)
+- [Issue Tracker](https://github.com/access-company/antikythera/issues)
 - [Users Mailing List](https://groups.google.com/forum/#!forum/antikythera_users)
 
 ## Copyright and License

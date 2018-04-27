@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.AsyncJob.Id do
+defmodule Antikythera.AsyncJob.Id do
   use Croma.SubtypeOfString, pattern: ~r/^[0-9A-Za-z_-]{1,32}$/
 
   defun generate() :: t do
@@ -20,8 +20,8 @@ defmodule SolomonLib.AsyncJob.Id do
   end
 end
 
-defmodule SolomonLib.AsyncJob.Schedule do
-  alias SolomonLib.{Time, Cron}
+defmodule Antikythera.AsyncJob.Schedule do
+  alias Antikythera.{Time, Cron}
 
   @type t :: {:once, Time.t} | {:cron, Cron.t}
 
@@ -32,15 +32,15 @@ defmodule SolomonLib.AsyncJob.Schedule do
   end
 end
 
-defmodule SolomonLib.AsyncJob.Attempts do
+defmodule Antikythera.AsyncJob.Attempts do
   use Croma.SubtypeOfInt, min: 1, max: 10, default: 3
 end
 
-defmodule SolomonLib.AsyncJob.MaxDuration do
+defmodule Antikythera.AsyncJob.MaxDuration do
   use Croma.SubtypeOfInt, min: 1, max: 30 * 60_000, default: 5 * 60_000
 end
 
-defmodule SolomonLib.AsyncJob.RetryInterval do
+defmodule Antikythera.AsyncJob.RetryInterval do
   defmodule Factor do
     use Croma.SubtypeOfInt, min: 0, max: 5 * 60_000, default: 5_000
   end
@@ -57,9 +57,9 @@ defmodule SolomonLib.AsyncJob.RetryInterval do
   end
 end
 
-defmodule SolomonLib.AsyncJob.Metadata do
-  alias SolomonLib.Time
-  alias SolomonLib.AsyncJob.{Id, Attempts, MaxDuration, RetryInterval}
+defmodule Antikythera.AsyncJob.Metadata do
+  alias Antikythera.Time
+  alias Antikythera.AsyncJob.{Id, Attempts, MaxDuration, RetryInterval}
 
   use Croma.Struct, recursive_new?: true, fields: [
     id:                 Id,
@@ -71,13 +71,13 @@ defmodule SolomonLib.AsyncJob.Metadata do
   ]
 end
 
-defmodule SolomonLib.AsyncJob.StateLabel do
+defmodule Antikythera.AsyncJob.StateLabel do
   use Croma.SubtypeOfAtom, values: [:waiting, :runnable, :running]
 end
 
-defmodule SolomonLib.AsyncJob.Status do
-  alias SolomonLib.{Time, GearName}
-  alias SolomonLib.AsyncJob.{Id, Schedule, Attempts, MaxDuration, RetryInterval, StateLabel}
+defmodule Antikythera.AsyncJob.Status do
+  alias Antikythera.{Time, GearName}
+  alias Antikythera.AsyncJob.{Id, Schedule, Attempts, MaxDuration, RetryInterval, StateLabel}
 
   use Croma.Struct, recursive_new?: true, fields: [
     id:                 Id,

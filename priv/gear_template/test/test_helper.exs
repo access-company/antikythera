@@ -1,9 +1,9 @@
-SolomonLib.Test.Config.init()
+Antikythera.Test.Config.init()
 
 defmodule Req do
-  use SolomonLib.Test.HttpClient
+  use Antikythera.Test.HttpClient
 end
 
 defmodule Socket do
-  use SolomonLib.Test.WebsocketClient
+  use Antikythera.Test.WebsocketClient
 end

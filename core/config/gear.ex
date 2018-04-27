@@ -4,8 +4,8 @@ use Croma
 
 defmodule AntikytheraCore.Config.Gear do
   alias Croma.Result, as: R
-  alias SolomonLib.{GearName, SecondsSinceEpoch}
-  alias SolomonLib.Crypto.Aes
+  alias Antikythera.{GearName, SecondsSinceEpoch}
+  alias Antikythera.Crypto.Aes
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraCore.Ets.ConfigCache.Gear, as: GCache
   alias AntikytheraCore.Config.EncryptionKey
@@ -17,7 +17,7 @@ defmodule AntikytheraCore.Config.Gear do
 
   use Croma.Struct, recursive_new?: true, fields: [
     kv:        Croma.Map,
-    domains:   SolomonLib.DomainList,
+    domains:   Antikythera.DomainList,
     log_level: Level,
     alerts:    HandlerConfigsMap,
   ]

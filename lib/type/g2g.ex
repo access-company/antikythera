@@ -1,10 +1,10 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
 use Croma
-alias SolomonLib.Http
+alias Antikythera.Http
 
-defmodule SolomonLib.G2gRequest do
-  alias SolomonLib.EncodedPath
+defmodule Antikythera.G2gRequest do
+  alias Antikythera.EncodedPath
   use Croma.Struct, recursive_new?: true, fields: [
     method:       Http.Method,
     path:         EncodedPath,
@@ -14,7 +14,7 @@ defmodule SolomonLib.G2gRequest do
     body:         Http.Body,
   ]
 
-  defun from_web_request(%SolomonLib.Request{method: m, path_info: pi, query_params: q, headers: hs, cookies: cookies, body: b}) :: t do
+  defun from_web_request(%Antikythera.Request{method: m, path_info: pi, query_params: q, headers: hs, cookies: cookies, body: b}) :: t do
     %__MODULE__{
       method:       m,
       path:         "/" <> Enum.join(pi, "/"),
@@ -26,7 +26,7 @@ defmodule SolomonLib.G2gRequest do
   end
 end
 
-defmodule SolomonLib.G2gResponse do
+defmodule Antikythera.G2gResponse do
   use Croma.Struct, recursive_new?: true, fields: [
     status:  Http.Status.Int,
     headers: Http.Headers,
@@ -35,11 +35,11 @@ defmodule SolomonLib.G2gResponse do
   ]
 
   @doc """
-  Creates a new version of `SolomonLib.G2gResponse` struct by body decompression and decoding.
+  Creates a new version of `Antikythera.G2gResponse` struct by body decompression and decoding.
 
   This function decompresses body of g2g response according to `content-encoding` and then
   decodes the uncompressed body according to `content-type`.
-  If decompressed, `content-encoding` header is removed from the returned `SolomonLib.G2gResponse`.
+  If decompressed, `content-encoding` header is removed from the returned `Antikythera.G2gResponse`.
 
   This function is used internally in `G2g.send/{1,2}` (i.e. body decoding is done automatically).
   Basically gear implementations do not need this function.

@@ -1,20 +1,20 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.Test.ConnHelper do
+defmodule Antikythera.Test.ConnHelper do
   @moduledoc """
-  Helper functions to construct `SolomonLib.Conn` object, to be used within tests.
+  Helper functions to construct `Antikythera.Conn` object, to be used within tests.
 
   Typical controller tests are executed as follows:
 
-  1. Make a `SolomonLib.Conn` object.
+  1. Make a `Antikythera.Conn` object.
   2. Pass the object to the target controller action.
-  3. Inspect the returned `SolomonLib.Conn` object.
+  3. Inspect the returned `Antikythera.Conn` object.
 
   You can use `make_conn/1` for the step-1 of the above procedure.
-  In controller tests this module is auto-imported by `use SolomonLib.Test.ControllerTestCase`.
+  In controller tests this module is auto-imported by `use Antikythera.Test.ControllerTestCase`.
   """
 
-  alias SolomonLib.{Time, Conn, Request, Context}
+  alias Antikythera.{Time, Conn, Request, Context}
 
   def make_conn(opts0 \\ %{}) do
     opts = if is_map(opts0), do: opts0, else: Map.new(opts0)
@@ -30,7 +30,7 @@ defmodule SolomonLib.Test.ConnHelper do
   end
 
   defp make_request(opts) do
-    default_headers = %{"accept" => "*/*", "host" => "localhost:#{SolomonLib.Env.port_to_listen()}"}
+    default_headers = %{"accept" => "*/*", "host" => "localhost:#{Antikythera.Env.port_to_listen()}"}
     Request.new!([
       method:       Map.get(opts, :method      , :get                 ),
       path_info:    Map.get(opts, :path_info   , ["hello", "json_api"]),

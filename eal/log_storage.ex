@@ -7,7 +7,7 @@ defmodule AntikytheraEal.LogStorage do
   Interface to work with storage of log files.
   """
 
-  alias SolomonLib.GearName
+  alias Antikythera.GearName
   alias AntikytheraCore.Path, as: CorePath
 
   defmodule Behaviour do

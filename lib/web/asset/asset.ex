@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Asset do
+defmodule Antikythera.Asset do
   @retention_days 90
   def retention_days(), do: @retention_days
 
@@ -10,7 +10,7 @@ defmodule SolomonLib.Asset do
   Definition of macro to make mapping of asset URLs from their file paths.
 
   If a gear invokes `static_prefix/0` in its `Router` module, antikythera automatically serves static assets
-  (such as HTML, CSS, JS, images) under `priv/static/` directory (see `SolomonLib.Router` for detail).
+  (such as HTML, CSS, JS, images) under `priv/static/` directory (see `Antikythera.Router` for detail).
   Although this is handy it's suboptimal in cloud environments.
   Instead, in cloud environments, static assets can be delivered from CDN service.
   Using CDN for assets has the following benefits:
@@ -37,10 +37,10 @@ defmodule SolomonLib.Asset do
 
   ## Usage
 
-  Define a module that `use`s `SolomonLib.Asset` as follows:
+  Define a module that `use`s `Antikythera.Asset` as follows:
 
       defmodule YourGear.Asset do
-        use SolomonLib.Asset
+        use Antikythera.Asset
       end
 
   Then `YourGear.Asset` has the following functions.
@@ -115,7 +115,7 @@ defmodule SolomonLib.Asset do
   end
 
   defp make_url_fn(gear_name, opts) do
-    if SolomonLib.Env.compiling_for_cloud?() do
+    if Antikythera.Env.compiling_for_cloud?() do
       # serve assets using CDN (:cowboy_static may be available but it's not related to the URL mapping we are creating)
       &url_cloud(&1, gear_name)
     else
@@ -136,7 +136,7 @@ defmodule SolomonLib.Asset do
   end
 
   defp url_cloud(path, gear_name) do
-    base_url      = Application.fetch_env!(:solomon, :asset_cdn_endpoint)
+    base_url      = Application.fetch_env!(:antikythera, :asset_cdn_endpoint)
     md5           = :erlang.md5(File.read!(Path.join(@priv_static_dir, path))) |> Base.encode16(case: :lower)
     extension     = Path.extname(path)
     path_with_md5 = String.replace_suffix(path, extension, "_#{md5}#{extension}")

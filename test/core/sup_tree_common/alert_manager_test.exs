@@ -4,7 +4,7 @@ use Croma
 
 defmodule AntikytheraCore.Alert.ManagerTest do
   use Croma.TestCase, alias_as: CoreAlertManager
-  alias SolomonLib.Time
+  alias Antikythera.Time
   alias AntikytheraCore.Ets.ConfigCache
   alias AntikytheraCore.Alert.Handler, as: AHandler
   alias AntikytheraCore.Alert.Handler.Email, as: EmailHandler
@@ -18,7 +18,7 @@ defmodule AntikytheraCore.Alert.ManagerTest do
   setup do
     :meck.new(ConfigCache.Core, [:passthrough])
     on_exit(fn ->
-      CoreAlertManager.update_handler_installations(:solomon, %{}) # reset
+      CoreAlertManager.update_handler_installations(:antikythera, %{}) # reset
       MemoryInbox.clean()
       :meck.unload()
     end)
@@ -115,7 +115,7 @@ defmodule AntikytheraCore.Alert.ManagerTest do
   end
 
   defp update_handler_installations_and_mock_core_config_cache(alert_config) do
-    assert CoreAlertManager.update_handler_installations(:solomon, alert_config) == :ok
+    assert CoreAlertManager.update_handler_installations(:antikythera, alert_config) == :ok
     :meck.expect(ConfigCache.Core, :read, fn -> %{alerts: alert_config} end)
   end
 

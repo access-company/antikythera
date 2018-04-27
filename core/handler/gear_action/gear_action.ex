@@ -3,8 +3,8 @@
 use Croma
 
 defmodule AntikytheraCore.Handler.GearAction do
-  alias SolomonLib.{Conn, Context, Request, Time, GearName, PathInfo}
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.{Conn, Context, Request, Time, GearName, PathInfo}
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.Conn, as: CoreConn
   alias AntikytheraCore.{MetricsUploader, Handler.HelperModules, GearLog.Writer}
 

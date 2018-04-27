@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Cookies do
-  alias SolomonLib.Http.SetCookie
+  alias Antikythera.Http.SetCookie
 
   def make_from_cowboy_req(req) do
     :cowboy_req.parse_cookies(req)

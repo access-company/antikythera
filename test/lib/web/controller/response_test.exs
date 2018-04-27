@@ -1,9 +1,9 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.Controller.ResponseTest do
+defmodule Antikythera.Controller.ResponseTest do
   use Croma.TestCase
-  alias SolomonLib.Conn
-  alias SolomonLib.Test.ConnHelper
+  alias Antikythera.Conn
+  alias Antikythera.Test.ConnHelper
 
   test "redirect should set location header and status" do
     redirect_path = "/redirect/path"

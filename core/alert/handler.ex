@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Alert.Message do
-  use Croma.SubtypeOfTuple, elem_modules: [SolomonLib.Time, Croma.String]
+  use Croma.SubtypeOfTuple, elem_modules: [Antikythera.Time, Croma.String]
 end
 
 defmodule AntikytheraCore.Alert.HandlerState do
@@ -50,7 +50,7 @@ defmodule AntikytheraCore.Alert.Handler do
   """
 
   @behaviour :gen_event
-  alias SolomonLib.GearName
+  alias Antikythera.GearName
   alias AntikytheraCore.Alert.{Manager, Message, HandlerState, HandlerConfig}
 
   @doc """
@@ -62,7 +62,7 @@ defmodule AntikytheraCore.Alert.Handler do
   consider dispatching them to a temporary process.
   In that case though, results of alerts cannot be received (`[]` should always be returned).
   """
-  @callback send_alerts(messages :: [Message.t], handler_config :: HandlerConfig.t, otp_app_name :: :solomon | GearName.t) :: [Message.t]
+  @callback send_alerts(messages :: [Message.t], handler_config :: HandlerConfig.t, otp_app_name :: :antikythera | GearName.t) :: [Message.t]
 
   @doc """
   Validate `handler_config` whether it includes sufficient configurations for the handler.

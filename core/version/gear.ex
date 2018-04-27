@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Version.Gear do
-  alias SolomonLib.{Time, GearName, VersionStr, ContextId}
+  alias Antikythera.{Time, GearName, VersionStr, ContextId}
   alias AntikytheraCore.{Version, GearManager, GearModule, StartupManager, GearLog}
   alias AntikytheraCore.Version.{Artifact, History}
   alias AntikytheraCore.Path, as: CorePath
@@ -70,7 +70,7 @@ defmodule AntikytheraCore.Version.Gear do
   @typep gear_and_deps_pair :: {GearName.t, gear_dependencies}
 
   defun install_gears_at_startup(gear_names :: v[[GearName.t]]) :: :ok do
-    if SolomonLib.Env.running_with_release?() do
+    if Antikythera.Env.running_with_release?() do
       do_install_gears_at_startup(gear_names)
     else
       :ok

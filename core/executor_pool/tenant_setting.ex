@@ -4,7 +4,7 @@ use Croma
 
 defmodule AntikytheraCore.ExecutorPool.TenantSetting do
   alias Croma.Result, as: R
-  alias SolomonLib.{GearName, TenantId, SecondsSinceEpoch}
+  alias Antikythera.{GearName, TenantId, SecondsSinceEpoch}
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
   alias AntikytheraCore.TenantExecutorPoolsManager

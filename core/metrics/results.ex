@@ -17,7 +17,7 @@ defmodule AntikytheraCore.Metrics.Results do
       }
   """
 
-  alias SolomonLib.NestedMap
+  alias Antikythera.NestedMap
   alias AntikytheraCore.Metrics.Buffer
 
   @type metrics_label        :: String.t

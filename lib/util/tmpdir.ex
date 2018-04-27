@@ -2,9 +2,9 @@
 
 use Croma
 
-defmodule SolomonLib.Tmpdir do
-  alias SolomonLib.Context
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+defmodule Antikythera.Tmpdir do
+  alias Antikythera.Context
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.TmpdirTracker
 
   @doc """
@@ -23,7 +23,7 @@ defmodule SolomonLib.Tmpdir do
 
   ## Example
 
-      SolomonLib.Tmpdir.make(context, fn tmpdir ->
+      Antikythera.Tmpdir.make(context, fn tmpdir ->
         path = Path.join(tmpdir, "foo")
         File.open(path, [:write], fn file ->
           IO.write(file, "some data 1")

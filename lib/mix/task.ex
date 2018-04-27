@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Mix.Task do
+defmodule Antikythera.Mix.Task do
   @moduledoc """
   Helper functions for making mix tasks in gears.
 
@@ -13,11 +13,11 @@ defmodule SolomonLib.Mix.Task do
   Starts the current antikythera instance and its dependency applications without web server functionality.
 
   If you need web server functionality in your mix task,
-  use `Application.ensure_all_started(SolomonLib.Env.antikythera_instance_name())`.
+  use `Application.ensure_all_started(Antikythera.Env.antikythera_instance_name())`.
   """
   defun prepare_antikythera_instance() :: :ok do
     System.put_env("NO_LISTEN", "true")
-    {:ok, _} = Application.ensure_all_started(SolomonLib.Env.antikythera_instance_name())
+    {:ok, _} = Application.ensure_all_started(Antikythera.Env.antikythera_instance_name())
     :ok
   end
 end

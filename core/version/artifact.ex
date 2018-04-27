@@ -3,11 +3,11 @@
 use Croma
 
 defmodule AntikytheraCore.Version.Artifact do
-  alias SolomonLib.{Env, GearName, VersionStr}
+  alias Antikythera.{Env, GearName, VersionStr}
   alias AntikytheraCore.Path, as: CorePath
 
   defun gears_dir() :: Path.t do
-    Path.join([Application.app_dir(:solomon), "..", "..", "gears"]) |> Path.expand()
+    Path.join([Application.app_dir(:antikythera), "..", "..", "gears"]) |> Path.expand()
   end
 
   defunp gear_dir(gear_name :: v[GearName.t], version :: v[VersionStr.t]) :: Path.t do
@@ -25,7 +25,7 @@ defmodule AntikytheraCore.Version.Artifact do
   end
 
   defunp core_releases_dir(version :: v[VersionStr.t]) :: Path.t do
-    Path.join([Application.app_dir(:solomon), "..", "..", "releases", version]) |> Path.expand()
+    Path.join([Application.app_dir(:antikythera), "..", "..", "releases", version]) |> Path.expand()
   end
 
   defun unpack_gear_tgz(gear_name :: v[GearName.t], version :: v[VersionStr.t]) :: Path.t do

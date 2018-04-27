@@ -3,7 +3,7 @@
 use Croma
 alias Croma.Result, as: R
 
-defmodule SolomonLib.VersionStr do
+defmodule Antikythera.VersionStr do
   @moduledoc """
   Format of versions of antikythera instances and gears.
 
@@ -14,7 +14,7 @@ defmodule SolomonLib.VersionStr do
   use Croma.SubtypeOfString, pattern: ~r/^\d\.\d\.\d-\d{14}\+[0-9a-f]{40}$/
 end
 
-defmodule SolomonLib.Domain do
+defmodule Antikythera.Domain do
   @moduledoc """
   Domain name format, originally defined in [RFC1034](https://tools.ietf.org/html/rfc1034#section-3.5).
 
@@ -29,11 +29,11 @@ defmodule SolomonLib.Domain do
   use Croma.SubtypeOfString, pattern: ~r/^#{@pattern_body}$/
 end
 
-defmodule SolomonLib.DomainList do
-  use Croma.SubtypeOfList, elem_module: SolomonLib.Domain, max_length: 2
+defmodule Antikythera.DomainList do
+  use Croma.SubtypeOfList, elem_module: Antikythera.Domain, max_length: 2
 end
 
-defmodule SolomonLib.PathSegment do
+defmodule Antikythera.PathSegment do
   @moduledoc """
   A type module to represent URI-encoded segment of URL path.
 
@@ -47,23 +47,23 @@ defmodule SolomonLib.PathSegment do
   use Croma.SubtypeOfString, pattern: ~r|^#{@charclass}*$|
 end
 
-defmodule SolomonLib.PathInfo do
+defmodule Antikythera.PathInfo do
   use Croma.SubtypeOfList, elem_module: Croma.String # percent-decoded, any string is allowed in each segment
 end
 
-defmodule SolomonLib.UnencodedPath do
+defmodule Antikythera.UnencodedPath do
   @segment_charclass "[^/?#]"
   def segment_charclass(), do: @segment_charclass
 
   use Croma.SubtypeOfString, pattern: ~r"\A/(#{@segment_charclass}+/)*(#{@segment_charclass}+)?\Z"
 end
 
-defmodule SolomonLib.EncodedPath do
-  alias SolomonLib.PathSegment, as: Segment
+defmodule Antikythera.EncodedPath do
+  alias Antikythera.PathSegment, as: Segment
   use Croma.SubtypeOfString, pattern: ~r"\A/(#{Segment.charclass()}+/)*(#{Segment.charclass()}+)?\Z"
 end
 
-defmodule SolomonLib.Url do
+defmodule Antikythera.Url do
   @moduledoc """
   URL format, originally defined in [RFC1738](https://tools.ietf.org/html/rfc1738),
   and updated in [RFC3986](https://tools.ietf.org/html/rfc3986) as a subset of URI.
@@ -75,8 +75,8 @@ defmodule SolomonLib.Url do
   - IPv6 addresses are not supported currently.
   """
 
-  alias SolomonLib.Domain
-  alias SolomonLib.IpAddress.V4, as: IpV4
+  alias Antikythera.Domain
+  alias Antikythera.IpAddress.V4, as: IpV4
 
   @type t :: String.t
 
@@ -97,7 +97,7 @@ defmodule SolomonLib.Url do
   end
 end
 
-defmodule SolomonLib.Email do
+defmodule Antikythera.Email do
   @moduledoc """
   Email address format, defined in [RFC5321](https://tools.ietf.org/html/rfc5321),
   and [RFC5322](https://tools.ietf.org/html/rfc5322).
@@ -109,17 +109,17 @@ defmodule SolomonLib.Email do
   - Total length of domain parts are not limited to 255.
   """
 
-  use Croma.SubtypeOfString, pattern: ~r"^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]{1,64}@#{SolomonLib.Domain.pattern_body()}$"
+  use Croma.SubtypeOfString, pattern: ~r"^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]{1,64}@#{Antikythera.Domain.pattern_body()}$"
 end
 
-defmodule SolomonLib.ContextId do
+defmodule Antikythera.ContextId do
   @system_context "antikythera_system"
   def system_context(), do: @system_context
 
   use Croma.SubtypeOfString, pattern: ~r/^(\d{8}-\d{6}\.\d{3}_[0-9A-Za-z.-]+_\d+\.\d+\.\d+|#{@system_context})$/
 end
 
-defmodule SolomonLib.ImfFixdate do
+defmodule Antikythera.ImfFixdate do
   @moduledoc """
   An IMF-fixdate format of date/time. Used in HTTP headers.
   Only 'GMT' is allowed as timezone string.
@@ -130,12 +130,12 @@ defmodule SolomonLib.ImfFixdate do
   use Croma.SubtypeOfString, pattern: ~r/^#{days_of_week}, \d\d #{months_of_year} \d\d\d\d \d\d:\d\d:\d\d GMT$/
 end
 
-defmodule SolomonLib.GearName do
+defmodule Antikythera.GearName do
   @moduledoc """
   Type module to represent gear names as atoms.
   """
 
-  alias SolomonLib.GearNameStr
+  alias Antikythera.GearNameStr
 
   @type t :: atom
 
@@ -145,11 +145,11 @@ defmodule SolomonLib.GearName do
   end
 end
 
-defmodule SolomonLib.GearNameStr do
+defmodule Antikythera.GearNameStr do
   use Croma.SubtypeOfString, pattern: ~r/^[a-z][0-9a-z_]{2,31}$/
 end
 
-defmodule SolomonLib.TenantId do
+defmodule Antikythera.TenantId do
   @notenant "notenant"
   defun notenant() :: String.t, do: @notenant
 

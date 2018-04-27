@@ -49,7 +49,7 @@ All of them are helpful! Follow the guidelines provided here.
 - If you are working closely to the core developer team, you MAY just tell your concern to them and open an issue.
     - But, as described above, posting a mail to Users ML is itself beneficial to the whole antikythera community, so it is preferred.
 
-### Report in [Issue Tracker](https://github.com/access-company/solomon/issues)
+### Report in [Issue Tracker](https://github.com/access-company/antikythera/issues)
 
 - If your problem is indeed marked as a bug, or your feature suggestions are accepted,
   you or one of core developers can open issues.

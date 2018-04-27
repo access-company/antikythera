@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Env do
+defmodule Antikythera.Env do
   @moduledoc """
   Module to provide helpers to access environment variables defined by antikythera.
 
@@ -42,9 +42,9 @@ defmodule SolomonLib.Env do
   You can use these values to distinguish the current context from your code.
   """
 
-  deployment_envs = Application.fetch_env!(:solomon, :deployments) |> Keyword.keys()
+  deployment_envs = Application.fetch_env!(:antikythera, :deployments) |> Keyword.keys()
   use Croma.SubtypeOfAtom, values: (deployment_envs ++ [:local, :undefined])
-  alias SolomonLib.{GearName, GearNameStr, Url}
+  alias Antikythera.{GearName, GearNameStr, Url}
   alias AntikytheraCore.Handler.CowboyRouting, as: Routing
 
   defmodule Mapping do
@@ -81,7 +81,7 @@ defmodule SolomonLib.Env do
   defun compiling_for_release?() :: boolean, do: @compiling_for_release?
   defun compiling_for_cloud?()   :: boolean, do: @compiling_for_cloud?
 
-  @antikythera_instance_name Application.fetch_env!(:solomon, :antikythera_instance_name)
+  @antikythera_instance_name Application.fetch_env!(:antikythera, :antikythera_instance_name)
   defun antikythera_instance_name() :: atom, do: @antikythera_instance_name
 
   @gear_action_timeout_default 10_000

@@ -1,8 +1,8 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.StringTypesTest do
+defmodule Antikythera.StringTypesTest do
   use ExUnit.Case
-  alias SolomonLib.{VersionStr, Domain, EncodedPath, UnencodedPath, Email, Url, ContextId, TenantId}
+  alias Antikythera.{VersionStr, Domain, EncodedPath, UnencodedPath, Email, Url, ContextId, TenantId}
 
   test "validate VersionStr" do
     v = Mix.Project.config()[:version]

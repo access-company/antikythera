@@ -28,7 +28,7 @@ defmodule AntikytheraCore.Version.History do
   Versions in a history file are expected to monotonically increase.
   """
 
-  alias SolomonLib.{Time, GearName, GearNameStr, VersionStr, SecondsSinceEpoch}
+  alias Antikythera.{Time, GearName, GearNameStr, VersionStr, SecondsSinceEpoch}
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraCore.Cluster
 
@@ -97,11 +97,11 @@ defmodule AntikytheraCore.Version.History do
     end)
   end
 
-  defun next_upgradable_version(app_name :: v[:solomon | GearName.t], current_version :: v[VersionStr.t]) :: nil | VersionStr.t do
+  defun next_upgradable_version(app_name :: v[:antikythera | GearName.t], current_version :: v[VersionStr.t]) :: nil | VersionStr.t do
     find_next_upgradable_version(app_name, File.read!(file_path(app_name)), current_version)
   end
 
-  defunpt find_next_upgradable_version(app_name :: v[:solomon | GearName.t], content :: v[String.t], current_version :: v[VersionStr.t]) :: nil | VersionStr.t do
+  defunpt find_next_upgradable_version(app_name :: v[:antikythera | GearName.t], content :: v[String.t], current_version :: v[VersionStr.t]) :: nil | VersionStr.t do
     lines_without_previous_versions =
       String.split(content, "\n", trim: true)
       |> Enum.drop_while(fn line -> !String.starts_with?(line, current_version) end)
@@ -123,12 +123,12 @@ defmodule AntikytheraCore.Version.History do
     end
   end
 
-  defunp file_path(app_name :: v[:solomon | GearName.t]) :: Path.t do
+  defunp file_path(app_name :: v[:antikythera | GearName.t]) :: Path.t do
     Path.join(CorePath.history_dir(), Atom.to_string(app_name))
   end
 
   defun find_all_modified_history_files(since :: v[SecondsSinceEpoch.t]) :: {boolean, [GearName.t]} do
-    antikythera_instance_name_str = SolomonLib.Env.antikythera_instance_name() |> Atom.to_string()
+    antikythera_instance_name_str = Antikythera.Env.antikythera_instance_name() |> Atom.to_string()
     files = CorePath.list_modified_files(CorePath.history_dir(), since) |> Enum.map(&Path.basename/1)
     {antikythera_appearance, others} = Enum.split_with(files, &(&1 == antikythera_instance_name_str))
     gear_names =

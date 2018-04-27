@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Plug.BasicAuthentication do
+defmodule Antikythera.Plug.BasicAuthentication do
   @moduledoc """
   Plug to restrict access to controller action by basic authentication.
 
@@ -13,21 +13,21 @@ defmodule SolomonLib.Plug.BasicAuthentication do
   The following line installs a plug that checks username/password in incoming requests against
   `"BASIC_AUTHENTICATION_ID"` and `"BASIC_AUTHENTICATION_PW"` in your gear's gear config.
 
-      plug SolomonLib.Plug.BasicAuthentication, :check_with_config, []
+      plug Antikythera.Plug.BasicAuthentication, :check_with_config, []
 
   ### Dynamic username/password: using module-function pair.
 
   In the following case you can check the username/password pair with arbitrary logic by the specified function.
 
-      plug SolomonLib.Plug.BasicAuthentication, :check_with_fun, [mod: YourGear.AuthModule, fun: :function_name]
+      plug Antikythera.Plug.BasicAuthentication, :check_with_fun, [mod: YourGear.AuthModule, fun: :function_name]
 
   The given function (`YourGear.AuthModule.function_name/3` in this case) must have the following type signature:
 
-  - receives (1) a `SolomonLib.Conn.t`, (2) username, and (3) password
-  - returns (1) `{:ok, SolomonLib.Conn.t}` if successfully authenticated, (2) `:error` otherwise
+  - receives (1) a `Antikythera.Conn.t`, (2) username, and (3) password
+  - returns (1) `{:ok, Antikythera.Conn.t}` if successfully authenticated, (2) `:error` otherwise
   """
 
-  alias SolomonLib.{Conn, Crypto}
+  alias Antikythera.{Conn, Crypto}
   alias AntikytheraCore.Ets.ConfigCache
   alias AntikytheraCore.Config.Gear, as: GearConfig
 

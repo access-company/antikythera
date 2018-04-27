@@ -2,10 +2,10 @@
 
 use Croma
 
-defmodule SolomonLib.Controller.Html do
+defmodule Antikythera.Controller.Html do
   @moduledoc """
-  [DEPRECATED] Defines `SolomonLib.Controller.Html.render/5`.
+  [DEPRECATED] Defines `Antikythera.Controller.Html.render/5`.
   """
 
-  defdelegate render(conn, status, template_name, render_params, opts \\ [layout: :application]), to: SolomonLib.Conn
+  defdelegate render(conn, status, template_name, render_params, opts \\ [layout: :application]), to: Antikythera.Conn
 end

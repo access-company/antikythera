@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.ExecutorPool.Setting do
-  alias SolomonLib.{MapUtil, GearName}
+  alias Antikythera.{MapUtil, GearName}
   alias AntikytheraCore.Ets.ConfigCache
 
   use Croma.Struct, recursive_new?: true, fields: [

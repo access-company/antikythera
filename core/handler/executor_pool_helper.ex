@@ -4,8 +4,8 @@ use Croma
 
 defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
   alias Croma.Result, as: R
-  alias SolomonLib.{GearName, Conn, Context}
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.{GearName, Conn, Context}
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.MetricsUploader
   alias AntikytheraCore.Handler.{GearError, HelperModules}
   alias AntikytheraCore.Conn, as: CoreConn

@@ -3,9 +3,9 @@
 use Croma
 
 defmodule AntikytheraCore.Conn do
-  alias SolomonLib.{Http.Method, Conn, Request, Context, GearName}
-  alias SolomonLib.G2gRequest , as: GReq
-  alias SolomonLib.G2gResponse, as: GRes
+  alias Antikythera.{Http.Method, Conn, Request, Context, GearName}
+  alias Antikythera.G2gRequest , as: GReq
+  alias Antikythera.G2gResponse, as: GRes
   alias AntikytheraCore.Request, as: CoreReq
   alias AntikytheraCore.Context, as: CoreContext
   alias AntikytheraCore.Cookies, as: CoreCookies

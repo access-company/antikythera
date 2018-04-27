@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Version do
-  alias SolomonLib.VersionStr
+  alias Antikythera.VersionStr
 
   defun current_version(app_name :: v[atom]) :: nil | VersionStr.t do
     case Application.loaded_applications() |> List.keyfind(app_name, 0) do

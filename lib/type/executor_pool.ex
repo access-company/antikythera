@@ -2,8 +2,8 @@
 
 use Croma
 
-defmodule SolomonLib.ExecutorPool.Id do
-  alias SolomonLib.{GearName, TenantId}
+defmodule Antikythera.ExecutorPool.Id do
+  alias Antikythera.{GearName, TenantId}
 
   @type nopool_t :: :nopool
   @type t        :: {:gear, GearName.t} | {:tenant, TenantId.t}

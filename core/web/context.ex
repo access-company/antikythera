@@ -3,10 +3,10 @@
 use Croma
 
 defmodule AntikytheraCore.Context do
-  alias SolomonLib.{Time, GearName}
-  alias SolomonLib.Context, as: LContext
-  alias SolomonLib.Context.GearEntryPoint
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.{Time, GearName}
+  alias Antikythera.Context, as: LContext
+  alias Antikythera.Context.GearEntryPoint
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.Cluster.NodeId
 
   defun make(gear_name   :: v[GearName.t],
@@ -32,7 +32,7 @@ defmodule AntikytheraCore.Context do
   end
 
   defunp timestamp({_, {y, mon, d}, {h, minute, s}, ms} :: Time.t) :: String.t do
-    import SolomonLib.StringFormat
+    import Antikythera.StringFormat
     "#{y}#{pad2(mon)}#{pad2(d)}-#{pad2(h)}#{pad2(minute)}#{pad2(s)}.#{pad3(ms)}"
   end
 end

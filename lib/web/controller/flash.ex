@@ -2,11 +2,11 @@
 
 use Croma
 
-defmodule SolomonLib.Controller.Flash do
+defmodule Antikythera.Controller.Flash do
   @moduledoc """
-  [DEPRECATED] Defines `SolomonLib.Controller.Flash.get_flash/2` and `SolomonLib.Controller.Flash.put_flash/3`.
+  [DEPRECATED] Defines `Antikythera.Controller.Flash.get_flash/2` and `Antikythera.Controller.Flash.put_flash/3`.
   """
 
-  defdelegate get_flash(conn, key), to: SolomonLib.Conn
-  defdelegate put_flash(conn, key, value), to: SolomonLib.Conn
+  defdelegate get_flash(conn, key), to: Antikythera.Conn
+  defdelegate put_flash(conn, key, value), to: Antikythera.Conn
 end

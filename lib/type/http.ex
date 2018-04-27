@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Http do
+defmodule Antikythera.Http do
   defmodule Method do
     use Croma.SubtypeOfAtom, values: [:get, :post, :put, :patch, :delete, :options, :connect, :trace, :head]
     @all [:get, :post, :put, :patch, :delete, :options, :connect, :trace, :head]
@@ -37,16 +37,16 @@ defmodule SolomonLib.Http do
     alias Croma.TypeGen
     use Croma.Struct, recursive_new?: true, fields: [
       value:     Croma.String,
-      path:      TypeGen.nilable(SolomonLib.EncodedPath),
-      domain:    TypeGen.nilable(SolomonLib.Domain),
+      path:      TypeGen.nilable(Antikythera.EncodedPath),
+      domain:    TypeGen.nilable(Antikythera.Domain),
       secure:    TypeGen.nilable(Croma.Boolean),
       http_only: TypeGen.nilable(Croma.Boolean),
       max_age:   TypeGen.nilable(Croma.Integer),
     ]
 
     @type options_t :: %{
-      optional(:path     ) => SolomonLib.EncodedPath.t,
-      optional(:domain   ) => SolomonLib.Domain.t,
+      optional(:path     ) => Antikythera.EncodedPath.t,
+      optional(:domain   ) => Antikythera.Domain.t,
       optional(:secure   ) => boolean,
       optional(:http_only) => boolean,
       optional(:max_age  ) => non_neg_integer,

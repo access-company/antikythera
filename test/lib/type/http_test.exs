@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.HttpTest do
+defmodule Antikythera.HttpTest do
   use Croma.TestCase, alias_as: H
   alias H.{SetCookie, SetCookiesMap}
 
@@ -36,8 +36,8 @@ defmodule SolomonLib.HttpTest do
 
     assert SetCookie.update(cookie, [value:     "bar"])           == {:ok, %SetCookie{value: "bar"}}
     assert SetCookie.update(cookie, [value:     :not_string])     == {:error, {:invalid_value, [SetCookie, {Croma.String                                , :value    }]}}
-    assert SetCookie.update(cookie, [path:      "without_slash"]) == {:error, {:invalid_value, [SetCookie, {Croma.TypeGen.Nilable.SolomonLib.EncodedPath, :path     }]}}
-    assert SetCookie.update(cookie, [domain:    "invalid_char"])  == {:error, {:invalid_value, [SetCookie, {Croma.TypeGen.Nilable.SolomonLib.Domain     , :domain   }]}}
+    assert SetCookie.update(cookie, [path:      "without_slash"]) == {:error, {:invalid_value, [SetCookie, {Croma.TypeGen.Nilable.Antikythera.EncodedPath, :path     }]}}
+    assert SetCookie.update(cookie, [domain:    "invalid_char"])  == {:error, {:invalid_value, [SetCookie, {Croma.TypeGen.Nilable.Antikythera.Domain     , :domain   }]}}
     assert SetCookie.update(cookie, [secure:    "not_boolean"])   == {:error, {:invalid_value, [SetCookie, {Croma.TypeGen.Nilable.Croma.Boolean         , :secure   }]}}
     assert SetCookie.update(cookie, [http_only: "not_boolean"])   == {:error, {:invalid_value, [SetCookie, {Croma.TypeGen.Nilable.Croma.Boolean         , :http_only}]}}
     assert SetCookie.update(cookie, [max_age:   "not_integer"])   == {:error, {:invalid_value, [SetCookie, {Croma.TypeGen.Nilable.Croma.Integer         , :max_age  }]}}

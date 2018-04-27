@@ -2,9 +2,9 @@
 
 defmodule AntikytheraCore.ExecutorPool.UsageReporterTest do
   use Croma.TestCase
-  alias SolomonLib.Time
-  alias SolomonLib.Test.ProcessHelper
-  alias SolomonLib.Test.GenServerHelper
+  alias Antikythera.Time
+  alias Antikythera.Test.ProcessHelper
+  alias Antikythera.Test.GenServerHelper
   alias AntikytheraCore.ExecutorPool
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
   alias AntikytheraCore.Metrics.AggregateStrategy.Gauge

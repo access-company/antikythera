@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Ets.TenantToGearsMapping do
-  alias SolomonLib.{GearName, TenantId}
+  alias Antikythera.{GearName, TenantId}
 
   @table_name :antikythera_tenant_to_gears_mapping
   defun table_name() :: atom, do: @table_name

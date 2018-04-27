@@ -7,11 +7,11 @@ try do
       "deps" -> parent_dir                 # this gear project is used by another gear as a gear dependency
       _      -> Path.join(__DIR__, "deps") # this gear project is the toplevel mix project
     end
-  Code.require_file(Path.join([deps_dir, "solomon", "mix_common.exs"]))
+  Code.require_file(Path.join([deps_dir, "antikythera", "mix_common.exs"]))
 
   defmodule <%= gear_name_camel %>.Mixfile do
-    use Solomon.GearProject, [
-      solomon_instance_dep: instance_dep,
+    use Antikythera.GearProject, [
+      antikythera_instance_dep: instance_dep,
     ]
 
     defp gear_name(), do: :<%= gear_name %>

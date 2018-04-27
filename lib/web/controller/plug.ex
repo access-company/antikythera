@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Controller.Plug do
+defmodule Antikythera.Controller.Plug do
   @moduledoc """
   Macro definition for plug DSL.
 
@@ -11,10 +11,10 @@ defmodule SolomonLib.Controller.Plug do
 
   ## Usage
 
-  To use plug you must first add `use SolomonLib.Controller` in your controller module.
+  To use plug you must first add `use Antikythera.Controller` in your controller module.
   Then you can invoke `plug/3` macro as follows.
 
-      plug SolomonLib.Plug.BasicAuthentication, :check_with_config, []
+      plug Antikythera.Plug.BasicAuthentication, :check_with_config, []
 
   The arguments are
 
@@ -23,7 +23,7 @@ defmodule SolomonLib.Controller.Plug do
   3. options to be passed to plug function
   4. (optional) options for enabling plug
 
-  In this case `SolomonLib.Plug.BasicAuthentication.check_with_config/2` is invoked just before execution of actions
+  In this case `Antikythera.Plug.BasicAuthentication.check_with_config/2` is invoked just before execution of actions
   defined in this controller module.
   If you want to skip running plug for some actions in a controller module, you can use `:except` or `:only` option.
 
@@ -33,9 +33,9 @@ defmodule SolomonLib.Controller.Plug do
 
   defmacro __using__(_opts) do
     quote do
-      import SolomonLib.Controller.Plug
+      import Antikythera.Controller.Plug
       Module.register_attribute(__MODULE__, :plugs, accumulate: true)
-      @before_compile SolomonLib.Controller.Plug
+      @before_compile Antikythera.Controller.Plug
     end
   end
 
@@ -45,7 +45,7 @@ defmodule SolomonLib.Controller.Plug do
 
       def __action__(conn, action) do
         # Be careful when you edit the body of this function: changes won't be applied until all gears are re-compiled.
-        SolomonLib.Controller.Plug._run_action(conn, action, __MODULE__, @plugs_reversed)
+        Antikythera.Controller.Plug._run_action(conn, action, __MODULE__, @plugs_reversed)
       end
     end
   end
@@ -81,7 +81,7 @@ defmodule SolomonLib.Controller.Plug do
     apply(controller, action, [conn])
   end
   defp run_action_with_plugs(conn, controller, action, [{mod, fun, arg, _except, _only} | plugs]) do
-    %SolomonLib.Conn{status: status} = conn2 = apply(mod, fun, [conn, arg])
+    %Antikythera.Conn{status: status} = conn2 = apply(mod, fun, [conn, arg])
     case status do
       nil -> run_action_with_plugs(conn2, controller, action, plugs)
       _   -> conn2

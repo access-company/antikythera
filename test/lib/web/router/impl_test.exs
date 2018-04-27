@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.Router.ImplTest do
+defmodule Antikythera.Router.ImplTest do
   use Croma.TestCase
 
   test "Impl.generate_route_function_clauses should reject invalid path" do

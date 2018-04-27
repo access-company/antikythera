@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.CryptoTest do
+defmodule Antikythera.CryptoTest do
   use Croma.TestCase
 
   test "secure_compare/2" do
@@ -12,7 +12,7 @@ defmodule SolomonLib.CryptoTest do
   end
 end
 
-defmodule SolomonLib.Crypto.AesTest do
+defmodule Antikythera.Crypto.AesTest do
   use Croma.TestCase
   use ExUnitProperties
 

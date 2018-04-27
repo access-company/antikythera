@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.MapUtilTest do
+defmodule Antikythera.MapUtilTest do
   use Croma.TestCase
 
   test "difference/2" do

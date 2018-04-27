@@ -41,7 +41,7 @@ defmodule AntikytheraCore.Handler.SystemInfoExporter do
   end
 
   defmodule ErrorCount do
-    alias SolomonLib.Time
+    alias Antikythera.Time
     alias AntikytheraCore.ErrorCountsAccumulator
 
     def init(req, :total) do

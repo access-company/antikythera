@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.ErrorReason do
+defmodule Antikythera.ErrorReason do
   @moduledoc """
   Type module for error that describes what went wrong during a process execution.
   """

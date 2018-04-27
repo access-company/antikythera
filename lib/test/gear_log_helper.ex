@@ -2,13 +2,13 @@
 
 use Croma
 
-defmodule SolomonLib.Test.GearLogHelper do
+defmodule Antikythera.Test.GearLogHelper do
   @moduledoc """
   Helpers to work with gear logs within tests.
   """
 
-  alias SolomonLib.{Context, Conn}
-  alias SolomonLib.Test.ConnHelper
+  alias Antikythera.{Context, Conn}
+  alias Antikythera.Test.ConnHelper
   alias AntikytheraCore.GearLog.ContextHelper
 
   @doc """

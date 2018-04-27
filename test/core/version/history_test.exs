@@ -2,7 +2,7 @@
 
 defmodule AntikytheraCore.Version.HistoryTest do
   use Croma.TestCase
-  alias SolomonLib.Time
+  alias Antikythera.Time
   alias AntikytheraCore.Version.History.Entry
   alias AntikytheraCore.Cluster
 

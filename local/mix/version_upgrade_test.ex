@@ -7,10 +7,10 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
 
   use Mix.Task
   import ExUnit.Assertions
-  alias SolomonLib.Httpc
+  alias Antikythera.Httpc
   alias AntikytheraLocal.{NodeName, RunningEnvironment}
 
-  @instance_name SolomonLib.Env.antikythera_instance_name()
+  @instance_name Antikythera.Env.antikythera_instance_name()
 
   defp rpc(mod, fun, args) do
     :rpc.call(NodeName.get(), mod, fun, args)
@@ -20,7 +20,7 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
     {_, 0} = System.cmd("epmd", ["-daemon"]) # epmd must be up and running for distributed erlang
     {:ok, _} = Node.start(:"test_client_node@host.local")
     Node.set_cookie(:local)
-    {:ok, _} = Application.ensure_all_started(:hackney) # to use SolomonLib.Httpc
+    {:ok, _} = Application.ensure_all_started(:hackney) # to use Antikythera.Httpc
     Mix.Task.run("antikythera_local.start", [testgear_dir])
     :timer.sleep(5_000)
 

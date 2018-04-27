@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Plug.IpFiltering do
+defmodule Antikythera.Plug.IpFiltering do
   @moduledoc """
   Plug to restrict access to controller action only from within specified IP ranges.
 
@@ -12,8 +12,8 @@ defmodule SolomonLib.Plug.IpFiltering do
 
   The following lines reject requests from IP not within the 2 ranges, `"123.45.67.0/24", "135.79.135.0/24"`.
 
-      ranges = Enum.map(["123.45.67.0/24", "135.79.135.0/24"], &SolomonLib.IpAddress.V4.parse!/1)
-      plug SolomonLib.Plug.IpFiltering, :check_by_static_ranges, [ranges: ranges]
+      ranges = Enum.map(["123.45.67.0/24", "135.79.135.0/24"], &Antikythera.IpAddress.V4.parse!/1)
+      plug Antikythera.Plug.IpFiltering, :check_by_static_ranges, [ranges: ranges]
 
   Note that this plug accepts only parsed result and not string, in order to avoid parsing the given strings on every request.
 
@@ -21,21 +21,21 @@ defmodule SolomonLib.Plug.IpFiltering do
 
   The following line uses `"ALLOWED_IP_RANGES"` field in the gear config as the list of allowed IP ranges.
 
-      plug SolomonLib.Plug.IpFiltering, :check_by_gear_config, []
+      plug Antikythera.Plug.IpFiltering, :check_by_gear_config, []
 
   The field name can be customized by giving `:field_name` option as follows:
 
-      plug SolomonLib.Plug.IpFiltering, :check_by_gear_config, [field_name: "ALLOWED_IP_RANGES_2"]
+      plug Antikythera.Plug.IpFiltering, :check_by_gear_config, [field_name: "ALLOWED_IP_RANGES_2"]
 
   ## gear-to-gear requests
 
   Both plug functions explained above reject not only web requests from outside of the specified IP ranges but also gear-to-gear requests.
   If you want to restrict web requests and at the same time allow gear-to-gear requests, pass `:allow_g2g` option.
 
-      plug SolomonLib.Plug.IpFiltering, :check_by_gear_config, [allow_g2g: true]
+      plug Antikythera.Plug.IpFiltering, :check_by_gear_config, [allow_g2g: true]
   """
 
-  alias SolomonLib.{Conn, Request, Context, IpAddress}
+  alias Antikythera.{Conn, Request, Context, IpAddress}
   alias AntikytheraCore.Ets.ConfigCache
   alias AntikytheraCore.Config.Gear, as: GearConfig
 
@@ -59,7 +59,7 @@ defmodule SolomonLib.Plug.IpFiltering do
     end)
   end
 
-  if SolomonLib.Env.compiling_for_cloud?() or Mix.env() == :test do
+  if Antikythera.Env.compiling_for_cloud?() or Mix.env() == :test do
     defun run_check_on_cloud(conn :: v[Conn.t], opts :: Keyword.t, fun :: (() -> [:inet.ip4_address])) :: Conn.t do
       run_check(conn, opts, fun)
     end

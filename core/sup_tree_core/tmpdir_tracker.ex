@@ -6,7 +6,7 @@ defmodule AntikytheraCore.TmpdirTracker do
   @moduledoc """
   A GenServer that keeps track of user pids of temporary directories.
 
-  Temporary directories are created via calls to `SolomonLib.Tmpdir.make/2`.
+  Temporary directories are created via calls to `Antikythera.Tmpdir.make/2`.
   This GenServer communicates with the caller process and monitors its death to make sure that the directories are eventually deleted.
 
   Currently we do not impose upper limit on volume and I/O usage
@@ -16,7 +16,7 @@ defmodule AntikytheraCore.TmpdirTracker do
 
   use GenServer
   alias Croma.Result, as: R
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.Path, as: CorePath
 
   defmodule State do

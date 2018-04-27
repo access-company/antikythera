@@ -1,11 +1,11 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
 use Croma
-alias SolomonLib.Http
+alias Antikythera.Http
 
-defmodule SolomonLib.Request do
+defmodule Antikythera.Request do
   @moduledoc """
-  Definition of `SolomonLib.Request` struct.
+  Definition of `Antikythera.Request` struct.
   """
 
   defmodule PathMatches do
@@ -13,7 +13,7 @@ defmodule SolomonLib.Request do
   end
 
   defmodule Sender do
-    alias SolomonLib.GearName
+    alias Antikythera.GearName
     @type sender_ip :: String.t
     @type t         :: {:web, sender_ip} | {:gear, GearName.t}
 
@@ -26,7 +26,7 @@ defmodule SolomonLib.Request do
 
   use Croma.Struct, recursive_new?: true, fields: [
     method:       Http.Method,
-    path_info:    SolomonLib.PathInfo,
+    path_info:    Antikythera.PathInfo,
     path_matches: PathMatches,
     query_params: Http.QueryParams,
     headers:      Http.Headers,
@@ -37,14 +37,14 @@ defmodule SolomonLib.Request do
   ]
 end
 
-defmodule SolomonLib.Conn do
+defmodule Antikythera.Conn do
   @moduledoc """
-  Definition of `SolomonLib.Conn` struct, which represents a client-server connection.
+  Definition of `Antikythera.Conn` struct, which represents a client-server connection.
 
-  This module also defines many functions to work with `SolomonLib.Conn`.
+  This module also defines many functions to work with `Antikythera.Conn`.
   """
 
-  alias SolomonLib.{Request, Context}
+  alias Antikythera.{Request, Context}
   alias Antikythera.Session
 
   defmodule BeforeSend do
@@ -107,10 +107,10 @@ defmodule SolomonLib.Conn do
     get_req_cookies(conn)[name]
   end
 
-  @default_cookie_opts (if SolomonLib.Env.compiling_for_cloud?(), do: %{path: "/", secure: true}, else: %{path: "/"})
+  @default_cookie_opts (if Antikythera.Env.compiling_for_cloud?(), do: %{path: "/", secure: true}, else: %{path: "/"})
 
   @doc """
-  Adds a `set-cookie` response header to the given `SolomonLib.Conn.t`.
+  Adds a `set-cookie` response header to the given `Antikythera.Conn.t`.
 
   `path` directive of `set-cookie` header is automatically filled with `"/"` if not explicitly given.
   Also `secure` directive is filled by default in the cloud environments (assuming that it's serving with HTTPS).
@@ -244,7 +244,7 @@ defmodule SolomonLib.Conn do
   `path` must be a file path relative to the `priv/` directory.
   content-type header is inferred from the file's extension.
 
-  Don't use this function for sending large files; you should use CDN for large files (see `SolomonLib.Asset`).
+  Don't use this function for sending large files; you should use CDN for large files (see `Antikythera.Asset`).
   Also, if all you need to do is just to return a file (i.e. you don't need any authentication),
   you should not use this function; just placing the file under `priv/static/` directory should suffice.
   """
@@ -271,14 +271,14 @@ defmodule SolomonLib.Conn do
   end
 
   @doc """
-  Gets a flash message stored in the given `t:SolomonLib.Conn.t/0`.
+  Gets a flash message stored in the given `t:Antikythera.Conn.t/0`.
   """
   defun get_flash(%__MODULE__{assigns: assigns}, key :: v[String.t]) :: nil | String.t do
     assigns.flash[key]
   end
 
   @doc """
-  Stores the flash message into the current `t:SolomonLib.Conn.t/0`.
+  Stores the flash message into the current `t:Antikythera.Conn.t/0`.
   """
   defun put_flash(%__MODULE__{assigns: assigns} = conn, key :: v[String.t], value :: v[String.t]) :: t do
     assign(conn, :flash, Map.put(assigns.flash, key, value))

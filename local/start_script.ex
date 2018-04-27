@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraLocal.StartScript do
-  alias SolomonLib.Env
+  alias Antikythera.Env
   alias AntikytheraLocal.{Cmd, NodeName}
 
   defun run(command :: v[String.t], release_dir :: Path.t) :: :ok do

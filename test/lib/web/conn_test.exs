@@ -1,10 +1,10 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.ConnTest do
+defmodule Antikythera.ConnTest do
   use Croma.TestCase
   alias Antikythera.Session
-  alias SolomonLib.Http.SetCookie
-  alias SolomonLib.Test.ConnHelper
+  alias Antikythera.Http.SetCookie
+  alias Antikythera.Test.ConnHelper
 
   test "get_req_header" do
     expected_value = "hoge"
@@ -137,14 +137,14 @@ defmodule SolomonLib.ConnTest do
   test "renew_session" do
     session1 = %Session{state: :update, id: nil, data: %{}}
     conn = ConnHelper.make_conn(%{assigns: %{session: session1}})
-    %SolomonLib.Conn{assigns: %{session: session2}} = Conn.renew_session(conn)
+    %Antikythera.Conn{assigns: %{session: session2}} = Conn.renew_session(conn)
     assert session2.state == :renew
   end
 
   test "destroy_session" do
     session1 = %Session{state: :update, id: nil, data: %{}}
     conn = ConnHelper.make_conn(%{assigns: %{session: session1}})
-    %SolomonLib.Conn{assigns: %{session: session2}} = Conn.destroy_session(conn)
+    %Antikythera.Conn{assigns: %{session: session2}} = Conn.destroy_session(conn)
     assert session2.state == :destroy
   end
 

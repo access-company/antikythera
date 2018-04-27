@@ -8,8 +8,8 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
   """
 
   use GenServer
-  alias SolomonLib.{Env, Conn}
-  alias SolomonLib.Context.GearEntryPoint
+  alias Antikythera.{Env, Conn}
+  alias Antikythera.Context.GearEntryPoint
   alias AntikytheraCore.GearProcess
   alias AntikytheraCore.Conn, as: CoreConn
   alias AntikytheraCore.Handler.GearError

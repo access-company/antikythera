@@ -1,6 +1,6 @@
 defmodule <%= gear_name_camel %> do
-  use SolomonLib.GearApplication
-  alias SolomonLib.{ExecutorPool, Conn}
+  use Antikythera.GearApplication
+  alias Antikythera.{ExecutorPool, Conn}
 
   @spec children :: [Supervisor.Spec.spec]
   def children() do

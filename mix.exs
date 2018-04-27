@@ -28,33 +28,33 @@ case File.ls(Path.join(__DIR__, "tmp")) do
     end)
 end
 
-defmodule Solomon.Mixfile do
+defmodule Antikythera.Mixfile do
   use Mix.Project
 
-  @github_url "https://github.com/access-company/solomon"
+  @github_url "https://github.com/access-company/antikythera"
 
   def project() do
     [
-      app:             :solomon,
-      version:         Solomon.MixCommon.version_with_last_commit_info("0.0.1"),
+      app:             :antikythera,
+      version:         Antikythera.MixCommon.version_with_last_commit_info("0.0.1"),
       elixirc_paths:   elixirc_paths(),
       start_permanent: Mix.env() == :prod,
       deps:            deps(),
       source_url:      @github_url,
       homepage_url:    @github_url,
-    ] ++ Keyword.update!(Solomon.MixCommon.common_project_settings(), :docs, &(&1 ++ docs()))
+    ] ++ Keyword.update!(Antikythera.MixCommon.common_project_settings(), :docs, &(&1 ++ docs()))
   end
 
   def application() do
     [
       mod:          {AntikytheraCore, []},
-      applications: Solomon.MixCommon.antikythera_runtime_dependency_applications(deps()),
+      applications: Antikythera.MixCommon.antikythera_runtime_dependency_applications(deps()),
     ]
   end
 
   defp elixirc_paths() do
     default    = ["lib", "core", "eal"]
-    additional = if Solomon.MixCommon.on_cloud?(), do: [], else: ["local"]
+    additional = if Antikythera.MixCommon.on_cloud?(), do: [], else: ["local"]
     default ++ additional
   end
 

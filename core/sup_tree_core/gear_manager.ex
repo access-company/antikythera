@@ -8,7 +8,7 @@ defmodule AntikytheraCore.GearManager do
   """
 
   use GenServer
-  alias SolomonLib.GearName
+  alias Antikythera.GearName
   require AntikytheraCore.Logger, as: L
 
   @typep state_t :: %{GearName.t => nil}

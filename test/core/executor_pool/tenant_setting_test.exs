@@ -2,7 +2,7 @@
 
 defmodule AntikytheraCore.ExecutorPool.TenantSettingTest do
   use Croma.TestCase
-  alias SolomonLib.Test.ProcessHelper
+  alias Antikythera.Test.ProcessHelper
   alias AntikytheraCore.TenantExecutorPoolsManager
   alias AntikytheraCore.Path, as: CorePath
 

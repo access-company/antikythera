@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.NestedMapTest do
+defmodule Antikythera.NestedMapTest do
   use Croma.TestCase, alias_as: M
 
   test "deep_merge/2" do

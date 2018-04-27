@@ -2,12 +2,12 @@
 
 use Croma
 
-defmodule SolomonLib.Router.Impl do
+defmodule Antikythera.Router.Impl do
   @moduledoc """
   Internal functions to implement request routing.
   """
 
-  alias SolomonLib.{Http.Method, PathSegment, PathInfo, Request.PathMatches}
+  alias Antikythera.{Http.Method, PathSegment, PathInfo, Request.PathMatches}
 
   @typep route_entry          :: {Method.t, String.t, module, atom, Keyword.t(String.t)}
   @typep route_result_success :: {module, atom, PathMatches.t, boolean}
@@ -99,7 +99,7 @@ defmodule SolomonLib.Router.Impl do
       path_matches_expr             = make_path_matches_expr_wildcard(path_info_arg_expr_nowildcard)
       quote do
         def unquote(:"__#{from}_route__")(unquote(method), unquote(path_info_arg_expr)) do
-          SolomonLib.Router.Impl.route_clause_body(unquote(controller), unquote(action), unquote(path_matches_expr), unquote(websocket?))
+          Antikythera.Router.Impl.route_clause_body(unquote(controller), unquote(action), unquote(path_matches_expr), unquote(websocket?))
         end
       end
     else
@@ -109,10 +109,10 @@ defmodule SolomonLib.Router.Impl do
       path_matches_expr   = make_path_matches_expr_nowildcard(path_info_arg_expr)
       quote do
         def unquote(:"__#{from}_route__")(unquote(method), unquote(path_info_arg_expr)) do
-          SolomonLib.Router.Impl.route_clause_body(unquote(controller), unquote(action), unquote(path_matches_expr), unquote(websocket?))
+          Antikythera.Router.Impl.route_clause_body(unquote(controller), unquote(action), unquote(path_matches_expr), unquote(websocket?))
         end
         def unquote(:"__#{from}_route__")(unquote(method), unquote(path_info_arg_expr2)) do
-          SolomonLib.Router.Impl.route_clause_body(unquote(controller), unquote(action), unquote(path_matches_expr), unquote(websocket?))
+          Antikythera.Router.Impl.route_clause_body(unquote(controller), unquote(action), unquote(path_matches_expr), unquote(websocket?))
         end
       end
     end

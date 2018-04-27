@@ -11,7 +11,7 @@ defmodule AntikytheraCore.GearExecutorPoolsManager do
   """
 
   use GenServer
-  alias SolomonLib.{MapUtil, GearName}
+  alias Antikythera.{MapUtil, GearName}
   alias AntikytheraCore.ExecutorPool
   alias ExecutorPool.Setting, as: EPoolSetting
 

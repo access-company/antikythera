@@ -2,10 +2,10 @@
 
 use Croma
 
-defmodule SolomonLib.Controller.Response do
+defmodule Antikythera.Controller.Response do
   @moduledoc """
   [DEPRECATED] Utility functions to put specific responses.
   """
 
-  defdelegate redirect(conn, url, status \\ 302), to: SolomonLib.Conn
+  defdelegate redirect(conn, url, status \\ 302), to: Antikythera.Conn
 end

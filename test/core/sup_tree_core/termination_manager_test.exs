@@ -2,8 +2,8 @@
 
 defmodule AntikytheraCore.TerminationManagerTest do
   use Croma.TestCase
-  alias SolomonLib.Test.ProcessHelper
-  alias SolomonLib.Test.GenServerHelper
+  alias Antikythera.Test.ProcessHelper
+  alias Antikythera.Test.GenServerHelper
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraCore.ClusterHostsPoller
 

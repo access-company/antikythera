@@ -1,13 +1,13 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
 #
-# `Solomon.MixCommon` and `Solomon.GearProject` provides common project configurations for both antikythera and gears.
-# These 2 modules must be loadable independently of `Solomon.Mixfile`, i.e.,
+# `Antikythera.MixCommon` and `Antikythera.GearProject` provides common project configurations for both antikythera and gears.
+# These 2 modules must be loadable independently of `Antikythera.Mixfile`, i.e.,
 # these modules must be defined in a file separate from `mix.exs`
 # (if we put these modules in `mix.exs`, mix complains about redefinition of the same mix project).
 #
 
-defmodule Solomon.MixCommon do
+defmodule Antikythera.MixCommon do
   versions =
     File.read!(Path.join(__DIR__, ".tool-versions"))
     |> String.split("\n", trim: true)
@@ -114,7 +114,7 @@ defmodule Solomon.MixCommon do
       :dev -> [
         :mix,     # Suppress warning about Mix.Task behaviour
         :eex,     # Only used during compilation, suppress warning about EEx.Engine behaviour
-        :ex_unit, # Suppress warnings about calling ExUnit functions in SolomonLib.Test.*
+        :ex_unit, # Suppress warnings about calling ExUnit functions in Antikythera.Test.*
       ]
       _ -> []
     end
@@ -135,13 +135,13 @@ defmodule Solomon.MixCommon do
   end
 end
 
-defmodule Solomon.GearProject do
+defmodule Antikythera.GearProject do
   @moduledoc """
   Module to be `use`d by `Mixfile` module in each gear project.
 
   `__using__/1` of this module receives the following key in its argument.
 
-  - (required) `:solomon_instance_dep` : Dependency on the antikythera instance which this gear belongs to.
+  - (required) `:antikythera_instance_dep` : Dependency on the antikythera instance which this gear belongs to.
   - (optional) `:source_url`           : If given it's used as both `source_url` (and also `homepage_url`).
 
   The following private functions are used by this module and thus mandatory.
@@ -153,7 +153,7 @@ defmodule Solomon.GearProject do
 
   def load_antikythera_instance_mix_config_file!(instance_name) do
     # Load mix config to import compile-time configurations;
-    # if antikythera instance is not yet available, raise `Mix.Config.LoadError` and fallback to `SolomonGearInitialSetup`.
+    # if antikythera instance is not yet available, raise `Mix.Config.LoadError` and fallback to `AntikytheraGearInitialSetup`.
     config_path = Path.join([antikythera_instance_dir(instance_name), "config", "config.exs"])
     Mix.Config.persist(Mix.Config.read!(config_path))
   end
@@ -171,12 +171,12 @@ defmodule Solomon.GearProject do
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
-      @antikythera_instance_dep     Keyword.fetch!(opts, :solomon_instance_dep)
+      @antikythera_instance_dep     Keyword.fetch!(opts, :antikythera_instance_dep)
       @antikythera_instance_name    elem(@antikythera_instance_dep, 0)
-      @antikythera_instance_project Solomon.GearProject.get_antikythera_instance_project_settings!(@antikythera_instance_name)
+      @antikythera_instance_project Antikythera.GearProject.get_antikythera_instance_project_settings!(@antikythera_instance_name)
       @antikythera_instance_deps    @antikythera_instance_project[:deps]
       @source_url                   Keyword.get(opts, :source_url)
-      Solomon.GearProject.load_antikythera_instance_mix_config_file!(@antikythera_instance_name)
+      Antikythera.GearProject.load_antikythera_instance_mix_config_file!(@antikythera_instance_name)
 
       # Deliberately undocumented option; only used by special gears (mostly for testing or administrative purposes)
       @use_antikythera_internal_modules? Keyword.get(opts, :use_antikythera_internal_modules?, false)
@@ -186,7 +186,7 @@ defmodule Solomon.GearProject do
       def project() do
         [
           app:              gear_name(),
-          version:          Solomon.MixCommon.version_with_last_commit_info(version()),
+          version:          Antikythera.MixCommon.version_with_last_commit_info(version()),
           elixirc_paths:    ["lib", "web"],
           compilers:        [:ensure_gear_dependencies, :gettext, :propagate_file_modifications] ++ Mix.compilers() ++ [:gear_static_analysis],
           start_permanent:  false,
@@ -196,7 +196,7 @@ defmodule Solomon.GearProject do
             gear_deps:                         gear_deps(),
             use_antikythera_internal_modules?: @use_antikythera_internal_modules?,
           ],
-        ] ++ urls() ++ Solomon.MixCommon.common_project_settings()
+        ] ++ urls() ++ Antikythera.MixCommon.common_project_settings()
       end
 
       defp urls() do
@@ -209,7 +209,7 @@ defmodule Solomon.GearProject do
       def application() do
         gear_application_module_name    = gear_name() |> Atom.to_string() |> Macro.camelize()
         gear_application_module         = Module.concat([gear_application_module_name])
-        runtime_dependency_applications = Solomon.MixCommon.gear_runtime_dependency_applications(@antikythera_instance_deps)
+        runtime_dependency_applications = Antikythera.MixCommon.gear_runtime_dependency_applications(@antikythera_instance_deps)
         gear_dependency_names           = Enum.map(gear_deps(), &elem(&1, 0))
         [
           mod:          {gear_application_module, []},
@@ -221,7 +221,7 @@ defmodule Solomon.GearProject do
         # :dev/:test-only deps of antikythera instance are not automatically added to gear projects.
         # We must declare the same set of tool deps in gear projects in order
         # not only to make tool deps available but also to use the exact version specified by the antikythera instance.
-        tool_deps = Solomon.MixCommon.filter_tool_deps(@antikythera_instance_deps)
+        tool_deps = Antikythera.MixCommon.filter_tool_deps(@antikythera_instance_deps)
         [@antikythera_instance_dep] ++ tool_deps ++ gear_deps()
       end
     end

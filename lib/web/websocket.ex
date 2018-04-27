@@ -2,21 +2,21 @@
 
 use Croma
 
-defmodule SolomonLib.Websocket do
+defmodule Antikythera.Websocket do
   @moduledoc """
   Behaviour module for websocket handlers.
 
   Note the naming convention of the websocket-related modules; we use `Websocket`, `WebSocket` is not allowed.
 
   Websocket module of gears must `use` this module as in the example below.
-  `use SolomonLib.Websocket` implicitly invokes `use SolomonLib.Controller`, for convenience in implementing `connect/1` callback.
+  `use Antikythera.Websocket` implicitly invokes `use Antikythera.Controller`, for convenience in implementing `connect/1` callback.
 
   ## Example
 
   The following example simply echoes back messages from client:
 
       defmodule MyGear.Websocket do
-        use SolomonLib.Websocket
+        use Antikythera.Websocket
 
         def init(_conn) do
           {%{}, []}
@@ -38,18 +38,18 @@ defmodule SolomonLib.Websocket do
   you should first be able to send messages to the connection process when a particular event occurs somewhere in the cluster.
   To this end antikythera provides a process registry mechanism which makes connection processes accessible by "name"s.
 
-  To register connection processes, call `SolomonLib.Registry.Unique.register/2` and/or `SolomonLib.Registry.Group.join/2`
+  To register connection processes, call `Antikythera.Registry.Unique.register/2` and/or `Antikythera.Registry.Group.join/2`
   in your `init/1` implementation.
-  Then, to notify events of connection processes, use `SolomonLib.Registry.Unique.send_message/3` or
-  `SolomonLib.Registry.Group.publish/3`.
+  Then, to notify events of connection processes, use `Antikythera.Registry.Unique.send_message/3` or
+  `Antikythera.Registry.Group.publish/3`.
   Finally to send websocket message from a connection process to client, implement `handle_server_message/3` callback
   so that it returns an appropriate websocket frame using the message.
 
-  See `SolomonLib.Registry.Unique` and `SolomonLib.Registry.Group` for more detail of the registry.
+  See `Antikythera.Registry.Unique` and `Antikythera.Registry.Group` for more detail of the registry.
   """
 
-  alias SolomonLib.Conn
-  alias SolomonLib.Websocket.{Frame, FrameList}
+  alias Antikythera.Conn
+  alias Antikythera.Websocket.{Frame, FrameList}
 
   @type state            :: any
   @type terminate_reason :: :normal | :stop | :timeout | :remote | {:remote, Frame.close_code, Frame.close_payload} | {:error, any}
@@ -69,13 +69,13 @@ defmodule SolomonLib.Websocket do
 
   This callback is implemented in basically the same way as ordinary controller actions.
   You can use plugs and controller helper functions.
-  The only difference is that on success this function returns a `SolomonLib.Conn.t` without setting an HTTP status code.
+  The only difference is that on success this function returns a `Antikythera.Conn.t` without setting an HTTP status code.
 
   This callback is responsible for authenticating/authorizing the client.
-  If the client is valid and it's OK to start websocket communication, implementation of this callback must return the given `SolomonLib.Conn.t`.
+  If the client is valid and it's OK to start websocket communication, implementation of this callback must return the given `Antikythera.Conn.t`.
   On the other hand if the client is not allowed to open websocket connection, this function must return an error as a usual HTTP response.
 
-  `use SolomonLib.Websocket` generates a default implementation of this callback, which just returns the given `SolomonLib.Conn.t`.
+  `use Antikythera.Websocket` generates a default implementation of this callback, which just returns the given `Antikythera.Conn.t`.
   Note that you can use plugs without overriding the default.
   """
   @callback connect(Conn.t) :: Conn.t
@@ -105,7 +105,7 @@ defmodule SolomonLib.Websocket do
   Callback function to clean up resources used by the websocket connection.
 
   For typical use cases you don't need to implement this callback;
-  `SolomonLib.Websocket` generates a default implementation (which does nothing) for you.
+  `Antikythera.Websocket` generates a default implementation (which does nothing) for you.
   """
   @callback terminate(state, Conn.t, terminate_reason) :: any
 
@@ -116,8 +116,8 @@ defmodule SolomonLib.Websocket do
         raise "invalid module name: expected=#{expected} actual=#{__MODULE__}"
       end
 
-      @behaviour SolomonLib.Websocket
-      use SolomonLib.Controller
+      @behaviour Antikythera.Websocket
+      use Antikythera.Controller
 
       @impl true
       def connect(conn), do: conn

@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.GearApplication.ErrorHandler do
+defmodule Antikythera.GearApplication.ErrorHandler do
   @moduledoc """
   Helper module for gear's custom error handler.
 
@@ -20,7 +20,7 @@ defmodule SolomonLib.GearApplication.ErrorHandler do
   This module generates `YourGear.error_handler_module/0` function, which is called by antikythera when handling errors.
   """
 
-  alias SolomonLib.GearName
+  alias Antikythera.GearName
   alias AntikytheraCore.GearModule
 
   @all_handlers [
@@ -52,7 +52,7 @@ defmodule SolomonLib.GearApplication.ErrorHandler do
   defmacro __using__(_) do
     quote do
       # Assuming that module attribute `@gear_name` is defined in the __CALLER__'s context
-      @error_handler_module SolomonLib.GearApplication.ErrorHandler.find_error_handler_module(@gear_name)
+      @error_handler_module Antikythera.GearApplication.ErrorHandler.find_error_handler_module(@gear_name)
       defun error_handler_module() :: nil | module do
         @error_handler_module
       end

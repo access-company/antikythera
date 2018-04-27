@@ -27,10 +27,10 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
   use Mix.Task
   alias AntikytheraLocal.RunningEnvironment
 
-  @antikythera_instance_name SolomonLib.Env.antikythera_instance_name()
+  @antikythera_instance_name Antikythera.Env.antikythera_instance_name()
 
   def run([comma_separated_gear_dirs | git_refs]) do
-    {:ok, _} = Application.ensure_all_started(:hackney) # to fetch current versions via `SolomonLib.Httpc`
+    {:ok, _} = Application.ensure_all_started(:hackney) # to fetch current versions via `Antikythera.Httpc`
     ensure_working_repository_clean()
     branch = current_branch()
     gears_map = gears_to_test(comma_separated_gear_dirs)
@@ -106,7 +106,7 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
 
   defp clean() do
     build_dir = Mix.Project.build_path() |> Path.dirname()
-    File.rm_rf!(Path.join([build_dir, "prod", "lib", "solomon"]))
+    File.rm_rf!(Path.join([build_dir, "prod", "lib", "antikythera"]))
     File.rm_rf!(Path.join([build_dir, "prod", "lib", "#{@antikythera_instance_name}"]))
   end
 
@@ -133,7 +133,7 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
 
   defmodule WS do
     if Mix.env() == :test do
-      use SolomonLib.Test.WebsocketClient
+      use Antikythera.Test.WebsocketClient
       def base_url(), do: "ws://testgear.localhost:8080"
 
       def send_loop() do

@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.TemplateSanitizer do
+defmodule Antikythera.TemplateSanitizer do
   @type safe :: {:safe, String.t}
 
   @doc """

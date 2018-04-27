@@ -13,7 +13,7 @@ defmodule AntikytheraCore.GearLog.Writer do
   """
 
   use GenServer
-  alias SolomonLib.{Time, ContextId, GearName}
+  alias Antikythera.{Time, ContextId, GearName}
   alias AntikytheraCore.GearLog.{FileHandle, Level, ContextHelper}
   alias AntikytheraCore.Config.Gear, as: GearConfig
   alias AntikytheraCore.Ets.ConfigCache

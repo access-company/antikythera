@@ -57,7 +57,7 @@ defmodule Mix.Tasks.Antikythera.Gear.New do
   defp validate_path!(path0) do
     path = Path.expand(path0)
     gear_name = Path.basename(path)
-    if !SolomonLib.GearNameStr.valid?(gear_name) do
+    if !Antikythera.GearNameStr.valid?(gear_name) do
       Mix.raise("gear name (basename of PATH) must (1) start with lowercase alphabet, (2) have only lowercase alphabets, numbers and underscore, and (3) its length must be within [3,32].")
     end
     {gear_name, path}
@@ -72,7 +72,7 @@ defmodule Mix.Tasks.Antikythera.Gear.New do
         Keyword.fetch!(gear_info, :instance_dep)
       true ->
         case Keyword.fetch!(runtime_mix_project_config, :app) do
-          :solomon      -> Mix.raise("You must be in a mix project directory of either your antikythera instance or one of gears in your antikythera instance.")
+          :antikythera      -> Mix.raise("You must be in a mix project directory of either your antikythera instance or one of gears in your antikythera instance.")
           instance_name -> {instance_name, [git: instance_git_url_from_git_remote!()]}
         end
     end
@@ -101,7 +101,7 @@ defmodule Mix.Tasks.Antikythera.Gear.New do
 
   defp gen_files(gear_name, dest_dir, instance_dep) do
     Mix.Generator.create_directory(dest_dir)
-    template_dir = Path.join(:code.priv_dir(:solomon), "gear_template")
+    template_dir = Path.join(:code.priv_dir(:antikythera), "gear_template")
     binding = [gear_name: gear_name, gear_name_camel: Macro.camelize(gear_name), instance_dep: inspect(instance_dep)]
     Enum.each(template_files(template_dir), fn template_path ->
       dest_rel_path = template_path |> Path.relative_to(template_dir) |> String.replace("gear_name", gear_name)

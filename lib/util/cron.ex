@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Cron do
+defmodule Antikythera.Cron do
   @moduledoc """
   Calculate time schedules based on cron format strings.
 
@@ -10,7 +10,7 @@ defmodule SolomonLib.Cron do
   with the extension of "step values" (explained below).
   The parsed object can be used to compute next matching time in `next/2`.
 
-  Note that all times are in UTC, as is the case with `SolomonLib.Time`.
+  Note that all times are in UTC, as is the case with `Antikythera.Time`.
 
   ## Schedule format
 
@@ -37,7 +37,7 @@ defmodule SolomonLib.Cron do
   """
 
   alias Croma.Result, as: R
-  alias SolomonLib.{Time, MilliSecondsSinceEpoch}
+  alias Antikythera.{Time, MilliSecondsSinceEpoch}
 
   [
     {Minute    , 0, 59},
@@ -65,7 +65,7 @@ defmodule SolomonLib.Cron do
   end)
 
   # defmodule using variable name does not automatically make alias
-  alias SolomonLib.Cron.{Minute, Hour, DayOfMonth, Month, DayOfWeek}
+  alias Antikythera.Cron.{Minute, Hour, DayOfMonth, Month, DayOfWeek}
 
   use Croma.Struct, recursive_new?: true, fields: [
     minute:       Minute,

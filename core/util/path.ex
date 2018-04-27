@@ -3,19 +3,19 @@
 use Croma
 
 defmodule AntikytheraCore.Path do
-  alias SolomonLib.{Env, GearName, TenantId, SecondsSinceEpoch}
+  alias Antikythera.{Env, GearName, TenantId, SecondsSinceEpoch}
 
   #
   # paths under antikythera root directory
   #
   if Env.compiling_for_cloud?() do
     # Use compile-time application config
-    @antikythera_root_dir Application.fetch_env!(:solomon, :antikythera_root_dir)
+    @antikythera_root_dir Application.fetch_env!(:antikythera, :antikythera_root_dir)
     defun antikythera_root_dir()  :: Path.t, do: @antikythera_root_dir
     defun compiled_core_dir() :: Path.t, do: Path.join(antikythera_root_dir(), "releases")
   else
     # Use runtime application config
-    defun antikythera_root_dir()  :: Path.t, do: Application.fetch_env!(:solomon, :antikythera_root_dir)
+    defun antikythera_root_dir()  :: Path.t, do: Application.fetch_env!(:antikythera, :antikythera_root_dir)
     defun compiled_core_dir() :: Path.t do
       parent_dir = Path.join([__DIR__, "..", "..", ".."]) |> Path.expand()
       release_generating_project_dir =
@@ -47,7 +47,7 @@ defmodule AntikytheraCore.Path do
   # paths under unpacked release directory
   #
   defun gear_log_dir(gear_name :: v[GearName.t]) :: Path.t do
-    Path.join([Application.app_dir(:solomon), "..", "..", "log", Atom.to_string(gear_name)]) |> Path.expand()
+    Path.join([Application.app_dir(:antikythera), "..", "..", "log", Atom.to_string(gear_name)]) |> Path.expand()
   end
 
   defun gear_log_file_path(gear_name :: v[GearName.t]) :: Path.t do
@@ -78,12 +78,12 @@ defmodule AntikytheraCore.Path do
   end
 
   #
-  # path for SolomonLib.Tmpdir
+  # path for Antikythera.Tmpdir
   #
   defun gear_tmp_dir() :: Path.t do
     # This must be fetched at runtime at least in non-cloud environment in order to use
     # path with the current OS pid, not with the OS pid of `$ mix compile` command.
-    Application.fetch_env!(:solomon, :gear_tmp_dir)
+    Application.fetch_env!(:antikythera, :gear_tmp_dir)
   end
 
   #
@@ -92,7 +92,7 @@ defmodule AntikytheraCore.Path do
   defun raft_persistence_dir_parent() :: Path.t do
     # This must be fetched at runtime at least in non-cloud environment in order to use
     # path with the current OS pid, not with the OS pid of `$ mix compile` command.
-    Application.fetch_env!(:solomon, :raft_persistence_dir_parent)
+    Application.fetch_env!(:antikythera, :raft_persistence_dir_parent)
   end
 
   #

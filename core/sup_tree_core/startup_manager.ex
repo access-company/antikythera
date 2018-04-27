@@ -18,7 +18,7 @@ defmodule AntikytheraCore.StartupManager do
   """
 
   use GenServer
-  alias SolomonLib.GearName
+  alias Antikythera.GearName
   alias AntikytheraCore.GearManager
   alias AntikytheraCore.Handler.CowboyRouting
   require AntikytheraCore.Logger, as: L

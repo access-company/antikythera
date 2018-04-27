@@ -2,11 +2,11 @@
 
 use Croma
 
-defmodule SolomonLib.AsyncJob do
+defmodule Antikythera.AsyncJob do
   alias Croma.Result, as: R
-  alias SolomonLib.{Time, Context, GearName}
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
-  alias SolomonLib.AsyncJob.{Id, Schedule, MaxDuration, Attempts, RetryInterval, Metadata, Status, StateLabel}
+  alias Antikythera.{Time, Context, GearName}
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.AsyncJob.{Id, Schedule, MaxDuration, Attempts, RetryInterval, Metadata, Status, StateLabel}
   alias AntikytheraCore.AsyncJob.Queue
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.ExecutorPool.Id, as: CoreEPoolId
@@ -27,7 +27,7 @@ defmodule SolomonLib.AsyncJob do
   Those modules must `use` this module as in the following example:
 
       defmodule YourGear.SomeAsyncJob do
-        use SolomonLib.AsyncJob
+        use Antikythera.AsyncJob
 
         # run/3 is required
         def run(_payload, _metadata, _context) do
@@ -62,7 +62,7 @@ defmodule SolomonLib.AsyncJob do
         id
       end
 
-  Your gear can have multiple modules that `use SolomonLib.AsyncJob`.
+  Your gear can have multiple modules that `use Antikythera.AsyncJob`.
 
   ### Registering jobs
 
@@ -72,23 +72,23 @@ defmodule SolomonLib.AsyncJob do
 
   Here first argument is an arbitrary map that is passed to `run/3` callback implementation.
   (note that structs are maps and thus usable as payloads).
-  `context` is a value of `SolomonLib.Context.t/0` and is used to obtain to which executor pool to register the job.
+  `context` is a value of `Antikythera.Context.t/0` and is used to obtain to which executor pool to register the job.
   When you need to register a job to an executor pool that is not the current one,
-  you can pass a `SolomonLib.ExecutorPool.Id.t/0` instead of `SolomonLib.Context.t/0`.
+  you can pass a `Antikythera.ExecutorPool.Id.t/0` instead of `Antikythera.Context.t/0`.
   `options` must be a `Keyword.t/0` which can include the following values:
 
   - `id`: An ID of the job.
     If given it must match the regex pattern `~r/#{Id.pattern().source}/` and must be unique in the job queue specified by the second argument.
     If not given antikythera automatically generates one for you.
   - `schedule`: When to run the job as a 2-tuple.
-    If not given it defaults to `{:once, SolomonLib.Time.now()}`, i.e.,
+    If not given it defaults to `{:once, Antikythera.Time.now()}`, i.e.,
     the job will be executed as soon as an available worker process is found in the specified executor pool.
     Allowed value format is:
-      - `{:once, SolomonLib.Time.t}`
+      - `{:once, Antikythera.Time.t}`
           - The job is executed at the given time.
             After the job is either successfully completed or abandoned by failure(s), the job is removed from the job queue.
             The time must be a future time and within #{div(AntikytheraCore.AsyncJob.max_start_time_from_now(), 24 * 60 * 60_000)} days from now.
-      - `{:cron, SolomonLib.Cron.t}`
+      - `{:cron, Antikythera.Cron.t}`
           - The job is repeatedly executed at the given cron schedule.
             After the job is either successfully completed or abandoned by failure(s), the job is requeued to the job queue.
             Note that next start time is computed from the time of requeuing.
@@ -115,7 +115,7 @@ defmodule SolomonLib.AsyncJob do
           - and so on.
       - If you want to set constant interval, specify `1.0` to second element.
 
-  `register/3` returns a tuple of `{:ok, SolomonLib.AsyncJob.Id.t}` on success.
+  `register/3` returns a tuple of `{:ok, Antikythera.AsyncJob.Id.t}` on success.
   You can register jobs up to #{Queue.max_jobs()}.
   When #{Queue.max_jobs()} jobs remain unfinished in the job queue, trying to register a new job results in `{:error, :full}`.
 
@@ -138,12 +138,12 @@ defmodule SolomonLib.AsyncJob do
     quote bind_quoted: [gear_name: gear_name] do
       @gear_name gear_name
 
-      @behaviour SolomonLib.AsyncJob
+      @behaviour Antikythera.AsyncJob
 
       @impl true
       defun abandon(_payload  :: map,
-                    _metadata :: SolomonLib.AsyncJob.Metadata.t,
-                    _context  :: SolomonLib.Context.t) :: any do
+                    _metadata :: Antikythera.AsyncJob.Metadata.t,
+                    _context  :: Antikythera.Context.t) :: any do
         :ok
       end
 
@@ -155,8 +155,8 @@ defmodule SolomonLib.AsyncJob do
       defoverridable [abandon: 3, inspect_payload: 1]
 
       defun register(payload             :: v[map],
-                     context_or_epool_id :: v[SolomonLib.Context.t | SolomonLib.ExecutorPool.Id.t],
-                     options             :: v[[SolomonLib.AsyncJob.option]] \\ []) :: R.t(Id.t) do
+                     context_or_epool_id :: v[Antikythera.Context.t | Antikythera.ExecutorPool.Id.t],
+                     options             :: v[[Antikythera.AsyncJob.option]] \\ []) :: R.t(Id.t) do
         AntikytheraCore.AsyncJob.register(@gear_name, __MODULE__, payload, context_or_epool_id, options)
       end
     end

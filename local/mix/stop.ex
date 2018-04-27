@@ -4,7 +4,7 @@ defmodule Mix.Tasks.AntikytheraLocal.Stop do
   @shortdoc "Stops a locally running OTP release for an antikythera instance"
 
   use Mix.Task
-  alias SolomonLib.Env
+  alias Antikythera.Env
 
   def run(_args) do
     :ok = AntikytheraLocal.RunningEnvironment.teardown()

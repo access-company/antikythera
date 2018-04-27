@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.EnumUtil do
+defmodule Antikythera.EnumUtil do
   @moduledoc """
   Utility functions to work with enumerables.
   """

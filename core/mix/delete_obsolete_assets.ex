@@ -3,7 +3,7 @@
 use Croma
 
 defmodule Mix.Tasks.AntikytheraCore.DeleteObsoleteAssets do
-  @retention_days SolomonLib.Asset.retention_days()
+  @retention_days Antikythera.Asset.retention_days()
 
   @shortdoc "Deletes obsolete asset files in asset storage"
 
@@ -13,7 +13,7 @@ defmodule Mix.Tasks.AntikytheraCore.DeleteObsoleteAssets do
   To judge whether each asset file should be kept or deleted we use "asset list file"s.
   Each asset list file is created during deployment of a gear version (see `Mix.Tasks.AntikytheraCore.UploadNewAssetVersions`).
 
-  Based on the asset retention policy described in the moduledoc of `SolomonLib.Asset`,
+  Based on the asset retention policy described in the moduledoc of `Antikythera.Asset`,
   it can be seen that, within all existing asset list files, only the following ones are relevant:
 
   1. asset list files created within the latest #{@retention_days} days
@@ -24,7 +24,7 @@ defmodule Mix.Tasks.AntikytheraCore.DeleteObsoleteAssets do
   """
 
   use Mix.Task
-  alias SolomonLib.{GearName, Time}
+  alias Antikythera.{GearName, Time}
   alias AntikytheraEal.AssetStorage
   alias AntikytheraCore.Version.History
   alias AntikytheraCore.Mix.AssetList

@@ -22,7 +22,7 @@ defmodule AntikytheraCore.Alert.LoggerBackend do
 
   @impl true
   def handle_event({:error, gl, {Logger, message, {ymd, {h, min, s, ms}}, metadata}}, state) when node(gl) == node() do
-    time = {SolomonLib.Time, ymd, {h, min, s}, ms}
+    time = {Antikythera.Time, ymd, {h, min, s}, ms}
     CoreAlertManager.notify(CoreAlertManager, body(message, metadata), time)
     {:ok, state}
   end

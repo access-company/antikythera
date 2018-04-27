@@ -3,10 +3,10 @@
 use Croma
 
 defmodule AntikytheraCore.GearModule do
-  alias SolomonLib.GearName
+  alias Antikythera.GearName
   alias AntikytheraCore.Handler.HelperModules
 
-  defun template_module_from_context(%SolomonLib.Context{gear_entry_point: {mod, _}}) :: module do
+  defun template_module_from_context(%Antikythera.Context{gear_entry_point: {mod, _}}) :: module do
     Module.split(mod) |> hd() |> Module.safe_concat("Template")
   end
 

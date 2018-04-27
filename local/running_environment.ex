@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraLocal.RunningEnvironment do
-  alias SolomonLib.{Env, GearNameStr, VersionStr, Httpc}
+  alias Antikythera.{Env, GearNameStr, VersionStr, Httpc}
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraLocal.{Cmd, StartScript}
 

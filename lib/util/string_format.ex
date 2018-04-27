@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.StringFormat do
+defmodule Antikythera.StringFormat do
   defun pad2(int :: non_neg_integer) :: String.t do
     i when i <  10 -> "0#{i}"
     i when i < 100 -> Integer.to_string(i)

@@ -12,7 +12,7 @@ defmodule AntikytheraEal.AssetStorage do
   It's the implementation module's responsibility to properly set headers such as `cache-control` for each asset file.
   """
 
-  alias SolomonLib.GearName
+  alias Antikythera.GearName
 
   defmodule Behaviour do
     @callback list(GearName.t) :: [String.t]

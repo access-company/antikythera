@@ -10,7 +10,7 @@ defmodule AntikytheraCore.Alert.Manager do
   Each handler has its own buffer to store messages before sending them as an alert.
   """
 
-  alias SolomonLib.{GearName, Time}
+  alias Antikythera.{GearName, Time}
   require AntikytheraCore.Logger, as: L
   alias AntikytheraCore.GearModule
   alias AntikytheraCore.Alert.Handler, as: AHandler
@@ -32,7 +32,7 @@ defmodule AntikytheraCore.Alert.Manager do
 
   Any errors will be logged but this function always returns `:ok`.
   """
-  defun update_handler_installations(otp_app_name :: v[:solomon | GearName.t], configs_map :: v[HandlerConfigsMap.t]) :: :ok do
+  defun update_handler_installations(otp_app_name :: v[:antikythera | GearName.t], configs_map :: v[HandlerConfigsMap.t]) :: :ok do
     case manager(otp_app_name) do
       nil -> L.info("Alert manager process for '#{otp_app_name}' is not running!") # log as info since this will always happen on initial loading of gear configs (before gear installations)
       pid -> update_handler_installations_impl(pid, otp_app_name, configs_map)
@@ -72,10 +72,10 @@ defmodule AntikytheraCore.Alert.Manager do
     Module.safe_concat([temporary_module_name_str]) # handlers must be chosen from list of existing handlers (in console UI), so this should never raise
   end
 
-  defunp manager(otp_app_name :: v[:solomon | GearName.t]) :: nil | pid do
+  defunp manager(otp_app_name :: v[:antikythera | GearName.t]) :: nil | pid do
     try do
       case otp_app_name do
-        :solomon  -> AntikytheraCore.Alert.Manager
+        :antikythera  -> AntikytheraCore.Alert.Manager
         gear_name -> GearModule.alert_manager(gear_name)
       end
       |> Process.whereis()

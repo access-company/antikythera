@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.GearApplication.ConfigGetter do
+defmodule Antikythera.GearApplication.ConfigGetter do
   @moduledoc """
   Helper module to define getter functions of gear configs.
   """
@@ -12,11 +12,11 @@ defmodule SolomonLib.GearApplication.ConfigGetter do
       # Assuming that module attribute `@gear_name` is defined in the __CALLER__'s context
 
       defun get_all_env() :: %{String.t => any} do
-        SolomonLib.GearApplication.ConfigGetter.get_all_env(@gear_name)
+        Antikythera.GearApplication.ConfigGetter.get_all_env(@gear_name)
       end
 
       defun get_env(key :: v[String.t], default :: any \\ nil) :: any do
-        SolomonLib.GearApplication.ConfigGetter.get_env(@gear_name, key, default)
+        Antikythera.GearApplication.ConfigGetter.get_env(@gear_name, key, default)
       end
     end
   end

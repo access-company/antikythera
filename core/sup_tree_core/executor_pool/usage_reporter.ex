@@ -14,8 +14,8 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporter do
   """
 
   use GenServer
-  alias SolomonLib.Metrics.DataList
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.Metrics.DataList
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.MetricsUploader
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter

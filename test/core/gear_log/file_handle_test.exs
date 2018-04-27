@@ -2,7 +2,7 @@
 
 defmodule AntikytheraCore.GearLog.FileHandleTest do
   use Croma.TestCase
-  alias SolomonLib.Time
+  alias Antikythera.Time
 
   @tmp_dir       Path.join([__DIR__, "..", "..", "tmp"]) |> Path.expand()
   @log_file_path Path.join([@tmp_dir, "log", "gear.log"]) |> Path.expand()

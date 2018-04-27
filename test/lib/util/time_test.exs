@@ -1,10 +1,10 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.TimeTest do
+defmodule Antikythera.TimeTest do
   use Croma.TestCase
   alias Croma.Result, as: R
-  alias SolomonLib.{IsoTimestamp, ImfFixdate}
-  alias SolomonLib.IsoTimestamp.Basic, as: IsoBasic
+  alias Antikythera.{IsoTimestamp, ImfFixdate}
+  alias Antikythera.IsoTimestamp.Basic, as: IsoBasic
 
   test "to_iso_timestamp should return valid ISO8601 extended format string" do
     [
@@ -88,7 +88,7 @@ defmodule SolomonLib.TimeTest do
     use Croma.Struct, recursive_new?: true, fields: [time: Time]
   end
 
-  test "should be deserialized directly to SolomonLib.Time.t, when used as field type of Croma.Struct" do
+  test "should be deserialized directly to Antikythera.Time.t, when used as field type of Croma.Struct" do
     assert S.new(%{"time" => "2017-01-01T00:00:00.000+00:00"}) == {:ok, %S{time: {Time, {2017, 1, 1}, {0, 0, 0}, 0}}}
     assert S.new(%{"time" => "2017-01-00T00:00:00.000+00:00"}) == {:error, {:invalid_value, [S, {Time, :time}]}}
   end

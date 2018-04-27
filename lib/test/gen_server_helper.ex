@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.Test.GenServerHelper do
+defmodule Antikythera.Test.GenServerHelper do
   @moduledoc """
   Helper functions to be used within tests for `GenServer`s.
   """

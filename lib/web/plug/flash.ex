@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Plug.Flash do
+defmodule Antikythera.Plug.Flash do
   @moduledoc """
   Plug to automatically load flash messages from session.
 
@@ -10,16 +10,16 @@ defmodule SolomonLib.Plug.Flash do
 
   Add the following line in a controller module (note that the order of the plugs is important):
 
-      plug SolomonLib.Plug.Session, :load, [key: "12345678"]
-      plug SolomonLib.Plug.Flash  , :load, []
+      plug Antikythera.Plug.Session, :load, [key: "12345678"]
+      plug Antikythera.Plug.Flash  , :load, []
 
   Then you can access flash messages by
 
-  - `SolomonLib.Conn.get_flash/2`
-  - `SolomonLib.Conn.put_flash/3`
+  - `Antikythera.Conn.get_flash/2`
+  - `Antikythera.Conn.put_flash/3`
   """
 
-  alias SolomonLib.Conn
+  alias Antikythera.Conn
 
   @session_key "antikythera_flash"
 

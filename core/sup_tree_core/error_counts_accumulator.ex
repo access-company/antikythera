@@ -16,7 +16,7 @@ defmodule AntikytheraCore.ErrorCountsAccumulator do
   """
 
   use GenServer
-  alias SolomonLib.{MapUtil, Time, GearName}
+  alias Antikythera.{MapUtil, Time, GearName}
 
   @type results :: [{Time.t, non_neg_integer}]
 
@@ -54,7 +54,7 @@ defmodule AntikytheraCore.ErrorCountsAccumulator do
       %__MODULE__{now_minute: next, counts: counts2}
     end
 
-    defun get(%__MODULE__{now_minute: now_minute, counts: counts}, otp_app_name :: v[:solomon | GearName.t]) :: results do
+    defun get(%__MODULE__{now_minute: now_minute, counts: counts}, otp_app_name :: v[:antikythera | GearName.t]) :: results do
       m = Map.get(counts, otp_app_name, %{})
       construct_results(m, now_minute)
     end
@@ -117,7 +117,7 @@ defmodule AntikytheraCore.ErrorCountsAccumulator do
   #
   # Public API
   #
-  defun get(otp_app_name :: v[:solomon | GearName.t]) :: results do
+  defun get(otp_app_name :: v[:antikythera | GearName.t]) :: results do
     GenServer.call(__MODULE__, {:get, otp_app_name})
   end
 
@@ -125,7 +125,7 @@ defmodule AntikytheraCore.ErrorCountsAccumulator do
     GenServer.call(__MODULE__, :get_total)
   end
 
-  defun submit(otp_app_name :: v[:solomon | GearName.t], count :: v[pos_integer]) :: :ok do
+  defun submit(otp_app_name :: v[:antikythera | GearName.t], count :: v[pos_integer]) :: :ok do
     GenServer.cast(__MODULE__, {:submit, otp_app_name, count})
   end
 end

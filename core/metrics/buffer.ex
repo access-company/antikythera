@@ -16,8 +16,8 @@ defmodule AntikytheraCore.Metrics.Buffer do
       }
   """
 
-  alias SolomonLib.Time
-  alias SolomonLib.ExecutorPool.Id           , as: EPoolId
+  alias Antikythera.Time
+  alias Antikythera.ExecutorPool.Id           , as: EPoolId
   alias AntikytheraCore.Metrics.AggregateStrategy, as: Strategy
 
   @type minute           :: Time.t

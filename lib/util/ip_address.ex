@@ -3,7 +3,7 @@
 use Bitwise
 use Croma
 
-defmodule SolomonLib.IpAddress do
+defmodule Antikythera.IpAddress do
   @moduledoc """
   Functions to parse/compare IP addresses.
   """

@@ -9,8 +9,8 @@ defmodule Antikythera.Session do
   Gear implementations usually don't use the functions defined in this module;
   instead use
 
-  - `SolomonLib.Plug.Session`
-  - interfaces in `SolomonLib.Conn` (e.g. `SolomonLib.Conn.get_session/2`).
+  - `Antikythera.Plug.Session`
+  - interfaces in `Antikythera.Conn` (e.g. `Antikythera.Conn.get_session/2`).
   """
 
   defmodule State do

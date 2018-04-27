@@ -2,7 +2,7 @@
 
 defmodule AntikytheraCore.Config.GearTest do
   use Croma.TestCase
-  alias SolomonLib.Test.GenServerHelper
+  alias Antikythera.Test.GenServerHelper
   alias AntikytheraCore.GearLog.Level
   alias AntikytheraCore.Ets.ConfigCache
   alias AntikytheraCore.Ets.ConfigCache.Gear, as: Cache

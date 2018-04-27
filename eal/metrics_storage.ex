@@ -20,8 +20,8 @@ defmodule AntikytheraEal.MetricsStorage do
       }
   """
 
-  alias SolomonLib.Time
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.Time
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.Metrics.{Buffer, Results}
   alias AntikytheraCore.Cluster.NodeId
   alias __MODULE__, as: S
@@ -33,7 +33,7 @@ defmodule AntikytheraEal.MetricsStorage do
   end
 
   defmodule Memory do
-    alias SolomonLib.NestedMap
+    alias Antikythera.NestedMap
 
     @behaviour Behaviour
 

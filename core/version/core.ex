@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Version.Core do
-  alias SolomonLib.{Time, Env, VersionStr, ContextId}
+  alias Antikythera.{Time, Env, VersionStr, ContextId}
   alias AntikytheraCore.{Version, GearManager, GearModule, GearLog}
   alias AntikytheraCore.Version.{Artifact, History}
   require AntikytheraCore.Logger, as: L

@@ -4,7 +4,7 @@ use Croma
 
 defmodule AntikytheraCore.Logger do
   defmacro info(message) do
-    if SolomonLib.Env.compiling_for_release?() do
+    if Antikythera.Env.compiling_for_release?() do
       emit_log(__CALLER__.module, message, :info)
     else
       quote bind_quoted: [message: message] do

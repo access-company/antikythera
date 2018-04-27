@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.CodeUtil do
+defmodule Antikythera.CodeUtil do
   @moduledoc """
   Utilities involving `Code` module, used for metaprogramming.
   """

@@ -3,8 +3,8 @@
 use Croma
 
 defmodule AntikytheraCore.ExecutorPool.Id do
-  alias SolomonLib.{Env, GearName, TenantId}
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.{Env, GearName, TenantId}
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
 
   @type reason :: {:invalid_executor_pool, EPoolId.t} | {:unavailable_tenant, TenantId.t}
 

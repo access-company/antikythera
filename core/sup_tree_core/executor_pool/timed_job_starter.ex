@@ -14,8 +14,8 @@ defmodule AntikytheraCore.ExecutorPool.TimedJobStarter do
   """
 
   use GenServer
-  alias SolomonLib.Metrics.DataList
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.Metrics.DataList
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.AsyncJob.Queue
   alias AntikytheraCore.MetricsUploader
 

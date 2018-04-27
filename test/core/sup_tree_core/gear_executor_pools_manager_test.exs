@@ -2,8 +2,8 @@
 
 defmodule AntikytheraCore.GearExecutorPoolsManagerTest do
   use Croma.TestCase
-  alias SolomonLib.NestedMap
-  alias SolomonLib.Test.GenServerHelper
+  alias Antikythera.NestedMap
+  alias Antikythera.Test.GenServerHelper
   alias AntikytheraCore.Ets.ConfigCache
   alias AntikytheraCore.ExecutorPool
   alias ExecutorPool.Setting, as: EPoolSetting

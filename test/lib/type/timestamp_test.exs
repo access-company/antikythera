@@ -1,9 +1,9 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.TimestampTest do
+defmodule Antikythera.TimestampTest do
   use ExUnit.Case
-  alias SolomonLib.IsoTimestamp
-  alias SolomonLib.IsoTimestamp.Basic, as: IsoBasic
+  alias Antikythera.IsoTimestamp
+  alias Antikythera.IsoTimestamp.Basic, as: IsoBasic
 
   test "validate IsoTimestamp" do
     [

@@ -16,18 +16,18 @@ defmodule AntikytheraCore.Ets.ConfigCache.Core do
   @table_name AntikytheraCore.Ets.ConfigCache.table_name()
 
   defun read() :: map do
-    :ets.lookup_element(@table_name, :solomon, 2)
+    :ets.lookup_element(@table_name, :antikythera, 2)
   end
 
   defun write(m :: v[map]) :: :ok do
-    :ets.insert(@table_name, {:solomon, m})
+    :ets.insert(@table_name, {:antikythera, m})
     :ok
   end
 end
 
 defmodule AntikytheraCore.Ets.ConfigCache.Gear do
   @table_name AntikytheraCore.Ets.ConfigCache.table_name()
-  alias SolomonLib.GearName
+  alias Antikythera.GearName
   alias AntikytheraCore.Config.Gear, as: GearConfig
 
   defun read(gear_name :: v[GearName.t]) :: nil | GearConfig.t do

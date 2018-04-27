@@ -2,9 +2,9 @@
 
 use Croma
 alias Croma.Result, as: R
-alias SolomonLib.Time
+alias Antikythera.Time
 
-defmodule SolomonLib.IsoTimestamp do
+defmodule Antikythera.IsoTimestamp do
   @moduledoc """
   A strict subset of ISO8601 format of timestamp.
   """
@@ -17,7 +17,7 @@ defmodule SolomonLib.IsoTimestamp do
   end
 end
 
-defmodule SolomonLib.IsoTimestamp.Basic do
+defmodule Antikythera.IsoTimestamp.Basic do
   @moduledoc """
   ISO8601 basic format.
   """

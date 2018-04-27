@@ -1,9 +1,9 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.Controller.JsonTest do
+defmodule Antikythera.Controller.JsonTest do
   use Croma.TestCase
-  alias SolomonLib.Conn
-  alias SolomonLib.Test.ConnHelper
+  alias Antikythera.Conn
+  alias Antikythera.Test.ConnHelper
 
   test "json should return body as JSON" do
     conn  = ConnHelper.make_conn()

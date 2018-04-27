@@ -4,7 +4,7 @@ defmodule <%= gear_name_camel %>.Websocket do
   # - declare a websocket route in your router,
   # - uncomment the following line, and
   # - provide concrete callback implemetations.
-  # For more detailed information please refer to documentation of `SolomonLib.Websocket`.
+  # For more detailed information please refer to documentation of `Antikythera.Websocket`.
   #
-  # use SolomonLib.Websocket
+  # use Antikythera.Websocket
 end

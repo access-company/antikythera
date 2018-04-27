@@ -4,8 +4,8 @@ use Croma
 
 defmodule AntikytheraCore.ExecutorPool do
   alias Supervisor.Spec
-  alias SolomonLib.GearName
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.GearName
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.ExecutorPool.{ActionRunner, AsyncJobRunner, TimedJobStarter, WebsocketConnectionsCounter, UsageReporter}

@@ -4,7 +4,7 @@ ExUnit.start()
 
 defmodule ExecutorPoolHelper do
   import ExUnit.Assertions
-  alias SolomonLib.Test.{ProcessHelper, GenServerHelper}
+  alias Antikythera.Test.{ProcessHelper, GenServerHelper}
   alias AntikytheraCore.ExecutorPool
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
 

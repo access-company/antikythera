@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.FileSetup do
-  alias SolomonLib.Env
+  alias Antikythera.Env
   alias AntikytheraCore.{Ets, Config}
   alias AntikytheraCore.Path, as: CorePath
 

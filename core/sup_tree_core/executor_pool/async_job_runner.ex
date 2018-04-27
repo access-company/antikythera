@@ -19,9 +19,9 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   """
 
   use GenServer
-  alias SolomonLib.{Time, Context, ErrorReason}
-  alias SolomonLib.AsyncJob.Id, as: JobId
-  alias SolomonLib.AsyncJob.Metadata
+  alias Antikythera.{Time, Context, ErrorReason}
+  alias Antikythera.AsyncJob.Id, as: JobId
+  alias Antikythera.AsyncJob.Metadata
   alias AntikytheraCore.GearTask
   alias AntikytheraCore.{GearModule, GearProcess, MetricsUploader}
   alias AntikytheraCore.AsyncJob
@@ -191,7 +191,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     # Since timeout is not too long, we simply use `GearTask`.
     GearTask.exec_wait(
       {__MODULE__, :do_abandon, [module, payload, metadata, context]},
-      SolomonLib.AsyncJob.abandon_callback_max_duration(),
+      Antikythera.AsyncJob.abandon_callback_max_duration(),
       fn _ -> :ok end,
       fn(reason, stacktrace) ->
         Writer.error(logger_name, Time.now(), context_id, log_prefix <> "error during abandon/3: #{ErrorReason.format(reason, stacktrace)}")

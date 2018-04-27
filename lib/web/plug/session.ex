@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule SolomonLib.Plug.Session do
+defmodule Antikythera.Plug.Session do
   @moduledoc """
   Plug to automatically load/store session information using a specific session store.
   Uses cookie store by default.
@@ -11,14 +11,14 @@ defmodule SolomonLib.Plug.Session do
 
   Adding the following line in a controller module enables this plug:
 
-      plug SolomonLib.Plug.Session, :load, [key: "12345678"]
+      plug Antikythera.Plug.Session, :load, [key: "12345678"]
 
   Then,
   - session values are loaded from cookie before controller action is executed, and
   - session values are stored into cookie after controller action is executed.
   """
 
-  alias SolomonLib.Conn
+  alias Antikythera.Conn
   alias Antikythera.Session
 
   defun load(conn :: v[Conn.t], opts :: Keyword.t(String.t | atom)) :: Conn.t do

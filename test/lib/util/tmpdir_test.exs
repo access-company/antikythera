@@ -1,9 +1,9 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-defmodule SolomonLib.TmpdirTest do
+defmodule Antikythera.TmpdirTest do
   use Croma.TestCase
-  alias SolomonLib.ExecutorPool.Id, as: EPoolId
-  alias SolomonLib.Test.ConnHelper
+  alias Antikythera.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.Test.ConnHelper
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraCore.TmpdirTracker
 
