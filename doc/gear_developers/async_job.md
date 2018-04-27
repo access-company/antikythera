@@ -1,5 +1,7 @@
 # Asynchronous Jobs
 
+**Note:** This page is being updated for OSS release. Please be patient.
+
 Antikythera provides gears with a way to asynchronously run arbitrary code.
 This feature is referred to as "async job" throughout documentations of antikythera.
 Async jobs are executed in background of HTTP request/response interactions.
@@ -52,4 +54,4 @@ and then the following call to `YourGear.SomeAsyncJob.run/3` is evaluated within
 YourGear.SomeAsyncJob.run(%{"arbitrary" => "map"}, job_metadata, context_for_this_job_execution)
 ```
 
-For details of the async job API please refer to [`Antikythera.AsyncJob`](https://hexdocs.pm/antikythera/Antikythera.AsyncJob.html).
+For details of the async job API please refer to `Antikythera.AsyncJob`.

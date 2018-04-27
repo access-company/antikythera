@@ -1,5 +1,8 @@
 # Deployment to Antikythera Instance
 
+**Note:** This page is being updated for OSS release. Please be patient.
+Current contents describes how our antikythera instance and gears are deployed in [ACCESS](https://www.access-company.com).
+
 ## Antikythera's deployment policy
 
 - Antikythera itself is regularly deployed to both dev and prod environments in the same way as gears described below.
@@ -15,9 +18,6 @@
         - Every gear implementation is expected to have its own repository in either GitHub (dev/prod), or antikythera git server (dev only).
         - The repository in GitHub must belong to [access-company/Antikythera team](https://github.com/orgs/access-company/teams/antikythera)
           so that the antikythera team and antikythera's auto-deploy component have read/write access to it.
-        - If you chose to use antikythera git server on gear creation in `ac_console`, the repository will be automatically created.
-          These repositories accept read/write from auto-deploy.
-            - For development before pushing to antikythera git server, you may use any SCM (either locally, or in intranet).
     - Branches
         - Antikythera treats the following 2 branches as deploy targets; the other branches are ignored.
             - `master` branch means "ready to deploy to dev environment".
@@ -27,8 +27,6 @@
 ## Deployment flow
 
 - Each of dev and prod environments runs its own jenkins server for automatic testing and deployment.
-    - You can access the jenkins web UI from within [`ac_console`](https://github.com/access-company/ac_console)
-      ([dev](https://ac-console.solomondev.access-company.com)/[prod](https://ac-console.solomon.access-company.com)).
 
 ![](../images/AntikytheraDeploymentFlow.png)
 
@@ -52,7 +50,7 @@
 - All the following tests are executed in the same way as normal development environment:
     - Before deployment: `$ mix test`
     - After deployment: `$ TEST_MODE=blackbox_dev mix test` or `$ TEST_MODE=blackbox_prod mix test`
-- (See [here](./testing.md) for more about whitebox/blackbox tests)
+- (See [here](https://hexdocs.pm/antikythera/testing.md) for more about whitebox/blackbox tests)
 
 ## Troubleshoot errors during deploy
 

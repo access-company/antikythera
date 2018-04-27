@@ -1,5 +1,7 @@
 # Websocket
 
+**Note:** This page is being updated for OSS release. Please be patient.
+
 - [Websocket](https://en.wikipedia.org/wiki/WebSocket) is an extension to HTTP that emulates TCP connections.
   By using websocket, communication pattern between server and client is no longer restricted to plain HTTP's request-response model.
 - Antikythera supports the websocket protocol to enable gears to interactively communicate with their clients.
@@ -9,10 +11,9 @@
 - To use websocket in your gear you need to
     1. declare a websocket route in `web/router.ex`
         - The route is for handshake; GET requests that match the path pattern are processed as websocket handshake requests.
-        - See [reference of `Antikythera.Router`](https://hexdocs.pm/antikythera/Antikythera.Router.html).
+        - See reference of `Antikythera.Router`.
     2. implement a callback module of `Antikythera.Websocket` behaviour in `web/websocket.ex`
-        - For detailed explanations of specifications of `Antikythera.Websocket` callbacks
-          see the [ExDoc document](https://hexdocs.pm/antikythera/Antikythera.Websocket.html) of the module.
+        - For detailed explanations, see `Antikythera.Websocket`.
 
 ## Websocket connection process
 

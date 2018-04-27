@@ -1,5 +1,7 @@
 # Logging
 
+**Note:** This page is being updated for OSS release. Please be patient.
+
 - From any part of your gear code, you can put messages to log files.
   Pass a `String.t` to one of the following functions:
     - `YourGear.Logger.error/1`
@@ -50,9 +52,8 @@
 
 ## Obtaining log files
 
-- You can download your gear's log files from within `ac_console` ([dev](https://ac-console.solomondev.access-company.com)/[prod](https://ac-console.solomon.access-company.com)).
+- **(TBD)**
 - Note that there are multiple running nodes in the antikythera instance and as such the log files are created on a per-node basis.
 - Note also that log files will become downloadable in a few hours:
     - log files are rotated on every 2 hours, and
     - rotated logs are uploaded to cloud storage on every 30 minutes.
-- Alternatively you can manually trigger rotation and upload of your gear's log files from within `ac_console` UI.

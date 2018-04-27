@@ -1,5 +1,7 @@
 # Gear-to-Gear (g2g) Communication
 
+**Note:** This page is being updated for OSS release. Please be patient.
+
 - Antikythera defines an interface for g2g communication.
   The interface closely resembles the HTTP protocol: it has method, path, body, headers, etc.
   This introduces a few nice things:

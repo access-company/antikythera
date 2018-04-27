@@ -1,5 +1,7 @@
 # Testing
 
+**Note:** This page is being updated for OSS release. Please be patient.
+
 ## Libraries
 
 - You can write tests for your gear using standard [`ExUnit` test framework](http://elixir-lang.org/docs/stable/ex_unit/ExUnit.html).
@@ -50,14 +52,12 @@
       b (end-user) | b (stub) | O | X | none
       b (end-user) | c (yes)  | X | O | `@blackbox_only`
 
-- Reference: See also [`Antikythera.Test.Config`](../../lib/test/config.ex) ([ExDoc document](https://hexdocs.pm/antikythera/Antikythera.Test.Config.html))
+- Reference: See also `Antikythera.Test.Config`
 
 ## Secret in blackbox testing
 
 - Sometimes blackbox tests require certain kind of secret that should not be hardcoded in tests.
     - e.g. API key for an external service
 - To pass such information to blackbox test runner process, antikythera defines `BLACKBOX_TEST_SECRET_JSON` environment variable.
-- From within `ac_console` ([dev](https://ac-console.solomondev.access-company.com)/[prod](https://ac-console.solomon.access-company.com))
-  you can set `BLACKBOX_TEST_SECRET_JSON` that will be used during blackbox testing in [automatic deployment](./deployment.md).
 - In your blackbox test cases you can obtain contents of the environment variable via
   `Antikythera.Test.Config.blackbox_test_secret/0` which returns JSON-parsed variable.

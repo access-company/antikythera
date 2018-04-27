@@ -1,5 +1,7 @@
 # "Executor Pool" for Resource Management
 
+**Note:** This page is being updated for OSS release. Please be patient.
+
 ## Purpose
 
 Antikythera supports multi-application (multi-gear) and multi-tenant workloads.
@@ -11,7 +13,7 @@ Each executor pool consists of the following pools of Erlang processes:
 
 - Processes for web request processing
 - Processes for websocket connections
-- Processes for [async job](./async_job.md) execution
+- Processes for [async job](https://hexdocs.pm/antikythera/async_job.md) execution
 
 Number of processes in the pools are managed by the antikythera core.
 These types of pools in an executor pool are independent of each other,
@@ -72,7 +74,7 @@ thus simultaneous task executions are capped by the number of processes in each 
     end
     ```
 
-### [Async jobs](./async_job.md)
+### [Async jobs](https://hexdocs.pm/antikythera/async_job.md)
 
 - When you register your async jobs, you must specify which executor pool to use as arguments to `YourGear.SomeAsyncJob.register/3`.
   See [API reference](https://hexdocs.pm/antikythera/Antikythera.AsyncJob.html) for detailed explanation.
@@ -87,7 +89,6 @@ thus simultaneous task executions are capped by the number of processes in each 
     - tenant executor pools associated with the gear
 - Therefore developer of a gear that uses tenant executor pool must establish associations
   between his/her gear and target tenant executor pools to use.
-- You can associate tenant executor pools with your gear from within `ac_console` ([dev](https://ac-console.solomondev.access-company.com)/[prod](https://ac-console.solomon.access-company.com))
 
 ## Managing capacity of executor pools
 

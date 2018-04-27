@@ -1,5 +1,7 @@
 # Implementing Controller
 
+**Note:** This page is being updated for OSS release. Please be patient.
+
 - Controller action must receives a `Antikythera.Conn` struct and returns a `Antikythera.Conn`.
   In other words, type signature of a controller action must be `acion(Antikythera.Conn.t) :: Antikythera.Conn.t`.
 - What controller action should do is, based on the request information in `Conn` struct,

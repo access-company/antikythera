@@ -1,5 +1,7 @@
 # What Gears Must Not Do
 
+**Note:** This page is being updated for OSS release. Please be patient.
+
 - (Some of the issues listed here are checked by `compile.antikythera_gear_static_analysis` every time you compile your gear's code.)
 - Modules prefixed with `Antikythera` define interface functions to be used by gear implementations.
   On the other hand, modules with the other prefixes (`AntikytheraCore`, `AntikytheraEal` and `AntikytheraLocal`)
