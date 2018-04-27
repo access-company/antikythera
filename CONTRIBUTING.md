@@ -14,7 +14,7 @@ All of them are helpful! Follow the guidelines provided here.
 
 ## Surveying and Discussions
 
-- First, read up [Documentations](./doc) before asking questions/making suggestions.
+- First, read up [documentations](https://hexdocs.pm/antikythera) before asking questions/making suggestions.
 - Also, search in [antikythera API reference](https://hexdocs.pm/antikythera/api-reference.html)
   to find detailed information about modules/functions.
 - Make sure you are using latest antikythera with latest supported Erlang/Elixir version.
@@ -131,7 +131,7 @@ All of them are helpful! Follow the guidelines provided here.
   ```
 
 - Then, you set up a controller that uses new feature, and test its integrity via request and response.
-    - Consult [the document for testing in gears](./doc/gear_developers/testing.md) as a reference.
+    - Consult [the document for testing in gears](https://hexdocs.pm/antikythera/testing.html) as a reference.
 
 ### Pull Request
 

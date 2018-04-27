@@ -27,10 +27,10 @@
 ### Connections limit
 
 - In order to prevent a specific gear from monopolizing resources in the cluster,
-  antikythera imposes an upper limit on number of websocket connections per [executor pool](./executor_pool.md).
+  antikythera imposes an upper limit on number of websocket connections per [executor pool](https://hexdocs.pm/antikythera/executor_pool.html).
     - During handshake, antikythera calls `YourGear.executor_pool_for_web_request/1` to ask which executor pool this client belongs to.
     - Trying to connect more than the limit results in an HTTP 503 (Service Unavailable) error.
-        - The error can be customized as you wish; see [handling errors](./controller.md#handling-errors).
+        - The error can be customized as you wish; see [handling errors](https://hexdocs.pm/antikythera/controller.html#handling-errors).
 
 ### Idle timeout
 

@@ -50,7 +50,7 @@ Current contents describes how our antikythera instance and gears are deployed i
 - All the following tests are executed in the same way as normal development environment:
     - Before deployment: `$ mix test`
     - After deployment: `$ TEST_MODE=blackbox_dev mix test` or `$ TEST_MODE=blackbox_prod mix test`
-- (See [here](https://hexdocs.pm/antikythera/testing.md) for more about whitebox/blackbox tests)
+- (See [here](https://hexdocs.pm/antikythera/testing.html) for more about whitebox/blackbox tests)
 
 ## Troubleshoot errors during deploy
 

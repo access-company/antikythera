@@ -11,7 +11,7 @@
 - You can configure your logger setting to include which levels of messages to be included in your logs.
   Default setting is `info` (i.e., `error` and `info` are included, `debug` is not included).
 - On your local development environment, you can set your log level by setting `LOG_LEVEL` environment variable.
-- Developers will be notified when any `error` level logs are reported. See [Alerting](./alerting.md) for details.
+- Developers will be notified when any `error` level logs are reported. See [Alerting](https://hexdocs.pm/antikythera/alerting.html) for details.
 
 ## Auto-generated log messages
 
@@ -24,7 +24,7 @@
     - `context` field is a context ID of the current request processing, in the form of `<start date and time>_<erlang node ID>_<process ID>`.
     - Query parameters are shown in the URL-decoded form.
     - `encoding` field is the value of `accept-encoding` request header. This field is shown mainly to check whether the client uses gzip/deflate compression.
-- On start/end of [async job](./async_job.md) executions the following logs are generated:
+- On start/end of [async job](https://hexdocs.pm/antikythera/async_job.html) executions the following logs are generated:
   ```
   2016-08-06T09:17:24.043+00:00 [info] context=20160806-091724.043_ip-172-31-22-164_0.662.0 <async_job> module=Testgear.TestAsyncJob job_id=P97tnfACMEivaKW-3zey attempt=1th/3 run_at=2016-08-06T09:17:24.042+00:00 START
   2016-08-06T09:17:24.144+00:00 [info] context=20160806-091724.043_ip-172-31-22-164_0.662.0 <async_job> module=Testgear.TestAsyncJob job_id=P97tnfACMEivaKW-3zey attempt=1th/3 run_at=2016-08-06T09:17:24.042+00:00 END status=success time=71ms

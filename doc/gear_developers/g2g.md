@@ -8,7 +8,7 @@
     - Gear developers can focus on standard HTTP terminology. They can be written/tested in the same way.
     - The same interface enhances code reuse: e.g. code for web request automatically implements gear request handling.
 - Antikythera routes a g2g request to its target gear's controller action by matching its method and path, as is the case for web request
-  (See also [routing](./routing.md)).
+  (See also [routing](https://hexdocs.pm/antikythera/routing.html)).
 - You can send request to another gear by using `TargetGear.G2g` module.
   For usage of `G2g` modules, refer to [test code in antikythera repo](https://github.com/access-company/antikythera/tree/master/testgear/test/g2g_test.exs).
 

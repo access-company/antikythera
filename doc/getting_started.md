@@ -1,7 +1,7 @@
 # Getting Started
 
-- Set up your [development environment](./development_environment.md).
-    - Basically you need to (1) install Erlang and Elixir, and (2) prepare for [domain-based routing](./gear_developers/routing.md).
+- Set up your [development environment](https://hexdocs.pm/antikythera/development_environment.html).
+    - Basically you need to (1) install Erlang and Elixir, and (2) prepare for [domain-based routing](https://hexdocs.pm/antikythera/routing.html).
 - Then, you need your own antikythera instance!
     - **Documentation about this part is in preparation. Please be patient!**
     - For now, you can start by using [antikythera_instance_example](https://github.com/access-company/antikythera_instance_example).

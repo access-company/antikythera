@@ -15,22 +15,22 @@ Current contents describes how we are handling our antikythera instance's and ge
         - `antikythera` or gear name
     - `epool_id`
         - `gear-<gear_name>` or `tenant-<tenant_id>`
-        - Exists only in [executor pool](https://hexdocs.pm/antikythera/executor_pool.md) related metrics
+        - Exists only in [executor pool](https://hexdocs.pm/antikythera/executor_pool.html) related metrics
 - Metrics are stored for 1 month. Older indices will be automatically deleted.
 
 ## Auto-collected metrics
 
 - The following metrics are automatically gathered by antikythera:
-    - Metrics about web/[g2g](https://hexdocs.pm/antikythera/g2g.md) requests
+    - Metrics about web/[g2g](https://hexdocs.pm/antikythera/g2g.html) requests
         - Number of processed requests (`web/g2g_request_count_*`)
         - Time distribution of response times (`web/g2g_response_time_ms_*`)
         - Executor pool checkout failure count (`web_timeout_in_epool_checkout_sum`)
         - Number of working processes for web request handling in an executor pool (`epool_working_action_runner_*`)
-    - Metrics about [websocket](https://hexdocs.pm/antikythera/websocket.md) interactions
+    - Metrics about [websocket](https://hexdocs.pm/antikythera/websocket.html) interactions
         - Number of active connections (`epool_websocket_connections_*`)
         - Number of rejected attempts to establish websocket connections (`epool_websocket_rejected_count`)
         - Number of received/sent websocket frames (`websocket_frames_received/sent`)
-    - Metrics about [async job](https://hexdocs.pm/antikythera/async_job.md)
+    - Metrics about [async job](https://hexdocs.pm/antikythera/async_job.html)
         - Number of completed/failed jobs (`async_job_success/failure_sum`)
         - Time distribution of async job executions (`async_job_execution_time_ms_*`)
         - Number of waiting jobs in job queue (`epool_waiting_job_count`)

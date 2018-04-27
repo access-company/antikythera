@@ -50,7 +50,7 @@
 
 ## Prepare for Domain-based Routing
 
-- Antikythera routes web requests by subdomains and paths. See [Routing](./gear_developers/routing.md).
+- Antikythera routes web requests by subdomains and paths. See [routing](https://hexdocs.pm/antikythera/routing.html).
 - In local development, you must be able to resolve subdomain of localhost (e.g. `your-gear.localhost`) into loopback address (`127.0.0.1`).
     - The easiest way is to add a line like `127.0.0.1 your-gear.localhost` to your `/etc/hosts`.
     - Alternatively, you can setup a local DNS server (such as [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html)) to resolve all subdomains of localhost.
@@ -74,11 +74,11 @@
             - A boolean flag for disabling web server functionality of antikythera. Defaults to `false`.
             - `true` is implicitly set when using `Antikythera.Mix.Task.prepare_antikythera/0` in your mix task.
         - `LOG_LEVEL`:
-            - Log level of all gears. Defaults to `info`. See also [logging.md](./gear_developers/logging.md).
+            - Log level of all gears. Defaults to `info`. See also [logging](https://hexdocs.pm/antikythera/logging.html).
         - `SOME_GEAR_CONFIG_JSON`:
-            - Gear config of `:some_gear`. See also [gear_config.md](./gear_developers/gear_config.md).
+            - Gear config of `:some_gear`. See also [gear_config](https://hexdocs.pm/antikythera/gear_config.html).
     - Compile-time environment variables: (to change the followings you need to recompile antikythera)
         - `GEAR_ACTION_TIMEOUT`:
-            - Milliseconds to wait until gear action finishes. Defaults to `10000`. See also [controller.md](./gear_developers/controller.md).
+            - Milliseconds to wait until gear action finishes. Defaults to `10000`. See also [controller](https://hexdocs.pm/antikythera/controller.html).
         - `GEAR_PROCESS_MAX_HEAP_SIZE`:
             - Maximum size of per-process heap memory in words. Defaults to `50000000` (400MB in 64-bit architecture).

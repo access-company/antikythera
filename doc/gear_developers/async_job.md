@@ -20,7 +20,7 @@ Antikythera's async job processing comes with the following features:
 - Support of recurring schedule (using crontab format)
 - Timeout of job execution
 - Load balancing of job executions within ErlangVMs in the cluster
-- Resource capping (implemented in terms of [executor pools](./executor_pool.md))
+- Resource capping (implemented in terms of [executor pools](https://hexdocs.pm/antikythera/executor_pool.html))
 
 ## Usage example
 

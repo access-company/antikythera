@@ -52,7 +52,7 @@ Please be aware of that, and stay tuned for further additions!
 
 ## Getting Started
 
-See our [Getting Started](./doc/getting_started.md) guide!
+See our [Getting Started](https://hexdocs.pm/antikythera/getting_started.html) guide!
 
 ## Documentation
 

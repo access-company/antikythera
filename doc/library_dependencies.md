@@ -18,7 +18,7 @@
     - Note that unless some breaking changes are introduced to your antikythera instance by e.g. updating a library to an incompatible version,
       already compiled gears should continue to work.
     - This is an essential feature of antikythera that allows you to independently update antikythera instances and its gears!
-      See [Deployment](./gear_developers/deployment.md) for details.
+      See [Deployment](https://hexdocs.pm/antikythera/deployment.html) for details.
 
 ## Libraries available from gears
 

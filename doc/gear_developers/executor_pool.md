@@ -13,7 +13,7 @@ Each executor pool consists of the following pools of Erlang processes:
 
 - Processes for web request processing
 - Processes for websocket connections
-- Processes for [async job](https://hexdocs.pm/antikythera/async_job.md) execution
+- Processes for [async job](https://hexdocs.pm/antikythera/async_job.html) execution
 
 Number of processes in the pools are managed by the antikythera core.
 These types of pools in an executor pool are independent of each other,
@@ -74,7 +74,7 @@ thus simultaneous task executions are capped by the number of processes in each 
     end
     ```
 
-### [Async jobs](https://hexdocs.pm/antikythera/async_job.md)
+### [Async jobs](https://hexdocs.pm/antikythera/async_job.html)
 
 - When you register your async jobs, you must specify which executor pool to use as arguments to `YourGear.SomeAsyncJob.register/3`.
   See [API reference](https://hexdocs.pm/antikythera/Antikythera.AsyncJob.html) for detailed explanation.
