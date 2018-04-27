@@ -28,7 +28,7 @@ Current contents describes how our antikythera instance and gears are deployed i
 
 - Each of dev and prod environments runs its own jenkins server for automatic testing and deployment.
 
-![](../images/AntikytheraDeploymentFlow.png)
+![Deployment Flow](assets/AntikytheraDeploymentFlow.png)
 
 - Note that, in order to run a gear within live antikythera environments, it is necessary for the gear to use the latest version of antikythera.
     - The antikythera version used by gear is tracked by `mix.lock` file.

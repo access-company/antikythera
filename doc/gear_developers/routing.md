@@ -7,7 +7,7 @@
     - Path-based routing
 - This process is schematically shown in the following flow diagram:
 
-![](../images/RequestHandlingFlow.png)
+![Request Handling Flow](assets/RequestHandlingFlow.png)
 
 ## Domain-based routing to a specific gear
 

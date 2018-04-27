@@ -122,6 +122,7 @@ defmodule Antikythera.Mixfile do
 
   defp docs() do
     [
+      assets: "doc/assets",
       extras: [
         "README.md",
         "STYLE_GUIDE.md",
