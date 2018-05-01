@@ -124,44 +124,58 @@ end
 
 defmodule Antikythera.MixConfig do
   @moduledoc """
-  Module to be `use`d by `config.exs` file in order to set up common mix configuations for antikythera.
+  Helper module to simplify `config.exs` files in antikythera instance projects.
 
   Antikythera uses a number of mix configurations of many OTP applications for various purposes;
   setting the same set of mix configurations in `config.exs` files of all antikythera instance projects
   introduces too much boilerplate.
-  To avoid the boilerplate you can `use Antikythera.MixConfig`, which fills miscellaneous mix configurations
-  with the default values, in your antikythera instance project.
-  The default values set by `use Antikythera.MixConfig` should suffice for most cases (though you may override them).
+  To avoid the boilerplate, you can call `Antikythera.MixConfig.all/0` to obtain the default values
+  and then set the values by `Mix.Config.config/2` macro in your `config.exs` file.
+  The default values returned by `Antikythera.MixConfig.all/0` should suffice for most cases.
 
-  None of the mix configurations of `:antikythera` application are filled by `use Antikythera.MixConfig`;
-  you must properly set them yourself.
+  None of the mix configurations of `:antikythera` application are included in the return value
+  (as there's no appropriate defaults for them); you must properly set them yourself.
   For explanations of the configuration items of `:antikythera`, see antikythera's `config.exs` file.
   As a result, your `config.exs` file should look like the following:
 
-      use Antikythera.MixConfig
+      use Mix.Config
+
+      try do
+        for {app, kw} <- Antikythera.MixConfig.all() do
+          config(app, kw)
+        end
+      rescue
+        UndefinedFunctionError -> :ok
+      end
 
       config :antikythera, [
         <key1>: <value1>,
         ...
       ]
+
+  Note that the `try`-`rescue` is needed to correctly bootstrap your project
+  from the situation where `:antikythera` as a dependency is not yet fetched.
   """
 
-  defmacro __using__(_) do
-    quote do
-      use Mix.Config
+  @spec all() :: Keyword.t(Keyword.t(any))
+  def all() do
+    default_configs() ++ croma_configs() ++ exsync_configs()
+  end
 
+  defp default_configs() do
+    [
       # Limit port range to be used for ErlangVM-to-ErlangVM communications.
-      config :kernel, [
+      kernel: [
         inet_dist_listen_min: 6000,
         inet_dist_listen_max: 7999,
-      ]
+      ],
 
       # Logger configurations.
-      config :sasl, [
+      sasl: [
         sasl_error_logger: false, # SASL logs are handled by :logger
-      ]
+      ],
 
-      config :logger, [
+      logger: [
         level:               :info,
         utc_log:             true,
         handle_sasl_reports: true,
@@ -171,27 +185,37 @@ defmodule Antikythera.MixConfig do
           format:   "$dateT$time+00:00 [$level$levelpad] $metadata$message\n",
           metadata: [:module],
         ],
-      ]
-
-      # (compile-time configuration) Disable croma's runtime validations
-      # when running as a "deployment" (see also antikythera's `:deployments` option below).
-      local? = System.get_env("ANTIKYTHERA_COMPILE_ENV") in [nil, "local"]
-      config :croma, [
-        defun_generate_validation: local?,
-        debug_assert:              local?,
-      ]
-
-      # During gear development, recompile and reload on modifications of HAML files.
-      if Mix.env() == :dev do
-        config :exsync, [
-          extra_extensions: [".haml"],
-        ]
-      end
+      ],
 
       # Persist Raft logs & snapshots for async job queues.
-      config :raft_fleet, [
+      raft_fleet: [
         per_member_options_maker: AntikytheraCore.AsyncJob.RaftOptionsMaker,
+      ],
+    ]
+  end
+
+  defp croma_configs() do
+    # (compile-time configuration) Disable croma's runtime validations
+    # when running as a "deployment" (see also antikythera's `:deployments` option below).
+    local? = System.get_env("ANTIKYTHERA_COMPILE_ENV") in [nil, "local"]
+    [
+      croma: [
+        defun_generate_validation: local?,
+        debug_assert:              local?,
+      ],
+    ]
+  end
+
+  defp exsync_configs() do
+    # During gear development, recompile and reload on modifications of HAML files.
+    if Mix.env() == :dev do
+      [
+        exsync: [
+          extra_extensions: [".haml"],
+        ],
       ]
+    else
+      []
     end
   end
 end
