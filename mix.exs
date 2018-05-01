@@ -70,11 +70,11 @@ defmodule Antikythera.Mixfile do
       {:hackney     , "1.9.0" , [antikythera_internal: true]},
       {:calliope    , "0.4.1" , [antikythera_internal: true]}, # 0.4.2 is broken!
       {:pool_sup    , "0.4.0" , [antikythera_internal: true]},
-      {:raft_fleet  , "0.8.1" , [antikythera_internal: true]},
-      {:rafted_value, "0.9.0" , [antikythera_internal: true]},
+      {:raft_fleet  , "0.8.2" , [antikythera_internal: true]},
+      {:rafted_value, "0.9.2" , [antikythera_internal: true]},
       {:syn         , "1.6.3" , [antikythera_internal: true]},
       {:fast_xml    , "1.1.29", [antikythera_internal: true, manager: :rebar3]}, # :fast_xml contains not only rebar.config but also mix.exs, but we don't use it
-      {:recon       , "2.3.4" , [antikythera_internal: true]},
+      {:recon       , "2.3.5" , [antikythera_internal: true]},
       {:relx        , "3.23.1", [antikythera_internal: true, only: :prod, runtime: false]}, # only to generate release
 
       # The following libraries are used by both antikythera itself and gears.
@@ -84,7 +84,7 @@ defmodule Antikythera.Mixfile do
       {:pbkdf2 , "2.0.0" },
 
       # tools
-      {:exsync          , "0.2.2" , [only: :dev ]},
+      {:exsync          , "0.2.3" , [only: :dev ]},
       {:ex_doc          , "0.18.3", [only: :dev , runtime: false]},
       {:dialyze         , "0.2.1" , [only: :dev , runtime: false]},
       {:credo           , "0.8.10", [only: :dev , runtime: false]},
