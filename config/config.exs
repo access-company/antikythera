@@ -1,36 +1,8 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-use Mix.Config
+use Antikythera.MixConfig
 
-# Limit port range to be used for ErlangVM-to-ErlangVM communications
-config :kernel, [
-  inet_dist_listen_min: 6000,
-  inet_dist_listen_max: 7999,
-]
-
-# SASL logs are handled by :logger
-config :sasl, [
-  sasl_error_logger: false,
-]
-
-config :logger, [
-  level:               :info,
-  utc_log:             true,
-  handle_sasl_reports: true,
-  translators:         [{AntikytheraCore.ErlangLogTranslator, :translate}],
-  backends:            [:console, AntikytheraCore.Alert.LoggerBackend],
-  console: [
-    format:   "$dateT$time+00:00 [$level$levelpad] $metadata$message\n",
-    metadata: [:module],
-  ],
-]
-
-config :raft_fleet, [
-  per_member_options_maker: AntikytheraCore.AsyncJob.RaftOptionsMaker,
-]
-
-# Auxiliary variables
-
+# Auxiliary variables.
 repo_tmp_dir_basename = if System.get_env("ANTIKYTHERA_COMPILE_ENV") == "local", do: "local", else: :os.getpid()
 repo_tmp_dir = Path.join([__DIR__, "..", "tmp", repo_tmp_dir_basename]) |> Path.expand()
 
