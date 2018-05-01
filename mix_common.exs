@@ -1,10 +1,10 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
 #
-# `Antikythera.MixCommon` and `Antikythera.GearProject` provides common project configurations
+# Modules defined in this file provides common project settings
 # for antikythera itself, antikythera instances and also gears.
-# These 2 modules must be loadable independently of `Antikythera.Mixfile`, i.e.,
-# these modules must be defined in a file separate from `mix.exs`
+# These modules must be loadable independently of `Antikythera.Mixfile`, i.e.,
+# they must be defined in a file separate from `mix.exs`
 # (if we put these modules in `mix.exs`, mix complains about redefinition of the same mix project).
 #
 
@@ -119,6 +119,80 @@ defmodule Antikythera.MixCommon do
     last_commit_time         = :io_lib.format('~4..0w~2..0w~2..0w~2..0w~2..0w~2..0w', [y, mo, d, h, mi, s]) |> List.to_string()
     {last_commit_sha1, 0}    = System.cmd("git", ["rev-parse", "HEAD"])
     major_minor_patch <> "-" <> last_commit_time <> "+" <> String.trim(last_commit_sha1)
+  end
+end
+
+defmodule Antikythera.MixConfig do
+  @moduledoc """
+  Module to be `use`d by `config.exs` file in order to set up common mix configuations for antikythera.
+
+  Antikythera uses a number of mix configurations of many OTP applications for various purposes;
+  setting the same set of mix configurations in `config.exs` files of all antikythera instance projects
+  introduces too much boilerplate.
+  To avoid the boilerplate you can `use Antikythera.MixConfig`, which fills miscellaneous mix configurations
+  with the default values, in your antikythera instance project.
+  The default values set by `use Antikythera.MixConfig` should suffice for most cases (though you may override them).
+
+  None of the mix configurations of `:antikythera` application are not filled by `use Antikythera.MixConfig`;
+  you must properly set them yourself.
+  For explanations of the configuration items of `:antikythera`, see antikythera's `config.exs` file.
+  As a result, your `config.exs` file should look like the following:
+
+      use Antikythera.MixConfig
+
+      config :antikythera, [
+        <key1>: <value1>,
+        ...
+      ]
+  """
+
+  defmacro __using__(_) do
+    quote do
+      use Mix.Config
+
+      # Limit port range to be used for ErlangVM-to-ErlangVM communications.
+      config :kernel, [
+        inet_dist_listen_min: 6000,
+        inet_dist_listen_max: 7999,
+      ]
+
+      # Logger configurations.
+      config :sasl, [
+        sasl_error_logger: false, # SASL logs are handled by :logger
+      ]
+
+      config :logger, [
+        level:               :info,
+        utc_log:             true,
+        handle_sasl_reports: true,
+        translators:         [{AntikytheraCore.ErlangLogTranslator, :translate}],
+        backends:            [:console, AntikytheraCore.Alert.LoggerBackend],
+        console: [
+          format:   "$dateT$time+00:00 [$level$levelpad] $metadata$message\n",
+          metadata: [:module],
+        ],
+      ]
+
+      # (compile-time configuration) Disable croma's runtime validations
+      # when running as a "deployment" (see also antikythera's `:deployments` option below).
+      local? = System.get_env("ANTIKYTHERA_COMPILE_ENV") in [nil, "local"]
+      config :croma, [
+        defun_generate_validation: local?,
+        debug_assert:              local?,
+      ]
+
+      # During gear development, recompile and reload on modifications of HAML files.
+      if Mix.env() == :dev do
+        config :exsync, [
+          extra_extensions: [".haml"],
+        ]
+      end
+
+      # Persist Raft logs & snapshots for async job queues.
+      config :raft_fleet, [
+        per_member_options_maker: AntikytheraCore.AsyncJob.RaftOptionsMaker,
+      ]
+    end
   end
 end
 
