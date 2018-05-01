@@ -33,7 +33,7 @@ defmodule Antikythera.MixCommon do
 
   # Set application config for exsync
   if Mix.env() == :dev do
-    Application.put_env(:exsync, :extensions, [".erl", ".hrl", ".ex", ".haml"])
+    Application.put_env(:exsync, :extra_extensions, [".haml"])
   end
 
   def common_project_settings() do
