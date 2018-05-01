@@ -133,7 +133,7 @@ defmodule Antikythera.MixConfig do
   with the default values, in your antikythera instance project.
   The default values set by `use Antikythera.MixConfig` should suffice for most cases (though you may override them).
 
-  None of the mix configurations of `:antikythera` application are not filled by `use Antikythera.MixConfig`;
+  None of the mix configurations of `:antikythera` application are filled by `use Antikythera.MixConfig`;
   you must properly set them yourself.
   For explanations of the configuration items of `:antikythera`, see antikythera's `config.exs` file.
   As a result, your `config.exs` file should look like the following:
