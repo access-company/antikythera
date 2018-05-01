@@ -30,7 +30,6 @@ config :raft_fleet, [
 ]
 
 # Auxiliary variables
-
 repo_tmp_dir_basename = if System.get_env("ANTIKYTHERA_COMPILE_ENV") == "local", do: "local", else: :os.getpid()
 repo_tmp_dir = Path.join([__DIR__, "..", "tmp", repo_tmp_dir_basename]) |> Path.expand()
 
