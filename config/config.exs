@@ -1,6 +1,10 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
-use Antikythera.MixConfig
+use Mix.Config
+
+for {app, kw} <- Antikythera.MixConfig.all() do
+  config(app, kw)
+end
 
 # Auxiliary variables.
 repo_tmp_dir_basename = if System.get_env("ANTIKYTHERA_COMPILE_ENV") == "local", do: "local", else: :os.getpid()
