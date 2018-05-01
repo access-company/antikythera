@@ -14,13 +14,18 @@ defmodule AntikytheraEal.ImplChooser do
       behaviour_module.behaviour_info(:callbacks)
       |> Enum.each(fn {name, arity} ->
         vars = AntikytheraEal.ImplChooser.make_vars(arity, __MODULE__)
-        defdelegate unquote(name)(unquote_splicing(vars)), to: impl_module
+        @impl true
+        def unquote(name)(unquote_splicing(vars)) do
+          # Use `apply/3` to avoid xref warnings about unavailability of `impl_module`
+          # (`impl_module` can be defined by a mix project invisible from `:antikythera`).
+          apply(unquote(impl_module), unquote(name), unquote(vars))
+        end
       end)
     end
   end
 
   def make_vars(n, module) do
-    Enum.drop(0..n, 1)
+    Enum.drop(0..n, 1) # Works even if `n == 0`
     |> Enum.map(fn i ->
       Macro.var(:"arg#{i}", module) # during compilation, safe to generate atoms
     end)
