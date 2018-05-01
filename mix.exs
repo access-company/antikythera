@@ -54,7 +54,7 @@ defmodule Antikythera.Mixfile do
 
   defp elixirc_paths() do
     default    = ["lib", "core", "eal"]
-    additional = if Antikythera.MixCommon.on_cloud?(), do: [], else: ["local"]
+    additional = if System.get_env("ANTIKYTHERA_COMPILE_ENV") in [nil, "local"], do: ["local"], else: []
     default ++ additional
   end
 

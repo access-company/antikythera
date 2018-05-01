@@ -2,15 +2,15 @@
 
 use Mix.Config
 
-# Limit port range to be used for ErlangVM-to-ErlangVM communications
+# Limit port range to be used for ErlangVM-to-ErlangVM communications.
 config :kernel, [
   inet_dist_listen_min: 6000,
   inet_dist_listen_max: 7999,
 ]
 
-# SASL logs are handled by :logger
+# Logger configurations.
 config :sasl, [
-  sasl_error_logger: false,
+  sasl_error_logger: false, # SASL logs are handled by :logger
 ]
 
 config :logger, [
@@ -25,11 +25,27 @@ config :logger, [
   ],
 ]
 
+# (compile-time configuration) Disable croma's runtime validations
+# when running as a "deployment" (see also antikythera's `:deployments` option below).
+local? = System.get_env("ANTIKYTHERA_COMPILE_ENV") in [nil, "local"]
+config :croma, [
+  defun_generate_validation: local?,
+  debug_assert:              local?,
+]
+
+# During gear development, recompile and reload on modifications of HAML files.
+if Mix.env() == :dev do
+  config :exsync, [
+    extra_extensions: [".haml"],
+  ]
+end
+
+# Persist Raft logs & snapshots for async job queues.
 config :raft_fleet, [
   per_member_options_maker: AntikytheraCore.AsyncJob.RaftOptionsMaker,
 ]
 
-# Auxiliary variables
+# Auxiliary variables.
 repo_tmp_dir_basename = if System.get_env("ANTIKYTHERA_COMPILE_ENV") == "local", do: "local", else: :os.getpid()
 repo_tmp_dir = Path.join([__DIR__, "..", "tmp", repo_tmp_dir_basename]) |> Path.expand()
 

@@ -1,7 +1,8 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
 #
-# `Antikythera.MixCommon` and `Antikythera.GearProject` provides common project configurations for both antikythera and gears.
+# `Antikythera.MixCommon` and `Antikythera.GearProject` provides common project configurations
+# for antikythera itself, antikythera instances and also gears.
 # These 2 modules must be loadable independently of `Antikythera.Mixfile`, i.e.,
 # these modules must be defined in a file separate from `mix.exs`
 # (if we put these modules in `mix.exs`, mix complains about redefinition of the same mix project).
@@ -22,23 +23,9 @@ defmodule Antikythera.MixCommon do
     Mix.raise("Incorrect Erlang/OTP version! required: '#{@otp_version}', used: '#{current_otp_version}'")
   end
 
-  @on_cloud? System.get_env("ANTIKYTHERA_COMPILE_ENV") in ["dev", "prod"]
-  def on_cloud?(), do: @on_cloud?
-
-  # Argument validation in `Croma.Defun.defun` is enabled only in dev/test; disabled in the cloud environments
-  if @on_cloud? do
-    Application.put_env(:croma, :defun_generate_validation, false)
-    Application.put_env(:croma, :debug_assert, false)
-  end
-
-  # Set application config for exsync
-  if Mix.env() == :dev do
-    Application.put_env(:exsync, :extra_extensions, [".haml"])
-  end
-
   def common_project_settings() do
     [
-      elixir:            @elixir_version,
+      elixir:            @elixir_version, # Enforce elixir version
       elixirc_options:   [warnings_as_errors: true],
       build_embedded:    Mix.env() == :prod,
       docs:              [output: "exdoc"],
