@@ -45,6 +45,7 @@ references:
     name: Checkout master of external repository
     command: |
       if [ -d .git ]; then
+        git checkout .
         git checkout master
         git pull "$EXTERNAL_GIT_REPOSITORY" master
       else
