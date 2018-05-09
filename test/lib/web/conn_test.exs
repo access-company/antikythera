@@ -154,4 +154,49 @@ defmodule Antikythera.ConnTest do
     conn2 = Conn.no_cache(conn1)
     assert conn2.resp_headers["cache-control"] == "private, no-cache, no-store, max-age=0"
   end
+
+  test "json/3 should return body as JSON" do
+    conn  = ConnHelper.make_conn()
+    conn2 = Conn.json(conn, 200, %{msg: "json_api@HelloController"})
+    assert conn2.status       == 200
+    assert conn2.resp_headers == %{"content-type" => "application/json"}
+    assert conn2.resp_body    == ~S({"msg":"json_api@HelloController"})
+  end
+
+  test "json/3 should interpret both pos_integer and atom as an HTTP status code" do
+    old_hdr = %{"foo" => "bar"}
+    conn  = ConnHelper.make_conn(%{resp_headers: old_hdr})
+
+    conn2 = Conn.json(conn, :ok, %{msg: "json_api@HelloController"})
+    assert conn2.status == 200
+
+    conn3 = Conn.json(conn, 201, %{msg: "json_api@HelloController"})
+    assert conn3.status == 201
+  end
+
+  test "json/3 should add content-type header" do
+    old_hdr = %{"foo" => "bar"}
+    conn  = ConnHelper.make_conn(%{resp_headers: old_hdr})
+
+    conn2 = Conn.json(conn, 200, %{msg: "json_api@HelloController"})
+    assert conn2.resp_headers == Map.put(old_hdr, "content-type", "application/json")
+  end
+
+  test "redirect/2 should set location header and status" do
+    redirect_path = "/redirect/path"
+    conn1 = ConnHelper.make_conn()
+    conn2 = Conn.redirect(conn1, redirect_path)
+    assert conn2.status       == 302
+    assert conn2.resp_headers == %{"location" => redirect_path}
+
+    conn3 = ConnHelper.make_conn()
+    conn4 = Conn.redirect(conn3, redirect_path, 301)
+    assert conn4.status       == 301
+    assert conn4.resp_headers == %{"location" => redirect_path}
+
+    conn5 = ConnHelper.make_conn()
+    conn6 = Conn.redirect(conn5, redirect_path, :moved_permanently)
+    assert conn6.status       == 301
+    assert conn6.resp_headers == %{"location" => redirect_path}
+  end
 end
