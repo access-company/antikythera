@@ -157,7 +157,7 @@ jobs:
             mix deps.get || mix deps.get
             mix deps.get
             git --no-pager diff
-            git -c user.name='AntikytheraCI' -c user.email='solomon_a-gr@access-company.com' commit -a -m '[CI] Update antikythera'
+            git -c user.name='AntikytheraDeploy' -c user.email='antikythera-gr@access-company.com' commit -a -m '[CI] Update antikythera'
             MIX_ENV=dev mix compile
             MIX_ENV=test mix compile
             MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
