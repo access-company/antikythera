@@ -1,3 +1,5 @@
+# Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
+
 defmodule Mix.Tasks.Compile.EnsureGearDependencies do
   @shortdoc "Ensures only gear applications are specifed in `gear_deps/0`"
   @moduledoc """
