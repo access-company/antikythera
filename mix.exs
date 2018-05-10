@@ -42,6 +42,8 @@ defmodule Antikythera.Mixfile do
       deps:            deps(),
       source_url:      @github_url,
       homepage_url:    @github_url,
+      description:     "An Elixir framework to build your own in-house PaaS (Platform as a Service).",
+      package:         package(),
     ] ++ Keyword.update!(Antikythera.MixCommon.common_project_settings(), :docs, &(&1 ++ docs()))
   end
 
@@ -117,6 +119,18 @@ defmodule Antikythera.Mixfile do
       {:fs         , "0.9.1", [indirect: true, only: :dev ]}, # mix_test_watch, 0.9.2 is available on hex.pm but it's broken!
       {:exjsx      , "4.0.0", [indirect: true, only: :test]}, # excoveralls
       {:jsx        , "2.8.3", [indirect: true, only: :test]}, # excoveralls
+    ]
+  end
+
+  defp package() do
+    [
+      licesnses:   ["Apache 2.0"],
+      maintainers: ["antikythera-gr@access-company.com"],
+      links:       %{"GitHub" => @github_url},
+      files:       [
+        "assets", "core", "eal", "lib", "local", "priv", "rel",
+        "CHANGELOG.md", "LICENSE", "mix_common.exs", "mix.exs", "README.md",
+      ],
     ]
   end
 
