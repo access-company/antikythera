@@ -12,7 +12,7 @@ defmodule AntikytheraLocal.RunningEnvironment do
 
   # Paths for the ErlangVM that runs the release
   current_os_pid = :os.getpid()
-  @antikythera_root_dir              CorePath.antikythera_root_dir()              |> String.replace(~r|/tmp/#{current_os_pid}/|, "/tmp/local/")
+  @antikythera_root_dir          CorePath.antikythera_root_dir()          |> String.replace(~r|/tmp/#{current_os_pid}/|, "/tmp/local/")
   @compiled_gears_dir            CorePath.compiled_gears_dir()            |> String.replace(~r|/tmp/#{current_os_pid}/|, "/tmp/local/")
   @history_dir                   CorePath.history_dir()                   |> String.replace(~r|/tmp/#{current_os_pid}/|, "/tmp/local/")
   @system_info_access_token_path CorePath.system_info_access_token_path() |> String.replace(~r|/tmp/#{current_os_pid}/|, "/tmp/local/")
