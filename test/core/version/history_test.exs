@@ -6,7 +6,7 @@ defmodule AntikytheraCore.Version.HistoryTest do
   alias AntikytheraCore.Version.History.Entry
   alias AntikytheraCore.Cluster
 
-  @v1   Mix.Project.config[:version]
+  @v1   "0.0.1-20180501235959+0123456789abcdef0123456789abcdef01234567"
   @v2   Version.parse!(@v1) |> Map.update!(:patch, &(&1 + 1)) |> to_string()
   @v3   Version.parse!(@v2) |> Map.update!(:patch, &(&1 + 1)) |> to_string()
   @v4   Version.parse!(@v3) |> Map.update!(:patch, &(&1 + 1)) |> to_string()

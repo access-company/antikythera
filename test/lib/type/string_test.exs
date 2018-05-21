@@ -5,8 +5,10 @@ defmodule Antikythera.StringTypesTest do
   alias Antikythera.{VersionStr, Domain, EncodedPath, UnencodedPath, Email, Url, ContextId, TenantId}
 
   test "validate VersionStr" do
-    v = Mix.Project.config()[:version]
-    assert VersionStr.valid?(v)
+    assert VersionStr.valid?("0.0.1-20180501235959+0123456789abcdef0123456789abcdef01234567")
+
+    # multi-digit numbers in semantic version part are currently not allowed
+    refute VersionStr.valid?("0.0.10-20180501235959+0123456789abcdef0123456789abcdef01234567")
   end
 
   test "validate Domain" do
