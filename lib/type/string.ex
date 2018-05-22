@@ -7,6 +7,14 @@ defmodule Antikythera.VersionStr do
   @moduledoc """
   Format of versions of antikythera instances and gears.
 
+  The format rule is a stricter variant of [semantic versioning](https://semver.org/);
+  pre-release part and build metadata part are filled with information
+  from the current git commit (committer date and commit hash, respectively).
+  This way we always make a new version for each new git commit,
+  which enables both antikythera instances and gears to be deployed on a per-commit basis.
+  The actual version strings are created by
+  `Antikythera.MixCommon.version_with_last_commit_info/1` defined in `mix_common.exs` file.
+
   Note that the current format prohibits multi-digits numbers as major/minor/patch version;
   this is just to simplify deployment and not an intrinsic limitation.
   """
