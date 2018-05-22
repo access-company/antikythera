@@ -5,9 +5,14 @@ defmodule Antikythera.StringTypesTest do
   alias Antikythera.{VersionStr, Domain, EncodedPath, UnencodedPath, Email, Url, ContextId, TenantId}
 
   test "validate VersionStr" do
-    assert VersionStr.valid?("0.0.1-20180501235959+0123456789abcdef0123456789abcdef01234567")
+    valid_version_str = "0.0.1-20180501235959+0123456789abcdef0123456789abcdef01234567"
+    assert VersionStr.valid?(valid_version_str)
 
-    # multi-digit numbers in semantic version part are currently not allowed
+    # It is also valid as a standard semantic version string
+    {:ok, v} = Version.parse(valid_version_str)
+    assert v == %Version{major: 0, minor: 0, patch: 1, pre: [20180501235959], build: "0123456789abcdef0123456789abcdef01234567"}
+
+    # Multi-digit numbers in major/minor/patch part are currently not allowed
     refute VersionStr.valid?("0.0.10-20180501235959+0123456789abcdef0123456789abcdef01234567")
   end
 
