@@ -16,6 +16,7 @@
   "exsync": {:hex, :exsync, "0.2.3", "a1ac11b4bd3808706003dbe587902101fcc1387d9fc55e8b10972f13a563dd15", [:mix], [{:file_system, "~> 0.2", [hex: :file_system, repo: "hexpm", optional: false]}], "hexpm"},
   "fast_xml": {:hex, :fast_xml, "1.1.29", "c6356d28f0f76ffefc68b5eb65916f0b8ca513bab71db8ad95bd8577c47e30e2", [:rebar3], [{:p1_utils, "1.0.11", [hex: :p1_utils, repo: "hexpm", optional: false]}], "hexpm"},
   "file_system": {:hex, :file_system, "0.2.4", "f0bdda195c0e46e987333e986452ec523aed21d784189144f647c43eaf307064", [:mix], [], "hexpm"},
+  "foretoken": {:hex, :foretoken, "0.1.1", "500552b8ddf51c92b5ea56f70ac6f0a90d9cb3758eba50b4f259eb88f23ae6bc", [:mix], [{:croma, "~> 0.9", [hex: :croma, repo: "hexpm", optional: false]}], "hexpm"},
   "fs": {:hex, :fs, "0.9.1", "44285a7a0925b497a4b9039bad4ce7a201b4472f3585a276850312fe17cd8f36", [:rebar], [], "hexpm"},
   "getopt": {:hex, :getopt, "0.8.2", "b17556db683000ba50370b16c0619df1337e7af7ecbf7d64fbf8d1d6bce3109b", [:rebar], [], "hexpm"},
   "gettext": {:hex, :gettext, "0.15.0", "40a2b8ce33a80ced7727e36768499fc9286881c43ebafccae6bab731e2b2b8ce", [:mix], [], "hexpm"},
