@@ -44,7 +44,7 @@ defmodule Antikythera.Mixfile do
       homepage_url:    @github_url,
       description:     "An Elixir framework to build your own in-house PaaS (Platform as a Service).",
       package:         package(),
-    ] ++ Keyword.update!(Antikythera.MixCommon.common_project_settings(), :docs, &(&1 ++ docs()))
+    ] ++ Keyword.replace!(Antikythera.MixCommon.common_project_settings(), :docs, docs())
   end
 
   def application() do
@@ -136,35 +136,36 @@ defmodule Antikythera.Mixfile do
 
   defp docs() do
     [
-      assets: "doc/assets",
+      assets: "guides/assets",
+      output: "doc", # Required by [hex.publish](https://hex.pm/docs/tasks#hex_publish)
       extras: [
         "README.md",
         "STYLE_GUIDE.md",
         "CONTRIBUTING.md",
-        "doc/getting_started.md",
-        "doc/development_environment.md",
-        "doc/library_dependencies.md",
-        {"doc/gear_developers/README.md", [filename: "gear_developers"]},
-        "doc/gear_developers/deployment.md",
-        "doc/gear_developers/routing.md",
-        "doc/gear_developers/g2g.md",
-        "doc/gear_developers/controller.md",
-        "doc/gear_developers/dynamic_html.md",
-        "doc/gear_developers/websocket.md",
-        "doc/gear_developers/async_job.md",
-        "doc/gear_developers/executor_pool.md",
-        "doc/gear_developers/logging.md",
-        "doc/gear_developers/metrics_reporting.md",
-        "doc/gear_developers/alerting.md",
-        "doc/gear_developers/gear_config.md",
-        "doc/gear_developers/i18n.md",
-        "doc/gear_developers/testing.md",
-        "doc/gear_developers/must_nots.md",
+        "guides/getting_started.md",
+        "guides/development_environment.md",
+        "guides/library_dependencies.md",
+        {"guides/gear_developers/README.md", [filename: "gear_developers"]},
+        "guides/gear_developers/deployment.md",
+        "guides/gear_developers/routing.md",
+        "guides/gear_developers/g2g.md",
+        "guides/gear_developers/controller.md",
+        "guides/gear_developers/dynamic_html.md",
+        "guides/gear_developers/websocket.md",
+        "guides/gear_developers/async_job.md",
+        "guides/gear_developers/executor_pool.md",
+        "guides/gear_developers/logging.md",
+        "guides/gear_developers/metrics_reporting.md",
+        "guides/gear_developers/alerting.md",
+        "guides/gear_developers/gear_config.md",
+        "guides/gear_developers/i18n.md",
+        "guides/gear_developers/testing.md",
+        "guides/gear_developers/must_nots.md",
       ],
       groups_for_extras: [
-        "Basics":                              Path.wildcard("doc/*.md"),
-        "Antikythera Instance Administration": Path.wildcard("doc/instance_administrators/*.md"),
-        "Gear Development":                    Path.wildcard("doc/gear_developers/*.md"),
+        "Basics":                              Path.wildcard("guides/*.md"),
+        "Antikythera Instance Administration": Path.wildcard("guides/instance_administrators/*.md"),
+        "Gear Development":                    Path.wildcard("guides/gear_developers/*.md"),
       ],
     ]
   end
