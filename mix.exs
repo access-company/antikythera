@@ -124,7 +124,7 @@ defmodule Antikythera.Mixfile do
 
   defp package() do
     [
-      licesnses:   ["Apache 2.0"],
+      licenses:    ["Apache 2.0"],
       maintainers: ["antikythera-gr@access-company.com"],
       links:       %{"GitHub" => @github_url},
       files:       [
