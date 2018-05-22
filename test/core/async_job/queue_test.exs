@@ -3,12 +3,13 @@
 defmodule AntikytheraCore.AsyncJob.QueueTest do
   use Croma.TestCase
   alias Antikythera.{Time, Cron}
-  alias Antikythera.Test.GenServerHelper
+  alias Antikythera.Test.{GenServerHelper, AsyncJobHelper}
   alias AntikytheraCore.ExecutorPool
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.ExecutorPool.AsyncJobBroker, as: Broker
   alias AntikytheraCore.AsyncJob
+  alias AntikytheraCore.AsyncJob.RateLimit
 
   defmodule TestJob do
     use Antikythera.AsyncJob
@@ -23,6 +24,7 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
   @queue_name RegName.async_job_queue_unsafe(@epool_id)
   @setting    %EPoolSetting{n_pools_a: 2, pool_size_a: 1, pool_size_j: 1, ws_max_connections: 10}
   @payload    %{foo: "bar"}
+  @job_id     "foobar"
 
   defp register_job(opts) do
     case AsyncJob.register(:testgear, TestJob, @payload, @epool_id, opts) do
@@ -37,6 +39,7 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
   end
 
   setup do
+    AsyncJobHelper.reset_rate_limit_status(@epool_id)
     ExecutorPool.start_executor_pool(@epool_id, @setting)
     ExecutorPoolHelper.wait_until_async_job_queue_added(@epool_id)
     {_, broker_pid, _, _} =
@@ -117,6 +120,7 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
       retry_interval: {10_000, 1.0},
       retry_interval: {10_000, 5.0},
     ] |> Enum.each(fn option_pair ->
+      AsyncJobHelper.reset_rate_limit_status(@epool_id)
       assert register_job([option_pair]) == :ok
     end)
   end
@@ -128,6 +132,7 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
 
   test "register should reject to add more than 1000 jobs" do
     Enum.each(1..Queue.max_jobs(), fn _ ->
+      AsyncJobHelper.reset_rate_limit_status(@epool_id)
       assert register_job([]) == :ok
     end)
     assert register_job([]) == {:error, :full}
@@ -159,35 +164,76 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
     assert Queue.fetch_job(@queue_name) == nil
   end
 
-  test "cancel" do
-    job_id = "foobar"
-    assert Queue.cancel(@queue_name, job_id) == {:error, :not_found}
+  test "cancel nonexisting job" do
+    assert Queue.cancel(@queue_name, @job_id) == {:error, :not_found}
+  end
 
-    # cancel waiting job
+  test "cancel waiting job" do
     second_after = Time.now() |> Time.shift_seconds(1)
-    assert register_job([id: job_id, schedule: {:once, second_after}]) == :ok
-    {:ok, status1} = Queue.status(@queue_name, job_id)
-    assert status1.state                     == :waiting
-    assert Queue.cancel(@queue_name, job_id) == :ok
-    assert Queue.cancel(@queue_name, job_id) == {:error, :not_found}
+    assert register_job([id: @job_id, schedule: {:once, second_after}]) == :ok
+    {:ok, status1} = Queue.status(@queue_name, @job_id)
+    assert status1.state                      == :waiting
+    assert Queue.cancel(@queue_name, @job_id) == :ok
+    assert Queue.cancel(@queue_name, @job_id) == {:error, :not_found}
+  end
 
-    # cancel runnable job
+  test "cancel runnable job" do
     assert Queue.fetch_job(@queue_name) == nil
-    assert register_job([id: job_id])  == :ok
+    assert register_job([id: @job_id])  == :ok
     assert Queue.start_jobs_and_get_metrics(Process.whereis(@queue_name))
     assert_receive({:"$gen_cast", :job_registered})
-    {:ok, status2} = Queue.status(@queue_name, job_id)
-    assert status2.state                     == :runnable
-    assert Queue.cancel(@queue_name, job_id) == :ok
-    assert Queue.cancel(@queue_name, job_id) == {:error, :not_found}
+    {:ok, status2} = Queue.status(@queue_name, @job_id)
+    assert status2.state                      == :runnable
+    assert Queue.cancel(@queue_name, @job_id) == :ok
+    assert Queue.cancel(@queue_name, @job_id) == {:error, :not_found}
+  end
 
-    # cancel running job
-    assert register_job([id: job_id])  == :ok
+  test "cancel running job" do
+    assert register_job([id: @job_id]) == :ok
     {_key, _job} = Queue.fetch_job(@queue_name)
-    {:ok, status3} = Queue.status(@queue_name, job_id)
-    assert status3.state                     == :running
-    assert Queue.cancel(@queue_name, job_id) == :ok
-    assert Queue.cancel(@queue_name, job_id) == {:error, :not_found}
+    {:ok, status3} = Queue.status(@queue_name, @job_id)
+    assert status3.state                      == :running
+    assert Queue.cancel(@queue_name, @job_id) == :ok
+    assert Queue.cancel(@queue_name, @job_id) == {:error, :not_found}
+  end
+
+  test "consecutive registrations/cancels should be rejected by rate limit" do
+    n = div(RateLimit.max_tokens(), RateLimit.tokens_per_command())
+    Enum.each(1..n, fn i ->
+      assert register_job([id: @job_id <> "#{i}"]) == :ok
+    end)
+    {:error, {:rate_limit_reached, _}} = register_job([id: @job_id <> "0"])
+    AsyncJobHelper.reset_rate_limit_status(@epool_id)
+    assert register_job([id: @job_id <> "0"]) == :ok
+    AsyncJobHelper.reset_rate_limit_status(@epool_id)
+    Enum.each(1..n, fn i ->
+      assert Queue.cancel(@queue_name, @job_id <> "#{i}") == :ok
+    end)
+    {:error, {:rate_limit_reached, _}} = Queue.cancel(@queue_name, @job_id <> "0")
+  end
+
+  test "consecutive fetchings of status should sleep-and-retry on hitting rate limit" do
+    t1 = System.system_time(:milliseconds)
+    Enum.each(1..RateLimit.max_tokens(), fn _ ->
+      assert Queue.status(@queue_name, @job_id) == {:error, :not_found}
+    end)
+    t2 = System.system_time(:milliseconds)
+    assert t2 - t1 < 100
+    assert Queue.status(@queue_name, @job_id) == {:error, :not_found}
+    t3 = System.system_time(:milliseconds)
+    assert t3 - t2 > RateLimit.milliseconds_per_token() - 100
+  end
+
+  test "consecutive listings should sleep-and-retry on hitting rate limit" do
+    t1 = System.system_time(:milliseconds)
+    Enum.each(1..RateLimit.max_tokens(), fn _ ->
+      assert Queue.list(@queue_name) == []
+    end)
+    t2 = System.system_time(:milliseconds)
+    assert t2 - t1 < 100
+    assert Queue.list(@queue_name) == []
+    t3 = System.system_time(:milliseconds)
+    assert t3 - t2 > RateLimit.milliseconds_per_token() - 100
   end
 end
 

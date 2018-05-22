@@ -17,7 +17,7 @@ defmodule Antikythera.Test.GearLogHelper do
   If no argument is given, generates a new context ID and sets it.
   """
   defun set_context_id(conn_or_context_or_nil :: nil | Context.t | Conn.t \\ nil) :: :ok do
-    nil                  -> set_context_id(ConnHelper.make_conn)
+    nil                  -> set_context_id(ConnHelper.make_conn())
     %Context{} = context -> ContextHelper.set(context)
     %Conn{} = conn       -> ContextHelper.set(conn)
   end

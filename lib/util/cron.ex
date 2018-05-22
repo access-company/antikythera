@@ -45,7 +45,7 @@ defmodule Antikythera.Cron do
     {DayOfMonth, 1, 31},
     {Month     , 1, 12},
     {DayOfWeek , 0,  6},
-  ] |> Enum.each(fn({mod, min, max}) ->
+  ] |> Enum.each(fn {mod, min, max} ->
     m = Module.concat(__MODULE__, mod)
     defmodule m do
       defmodule Int do

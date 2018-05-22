@@ -12,9 +12,8 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   alias Antikythera.{Time, Cron, MilliSecondsSinceEpoch}
   alias Antikythera.AsyncJob.{Id, MaxDuration, StateLabel, Status}
   alias AntikytheraCore.AsyncJob
+  alias AntikytheraCore.AsyncJob.RateLimit
   alias AntikytheraCore.ExecutorPool.AsyncJobBroker, as: Broker
-
-  @behaviour RVData
 
   @max_jobs 1000
   def max_jobs(), do: @max_jobs # just for documentation
@@ -26,10 +25,12 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     use Croma.SubtypeOfMap, key_module: Id, value_module: Triplet
   end
 
-  @type job_key :: {MilliSecondsSinceEpoch.t, Id.t} # make unique sort keys by time(milliseconds) and job ID
+  defmodule JobKey do
+    use Croma.SubtypeOfTuple, elem_modules: [MilliSecondsSinceEpoch, Id] # make unique sort keys by time(milliseconds) and job ID
+  end
 
   defmodule SecondaryIndex do
-    @type t :: :gb_sets.set(AntikytheraCore.AsyncJob.Queue.job_key)
+    @type t :: :gb_sets.set(JobKey.t)
 
     defun valid?(s :: any) :: boolean, do: :gb_sets.is_set(s)
   end
@@ -47,6 +48,8 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     brokers_to_notify: Croma.TypeGen.list_of(Croma.Pid), # to propagate information to leader hook
     abandoned_jobs:    Croma.TypeGen.list_of(IdJobPair), # to propagate information to leader hook
   ]
+
+  @behaviour RVData
 
   @impl true
   defun new() :: t do
@@ -352,28 +355,35 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     RaftFleet.add_consensus_group(queue_name, 3, config)
   end
 
-  defun add_job(queue_name :: v[atom], job_id :: v[Id.t], job :: v[AsyncJob.t], start_time_millis :: v[pos_integer], now_millis :: v[pos_integer]) :: :ok | {:error, :full | :existing_id} do
-    run_command(queue_name, {:add, {start_time_millis, job_id}, job}, now_millis)
+  defun add_job(queue_name :: v[atom], job_id :: v[Id.t], job :: v[AsyncJob.t], start_time_millis :: v[pos_integer], now_millis :: v[pos_integer]) :: :ok | {:error, :full | :existing_id | {:rate_limit_reached, pos_integer}} do
+    run_command_with_rate_limit_check(queue_name, {:add, {start_time_millis, job_id}, job}, now_millis)
   end
 
-  defun fetch_job(queue_name :: v[atom]) :: nil | {job_key, AsyncJob.t} do
+  defun cancel(queue_name :: v[atom], job_id :: v[Id.t]) :: :ok | {:error, :not_found | {:rate_limit_reached, pos_integer}} do
+    run_command_with_rate_limit_check(queue_name, {:cancel, job_id}, System.system_time(:milliseconds))
+  end
+
+  defp run_command_with_rate_limit_check(queue_name, cmd, now_millis) do
+    case RateLimit.check_for_command(queue_name) do
+      :ok                      -> run_command(queue_name, cmd, now_millis)
+      {:error, millis_to_wait} -> {:error, {:rate_limit_reached, millis_to_wait}}
+    end
+  end
+
+  defun fetch_job(queue_name :: v[atom]) :: nil | {JobKey.t, AsyncJob.t} do
     run_command(queue_name, {:fetch, self()})
   end
 
-  defun remove_locked_job(queue_name :: v[atom], job_key :: job_key) :: :ok do
+  defun remove_locked_job(queue_name :: v[atom], job_key :: v[JobKey.t]) :: :ok do
     :ok = run_command(queue_name, {:remove_locked, job_key})
   end
 
-  defun unlock_job_for_retry(queue_name :: v[atom], job_key :: job_key) :: :ok do
+  defun unlock_job_for_retry(queue_name :: v[atom], job_key :: v[JobKey.t]) :: :ok do
     :ok = run_command(queue_name, {:unlock_for_retry, job_key})
   end
 
   defun remove_broker_from_waiting_list(queue_name :: v[atom]) :: :ok do
     :ok = run_command(queue_name, {:remove_broker_from_waiting_list, self()})
-  end
-
-  defun cancel(queue_name :: v[atom], job_id :: v[Id.t]) :: :ok | {:error, :not_found} do
-    run_command(queue_name, {:cancel, job_id})
   end
 
   defp run_command(queue_name, cmd, now_millis \\ System.system_time(:milliseconds)) do
@@ -383,8 +393,8 @@ defmodule AntikytheraCore.AsyncJob.Queue do
 
   defun start_jobs_and_get_metrics(pid :: v[pid]) :: nil | tuple do
     # Note that:
-    # - use `RaftedValue.command` instead of `RaftFleet.command` in order not to send message to remote node
-    # - use command instead of query so that it can trigger some of the stored jobs
+    # - we call `RaftedValue.command` instead of `RaftFleet.command` in order not to send message to remote node
+    # - we use command instead of query so that it can trigger some of the stored jobs
     now_millis = System.system_time(:milliseconds)
     case RaftedValue.command(pid, {:get_metrics, now_millis}) do
       {:ok, metrics_data} -> metrics_data
@@ -393,8 +403,9 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   defun status(queue_name :: v[atom], job_id :: v[Id.t]) :: R.t(Status.t) do
-    {:ok, result} = RaftFleet.query(queue_name, {:status, job_id})
-    R.map(result, fn({job, start_time_millis, state}) ->
+    {:ok, result} =
+      RateLimit.check_with_retry_for_query(queue_name, fn -> RaftFleet.query(queue_name, {:status, job_id}) end)
+    R.map(result, fn {job, start_time_millis, state} ->
       common_fields = Map.take(job, [:gear_name, :module, :payload, :schedule, :max_duration, :attempts, :remaining_attempts, :retry_interval])
       %{
         __struct__: Status, # Avoid error due to missing enforced keys
@@ -407,13 +418,14 @@ defmodule AntikytheraCore.AsyncJob.Queue do
 
   defun list(queue_name :: v[atom]) :: [{Time.t, Id.t, StateLabel.t}] do
     # data conversions should be done at caller side (raft leader should not do CPU-intensive works)
-    {:ok, {running, runnable, waiting}} = RaftFleet.query(queue_name, :list)
+    {:ok, {running, runnable, waiting}} =
+      RateLimit.check_with_retry_for_query(queue_name, fn -> RaftFleet.query(queue_name, :list) end)
     [
       {:gb_sets.to_list(running ), :running },
       {:gb_sets.to_list(runnable), :runnable},
       {:gb_sets.to_list(waiting ), :waiting },
-    ] |> Enum.flat_map(fn({list, state}) ->
-      Enum.map(list, fn({millis, id}) -> {Time.from_epoch_milliseconds(millis), id, state} end)
+    ] |> Enum.flat_map(fn {list, state} ->
+      Enum.map(list, fn {millis, id} -> {Time.from_epoch_milliseconds(millis), id, state} end)
     end)
   end
 end

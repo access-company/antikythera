@@ -7,12 +7,10 @@ defmodule Antikythera.AsyncJob do
   alias Antikythera.{Time, Context, GearName}
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias Antikythera.AsyncJob.{Id, Schedule, MaxDuration, Attempts, RetryInterval, Metadata, Status, StateLabel}
-  alias AntikytheraCore.AsyncJob.Queue
+  alias AntikytheraCore.AsyncJob.{Queue, RateLimit}
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.ExecutorPool.Id, as: CoreEPoolId
-
-  @abandon_callback_max_duration 10_000
-  def abandon_callback_max_duration(), do: @abandon_callback_max_duration
+  alias AntikytheraCore.ExecutorPool.AsyncJobRunner
 
   @moduledoc """
   Antikythera's "async job" functionality allows gears to run their code in background.
@@ -51,7 +49,7 @@ defmodule Antikythera.AsyncJob do
 
   `abandon/3` optional callback is called when a job is abandoned after all attempts failed.
   You can put your cleanup logic in this callback when e.g. you use external storage system to store job information.
-  Note that `abandon/3` must finish within `#{div(@abandon_callback_max_duration, 1_000)}` seconds;
+  Note that `abandon/3` must finish within `#{div(AsyncJobRunner.abandon_callback_max_duration(), 1_000)}` seconds;
   when it takes longer, antikythera stops the execution of `abandon/3` in the middle.
 
   `inspect_payload/1` optional callback is solely for logging purpose.
@@ -72,10 +70,10 @@ defmodule Antikythera.AsyncJob do
 
   Here first argument is an arbitrary map that is passed to `run/3` callback implementation.
   (note that structs are maps and thus usable as payloads).
-  `context` is a value of `Antikythera.Context.t/0` and is used to obtain to which executor pool to register the job.
+  `context` is a value of `t:Antikythera.Context.t/0` and is used to obtain to which executor pool to register the job.
   When you need to register a job to an executor pool that is not the current one,
-  you can pass a `Antikythera.ExecutorPool.Id.t/0` instead of `Antikythera.Context.t/0`.
-  `options` must be a `Keyword.t/0` which can include the following values:
+  you can pass a `t:Antikythera.ExecutorPool.Id.t/0` instead of `t:Antikythera.Context.t/0`.
+  `options` must be a `t:Keyword.t/0` which can include the following values:
 
   - `id`: An ID of the job.
     If given it must match the regex pattern `~r/#{Id.pattern().source}/` and must be unique in the job queue specified by the second argument.
@@ -121,6 +119,31 @@ defmodule Antikythera.AsyncJob do
 
   The example call to `register/3` above will eventually invoke `YourGear.SomeAsyncJob.run/3`
   with the given payload and options.
+
+  ### Rate limiting of accesses to each job queue
+
+  Antikythera's async job queues are distributed, fault tolerant, persistent data structures.
+  These features come at an extra cost: interacting with a job queue is a relatively expensive operation.
+  In order not to overwhelm a job queue, accesses to a job queue are rate-limited by
+  the [token bucket algorithm](https://en.wikipedia.org/wiki/Token_bucket).
+  Rate limiting is imposed on a per-node basis; in each node, there exists a bucket per job queue.
+
+  Each bucket contains up to #{RateLimit.max_tokens()} tokens and
+  one token is generated in every #{RateLimit.milliseconds_per_token()} milliseconds.
+  The following operations take tokens from the corresponding bucket:
+
+  - #{RateLimit.tokens_per_command()} tokens per `register/3`
+  - #{RateLimit.tokens_per_command()} tokens per `cancel/3`
+  - 1 token per `status/2`
+  - 1 token per `list/1`
+
+  When there are not enough tokens in the bucket, `register/3` and `cancel/3` return
+  `{:error, {:rate_limit_reached, milliseconds_to_wait}}`.
+  On the other hand `status/2` and `list/1` automatically wait and retry several times
+  when hitting the rate limit.
+
+  During testing, the rate limiting feature may disrupt smooth test executions.
+  To bypass rate limiting in your tests you can use `Antikythera.Test.AsyncJobHelper.reset_rate_limit_status/1`.
   """
 
   @callback run(map, Metadata.t, Context.t) :: any
@@ -170,7 +193,7 @@ defmodule Antikythera.AsyncJob do
   """
   defun cancel(gear_name           :: v[GearName.t],
                context_or_epool_id :: v[Context.t | EPoolId.t],
-               job_id              :: v[Id.t]) :: :ok | {:error, :not_found | CoreEPoolId.reason} do
+               job_id              :: v[Id.t]) :: :ok | {:error, :not_found | CoreEPoolId.reason | {:rate_limit_reached, pos_integer}} do
     epool_id1 = exec_pool_id(context_or_epool_id)
     case CoreEPoolId.validate_association(epool_id1, gear_name) do
       {:ok, epool_id2} -> Queue.cancel(RegName.async_job_queue(epool_id2), job_id)

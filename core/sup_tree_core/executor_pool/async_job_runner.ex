@@ -20,16 +20,19 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
 
   use GenServer
   alias Antikythera.{Time, Context, ErrorReason}
-  alias Antikythera.AsyncJob.Id, as: JobId
   alias Antikythera.AsyncJob.Metadata
   alias AntikytheraCore.GearTask
   alias AntikytheraCore.{GearModule, GearProcess, MetricsUploader}
   alias AntikytheraCore.AsyncJob
   alias AntikytheraCore.AsyncJob.Queue
+  alias AntikytheraCore.AsyncJob.Queue.JobKey
   alias AntikytheraCore.Context, as: CoreContext
   alias AntikytheraCore.GearLog.{Writer, ContextHelper}
 
   @idle_timeout 60_000
+
+  @abandon_callback_max_duration 10_000
+  def abandon_callback_max_duration(), do: @abandon_callback_max_duration # for documentation
 
   def start_link(epool_id) do
     GenServer.start_link(__MODULE__, epool_id)
@@ -191,7 +194,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     # Since timeout is not too long, we simply use `GearTask`.
     GearTask.exec_wait(
       {__MODULE__, :do_abandon, [module, payload, metadata, context]},
-      Antikythera.AsyncJob.abandon_callback_max_duration(),
+      @abandon_callback_max_duration,
       fn _ -> :ok end,
       fn(reason, stacktrace) ->
         Writer.error(logger_name, Time.now(), context_id, log_prefix <> "error during abandon/3: #{ErrorReason.format(reason, stacktrace)}")
@@ -221,7 +224,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   #
   # Public API
   #
-  defun run(pid :: v[pid], queue_name :: v[atom], job_key :: v[{pos_integer, JobId.t}], job :: v[AsyncJob.t]) :: :ok do
+  defun run(pid :: v[pid], queue_name :: v[atom], job_key :: v[JobKey.t], job :: v[AsyncJob.t]) :: :ok do
     GenServer.cast(pid, {:run, queue_name, job_key, job})
   end
 end

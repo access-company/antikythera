@@ -6,7 +6,7 @@ defmodule AntikytheraCore.CookiesTest do
 
   test "convert_to_cowboy_cookie_opts" do
     base_cookie = %SetCookie{value: "", path: "/"}
-    test_data_and_results = [
+    [
       {%{value: "value"                    }, %{path: "/"                    }},
       {%{value: "value", path:      "/path"}, %{path: "/path"                }},
       {%{value: "value", domain:    "x.com"}, %{path: "/", domain:    "x.com"}},
@@ -17,7 +17,7 @@ defmodule AntikytheraCore.CookiesTest do
       {%{value: "value", max_age:   10     }, %{path: "/", max_age:   10     }},
       {%{value: "value", http_only: nil    }, %{path: "/"                    }},
     ]
-    test_data_and_results |> Enum.each(fn({additional, expected}) ->
+    |> Enum.each(fn {additional, expected} ->
       cookie = SetCookie.update!(base_cookie, additional)
       assert Cookies.convert_to_cowboy_cookie_opts(cookie) == expected
     end)
