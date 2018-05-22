@@ -394,7 +394,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
 
   defun status(queue_name :: v[atom], job_id :: v[Id.t]) :: R.t(Status.t) do
     {:ok, result} = RaftFleet.query(queue_name, {:status, job_id})
-    R.map(result, fn({job, start_time_millis, state}) ->
+    R.map(result, fn {job, start_time_millis, state} ->
       common_fields = Map.take(job, [:gear_name, :module, :payload, :schedule, :max_duration, :attempts, :remaining_attempts, :retry_interval])
       %{
         __struct__: Status, # Avoid error due to missing enforced keys
@@ -412,8 +412,8 @@ defmodule AntikytheraCore.AsyncJob.Queue do
       {:gb_sets.to_list(running ), :running },
       {:gb_sets.to_list(runnable), :runnable},
       {:gb_sets.to_list(waiting ), :waiting },
-    ] |> Enum.flat_map(fn({list, state}) ->
-      Enum.map(list, fn({millis, id}) -> {Time.from_epoch_milliseconds(millis), id, state} end)
+    ] |> Enum.flat_map(fn {list, state} ->
+      Enum.map(list, fn {millis, id} -> {Time.from_epoch_milliseconds(millis), id, state} end)
     end)
   end
 end

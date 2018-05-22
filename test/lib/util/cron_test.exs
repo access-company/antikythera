@@ -133,7 +133,7 @@ defmodule Antikythera.CronTest do
           {2017, 3,  1, 0, 0},
           {2017, 3,  2, 0, 0},
         ]},
-    ] |> Enum.each(fn({pattern, time, next_times}) ->
+    ] |> Enum.each(fn {pattern, time, next_times} ->
       {:ok, cron} = Cron.parse(pattern)
       Enum.reduce(next_times, time, fn(next_time, prev_time) ->
         assert Cron.next(cron, tuple5_to_time(prev_time)) == tuple5_to_time(next_time)
