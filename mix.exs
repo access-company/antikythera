@@ -75,7 +75,7 @@ defmodule Antikythera.Mixfile do
       {:raft_fleet  , "0.8.2" , [antikythera_internal: true]},
       {:rafted_value, "0.9.2" , [antikythera_internal: true]},
       {:syn         , "1.6.3" , [antikythera_internal: true]},
-      {:fast_xml    , "1.1.29", [antikythera_internal: true, manager: :rebar3]}, # :fast_xml contains not only rebar.config but also mix.exs, but we don't use it
+      {:fast_xml    , "1.1.29", [antikythera_internal: true]},
       {:recon       , "2.3.5" , [antikythera_internal: true]},
       {:relx        , "3.23.1", [antikythera_internal: true, only: :prod, runtime: false]}, # only to generate release
 
@@ -124,7 +124,7 @@ defmodule Antikythera.Mixfile do
 
   defp package() do
     [
-      licesnses:   ["Apache 2.0"],
+      licenses:    ["Apache 2.0"],
       maintainers: ["antikythera-gr@access-company.com"],
       links:       %{"GitHub" => @github_url},
       files:       [
