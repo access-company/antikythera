@@ -137,7 +137,7 @@ defmodule Antikythera.Mixfile do
   defp docs() do
     [
       assets: "guides/assets",
-      output: "doc", # Required by `mix hex.publish`. See https://hex.pm/docs/tasks#hex_publish.
+      output: "doc", # Required by `mix hex.publish`. See https://hex.pm/docs/tasks#hex_publish
       extras: [
         "README.md",
         "STYLE_GUIDE.md",
