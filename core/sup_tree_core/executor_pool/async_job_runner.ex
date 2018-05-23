@@ -20,12 +20,12 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
 
   use GenServer
   alias Antikythera.{Time, Context, ErrorReason}
-  alias Antikythera.AsyncJob.Id, as: JobId
   alias Antikythera.AsyncJob.Metadata
   alias AntikytheraCore.GearTask
   alias AntikytheraCore.{GearModule, GearProcess, MetricsUploader}
   alias AntikytheraCore.AsyncJob
   alias AntikytheraCore.AsyncJob.Queue
+  alias AntikytheraCore.AsyncJob.Queue.JobKey
   alias AntikytheraCore.Context, as: CoreContext
   alias AntikytheraCore.GearLog.{Writer, ContextHelper}
 
@@ -224,7 +224,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   #
   # Public API
   #
-  defun run(pid :: v[pid], queue_name :: v[atom], job_key :: v[{pos_integer, JobId.t}], job :: v[AsyncJob.t]) :: :ok do
+  defun run(pid :: v[pid], queue_name :: v[atom], job_key :: v[JobKey.t], job :: v[AsyncJob.t]) :: :ok do
     GenServer.cast(pid, {:run, queue_name, job_key, job})
   end
 end

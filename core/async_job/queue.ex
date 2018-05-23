@@ -25,10 +25,12 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     use Croma.SubtypeOfMap, key_module: Id, value_module: Triplet
   end
 
-  @type job_key :: {MilliSecondsSinceEpoch.t, Id.t} # make unique sort keys by time(milliseconds) and job ID
+  defmodule JobKey do
+    use Croma.SubtypeOfTuple, elem_modules: [MilliSecondsSinceEpoch, Id] # make unique sort keys by time(milliseconds) and job ID
+  end
 
   defmodule SecondaryIndex do
-    @type t :: :gb_sets.set(AntikytheraCore.AsyncJob.Queue.job_key)
+    @type t :: :gb_sets.set(JobKey.t)
 
     defun valid?(s :: any) :: boolean, do: :gb_sets.is_set(s)
   end
@@ -368,15 +370,15 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     end
   end
 
-  defun fetch_job(queue_name :: v[atom]) :: nil | {job_key, AsyncJob.t} do
+  defun fetch_job(queue_name :: v[atom]) :: nil | {JobKey.t, AsyncJob.t} do
     run_command(queue_name, {:fetch, self()})
   end
 
-  defun remove_locked_job(queue_name :: v[atom], job_key :: job_key) :: :ok do
+  defun remove_locked_job(queue_name :: v[atom], job_key :: v[JobKey.t]) :: :ok do
     :ok = run_command(queue_name, {:remove_locked, job_key})
   end
 
-  defun unlock_job_for_retry(queue_name :: v[atom], job_key :: job_key) :: :ok do
+  defun unlock_job_for_retry(queue_name :: v[atom], job_key :: v[JobKey.t]) :: :ok do
     :ok = run_command(queue_name, {:unlock_for_retry, job_key})
   end
 
