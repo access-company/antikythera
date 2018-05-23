@@ -12,16 +12,11 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   alias Antikythera.{Time, Cron, MilliSecondsSinceEpoch}
   alias Antikythera.AsyncJob.{Id, MaxDuration, StateLabel, Status}
   alias AntikytheraCore.AsyncJob
+  alias AntikytheraCore.AsyncJob.RateLimit
   alias AntikytheraCore.ExecutorPool.AsyncJobBroker, as: Broker
 
   @max_jobs 1000
   def max_jobs(), do: @max_jobs # just for documentation
-
-  # Constants for rate limiting of interactions with job queues
-  @milliseconds_per_token 1000
-  @max_tokens             10
-  @tokens_per_command     3
-  @max_check_attempts     5
 
   defmodule JobsMap do
     defmodule Triplet do
@@ -367,7 +362,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   defp run_command_with_rate_limit_check(queue_name, cmd, now_millis) do
-    case Foretoken.take(queue_name, @milliseconds_per_token, @max_tokens, @tokens_per_command) do
+    case RateLimit.check_for_command(queue_name) do
       :ok                      -> run_command(queue_name, cmd, now_millis)
       {:error, millis_to_wait} -> {:error, {:rate_limit_reached, millis_to_wait}}
     end
@@ -406,7 +401,8 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   defun status(queue_name :: v[atom], job_id :: v[Id.t]) :: R.t(Status.t) do
-    {:ok, result} = run_query_with_wait_retry(queue_name, {:status, job_id})
+    {:ok, result} =
+      RateLimit.check_with_retry_for_query(queue_name, fn -> RaftFleet.query(queue_name, {:status, job_id}) end)
     R.map(result, fn {job, start_time_millis, state} ->
       common_fields = Map.take(job, [:gear_name, :module, :payload, :schedule, :max_duration, :attempts, :remaining_attempts, :retry_interval])
       %{
@@ -420,7 +416,8 @@ defmodule AntikytheraCore.AsyncJob.Queue do
 
   defun list(queue_name :: v[atom]) :: [{Time.t, Id.t, StateLabel.t}] do
     # data conversions should be done at caller side (raft leader should not do CPU-intensive works)
-    {:ok, {running, runnable, waiting}} = run_query_with_wait_retry(queue_name, :list)
+    {:ok, {running, runnable, waiting}} =
+      RateLimit.check_with_retry_for_query(queue_name, fn -> RaftFleet.query(queue_name, :list) end)
     [
       {:gb_sets.to_list(running ), :running },
       {:gb_sets.to_list(runnable), :runnable},
@@ -428,18 +425,5 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     ] |> Enum.flat_map(fn {list, state} ->
       Enum.map(list, fn {millis, id} -> {Time.from_epoch_milliseconds(millis), id, state} end)
     end)
-  end
-
-  defp run_query_with_wait_retry(queue_name, query, attempts \\ 0) do
-    case Foretoken.take(queue_name, @milliseconds_per_token, @max_tokens) do
-      :ok            -> RaftFleet.query(queue_name, query)
-      {:error, time} ->
-        if attempts >= @max_check_attempts do
-          raise "rate limit violation hasn't been resolved by retries"
-        else
-          :timer.sleep(time)
-          run_query_with_wait_retry(queue_name, query, attempts + 1)
-      end
-    end
   end
 end

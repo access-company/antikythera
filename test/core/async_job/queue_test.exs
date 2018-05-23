@@ -38,7 +38,7 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
   end
 
   setup do
-    AsyncJobHelper.reset_rate_limiting_status(@epool_id)
+    AsyncJobHelper.reset_rate_limit_status(@epool_id)
     ExecutorPool.start_executor_pool(@epool_id, @setting)
     ExecutorPoolHelper.wait_until_async_job_queue_added(@epool_id)
     {_, broker_pid, _, _} =
@@ -119,7 +119,7 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
       retry_interval: {10_000, 1.0},
       retry_interval: {10_000, 5.0},
     ] |> Enum.each(fn option_pair ->
-      AsyncJobHelper.reset_rate_limiting_status(@epool_id)
+      AsyncJobHelper.reset_rate_limit_status(@epool_id)
       assert register_job([option_pair]) == :ok
     end)
   end
@@ -131,7 +131,7 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
 
   test "register should reject to add more than 1000 jobs" do
     Enum.each(1..Queue.max_jobs(), fn _ ->
-      AsyncJobHelper.reset_rate_limiting_status(@epool_id)
+      AsyncJobHelper.reset_rate_limit_status(@epool_id)
       assert register_job([]) == :ok
     end)
     assert register_job([]) == {:error, :full}
