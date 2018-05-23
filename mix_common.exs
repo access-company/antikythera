@@ -28,7 +28,6 @@ defmodule Antikythera.MixCommon do
       elixir:            @elixir_version, # Enforce elixir version
       elixirc_options:   [warnings_as_errors: true],
       build_embedded:    Mix.env() == :prod,
-      docs:              [output: "exdoc"],
       test_coverage:     [tool: ExCoveralls],
       preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.html": :test, "antikythera_local.upgrade_compatibility_test": :test],
     ]
@@ -276,6 +275,7 @@ defmodule Antikythera.GearProject do
           compilers:        [:ensure_gear_dependencies, :gettext, :propagate_file_modifications] ++ Mix.compilers() ++ [:gear_static_analysis],
           start_permanent:  false,
           deps:             deps(),
+          docs:             [output: "exdoc"],
           antikythera_gear: [
             instance_dep:                      @antikythera_instance_dep,
             gear_deps:                         gear_deps(),

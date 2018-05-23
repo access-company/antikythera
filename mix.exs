@@ -44,7 +44,8 @@ defmodule Antikythera.Mixfile do
       homepage_url:    @github_url,
       description:     "An Elixir framework to build your own in-house PaaS (Platform as a Service).",
       package:         package(),
-    ] ++ Keyword.replace!(Antikythera.MixCommon.common_project_settings(), :docs, docs())
+      docs:            docs(),
+    ] ++ Antikythera.MixCommon.common_project_settings()
   end
 
   def application() do
