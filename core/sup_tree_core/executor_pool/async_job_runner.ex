@@ -31,6 +31,9 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
 
   @idle_timeout 60_000
 
+  @abandon_callback_max_duration 10_000
+  def abandon_callback_max_duration(), do: @abandon_callback_max_duration # for documentation
+
   def start_link(epool_id) do
     GenServer.start_link(__MODULE__, epool_id)
   end
@@ -191,7 +194,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     # Since timeout is not too long, we simply use `GearTask`.
     GearTask.exec_wait(
       {__MODULE__, :do_abandon, [module, payload, metadata, context]},
-      Antikythera.AsyncJob.abandon_callback_max_duration(),
+      @abandon_callback_max_duration,
       fn _ -> :ok end,
       fn(reason, stacktrace) ->
         Writer.error(logger_name, Time.now(), context_id, log_prefix <> "error during abandon/3: #{ErrorReason.format(reason, stacktrace)}")

@@ -10,9 +10,7 @@ defmodule Antikythera.AsyncJob do
   alias AntikytheraCore.AsyncJob.Queue
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.ExecutorPool.Id, as: CoreEPoolId
-
-  @abandon_callback_max_duration 10_000
-  def abandon_callback_max_duration(), do: @abandon_callback_max_duration
+  alias AntikytheraCore.ExecutorPool.AsyncJobRunner
 
   @moduledoc """
   Antikythera's "async job" functionality allows gears to run their code in background.
@@ -51,7 +49,7 @@ defmodule Antikythera.AsyncJob do
 
   `abandon/3` optional callback is called when a job is abandoned after all attempts failed.
   You can put your cleanup logic in this callback when e.g. you use external storage system to store job information.
-  Note that `abandon/3` must finish within `#{div(@abandon_callback_max_duration, 1_000)}` seconds;
+  Note that `abandon/3` must finish within `#{div(AsyncJobRunner.abandon_callback_max_duration(), 1_000)}` seconds;
   when it takes longer, antikythera stops the execution of `abandon/3` in the middle.
 
   `inspect_payload/1` optional callback is solely for logging purpose.
