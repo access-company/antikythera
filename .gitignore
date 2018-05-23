@@ -1,7 +1,7 @@
 /_build
 /deps
 /cover
-/exdoc
+/doc
 erl_crash.dump
 *.ez
 *.beam
