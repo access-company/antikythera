@@ -1,4 +1,3 @@
-<%= gear_name_camel %>
-=========
+# <%= gear_name_camel %>
 
 ** TODO: Add description **
