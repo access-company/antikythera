@@ -9,6 +9,7 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.ExecutorPool.AsyncJobBroker, as: Broker
   alias AntikytheraCore.AsyncJob
+  alias AntikytheraCore.AsyncJob.RateLimit
 
   defmodule TestJob do
     use Antikythera.AsyncJob
@@ -194,6 +195,50 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
     assert status3.state                      == :running
     assert Queue.cancel(@queue_name, @job_id) == :ok
     assert Queue.cancel(@queue_name, @job_id) == {:error, :not_found}
+  end
+
+  test "consecutive registrations should be rejected by rate limit" do
+    n = div(RateLimit.max_tokens(), RateLimit.tokens_per_command())
+    Enum.each(1..n, fn _ ->
+      assert register_job([]) == :ok
+    end)
+    {:error, {:rate_limit_reached, _}} = register_job([])
+  end
+
+  test "consecutive cancels should be rejected by rate limit" do
+    n = div(RateLimit.max_tokens(), RateLimit.tokens_per_command())
+    Enum.each(0..n, fn i ->
+      AsyncJobHelper.reset_rate_limit_status(@epool_id)
+      assert register_job([job_id: @job_id <> "#{i}"]) == :ok
+    end)
+    Enum.each(1..n, fn i ->
+      assert Queue.cancel(@queue_name, @job_id <> "#{i}")
+    end)
+    {:error, {:rate_limit_reached, _}} = Queue.cancel(@queue_name, @job_id <> "0")
+  end
+
+  test "consecutive fetchings of status should sleep-and-retry on hitting rate limit" do
+    t1 = System.system_time(:milliseconds)
+    Enum.each(1..RateLimit.max_tokens(), fn _ ->
+      assert Queue.status(@queue_name, @job_id) == {:error, :not_found}
+    end)
+    t2 = System.system_time(:milliseconds)
+    assert t2 - t1 < 100
+    assert Queue.status(@queue_name, @job_id) == {:error, :not_found}
+    t3 = System.system_time(:milliseconds)
+    assert t3 - t2 > RateLimit.milliseconds_per_token() - 100
+  end
+
+  test "consecutive listings should sleep-and-retry on hitting rate limit" do
+    t1 = System.system_time(:milliseconds)
+    Enum.each(1..RateLimit.max_tokens(), fn _ ->
+      assert Queue.list(@queue_name) == []
+    end)
+    t2 = System.system_time(:milliseconds)
+    assert t2 - t1 < 100
+    assert Queue.list(@queue_name) == []
+    t3 = System.system_time(:milliseconds)
+    assert t3 - t2 > RateLimit.milliseconds_per_token() - 100
   end
 end
 
