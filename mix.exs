@@ -36,7 +36,7 @@ defmodule Antikythera.Mixfile do
   def project() do
     [
       app:             :antikythera,
-      version:         "0.1.0",
+      version:         Antikythera.MixCommon.version_with_last_commit_info("0.1.1"),
       elixirc_paths:   elixirc_paths(),
       start_permanent: Mix.env() == :prod,
       deps:            deps(),
@@ -138,7 +138,6 @@ defmodule Antikythera.Mixfile do
   defp docs() do
     [
       assets: "doc_src/assets",
-      output: "doc", # Required by `mix hex.publish`. See https://hex.pm/docs/tasks#hex_publish
       extras: [
         "README.md",
         "STYLE_GUIDE.md",
