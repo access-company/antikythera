@@ -70,10 +70,10 @@ defmodule Antikythera.AsyncJob do
 
   Here first argument is an arbitrary map that is passed to `run/3` callback implementation.
   (note that structs are maps and thus usable as payloads).
-  `context` is a value of `Antikythera.Context.t/0` and is used to obtain to which executor pool to register the job.
+  `context` is a value of `t:Antikythera.Context.t/0` and is used to obtain to which executor pool to register the job.
   When you need to register a job to an executor pool that is not the current one,
-  you can pass a `Antikythera.ExecutorPool.Id.t/0` instead of `Antikythera.Context.t/0`.
-  `options` must be a `Keyword.t/0` which can include the following values:
+  you can pass a `t:Antikythera.ExecutorPool.Id.t/0` instead of `t:Antikythera.Context.t/0`.
+  `options` must be a `t:Keyword.t/0` which can include the following values:
 
   - `id`: An ID of the job.
     If given it must match the regex pattern `~r/#{Id.pattern().source}/` and must be unique in the job queue specified by the second argument.
