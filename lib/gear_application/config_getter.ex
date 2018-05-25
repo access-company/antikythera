@@ -18,20 +18,28 @@ defmodule Antikythera.GearApplication.ConfigGetter do
       defun get_env(key :: v[String.t], default :: any \\ nil) :: any do
         Antikythera.GearApplication.ConfigGetter.get_env(@gear_name, key, default)
       end
+
+      defun get_env!(key :: v[String.t]) :: any do
+        Antikythera.GearApplication.ConfigGetter.get_env!(@gear_name, key)
+      end
     end
   end
 
   @doc false
   def get_all_env(gear_name) do
     case AntikytheraCore.Ets.ConfigCache.Gear.read(gear_name) do
-      nil                              -> %{}
+      nil                                  -> %{}
       %AntikytheraCore.Config.Gear{kv: kv} -> kv
     end
   end
 
   @doc false
   def get_env(gear_name, key, default) do
-    get_all_env(gear_name)
-    |> Map.get(key, default)
+    get_all_env(gear_name) |> Map.get(key, default)
+  end
+
+  @doc false
+  def get_env!(gear_name, key) do
+    get_all_env(gear_name) |> Map.fetch!(key)
   end
 end
