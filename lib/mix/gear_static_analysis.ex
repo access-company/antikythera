@@ -126,9 +126,7 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
         mod == IO and fun in [:inspect, :puts, :write] and writing_to_stdout?(args) ->
           severity = if Mix.env() == :prod, do: :error, else: :warning
           {severity, file, meta, "writing to STDOUT/STDERR is not allowed in prod environment (use each gear's logger instead)"}
-        mod == Process and fun == :spawn ->
-          {:error, file, meta, "spawning processes in gear's code is prohibited"}
-        mod == Task and Atom.to_string(fun) |> String.starts_with?("spawn") ->
+        mod in [Process, Task, Agent] and spawning_a_new_process?(Atom.to_string(fun)) ->
           {:error, file, meta, "spawning processes in gear's code is prohibited"}
         mod == :os and fun == :cmd ->
           {:error, file, meta, "calling :os.cmd/1 in gear's code is prohibited"}
@@ -143,6 +141,11 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   defp writing_to_stdout?([_]         ), do: true
   defp writing_to_stdout?([:stdio | _]), do: true
   defp writing_to_stdout?(_           ), do: false
+
+  defp spawning_a_new_process?("start" <> _), do: true
+  defp spawning_a_new_process?("spawn" <> _), do: true
+  defp spawning_a_new_process?("async" <> _), do: true
+  defp spawning_a_new_process?(_           ), do: false
 
   defp check_local_call(fun, _args, meta, file, _tool?) do
     cond do
@@ -191,7 +194,7 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
     if !tool? do
       case String.split(mod_str, ".") do
         ["Antikythera", "Test" | _] -> {:error, file, meta, "using `Antikythera.Test.*` in production code is prohibited"}
-        _                          -> nil
+        _                           -> nil
       end
     end
   end
@@ -200,7 +203,7 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
     if !tool? do
       case String.split(mod_str, ".") do
         ["Antikythera", "Mix", "Task" | _] -> {:error, file, meta, "`Antikythera.Mix.Task.*` can only be used in mix tasks"}
-        _                                 -> nil
+        _                                  -> nil
       end
     end
   end
