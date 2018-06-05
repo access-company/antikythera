@@ -1,5 +1,7 @@
 # Antikythera Framework
 
+[![hex badge](https://img.shields.io/hexpm/v/antikythera.svg)](https://hex.pm/packages/antikythera)
+
 **Antikythera** is an [Elixir] framework to build your own in-house PaaS (Platform as a Service).
 
 You can run multiple web services while managing only a single cluster of [ErlangVM][Erlang] nodes.

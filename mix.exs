@@ -36,7 +36,7 @@ defmodule Antikythera.Mixfile do
   def project() do
     [
       app:             :antikythera,
-      version:         Antikythera.MixCommon.version_with_last_commit_info("0.1.1"),
+      version:         "0.2.0",
       elixirc_paths:   elixirc_paths(),
       start_permanent: Mix.env() == :prod,
       deps:            deps(),
@@ -131,7 +131,7 @@ defmodule Antikythera.Mixfile do
       links:       %{"GitHub" => @github_url},
       files:       [
         "core", "eal", "lib", "local", "priv", "rel",
-        "CHANGELOG.md", "LICENSE", "mix_common.exs", "mix.exs", "README.md",
+        "CHANGELOG.md", "LICENSE", "mix_common.exs", "mix.exs", "README.md", ".tool-versions",
       ],
     ]
   end
