@@ -36,7 +36,7 @@ defmodule Antikythera.Mixfile do
   def project() do
     [
       app:             :antikythera,
-      version:         "0.1.1",
+      version:         "0.2.0",
       elixirc_paths:   elixirc_paths(),
       start_permanent: Mix.env() == :prod,
       deps:            deps(),
