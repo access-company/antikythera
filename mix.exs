@@ -131,7 +131,7 @@ defmodule Antikythera.Mixfile do
       links:       %{"GitHub" => @github_url},
       files:       [
         "core", "eal", "lib", "local", "priv", "rel",
-        "CHANGELOG.md", "LICENSE", "mix_common.exs", "mix.exs", "README.md",
+        "CHANGELOG.md", "LICENSE", "mix_common.exs", "mix.exs", "README.md", ".tool-versions",
       ],
     ]
   end
