@@ -130,7 +130,7 @@ defmodule Antikythera.Mixfile do
       maintainers: ["antikythera-gr@access-company.com"],
       links:       %{"GitHub" => @github_url},
       files:       [
-        "core", "eal", "lib", "local", "priv", "rel",
+        "config", "core", "eal", "lib", "local", "priv", "rel",
         "CHANGELOG.md", "LICENSE", "mix_common.exs", "mix.exs", "README.md", ".tool-versions",
       ],
     ]
