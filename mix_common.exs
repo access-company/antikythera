@@ -17,7 +17,7 @@ defmodule Antikythera.MixCommon do
   @elixir_version Map.fetch!(versions, "elixir")
 
   # Strictly enforce Erlang/OTP version
-  otp_version_path    = Path.join([:code.root_dir(), "releases", :erlang.system_info(:otp_release), "OTP_VERSION"])
+  otp_version_path    = Path.join([:code.root_dir(), "releases", System.otp_release(), "OTP_VERSION"])
   current_otp_version = File.read!(otp_version_path) |> String.trim_trailing()
   if current_otp_version != @otp_version do
     Mix.raise("Incorrect Erlang/OTP version! required: '#{@otp_version}', used: '#{current_otp_version}'")

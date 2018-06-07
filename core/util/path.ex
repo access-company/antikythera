@@ -24,14 +24,14 @@ defmodule AntikytheraCore.Path do
           _      -> Path.join([__DIR__, "..", ".."]) # as a standalone project
         end
         |> Path.expand()
-      Path.join([release_generating_project_dir, "rel_local_erlang-#{:erlang.system_info(:otp_release)}", "#{Env.antikythera_instance_name()}", "releases"])
+      Path.join([release_generating_project_dir, "rel_local_erlang-#{System.otp_release()}", "#{Env.antikythera_instance_name()}", "releases"])
     end
   end
 
   defun core_config_file_path() :: Path.t, do: Path.join([antikythera_root_dir(), "config", "antikythera"])
   defun gear_config_dir()       :: Path.t, do: Path.join(antikythera_root_dir(), "gear_config")
   defun history_dir()           :: Path.t, do: Path.join(antikythera_root_dir(), "history")
-  defun compiled_gears_dir()    :: Path.t, do: Path.join(antikythera_root_dir(), "compiled_gears_erlang-#{:erlang.system_info(:otp_release)}")
+  defun compiled_gears_dir()    :: Path.t, do: Path.join(antikythera_root_dir(), "compiled_gears_erlang-#{System.otp_release()}")
 
   defunp tenant_dir() :: Path.t, do: Path.join(antikythera_root_dir(), "tenant")
 

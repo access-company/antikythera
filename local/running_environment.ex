@@ -8,7 +8,7 @@ defmodule AntikytheraLocal.RunningEnvironment do
   alias AntikytheraLocal.{Cmd, StartScript}
 
   # Paths for test process that controls the ErlangVM that runs the release
-  @release_output_dir "rel_local_erlang-#{:erlang.system_info(:otp_release)}"
+  @release_output_dir "rel_local_erlang-#{System.otp_release()}"
 
   # Paths for the ErlangVM that runs the release
   current_os_pid = :os.getpid()
