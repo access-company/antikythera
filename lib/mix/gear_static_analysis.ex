@@ -123,6 +123,12 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
     use_internals? = use_antikythera_internal_modules?()
     if !tool? do
       cond do
+        mod == System and fun in [:halt, :stop] ->
+          {:error, file, meta, "disturbing execution of ErlangVM is strictly prohibited"}
+        mod == :erlang and fun == :halt ->
+          {:error, file, meta, "disturbing execution of ErlangVM is strictly prohibited"}
+        mod == :init ->
+          {:error, file, meta, "disturbing execution of ErlangVM is strictly prohibited"}
         mod == IO and fun in [:inspect, :puts, :write] and writing_to_stdout?(args) ->
           severity = if Mix.env() == :prod, do: :error, else: :warning
           {severity, file, meta, "writing to STDOUT/STDERR is not allowed in prod environment (use each gear's logger instead)"}
