@@ -53,7 +53,7 @@ defmodule Antikythera.Http do
     }
 
     defun parse!(s :: v[String.t]) :: {String.t, t} do
-      [pair | attrs] = String.split(s, ~r/\s*;\s*/)
+      [pair | attrs] = String.split(s, ~R/\s*;\s*/)
       [name, value] = String.split(pair, "=", parts: 2)
       cookie =
         Enum.reduce(attrs, %__MODULE__{value: value}, fn(attr, acc) ->
@@ -66,7 +66,7 @@ defmodule Antikythera.Http do
     end
 
     defp attr_to_opt(attr) do
-      [name | rest] = String.split(attr, ~r/\s*=\s*/, parts: 2)
+      [name | rest] = String.split(attr, ~R/\s*=\s*/, parts: 2)
       case String.downcase(name) do
         "path"     -> {:path     , hd(rest)}
         "domain"   -> {:domain   , hd(rest)}

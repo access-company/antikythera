@@ -62,7 +62,7 @@ defmodule Antikythera.Router.Impl do
   end
 
   defunp correct_format?(segment :: v[PathSegment.t]) :: boolean do
-    Regex.match?(~r/^(([0-9A-Za-z.~_-]*)|([:*][a-z_][0-9a-z_]*))$/, segment)
+    Regex.match?(~R/\A(([0-9A-Za-z.~_-]*)|([:*][a-z_][0-9a-z_]*))\z/, segment)
   end
 
   defunp placeholder_names_uniq?(segments :: v[PathInfo.t]) :: boolean do

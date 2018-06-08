@@ -3,7 +3,7 @@
 use Croma
 
 defmodule Antikythera.AsyncJob.Id do
-  use Croma.SubtypeOfString, pattern: ~r/^[0-9A-Za-z_-]{1,32}$/
+  use Croma.SubtypeOfString, pattern: ~R/\A[0-9A-Za-z_-]{1,32}\z/
 
   defun generate() :: t do
     Enum.map(1..20, fn _ -> gen_base64url_char() end) |> List.to_string()

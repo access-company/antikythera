@@ -19,7 +19,7 @@ defmodule Antikythera.VersionStr do
   this is just to simplify deployment and not an intrinsic limitation.
   """
 
-  use Croma.SubtypeOfString, pattern: ~r/^\d\.\d\.\d-\d{14}\+[0-9a-f]{40}$/
+  use Croma.SubtypeOfString, pattern: ~R/\A\d\.\d\.\d-\d{14}\+[0-9a-f]{40}\z/
 end
 
 defmodule Antikythera.Domain do
@@ -34,7 +34,7 @@ defmodule Antikythera.Domain do
   @pattern_body "((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)*(?!-)[A-Za-z0-9-]{1,63}(?<!-)"
   def pattern_body(), do: @pattern_body
 
-  use Croma.SubtypeOfString, pattern: ~r/^#{@pattern_body}$/
+  use Croma.SubtypeOfString, pattern: ~r/\A#{@pattern_body}\z/
 end
 
 defmodule Antikythera.DomainList do
@@ -52,7 +52,7 @@ defmodule Antikythera.PathSegment do
   @charclass "[0-9A-Za-z\-._~%!$&'()*+,;=:@]"
   def charclass(), do: @charclass
 
-  use Croma.SubtypeOfString, pattern: ~r|^#{@charclass}*$|
+  use Croma.SubtypeOfString, pattern: ~r|\A#{@charclass}*\z|
 end
 
 defmodule Antikythera.PathInfo do
@@ -63,12 +63,12 @@ defmodule Antikythera.UnencodedPath do
   @segment_charclass "[^/?#]"
   def segment_charclass(), do: @segment_charclass
 
-  use Croma.SubtypeOfString, pattern: ~r"\A/(#{@segment_charclass}+/)*(#{@segment_charclass}+)?\Z"
+  use Croma.SubtypeOfString, pattern: ~r"\A/(#{@segment_charclass}+/)*(#{@segment_charclass}+)?\z"
 end
 
 defmodule Antikythera.EncodedPath do
   alias Antikythera.PathSegment, as: Segment
-  use Croma.SubtypeOfString, pattern: ~r"\A/(#{Segment.charclass()}+/)*(#{Segment.charclass()}+)?\Z"
+  use Croma.SubtypeOfString, pattern: ~r"\A/(#{Segment.charclass()}+/)*(#{Segment.charclass()}+)?\z"
 end
 
 defmodule Antikythera.Url do
@@ -91,7 +91,7 @@ defmodule Antikythera.Url do
   captured_ip_pattern = "(?<ip_str>(\\d{1,3}\\.){3}\\d{1,3})"
   host_pattern        = "(#{captured_ip_pattern}|#{Domain.pattern_body()})"
   path_pattern        = "((/[^/ ?#]+)*/?)?"
-  @pattern              ~r"^https?://([^ :]+(:[^ :]+)?@)?#{host_pattern}(:\d{1,5})?#{path_pattern}(\?([^ #]*))?(#[^ ]*)?$"
+  @pattern              ~r"\Ahttps?://([^ :]+(:[^ :]+)?@)?#{host_pattern}(:\d{1,5})?#{path_pattern}(\?([^ #]*))?(#[^ ]*)?\z"
   def pattern(), do: @pattern
 
   defun valid?(v :: term) :: boolean do
@@ -117,14 +117,14 @@ defmodule Antikythera.Email do
   - Total length of domain parts are not limited to 255.
   """
 
-  use Croma.SubtypeOfString, pattern: ~r"^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]{1,64}@#{Antikythera.Domain.pattern_body()}$"
+  use Croma.SubtypeOfString, pattern: ~r"\A[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]{1,64}@#{Antikythera.Domain.pattern_body()}\z"
 end
 
 defmodule Antikythera.ContextId do
   @system_context "antikythera_system"
   def system_context(), do: @system_context
 
-  use Croma.SubtypeOfString, pattern: ~r/^(\d{8}-\d{6}\.\d{3}_[0-9A-Za-z.-]+_\d+\.\d+\.\d+|#{@system_context})$/
+  use Croma.SubtypeOfString, pattern: ~r/\A(\d{8}-\d{6}\.\d{3}_[0-9A-Za-z.-]+_\d+\.\d+\.\d+|#{@system_context})\z/
 end
 
 defmodule Antikythera.ImfFixdate do
@@ -135,7 +135,7 @@ defmodule Antikythera.ImfFixdate do
 
   days_of_week = "(Mon|Tue|Wed|Thu|Fri|Sat|Sun)"
   months_of_year = "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-  use Croma.SubtypeOfString, pattern: ~r/^#{days_of_week}, \d\d #{months_of_year} \d\d\d\d \d\d:\d\d:\d\d GMT$/
+  use Croma.SubtypeOfString, pattern: ~r/\A#{days_of_week}, \d\d #{months_of_year} \d\d\d\d \d\d:\d\d:\d\d GMT\z/
 end
 
 defmodule Antikythera.GearName do
@@ -154,12 +154,12 @@ defmodule Antikythera.GearName do
 end
 
 defmodule Antikythera.GearNameStr do
-  use Croma.SubtypeOfString, pattern: ~r/^[a-z][0-9a-z_]{2,31}$/
+  use Croma.SubtypeOfString, pattern: ~R/\A[a-z][0-9a-z_]{2,31}\z/
 end
 
 defmodule Antikythera.TenantId do
   @notenant "notenant"
   defun notenant() :: String.t, do: @notenant
 
-  use Croma.SubtypeOfString, pattern: ~r/^(?!^#{@notenant}$)\w{3,32}$/
+  use Croma.SubtypeOfString, pattern: ~r/\A(?!^#{@notenant}$)\w{3,32}\z/
 end
