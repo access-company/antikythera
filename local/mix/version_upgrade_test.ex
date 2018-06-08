@@ -108,8 +108,8 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
   defunp override_version_in_mix_file(app_name :: g[atom], new_version :: g[String.t], mixfile_path :: Path.t) :: :ok do
     replacement = "\\1\"#{new_version}\"\\3"
     case app_name do
-      @instance_name -> override_file(mixfile_path, ~r/(version\:[^\(]+\()([^\)]+)(\),\n)/   , replacement)
-      :testgear      -> override_file(mixfile_path, ~r/(defp\sversion[^\:]+\:\s)([^\n]+)(\n)/, replacement)
+      @instance_name -> override_file(mixfile_path, ~R/(version\:[^\(]+\()([^\)]+)(\),\n)/   , replacement)
+      :testgear      -> override_file(mixfile_path, ~R/(defp\sversion[^\:]+\:\s)([^\n]+)(\n)/, replacement)
     end
   end
 

@@ -25,7 +25,7 @@ defmodule AntikytheraCore.Request do
         :inet.ntoa(ip) |> List.to_string()
       ip_str ->
         # Take the last IP address in "x-forwarded-for" as it is added by reliable component (upstream load balancer).
-        String.split(ip_str, ~r/, */) |> List.last()
+        String.split(ip_str, ~R/, */) |> List.last()
     end
   end
 end
