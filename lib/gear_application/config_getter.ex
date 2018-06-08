@@ -7,6 +7,8 @@ defmodule Antikythera.GearApplication.ConfigGetter do
   Helper module to define getter functions of gear configs.
   """
 
+  @key :gear_configs
+
   defmacro __using__(_) do
     quote do
       # Assuming that module attribute `@gear_name` is defined in the __CALLER__'s context
@@ -28,28 +30,28 @@ defmodule Antikythera.GearApplication.ConfigGetter do
   @doc false
   def get_all_env(gear_name) do
     case load_config_from_process_dictionary(gear_name) do
-      {:ok   , config              } -> config
-      {:error, current_gear_configs} ->
+      {:ok   , config      } -> config
+      {:error, gear_configs} ->
         config = load_config_from_ets(gear_name)
-        store_config_to_process_dictionary(gear_name, current_gear_configs, config)
+        store_config_to_process_dictionary(gear_name, gear_configs, config)
         config
     end
   end
 
   defp load_config_from_process_dictionary(gear_name) do
-    case Process.get(:gear_configs) do
-      nil     -> {:error, %{}}
-      configs ->
-        case Map.get(configs, gear_name) do
-          nil    -> {:error, configs}
-          config -> {:ok   , config }
+    case Process.get(@key) do
+      nil          -> {:error, %{}}
+      gear_configs ->
+        case Map.get(gear_configs, gear_name) do
+          nil    -> {:error, gear_configs}
+          config -> {:ok   , config      }
         end
     end
   end
 
-  defp store_config_to_process_dictionary(gear_name, current_gear_configs, config) do
-    new_gear_configs = Map.put(current_gear_configs, gear_name, config)
-    Process.put(:gear_configs, new_gear_configs)
+  defp store_config_to_process_dictionary(gear_name, gear_configs, config) do
+    new_gear_configs = Map.put(gear_configs, gear_name, config)
+    Process.put(@key, new_gear_configs)
   end
 
   defp load_config_from_ets(gear_name) do
@@ -70,7 +72,7 @@ defmodule Antikythera.GearApplication.ConfigGetter do
   end
 
   defun cleanup_configs_in_process_dictionary() :: :ok do
-    Process.delete(:gear_configs)
+    Process.delete(@key)
     :ok
   end
 end
