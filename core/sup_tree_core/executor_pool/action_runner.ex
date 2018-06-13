@@ -37,6 +37,8 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
       :error, e      -> {:error, {:error, e     }, System.stacktrace()}
       :throw, value  -> {:error, {:throw, value }, System.stacktrace()}
       :exit , reason -> {:error, {:exit , reason}, System.stacktrace()}
+    after
+      Antikythera.GearApplication.ConfigGetter.cleanup_configs_in_process_dictionary()
     end
   end
 
