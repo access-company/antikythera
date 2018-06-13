@@ -214,7 +214,7 @@ defmodule Antikythera.Router do
 
   defmacro static_prefix(prefix) do
     quote bind_quoted: [prefix: prefix] do
-      if prefix =~ ~r|^(/[0-9A-Za-z.~_-]+)+$| do
+      if prefix =~ ~R|\A(/[0-9A-Za-z.~_-]+)+\z| do
         def static_prefix(), do: unquote(prefix)
       else
         raise "invalid path prefix given to `static_prefix/1`: #{prefix}"
