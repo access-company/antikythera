@@ -1,5 +1,7 @@
 # Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 
+use Croma
+
 defmodule AntikytheraCore.GearConfigPoller do
   @moduledoc """
   Periodically polls changes in gear configs.
@@ -20,6 +22,8 @@ defmodule AntikytheraCore.GearConfigPoller do
 
   @interval 60_000
 
+  @typep state_t :: %{last_checked_at: pos_integer}
+
   def start_link() do
     GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
   end
@@ -30,7 +34,16 @@ defmodule AntikytheraCore.GearConfigPoller do
   end
 
   @impl true
+  def handle_cast(:reload, state) do
+    handle_gear_config_loading(state)
+  end
+
+  @impl true
   def handle_info(:timeout, state) do
+    handle_gear_config_loading(state)
+  end
+
+  defunp handle_gear_config_loading(state :: state_t) :: {:noreply, state_t, timeout} do
     checked_at = System.system_time(:seconds)
     GearConfig.load_all(state[:last_checked_at])
     {:noreply, %{state | last_checked_at: checked_at}, @interval}
