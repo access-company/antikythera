@@ -30,6 +30,13 @@ defmodule AntikytheraCore.GearConfigPoller do
   end
 
   @impl true
+  def handle_cast(:reload, state) do
+    checked_at = System.system_time(:seconds)
+    GearConfig.load_all(state[:last_checked_at])
+    {:noreply, %{state | last_checked_at: checked_at}, @interval}
+  end
+
+  @impl true
   def handle_info(:timeout, state) do
     checked_at = System.system_time(:seconds)
     GearConfig.load_all(state[:last_checked_at])
