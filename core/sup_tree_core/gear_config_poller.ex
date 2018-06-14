@@ -22,7 +22,7 @@ defmodule AntikytheraCore.GearConfigPoller do
 
   @interval 60_000
 
-  @typep state :: %{last_checked_at: integer}
+  @typep state :: %{last_checked_at: pos_integer}
 
   def start_link() do
     GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
