@@ -22,7 +22,7 @@ defmodule AntikytheraCore.GearConfigPoller do
 
   @interval 60_000
 
-  @typep state :: %{last_checked_at: pos_integer}
+  @typep state_t :: %{last_checked_at: pos_integer}
 
   def start_link() do
     GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
@@ -35,19 +35,17 @@ defmodule AntikytheraCore.GearConfigPoller do
 
   @impl true
   def handle_cast(:reload, state) do
-    new_state = load_gear_config(state)
-    {:noreply, new_state, @interval}
+    handle_gear_config_loading(state)
   end
 
   @impl true
   def handle_info(:timeout, state) do
-    new_state = load_gear_config(state)
-    {:noreply, new_state, @interval}
+    handle_gear_config_loading(state)
   end
 
-  defunp load_gear_config(old_state :: state) :: state do
+  defunp handle_gear_config_loading(state :: state_t) :: state_t do
     checked_at = System.system_time(:seconds)
-    GearConfig.load_all(old_state[:last_checked_at])
-    %{old_state | last_checked_at: checked_at}
+    GearConfig.load_all(state[:last_checked_at])
+    {:noreply, %{state | last_checked_at: checked_at}, @interval}
   end
 end
