@@ -22,6 +22,7 @@ defmodule AntikytheraCore.TerminationManager do
   defmodule State do
     alias AntikytheraCore.ExecutorPool.AsyncJobBroker
     alias AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter
+    alias AntikytheraCore.VersionUpgradeTaskQueue
 
     use Croma.Struct, recursive_new?: true, fields: [
       in_service?:          Croma.Boolean,
@@ -36,6 +37,7 @@ defmodule AntikytheraCore.TerminationManager do
       new_count = if now_in_service?, do: 0, else: count + 1
       if in_service? and new_count >= @threshold_count do
         L.info("confirmed that this host is to be terminated; start cleanup...")
+        VersionUpgradeTaskQueue.disable_version_upgrade()
         cleanup(brokers)
         %State{state | in_service?: false, not_in_service_count: new_count}
       else
