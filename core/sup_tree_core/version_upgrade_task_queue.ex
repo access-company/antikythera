@@ -14,6 +14,7 @@ defmodule AntikytheraCore.VersionUpgradeTaskQueue do
   use GenServer
   alias Antikythera.GearName
   alias AntikytheraCore.Version
+  require AntikytheraCore.Logger, as: L
 
   def start_link() do
     GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
@@ -21,10 +22,22 @@ defmodule AntikytheraCore.VersionUpgradeTaskQueue do
 
   @impl true
   def init(:ok) do
-    {:ok, %{queue: :queue.new(), task_pid: nil}}
+    {:ok, %{queue: :queue.new(), task_pid: nil, enable_upgrade?: true}}
   end
 
   @impl true
+  def handle_cast(message, state) when message in [:enable_version_upgrade, :disable_version_upgrade] do
+    new_state =
+      case message do
+        :enable_version_upgrade  ->
+          L.info("All upgrade processing of antikythera instance or gears is set again to enable.")
+          %{state | enable_upgrade?: true}
+        :disable_version_upgrade ->
+          L.info("All upgrade processing of antikythera instance or gears is set to disable.")
+          %{state | enable_upgrade?: false}
+      end
+    {:noreply, new_state}
+  end
   def handle_cast(message, state) do
     new_state = enqueue_message(state, message) |> run_task_if_possible()
     {:noreply, new_state}
@@ -40,10 +53,10 @@ defmodule AntikytheraCore.VersionUpgradeTaskQueue do
     {:noreply, new_state}
   end
 
-  defp run_task_if_possible(%{queue: q, task_pid: pid} = state) do
-    if pid == nil do
+  defp run_task_if_possible(%{queue: q, task_pid: pid, enable_upgrade?: enable?} = state) do
+    if pid == nil and enable? do
       case :queue.out(q) do
-        {{:value, message}, new_queue} -> %{queue: new_queue, task_pid: run_task(message)}
+        {{:value, message}, new_queue} -> %{state | queue: new_queue, task_pid: run_task(message)}
         {:empty           , _        } -> state
       end
     else
@@ -69,5 +82,13 @@ defmodule AntikytheraCore.VersionUpgradeTaskQueue do
 
   defun core_updated() :: :ok do
     :ok = GenServer.cast(__MODULE__, :core_updated)
+  end
+
+  defun enable_version_upgrade() :: :ok do
+    :ok = GenServer.cast(__MODULE__, :enable_version_upgrade)
+  end
+
+  defun disable_version_upgrade() :: :ok do
+    :ok = GenServer.cast(__MODULE__, :disable_version_upgrade)
   end
 end
