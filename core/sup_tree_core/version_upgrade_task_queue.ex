@@ -77,18 +77,18 @@ defmodule AntikytheraCore.VersionUpgradeTaskQueue do
   # Public API
   #
   defun gear_updated(gear_name :: v[GearName.t]) :: :ok do
-    :ok = GenServer.cast(__MODULE__, {:gear_updated, gear_name})
+    GenServer.cast(__MODULE__, {:gear_updated, gear_name})
   end
 
   defun core_updated() :: :ok do
-    :ok = GenServer.cast(__MODULE__, :core_updated)
+    GenServer.cast(__MODULE__, :core_updated)
   end
 
-  defun enable_version_upgrade() :: :ok do
-    :ok = GenServer.cast(__MODULE__, :enable_version_upgrade)
+  defun enable() :: :ok do
+    GenServer.cast(__MODULE__, :enable_version_upgrade)
   end
 
-  defun disable_version_upgrade() :: :ok do
-    :ok = GenServer.cast(__MODULE__, :disable_version_upgrade)
+  defun disable() :: :ok do
+    GenServer.cast(__MODULE__, :disable_version_upgrade)
   end
 end
