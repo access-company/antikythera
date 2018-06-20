@@ -65,11 +65,11 @@ defmodule AntikytheraCore.VersionUpgradeTaskQueue do
     end
   end
 
-  defp run_task({:gear_updated, gear_name}) do
+  defp run_task({:gear, gear_name}) do
     {pid, _ref} = spawn_monitor(Version.Gear, :install_or_upgrade_to_next_version, [gear_name])
     pid
   end
-  defp run_task(:core_updated) do
+  defp run_task(:core) do
     {pid, _ref} = spawn_monitor(Version.Core, :upgrade_to_next_version, [])
     pid
   end
@@ -78,11 +78,11 @@ defmodule AntikytheraCore.VersionUpgradeTaskQueue do
   # Public API
   #
   defun gear_updated(gear_name :: v[GearName.t]) :: :ok do
-    GenServer.cast(__MODULE__, {:upgrade, {:gear_updated, gear_name}})
+    GenServer.cast(__MODULE__, {:upgrade, {:gear, gear_name}})
   end
 
   defun core_updated() :: :ok do
-    GenServer.cast(__MODULE__, {:upgrade, :core_updated})
+    GenServer.cast(__MODULE__, {:upgrade, :core})
   end
 
   defun enable() :: :ok do
