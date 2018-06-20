@@ -8,6 +8,7 @@ defmodule AntikytheraCore.Ets do
     AntikytheraCore.Ets.ConfigCache.init()
     AntikytheraCore.Ets.GearActionRunnerPools.init()
     AntikytheraCore.Ets.TenantToGearsMapping.init()
+    AntikytheraCore.Ets.Memcache.init()
   end
 
   defun create_read_optimized_table(table_name :: v[atom]) :: :ok do
