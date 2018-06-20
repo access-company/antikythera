@@ -4,7 +4,6 @@ use Croma
 
 defmodule AntikytheraCore.Ets.Memcache do
   alias Croma.Result, as: R
-  alias Antikythera.Time
   alias Antikythera.ExecutorPool.Id, as: EPoolId
 
   defun init() :: :ok do
@@ -22,7 +21,7 @@ defmodule AntikytheraCore.Ets.Memcache do
     end
   end
 
-  defun write(key :: term, value :: term, expire_at :: v[Time.t], prob_expire_at :: v[Time.t], epool_id :: v[EPoolId.t]) :: :ok do
+  defun write(key :: term, value :: term, expire_at :: integer, prob_expire_at :: integer, epool_id :: v[EPoolId.t]) :: :ok do
     :ets.insert(table_name(), {{epool_id, key}, expire_at, prob_expire_at, value})
     :ok
   end

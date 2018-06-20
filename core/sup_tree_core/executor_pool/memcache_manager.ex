@@ -12,7 +12,6 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheManager do
   @max_record_size 65536
 
   use GenServer
-  alias Antikythera.Time
   alias AntikytheraCore.Ets.Memcache
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias Antikythera.ExecutorPool.Id, as: EPoolId
@@ -28,7 +27,7 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheManager do
 
   @impl true
   def handle_call({:write, key, value, lifetime, ratio}, _from, state) do
-    evicted_state = evict_expired_records(state, Time.now())
+    evicted_state = evict_expired_records(state, System.monotonic_time(:milliseconds))
     if :erts_debug.flat_size(value) > @max_record_size do
       {:reply, {:error, :too_large_object}, evicted_state, @timeout}
     else
@@ -42,7 +41,7 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheManager do
 
   @impl true
   def handle_info(:timeout, state) do
-    new_state = evict_expired_records(state, Time.now())
+    new_state = evict_expired_records(state, System.monotonic_time(:milliseconds))
     {:noreply, new_state, @timeout}
   end
 
@@ -73,9 +72,9 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheManager do
   end
 
   defp do_write(%{records: records, expire_at_set: expire_at_set, epool_id: epool_id} = state, key, value, lifetime, ratio) do
-    now            = Time.now()
-    expire_at      = Time.shift_seconds(now, lifetime)
-    prob_expire_at = Time.shift_seconds(now, round(lifetime * ratio))
+    now            = System.monotonic_time(:milliseconds)
+    expire_at      = now + lifetime * 1_000
+    prob_expire_at = now + round(lifetime * ratio * 1_000)
     Memcache.write(key, value, expire_at, prob_expire_at, epool_id)
     new_expire_at_set = insert_new_expire_at(expire_at_set, expire_at, key, records)
     new_records       = Map.put(records, key, expire_at)

@@ -12,46 +12,43 @@ defmodule Antikythera.Memcache do
       {:ok, "bar"}
   """
 
-  @default_lifetime 1800
   @default_ratio    0.9
 
   alias Croma.Result, as: R
-  alias Antikythera.Time
   alias AntikytheraCore.ExecutorPool.MemcacheManager
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.Ets.Memcache
   alias Antikythera.Memcache.NormalizedFloat
 
   defun read(key :: term, epool_id :: v[EPoolId.t]) :: R.t(term, :not_found) do
-    case Memcache.read(key, epool_id) do
-      {:ok, {_, expire_at, prob_expire_at, value}} ->
-        if is_expired(expire_at, prob_expire_at) do
-          {:error, :not_found}
-        else
-          {:ok, value}
-        end
-      {:error, :not_found} -> {:error, :not_found}
+    Memcache.read(key, epool_id)
+    |> R.bind(fn {_, expire_at, prob_expire_at, value} ->
+      if expired?(expire_at, prob_expire_at) do
+        {:error, :not_found}
+      else
+        {:ok, value}
+      end
+    end)
+  end
+
+  defp expired?(expire_at, prob_expire_at) do
+    case System.monotonic_time(:milliseconds) do
+      now when now < prob_expire_at -> false
+      now when expire_at < now      -> true
+      now ->
+        rnd = :rand.uniform()
+        t0 = expire_at - prob_expire_at
+        t1 = now       - prob_expire_at
+        rnd < (t1 / t0)
     end
   end
 
   defun write(key                 :: term,
               value               :: term,
               epool_id            :: v[EPoolId.t],
-              lifetime_in_sec     :: v[non_neg_integer] \\ @default_lifetime,
+              lifetime_in_sec     :: v[non_neg_integer],
               prob_lifetime_ratio :: v[NormalizedFloat.t] \\ @default_ratio) :: :ok | {:error, :too_large_object} do
     MemcacheManager.write(key, value, epool_id, lifetime_in_sec, prob_lifetime_ratio)
-  end
-
-  defp is_expired(expire_at, prob_expire_at) do
-    case Time.now() do
-      now when now < prob_expire_at -> false
-      now when expire_at < now      -> true
-      now ->
-        rnd = :rand.uniform()
-        t0 = Time.diff_milliseconds(expire_at, prob_expire_at)
-        t1 = Time.diff_milliseconds(now      , prob_expire_at)
-        rnd < (t1 / t0)
-    end
   end
 
   defmodule NormalizedFloat do
