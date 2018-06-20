@@ -22,29 +22,30 @@ defmodule AntikytheraCore.VersionUpgradeTaskQueue do
 
   @impl true
   def init(:ok) do
-    {:ok, %{queue: :queue.new(), task_pid: nil, enable_upgrade?: true}}
+    {:ok, %{queue: :queue.new(), task_pid: nil, enabled?: true}}
   end
 
   @impl true
-  def handle_cast(message, state) when message in [:enable_version_upgrade, :disable_version_upgrade] do
+  def handle_cast(message, state) do
     new_state =
       case message do
-        :enable_version_upgrade  ->
-          L.info("All upgrade processing of antikythera instance or gears is set again to enable.")
-          %{state | enable_upgrade?: true}
-        :disable_version_upgrade ->
-          L.info("All upgrade processing of antikythera instance or gears is set to disable.")
-          %{state | enable_upgrade?: false}
+        {:upgrade    , instruction} -> enqueue_message(state, instruction) |> run_task_if_possible()
+        {:set_enabled, enabled?   } -> set_enabled(state, enabled?)
       end
-    {:noreply, new_state}
-  end
-  def handle_cast(message, state) do
-    new_state = enqueue_message(state, message) |> run_task_if_possible()
     {:noreply, new_state}
   end
 
   defp enqueue_message(%{queue: q} = state, message) do
     %{state | queue: :queue.in(message, q)}
+  end
+
+  defp set_enabled(state, enabled?) do
+    case {state.enabled?, enabled?} do
+      {true , false} -> L.info("upgrade processing is turned off")
+      {false, true } -> L.info("upgrade processing is turned on")
+      _              -> :ok
+    end
+    %{state | enabled?: enabled?}
   end
 
   @impl true
@@ -77,18 +78,18 @@ defmodule AntikytheraCore.VersionUpgradeTaskQueue do
   # Public API
   #
   defun gear_updated(gear_name :: v[GearName.t]) :: :ok do
-    GenServer.cast(__MODULE__, {:gear_updated, gear_name})
+    GenServer.cast(__MODULE__, {:upgrade, {:gear_updated, gear_name}})
   end
 
   defun core_updated() :: :ok do
-    GenServer.cast(__MODULE__, :core_updated)
+    GenServer.cast(__MODULE__, {:upgrade, :core_updated})
   end
 
   defun enable() :: :ok do
-    GenServer.cast(__MODULE__, :enable_version_upgrade)
+    GenServer.cast(__MODULE__, {:set_enabled, true})
   end
 
   defun disable() :: :ok do
-    GenServer.cast(__MODULE__, :disable_version_upgrade)
+    GenServer.cast(__MODULE__, {:set_enabled, false})
   end
 end
