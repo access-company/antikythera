@@ -29,14 +29,14 @@ defmodule AntikytheraCore.VersionUpgradeTaskQueue do
   def handle_cast(message, state) do
     new_state =
       case message do
-        {:upgrade    , instruction} -> enqueue_message(state, instruction) |> run_task_if_possible()
+        {:upgrade    , instruction} -> enqueue_instruction(state, instruction) |> run_task_if_possible()
         {:set_enabled, enabled?   } -> set_enabled(state, enabled?)
       end
     {:noreply, new_state}
   end
 
-  defp enqueue_message(%{queue: q} = state, message) do
-    %{state | queue: :queue.in(message, q)}
+  defp enqueue_instruction(%{queue: q} = state, instruction) do
+    %{state | queue: :queue.in(instruction, q)}
   end
 
   defp set_enabled(state, enabled?) do
