@@ -54,8 +54,8 @@ defmodule AntikytheraCore.VersionUpgradeTaskQueue do
     {:noreply, new_state}
   end
 
-  defp run_task_if_possible(%{queue: q, task_pid: pid, enable?: enable?} = state) do
-    if pid == nil and enable? do
+  defp run_task_if_possible(%{queue: q, task_pid: pid, enabled?: enabled?} = state) do
+    if pid == nil and enabled? do
       case :queue.out(q) do
         {{:value, message}, new_queue} -> %{state | queue: new_queue, task_pid: run_task(message)}
         {:empty           , _        } -> state
