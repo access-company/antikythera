@@ -58,7 +58,7 @@ defmodule AntikytheraCore.VersionUpgradeTaskQueue do
     if pid == nil and enabled? do
       case :queue.out(q) do
         {{:value, instruction}, new_queue} -> %{state | queue: new_queue, task_pid: run_task(instruction)}
-        {:empty           , _        } -> state
+        {:empty               , _        } -> state
       end
     else
       state
