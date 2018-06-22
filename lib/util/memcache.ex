@@ -15,7 +15,7 @@ defmodule Antikythera.Memcache do
   @default_ratio    0.9
 
   alias Croma.Result, as: R
-  alias AntikytheraCore.ExecutorPool.MemcacheManager
+  alias AntikytheraCore.ExecutorPool.MemcacheWriter
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.Ets.Memcache
   alias Antikythera.Memcache.NormalizedFloat
@@ -48,7 +48,7 @@ defmodule Antikythera.Memcache do
               epool_id            :: v[EPoolId.t],
               lifetime_in_sec     :: v[non_neg_integer],
               prob_lifetime_ratio :: v[NormalizedFloat.t] \\ @default_ratio) :: :ok | {:error, :too_large_object} do
-    MemcacheManager.write(key, value, epool_id, lifetime_in_sec, prob_lifetime_ratio)
+    MemcacheWriter.write(key, value, epool_id, lifetime_in_sec, prob_lifetime_ratio)
   end
 
   defmodule NormalizedFloat do

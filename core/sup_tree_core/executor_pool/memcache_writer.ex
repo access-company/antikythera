@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule AntikytheraCore.ExecutorPool.MemcacheManager do
+defmodule AntikytheraCore.ExecutorPool.MemcacheWriter do
   @moduledoc """
   A `GenServer` to manage memcache for each executor pool.
   """
@@ -98,6 +98,6 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheManager do
               epool_id            :: v[EPoolId.t],
               lifetime_in_sec     :: integer,
               prob_lifetime_ratio :: float) :: :ok | {:error, :too_large_object} do
-    GenServer.call(RegName.memcache_manager(epool_id), {:write, key, value, lifetime_in_sec, prob_lifetime_ratio})
+    GenServer.call(RegName.memcache_writer(epool_id), {:write, key, value, lifetime_in_sec, prob_lifetime_ratio})
   end
 end

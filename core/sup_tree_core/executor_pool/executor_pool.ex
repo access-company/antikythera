@@ -8,7 +8,7 @@ defmodule AntikytheraCore.ExecutorPool do
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
-  alias AntikytheraCore.ExecutorPool.{ActionRunner, AsyncJobRunner, TimedJobStarter, WebsocketConnectionsCounter, UsageReporter, MemcacheManager}
+  alias AntikytheraCore.ExecutorPool.{ActionRunner, AsyncJobRunner, TimedJobStarter, WebsocketConnectionsCounter, UsageReporter, MemcacheWriter}
   alias AntikytheraCore.ExecutorPool.AsyncJobBroker, as: JobBroker
   alias AntikytheraCore.MetricsUploader
   alias AntikytheraCore.Ets.GearActionRunnerPools
@@ -26,7 +26,7 @@ defmodule AntikytheraCore.ExecutorPool do
     queue_name      = RegName.async_job_queue_unsafe(epool_id)
     broker_name     = RegName.async_job_broker_unsafe(epool_id)
     ws_counter_name = RegName.websocket_connections_counter_unsafe(epool_id)
-    memcache_name   = RegName.memcache_manager_unsafe(epool_id)
+    memcache_name   = RegName.memcache_writer_unsafe(epool_id)
 
     children = [
       Spec.supervisor(PoolSup.Multi              , action_runner_pool_multi_args(epool_id, n_pools_a, size_a)),
@@ -35,7 +35,7 @@ defmodule AntikytheraCore.ExecutorPool do
       Spec.worker(    TimedJobStarter            , [queue_name, uploader, epool_id]),
       Spec.worker(    WebsocketConnectionsCounter, [ws_max, ws_counter_name]),
       Spec.worker(    UsageReporter              , [uploader, epool_id]),
-      Spec.worker(    MemcacheManager            , [memcache_name, epool_id]),
+      Spec.worker(    MemcacheWriter             , [memcache_name, epool_id]),
     ]
     Supervisor.start_link(children, [strategy: :one_for_one, name: sup_name])
   end
