@@ -4,9 +4,12 @@ defmodule Antikythera.MemcacheTest do
   use Croma.TestCase
   alias AntikytheraCore.ExecutorPool
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
+  alias Antikythera.TermUtil
 
   @epool_id        {:gear, :testgear}
   @max_records_num 10
+  @max_key_size    128
+  @max_value_size  65536
   @lifetime        100
 
   setup do
@@ -52,5 +55,17 @@ defmodule Antikythera.MemcacheTest do
     end)
     assert :ets.info(AntikytheraCore.Ets.Memcache.table_name(), :size) == @max_records_num
     assert Memcache.read(1, @epool_id) == {:error, :not_found}
+  end
+
+  test "should return an error with too large keys" do
+    large_binary = String.duplicate("a", @max_key_size)
+    assert TermUtil.size(large_binary) > @max_key_size
+    assert Memcache.write(large_binary, "bar", @epool_id, @lifetime) == {:error, :too_large_key}
+  end
+
+  test "should return an error with too large values" do
+    large_binary = String.duplicate("a", @max_value_size)
+    assert TermUtil.size(large_binary) > @max_value_size
+    assert Memcache.write("foo", large_binary, @epool_id, @lifetime) == {:error, :too_large_value}
   end
 end

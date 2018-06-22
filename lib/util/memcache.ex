@@ -18,7 +18,7 @@ defmodule Antikythera.Memcache do
   alias AntikytheraCore.ExecutorPool.MemcacheWriter
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.Ets.Memcache
-  alias Antikythera.Memcache.NormalizedFloat
+  alias Antikythera.Memcache.{Key, Value, NormalizedFloat}
 
   defun read(key :: term, epool_id :: v[EPoolId.t]) :: R.t(term, :not_found) do
     Memcache.read(key, epool_id)
@@ -43,12 +43,34 @@ defmodule Antikythera.Memcache do
     end
   end
 
-  defun write(key                 :: term,
-              value               :: term,
+  defun write(key                 :: Key.t,
+              value               :: Value.t,
               epool_id            :: v[EPoolId.t],
               lifetime_in_sec     :: v[non_neg_integer],
-              prob_lifetime_ratio :: v[NormalizedFloat.t] \\ @default_ratio) :: :ok do
-    MemcacheWriter.write(key, value, epool_id, lifetime_in_sec, prob_lifetime_ratio)
+              prob_lifetime_ratio :: v[NormalizedFloat.t] \\ @default_ratio) :: :ok | {:error, :too_large_key} | {:error, :too_large_value} do
+    cond do
+      not Key.valid?(key)     -> {:error, :too_large_key}
+      not Value.valid?(value) -> {:error, :too_large_value}
+      true                    -> MemcacheWriter.write(key, value, epool_id, lifetime_in_sec, prob_lifetime_ratio)
+    end
+  end
+
+  defmodule Key do
+    @max_size 128
+
+    @type t :: any
+    defun valid?(key :: term) :: boolean do
+      Antikythera.TermUtil.size_smaller_or_equal?(key, @max_size)
+    end
+  end
+
+  defmodule Value do
+    @max_size 65536
+
+    @type t :: any
+    defun valid?(value :: term) :: boolean do
+      Antikythera.TermUtil.size_smaller_or_equal?(value, @max_size)
+    end
   end
 
   defmodule NormalizedFloat do
