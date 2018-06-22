@@ -31,7 +31,7 @@ defmodule AntikytheraCore.GearLog.Writer do
     ]
   end
 
-  def start_link(gear_name, logger_name) do
+  def start_link([gear_name, logger_name]) do
     opts = if logger_name, do: [name: logger_name], else: []
     %GearConfig{log_level: min_level} = ConfigCache.Gear.read(gear_name)
     GenServer.start_link(__MODULE__, {gear_name, min_level}, opts)
