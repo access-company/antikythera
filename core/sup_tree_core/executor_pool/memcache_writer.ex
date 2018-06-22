@@ -8,7 +8,7 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheWriter do
   """
 
   @timeout         300_000
-  @max_records_num 10
+  @max_records_num 100
 
   use GenServer
   alias AntikytheraCore.Ets.Memcache
@@ -90,6 +90,8 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheWriter do
   #
   # Public API
   #
+  defun max_records() :: non_neg_integer, do: @max_records_num
+
   defun write(key                 :: term,
               value               :: term,
               epool_id            :: EPoolId.t,

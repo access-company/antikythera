@@ -4,13 +4,15 @@ defmodule Antikythera.MemcacheTest do
   use Croma.TestCase
   alias AntikytheraCore.ExecutorPool
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
+  alias Antikythera.Memcache.{Key, Value}
+  alias AntikytheraCore.ExecutorPool.MemcacheWriter
   alias Antikythera.TermUtil
 
   @epool_id        {:gear, :testgear}
-  @max_records_num 10
-  @max_key_size    128
-  @max_value_size  65536
   @lifetime        100
+  @max_records_num MemcacheWriter.max_records()
+  @max_key_size    Key.max_size()
+  @max_value_size  Value.max_size()
 
   setup do
     ExecutorPool.start_executor_pool(@epool_id, EPoolSetting.default())

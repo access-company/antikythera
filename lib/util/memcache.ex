@@ -62,6 +62,8 @@ defmodule Antikythera.Memcache do
     defun valid?(key :: term) :: boolean do
       Antikythera.TermUtil.size_smaller_or_equal?(key, @max_size)
     end
+
+    defun max_size() :: non_neg_integer, do: @max_size
   end
 
   defmodule Value do
@@ -71,6 +73,8 @@ defmodule Antikythera.Memcache do
     defun valid?(value :: term) :: boolean do
       Antikythera.TermUtil.size_smaller_or_equal?(value, @max_size)
     end
+
+    defun max_size() :: non_neg_integer, do: @max_size
   end
 
   defmodule NormalizedFloat do
