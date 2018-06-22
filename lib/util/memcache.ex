@@ -12,7 +12,7 @@ defmodule Antikythera.Memcache do
       {:ok, "bar"}
   """
 
-  @default_ratio    0.9
+  @default_ratio 0.9
 
   alias Croma.Result, as: R
   alias AntikytheraCore.ExecutorPool.MemcacheWriter
@@ -47,7 +47,7 @@ defmodule Antikythera.Memcache do
               value               :: term,
               epool_id            :: v[EPoolId.t],
               lifetime_in_sec     :: v[non_neg_integer],
-              prob_lifetime_ratio :: v[NormalizedFloat.t] \\ @default_ratio) :: :ok | {:error, :too_large_object} do
+              prob_lifetime_ratio :: v[NormalizedFloat.t] \\ @default_ratio) :: :ok do
     MemcacheWriter.write(key, value, epool_id, lifetime_in_sec, prob_lifetime_ratio)
   end
 

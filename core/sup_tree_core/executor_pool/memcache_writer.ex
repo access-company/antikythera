@@ -9,7 +9,6 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheWriter do
 
   @timeout         300_000
   @max_records_num 10
-  @max_record_size 65536
 
   use GenServer
   alias AntikytheraCore.Ets.Memcache
@@ -27,16 +26,12 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheWriter do
 
   @impl true
   def handle_call({:write, key, value, lifetime, ratio}, _from, state) do
-    evicted_state = evict_expired_records(state, System.monotonic_time(:milliseconds))
-    if :erts_debug.flat_size(value) > @max_record_size do
-      {:reply, {:error, :too_large_object}, evicted_state, @timeout}
-    else
-      new_state =
-        evicted_state
-        |> evict_head_record_if_exceeds_limit()
-        |> do_write(key, value, lifetime, ratio)
-      {:reply, :ok, new_state, @timeout}
-    end
+    new_state =
+      state
+      |> evict_expired_records(System.monotonic_time(:milliseconds))
+      |> do_write(key, value, lifetime, ratio)
+      |> evict_head_records_if_exceeds_limit()
+    {:reply, :ok, new_state, @timeout}
   end
 
   @impl true
@@ -49,23 +44,25 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheWriter do
     if :gb_sets.is_empty(expire_at_set) do
       state
     else
-      {{expire_at, key}, new_expire_at_set} = :gb_sets.take_largest(expire_at_set)
+      {{expire_at, key}, new_expire_at_set} = :gb_sets.take_smallest(expire_at_set)
       if expire_at < current_time do
         Memcache.delete(key, epool_id)
         new_records = Map.delete(records, key)
-        evict_expired_records(%{state | records: new_records, expire_at_set: new_expire_at_set}, current_time)
+        new_state   = %{state | records: new_records, expire_at_set: new_expire_at_set}
+        evict_expired_records(new_state, current_time)
       else
         state
       end
     end
   end
 
-  defp evict_head_record_if_exceeds_limit(%{records: records, expire_at_set: expire_at_set, epool_id: epool_id} = state) do
-    if map_size(records) == @max_records_num do
-      {{_expire_at, key}, new_expire_at_set} = :gb_sets.take_largest(expire_at_set)
+  defp evict_head_records_if_exceeds_limit(%{records: records, expire_at_set: expire_at_set, epool_id: epool_id} = state) do
+    if map_size(records) > @max_records_num do
+      {{_expire_at, key}, new_expire_at_set} = :gb_sets.take_smallest(expire_at_set)
       Memcache.delete(key, epool_id)
       new_records = Map.delete(records, key)
-      %{state | records: new_records, expire_at_set: new_expire_at_set}
+      new_state   = %{state | records: new_records, expire_at_set: new_expire_at_set}
+      evict_head_records_if_exceeds_limit(new_state)
     else
       state
     end
@@ -95,9 +92,9 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheWriter do
   #
   defun write(key                 :: term,
               value               :: term,
-              epool_id            :: v[EPoolId.t],
+              epool_id            :: EPoolId.t,
               lifetime_in_sec     :: integer,
-              prob_lifetime_ratio :: float) :: :ok | {:error, :too_large_object} do
+              prob_lifetime_ratio :: float) :: :ok do
     GenServer.call(RegName.memcache_writer(epool_id), {:write, key, value, lifetime_in_sec, prob_lifetime_ratio})
   end
 end
