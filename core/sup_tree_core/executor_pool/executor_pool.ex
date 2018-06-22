@@ -17,6 +17,14 @@ defmodule AntikytheraCore.ExecutorPool do
 
   @wait_time_for_broker_termination (if Mix.env() == :test, do: 100, else: TenantExecutorPoolsManager.polling_interval() * 2)
 
+  def child_spec(args) do
+    %{
+      id:    __MODULE__,
+      start: {__MODULE__, :start_link, args},
+      type:  :supervisor,
+    }
+  end
+
   defun start_link(epool_id :: v[EPoolId.t],
                    uploader :: v[atom | pid],
                    %EPoolSetting{n_pools_a: n_pools_a, pool_size_a: size_a, pool_size_j: size_j, ws_max_connections: ws_max}) :: {:ok, pid} do
@@ -28,12 +36,12 @@ defmodule AntikytheraCore.ExecutorPool do
     ws_counter_name = RegName.websocket_connections_counter_unsafe(epool_id)
 
     children = [
-      Spec.supervisor(PoolSup.Multi              , action_runner_pool_multi_args(epool_id, n_pools_a, size_a)),
-      Spec.supervisor(PoolSup                    , async_job_runner_pool_args(epool_id, size_j, job_pool_name)),
-      Spec.worker(    JobBroker                  , [job_pool_name, queue_name, broker_name]),
-      Spec.worker(    TimedJobStarter            , [queue_name, uploader, epool_id]),
-      Spec.worker(    WebsocketConnectionsCounter, [ws_max, ws_counter_name]),
-      Spec.worker(    UsageReporter              , [uploader, epool_id]),
+      Spec.supervisor(PoolSup.Multi, action_runner_pool_multi_args(epool_id, n_pools_a, size_a) ),
+      Spec.supervisor(PoolSup      , async_job_runner_pool_args(epool_id, size_j, job_pool_name)),
+      {JobBroker                   , [job_pool_name, queue_name, broker_name]                   },
+      {TimedJobStarter             , [queue_name, uploader, epool_id]                           },
+      {WebsocketConnectionsCounter , [ws_max, ws_counter_name]                                  },
+      {UsageReporter               , [uploader, epool_id]                                       },
     ]
     Supervisor.start_link(children, [strategy: :one_for_one, name: sup_name])
   end
@@ -127,9 +135,16 @@ defmodule AntikytheraCore.ExecutorPool do
   end
 
   defmodule Sup do
+    def child_spec(args) do
+      %{
+        id:    __MODULE__,
+        start: {__MODULE__, :start_link, args},
+        type:  :supervisor,
+      }
+    end
+
     defun start_link() :: {:ok, pid} do
-      spec = Spec.supervisor(AntikytheraCore.ExecutorPool, [])
-      Supervisor.start_link([spec], [strategy: :simple_one_for_one, name: __MODULE__])
+      Supervisor.start_link([AntikytheraCore.ExecutorPool], [strategy: :simple_one_for_one, name: __MODULE__])
     end
   end
 end

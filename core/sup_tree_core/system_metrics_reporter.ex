@@ -23,7 +23,7 @@ defmodule AntikytheraCore.SystemMetricsReporter do
   @interval 300_000
   @typep metrics_t :: [{String.t, non_neg_integer}]
 
-  def start_link(uploader_name) do
+  def start_link([uploader_name]) do
     GenServer.start_link(__MODULE__, uploader_name, [])
   end
 

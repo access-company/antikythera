@@ -18,7 +18,7 @@ defmodule AntikytheraCore.MetricsUploader do
   @flush_interval_base    60_000
   @flush_interval_rand_max 5_000
 
-  def start_link(otp_app_name, name_to_register) do
+  def start_link([otp_app_name, name_to_register]) do
     GenServer.start_link(__MODULE__, otp_app_name, [name: name_to_register])
   end
 

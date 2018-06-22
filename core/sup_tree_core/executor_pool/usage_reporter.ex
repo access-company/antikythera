@@ -24,7 +24,7 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporter do
 
   @typep usage_rational :: {non_neg_integer, non_neg_integer}
 
-  def start_link(uploader_name, epool_id) do
+  def start_link([uploader_name, epool_id]) do
     GenServer.start_link(__MODULE__, {uploader_name, epool_id}, [])
   end
 

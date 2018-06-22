@@ -21,7 +21,7 @@ defmodule AntikytheraCore.StaleGearArtifactCleaner do
 
   @interval (if Antikythera.Env.compile_env() == :local, do: 1_000, else: 24 * 60 * 60 * 1_000)
 
-  def start_link() do
+  def start_link(_args) do
     GenServer.start_link(__MODULE__, :ok)
   end
 

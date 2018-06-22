@@ -24,7 +24,7 @@ defmodule AntikytheraCore.GearConfigPoller do
 
   @typep state_t :: %{last_checked_at: pos_integer}
 
-  def start_link() do
+  def start_link(_args) do
     GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
   end
 

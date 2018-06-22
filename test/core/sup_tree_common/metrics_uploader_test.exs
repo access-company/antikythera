@@ -79,7 +79,7 @@ defmodule AntikytheraCore.MetricsUploaderTest do
     t1 = Time.truncate_to_minute(Time.now())
     t2 = Time.shift_minutes(t1, 1)
     assert Storage.Memory.download(:testgear, epool_id, t1, t2) == []
-    {:ok, pid} = U.start_link(:testgear, Testgear.MetricsUploader)
+    {:ok, pid} = U.start_link([:testgear, Testgear.MetricsUploader])
     U.submit(pid, [{"metrics1", :average, 5.0}], epool_id)
     :ok = GenServer.stop(pid)
     [{_time, data}] = Storage.Memory.download(:testgear, epool_id, t1, t2)

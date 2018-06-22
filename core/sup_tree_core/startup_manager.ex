@@ -26,7 +26,7 @@ defmodule AntikytheraCore.StartupManager do
   @typep step  :: :all_gears_installed
   @typep state :: %{step => boolean}
 
-  def start_link() do
+  def start_link(_args) do
     GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
   end
 
