@@ -130,9 +130,9 @@ defmodule AntikytheraCore.TenantExecutorPoolsManagerTest do
     ExecutorPoolHelper.assert_current_setting(@epool_id, 1, 5, 1, 100)
     ExecutorPoolHelper.wait_until_async_job_queue_added(@epool_id)
 
-    refute Map.has_key?(TenantExecutorPoolsManager.all, @tenant_id)
+    refute Map.has_key?(TenantExecutorPoolsManager.all(), @tenant_id)
     send_check_and_wait()
-    assert Map.has_key?(TenantExecutorPoolsManager.all, @tenant_id)
+    assert Map.has_key?(TenantExecutorPoolsManager.all(), @tenant_id)
     ExecutorPoolHelper.assert_current_setting(@epool_id, 1, 5, 1, 100)
   end
 end
