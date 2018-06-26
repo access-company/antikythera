@@ -195,7 +195,7 @@ defmodule Antikythera.MixConfig do
 
   defp croma_configs() do
     # (compile-time configuration) Disable croma's runtime validations
-    # when running as a "deployment" (see also antikythera's `:deployments` option below).
+    # when running as a "deployment" (see also `:deployments` in `config.exs` file).
     local? = System.get_env("ANTIKYTHERA_COMPILE_ENV") in [nil, "local"]
     [
       croma: [
