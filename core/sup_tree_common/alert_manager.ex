@@ -21,11 +21,11 @@ defmodule AntikytheraCore.Alert.Manager do
   def child_spec(args) do
     %{
       id:    __MODULE__,
-      start: {__MODULE__, :start_link, args},
+      start: {__MODULE__, :start_link, [args]},
     }
   end
 
-  def start_link(otp_app_name, name_to_register) do
+  def start_link([otp_app_name, name_to_register]) do
     {:ok, pid} = :gen_event.start_link({:local, name_to_register})
     update_handler_installations(otp_app_name, HandlerConfigsMap.get(otp_app_name))
     {:ok, pid}
