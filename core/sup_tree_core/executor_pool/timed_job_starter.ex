@@ -28,14 +28,11 @@ defmodule AntikytheraCore.ExecutorPool.TimedJobStarter do
   # (as long as there are available worker processes in the cluster).
   @interval 30_000
 
-  def child_spec(args) do
-    %{
-      id:    __MODULE__,
-      start: {__MODULE__, :start_link, args},
-    }
+  def start_link([queue_name, uploader_name, epool_id]) do
+    start_link(queue_name, uploader_name, epool_id)
   end
 
-  defun start_link(queue_name :: v[atom], uploader_name :: v[atom | pid], epool_id :: v[EPoolId.t]) :: GenServer.on_start do
+  defunp start_link(queue_name :: v[atom], uploader_name :: v[atom | pid], epool_id :: v[EPoolId.t]) :: GenServer.on_start do
     GenServer.start_link(__MODULE__, {queue_name, uploader_name, epool_id})
   end
 

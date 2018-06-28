@@ -15,14 +15,11 @@ defmodule AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter do
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
 
-  def child_spec(args) do
-    %{
-      id:    __MODULE__,
-      start: {__MODULE__, :start_link, args},
-    }
+  def start_link([max, name]) do
+    start_link(max, name)
   end
 
-  defun start_link(max :: v[non_neg_integer], name :: v[atom]) :: {:ok, pid} do
+  defunp start_link(max :: v[non_neg_integer], name :: v[atom]) :: {:ok, pid} do
     GenServer.start_link(__MODULE__, max, [name: name])
   end
 
