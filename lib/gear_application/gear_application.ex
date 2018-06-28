@@ -27,10 +27,10 @@ defmodule Antikythera.GearApplication do
   alias AntikytheraCore.Config.Gear, as: GearConfig
   alias AntikytheraCore.GearLog.Writer
 
-  @type child_spec :: [:supervisor.child_spec | {module, term} | module]
+  @type child_spec :: :supervisor.child_spec | {module, term} | module
 
   @doc false
-  defun start(gear_name :: v[GearName.t], children :: child_spec) :: {:ok, pid} do
+  defun start(gear_name :: v[GearName.t], children :: [child_spec]) :: {:ok, pid} do
     GearConfig.ensure_loaded(gear_name)
     all_children = predefined_children(gear_name) ++ children
     opts = [
@@ -43,7 +43,7 @@ defmodule Antikythera.GearApplication do
     {:ok, pid}
   end
 
-  defunp predefined_children(gear_name :: v[GearName.t]) :: child_spec do
+  defunp predefined_children(gear_name :: v[GearName.t]) :: [child_spec] do
     # In many cases the process name atoms below are already generated (as module names) at compile-time in `__using__/1` macro.
     # However we don't assume that all these atoms actually exist and thus use unsafe functions,
     # in order to handle gears' beam files compiled with an older version of antikythera
@@ -64,7 +64,7 @@ defmodule Antikythera.GearApplication do
     ExecutorPool.kill_executor_pool({:gear, gear_name})
   end
 
-  @callback children()                            :: child_spec
+  @callback children()                            :: [child_spec]
   @callback executor_pool_for_web_request(Conn.t) :: EPoolId.t
 
   defmacro __using__(_) do
