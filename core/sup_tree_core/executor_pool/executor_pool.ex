@@ -3,7 +3,6 @@
 use Croma
 
 defmodule AntikytheraCore.ExecutorPool do
-  alias Supervisor.Spec
   alias Antikythera.GearName
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
@@ -36,8 +35,8 @@ defmodule AntikytheraCore.ExecutorPool do
     ws_counter_name = RegName.websocket_connections_counter_unsafe(epool_id)
 
     children = [
-      Spec.supervisor(PoolSup.Multi, action_runner_pool_multi_args(epool_id, n_pools_a, size_a) ),
-      Spec.supervisor(PoolSup      , async_job_runner_pool_args(epool_id, size_j, job_pool_name)),
+      {PoolSup.Multi               , action_runner_pool_multi_args(epool_id, n_pools_a, size_a) },
+      {PoolSup                     , async_job_runner_pool_args(epool_id, size_j, job_pool_name)},
       {JobBroker                   , [job_pool_name, queue_name, broker_name]                   },
       {TimedJobStarter             , [queue_name, uploader, epool_id]                           },
       {WebsocketConnectionsCounter , [ws_max, ws_counter_name]                                  },
