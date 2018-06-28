@@ -13,7 +13,7 @@ defmodule AntikytheraCore.ClusterNodesConnector do
   alias AntikytheraCore.Cluster
   alias AntikytheraCore.ClusterHostsPoller
 
-  def start_link(_args) do
+  def start_link([]) do
     GenServer.start_link(__MODULE__, :ok)
   end
 

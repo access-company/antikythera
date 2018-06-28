@@ -13,7 +13,7 @@ defmodule AntikytheraCore.GearManager do
 
   @typep state_t :: %{GearName.t => nil}
 
-  def start_link(_args) do
+  def start_link([]) do
     GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
   end
 

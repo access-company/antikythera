@@ -25,7 +25,7 @@ defmodule AntikytheraCore.MnesiaNodesCleaner do
   alias AntikytheraCore.ClusterHostsPoller
   require AntikytheraCore.Logger, as: L
 
-  def start_link(_args) do
+  def start_link([]) do
     GenServer.start_link(__MODULE__, :ok)
   end
 
