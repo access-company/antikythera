@@ -57,6 +57,16 @@ defmodule AntikytheraCore.ExecutorPool.RegisteredName do
     common_parts(epool_id, "WebsocketConnectionsCounter")
   end
 
+  defun memcache_writer(epool_id :: v[EPoolId.t]) :: atom do
+    Module.safe_concat(memcache_writer_parts(epool_id))
+  end
+  defun memcache_writer_unsafe(epool_id :: v[EPoolId.t]) :: atom do
+    Module.concat(memcache_writer_parts(epool_id))
+  end
+  defunp memcache_writer_parts(epool_id :: v[EPoolId.t]) :: [String.t] do
+    common_parts(epool_id, "MemcacheWriter")
+  end
+
   defunp common_parts(epool_id :: EPoolId.t, suffix :: String.t) :: [String.t] do
     ({:gear  , gear_name}, suffix) -> ["#{@prefix}.Gear"  , Atom.to_string(gear_name), suffix]
     ({:tenant, tenant_id}, suffix) -> ["#{@prefix}.Tenant", tenant_id                , suffix]

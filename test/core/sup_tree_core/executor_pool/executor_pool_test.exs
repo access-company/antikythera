@@ -24,7 +24,7 @@ defmodule AntikytheraCore.ExecutorPoolTest do
     action_pool_multi = Process.whereis(RegName.action_runner_pool_multi(epool_id))
     job_pool_sup      = Process.whereis(RegName.async_job_runner_pool(epool_id))
     child_pids = child_pids(epool_pid)
-    assert length(child_pids) == 6
+    assert length(child_pids) == 7
     assert action_pool_multi in child_pids
     assert job_pool_sup      in child_pids
     ExecutorPoolHelper.wait_until_async_job_queue_added(epool_id)

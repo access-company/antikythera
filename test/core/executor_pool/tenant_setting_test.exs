@@ -62,23 +62,23 @@ defmodule AntikytheraCore.ExecutorPool.TenantSettingTest do
     assert Supervisor.which_children(AntikytheraCore.ExecutorPool.Sup) == []
 
     gears = [:gear1, :gear2]
-    refute Map.has_key?(TenantExecutorPoolsManager.all, @tenant_id)
+    refute Map.has_key?(TenantExecutorPoolsManager.all(), @tenant_id)
     TenantSetting.persist_new_tenant_and_broadcast(@tenant_id, gears)
     assert_associated_gears(gears)
-    assert TenantExecutorPoolsManager.all[@tenant_id] == Map.put(@tenant_setting, :gears, gears)
+    assert TenantExecutorPoolsManager.all()[@tenant_id] == Map.put(@tenant_setting, :gears, gears)
     ExecutorPoolHelper.wait_until_async_job_queue_added({:tenant, @tenant_id})
     assert length(Supervisor.which_children(AntikytheraCore.ExecutorPool.Sup)) == 1
 
     # disassociating using `persist_new_tenant_and_broadcast` should be delayed
     TenantSetting.persist_new_tenant_and_broadcast(@tenant_id, [])
     assert_associated_gears([])
-    assert TenantExecutorPoolsManager.all[@tenant_id] == Map.put(@tenant_setting, :gears, gears)
+    assert TenantExecutorPoolsManager.all()[@tenant_id] == Map.put(@tenant_setting, :gears, gears)
     :timer.sleep(1_000)   # wait until file modification becomes stale
     send_check_and_wait() # receive the disassociated tenant setting; still associated
-    assert TenantExecutorPoolsManager.all[@tenant_id] == Map.put(@tenant_setting, :gears, gears)
+    assert TenantExecutorPoolsManager.all()[@tenant_id] == Map.put(@tenant_setting, :gears, gears)
     assert length(Supervisor.which_children(AntikytheraCore.ExecutorPool.Sup)) == 1
     send_check_and_wait() # actually disassociate
-    assert TenantExecutorPoolsManager.all[@tenant_id] == @tenant_setting
+    assert TenantExecutorPoolsManager.all()[@tenant_id] == @tenant_setting
     assert Supervisor.which_children(AntikytheraCore.ExecutorPool.Sup) == []
   end
 end
