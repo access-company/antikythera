@@ -2,7 +2,9 @@ defmodule <%= gear_name_camel %> do
   use Antikythera.GearApplication
   alias Antikythera.{ExecutorPool, Conn}
 
-  @spec children :: list
+  @type child_spec :: [:supervisor.child_spec | {module, term} | module]
+
+  @spec children :: child_spec
   def children() do
     [
       # gear-specific workers/supervisors
