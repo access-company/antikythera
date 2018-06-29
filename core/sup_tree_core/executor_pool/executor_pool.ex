@@ -146,7 +146,7 @@ defmodule AntikytheraCore.ExecutorPool do
       }
     end
 
-    defun start_link(_arg) :: {:ok, pid} do
+    defun start_link([]) :: {:ok, pid} do
       Supervisor.start_link([AntikytheraCore.ExecutorPool], [strategy: :simple_one_for_one, name: __MODULE__])
     end
   end
