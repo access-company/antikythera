@@ -32,9 +32,7 @@ defmodule Antikythera.Memcache do
   There are 2 cases where records in #{inspect(__MODULE__)} are evicted:
 
   1. Records are expired (see [Mechanism of Expiration](#module-mechanism-of-expiration) below for more details)
-  2. Reach the maximum number of records for each executor pool
-
-  If it is the case of (2), records whose expiration time is nearest are evicted to keep the maximum number of records.
+  2. Reach the maximum number of records for each executor pool (as mentioned in [Limits](#module-limits))
 
   Please note that records in #{inspect(__MODULE__)} could be evicted anytime.
 
@@ -43,7 +41,7 @@ defmodule Antikythera.Memcache do
   The lifetime of records must be set as `lifetime_in_sec` in `write/5`.
   This lifetime does not guarantee that records remain in the entire specified lifetime.
 
-  To avoid the thundering herd, whether records are expired is decided probabilistically.
+  To avoid the [thundering herd](https://en.wikipedia.org/wiki/Thundering_herd_problem), whether records are expired is decided probabilistically.
   The probability of expiration is shown in the following.
 
   ![Mechanism of Expiration](assets/MemcacheExpiration.png)
