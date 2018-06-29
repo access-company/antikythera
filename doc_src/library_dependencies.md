@@ -68,10 +68,6 @@
 
 - With [dialyxir](https://github.com/jeremyjh/dialyxir), you can run typecheck of your code by `$ mix dialyzer`.
     - `dialyxir` wraps the `dialyzer`, allowing it to conveniently run from mix projects.
-    - It is recommended that you run with an additional `dialyzer` option:
-        - `--unknown` gives more warnings about unknown functions/types,
-          which usually indicate incorrect type specifications due to e.g. missing aliases.
-          `dialyxir` automatically use this, if not opted-out.
 - See [here](http://learnyousomeerlang.com/dialyzer) for details of success typing analysis.
 
 ### [ex_doc](https://github.com/elixir-lang/ex_doc) for documentations
