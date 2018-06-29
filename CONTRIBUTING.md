@@ -143,7 +143,7 @@ All of them are helpful! Follow the guidelines provided here.
     - Provide sufficient `@moduledoc`, `@doc` and `@typedoc`, especially if it is publicly available.
     - If your code contains workaround or hacky solution, put an explanation comments.
     - Check typo, mis-indentations, mis-alignments, trailing white spaces or extra blank lines. Utilize your editor functionalities.
-    - Run the Dialyzer (`$ mix dialyze --unknown`) and fix any errors reported.
+    - Run the Dialyzer (`$ mix dialyzer`) and fix any errors reported.
     - If reviewers deemed the Pull Request is not self-reviewed well, it CAN be rejected.
 - When you are confident on your branch, push it to your fork repository, then open Pull Request.
     - Pull Request title can be just branch name, or summarized description.
