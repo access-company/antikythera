@@ -43,7 +43,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
     ]
   end
 
-  def start_link(pool_name, queue_name, broker_name) do
+  def start_link([pool_name, queue_name, broker_name]) do
     GenServer.start_link(__MODULE__, {pool_name, queue_name}, [name: broker_name])
   end
 

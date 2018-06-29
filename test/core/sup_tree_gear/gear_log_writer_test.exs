@@ -49,7 +49,7 @@ defmodule AntikytheraCore.GearLog.WriterTest do
 
   setup do
     clean()
-    {:ok, pid} = Writer.start_link(:testgear, @logger_name)
+    {:ok, pid} = Writer.start_link([:testgear, @logger_name])
     on_exit(&clean/0)
     {:ok, [pid: pid]}
   end
@@ -62,7 +62,7 @@ defmodule AntikytheraCore.GearLog.WriterTest do
     assert_empty?(pid1, false)
     :ok = GenServer.stop(pid1)
 
-    {:ok, pid2} = Writer.start_link(:testgear, @logger_name)
+    {:ok, pid2} = Writer.start_link([:testgear, @logger_name])
     assert_content_of_rotated("message 1")
     GenServer.stop(pid2)
   end

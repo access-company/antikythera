@@ -4,7 +4,6 @@ use Croma
 
 defmodule AntikytheraCore do
   use Application
-  alias Supervisor.Spec
 
   @impl true
   def start(_type, _args) do
@@ -75,25 +74,25 @@ defmodule AntikytheraCore do
 
   defp start_sup() do
     children = [
-      Spec.worker(    AntikytheraCore.ErrorCountsAccumulator    , []),
-      Spec.worker(    AntikytheraCore.Alert.Manager             , [:antikythera, AntikytheraCore.Alert.Manager]),
-      Spec.worker(    AntikytheraCore.GearManager               , []),
-      Spec.worker(    AntikytheraCore.ClusterHostsPoller        , []),
-      Spec.worker(    AntikytheraCore.ClusterNodesConnector     , []),
-      Spec.worker(    AntikytheraCore.MnesiaNodesCleaner        , []),
-      Spec.worker(    AntikytheraCore.StartupManager            , []),
-      Spec.worker(    AntikytheraCore.TerminationManager        , []),
-      Spec.worker(    AntikytheraCore.CoreConfigPoller          , []),
-      Spec.worker(    AntikytheraCore.GearConfigPoller          , []),
-      Spec.worker(    AntikytheraCore.VersionUpgradeTaskQueue   , []),
-      Spec.worker(    AntikytheraCore.VersionSynchronizer       , []),
-      Spec.worker(    AntikytheraCore.StaleGearArtifactCleaner  , []),
-      Spec.worker(    AntikytheraCore.MetricsUploader           , [:antikythera, AntikytheraCore.MetricsUploader]),
-      Spec.worker(    AntikytheraCore.SystemMetricsReporter     , [AntikytheraCore.MetricsUploader]),
-      Spec.supervisor(AntikytheraCore.ExecutorPool.Sup          , []),
-      Spec.worker(    AntikytheraCore.GearExecutorPoolsManager  , []),
-      Spec.worker(    AntikytheraCore.TenantExecutorPoolsManager, []),
-      Spec.worker(    AntikytheraCore.TmpdirTracker             , []),
+      AntikytheraCore.ErrorCountsAccumulator    ,
+      {AntikytheraCore.Alert.Manager            , [:antikythera, AntikytheraCore.Alert.Manager]},
+      AntikytheraCore.GearManager               ,
+      AntikytheraCore.ClusterHostsPoller        ,
+      AntikytheraCore.ClusterNodesConnector     ,
+      AntikytheraCore.MnesiaNodesCleaner        ,
+      AntikytheraCore.StartupManager            ,
+      AntikytheraCore.TerminationManager        ,
+      AntikytheraCore.CoreConfigPoller          ,
+      AntikytheraCore.GearConfigPoller          ,
+      AntikytheraCore.VersionUpgradeTaskQueue   ,
+      AntikytheraCore.VersionSynchronizer       ,
+      AntikytheraCore.StaleGearArtifactCleaner  ,
+      {AntikytheraCore.MetricsUploader          , [:antikythera, AntikytheraCore.MetricsUploader]},
+      {AntikytheraCore.SystemMetricsReporter    , [AntikytheraCore.MetricsUploader]},
+      AntikytheraCore.ExecutorPool.Sup          ,
+      AntikytheraCore.GearExecutorPoolsManager  ,
+      AntikytheraCore.TenantExecutorPoolsManager,
+      AntikytheraCore.TmpdirTracker             ,
     ]
     opts = [strategy: :one_for_one, name: AntikytheraCore.Supervisor]
     Supervisor.start_link(children, opts)

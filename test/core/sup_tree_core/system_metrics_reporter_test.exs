@@ -7,7 +7,7 @@ defmodule AntikytheraCore.SystemMetricsReporterTest do
   alias AntikytheraCore.Metrics.AggregateStrategy.Gauge
 
   setup do
-    {:ok, pid} = SystemMetricsReporter.start_link(self()) # will be killed together with `self` when each test is completed
+    {:ok, pid} = SystemMetricsReporter.start_link([self()]) # will be killed together with `self` when each test is completed
     {:ok, [pid: pid]}
   end
 

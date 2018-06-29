@@ -13,7 +13,7 @@ defmodule AntikytheraCore.CoreConfigPoller do
 
   @interval 60_000
 
-  def start_link() do
+  def start_link([]) do
     GenServer.start_link(__MODULE__, :ok, [])
   end
 

@@ -20,7 +20,7 @@ defmodule AntikytheraCore.GearExecutorPoolsManager do
   @typep settings :: %{GearName.t => EPoolSetting.t}
   @typep state    :: %{gear_epool_settings: settings}
 
-  def start_link() do
+  def start_link([]) do
     GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
   end
 

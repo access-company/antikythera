@@ -30,7 +30,7 @@ defmodule AntikytheraCore.TmpdirTracker do
     ]
   end
 
-  def start_link() do
+  def start_link([]) do
     GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
   end
 

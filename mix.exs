@@ -72,7 +72,7 @@ defmodule Antikythera.Mixfile do
       {:cowlib      , "2.1.0" , [antikythera_internal: true]},
       {:hackney     , "1.9.0" , [antikythera_internal: true]},
       {:calliope    , "0.4.1" , [antikythera_internal: true]}, # 0.4.2 is broken!
-      {:pool_sup    , "0.4.0" , [antikythera_internal: true]},
+      {:pool_sup    , "0.5.0" , [antikythera_internal: true]},
       {:raft_fleet  , "0.8.2" , [antikythera_internal: true]},
       {:rafted_value, "0.9.2" , [antikythera_internal: true]},
       {:syn         , "1.6.3" , [antikythera_internal: true]},

@@ -15,7 +15,7 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheWriter do
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias Antikythera.ExecutorPool.Id, as: EPoolId
 
-  def start_link(name, epool_id) do
+  def start_link([name, epool_id]) do
     GenServer.start_link(__MODULE__, epool_id, [name: name])
   end
 
