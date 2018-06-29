@@ -68,7 +68,6 @@
 
 - With [dialyxir](https://github.com/jeremyjh/dialyxir), you can run typecheck of your code by `$ mix dialyzer`.
     - `dialyxir` wraps the `dialyzer`, allowing it to conveniently run from mix projects.
-        - Antikythera itself still uses [dialyze](https://github.com/fishcakez/dialyze), though.
     - It is recommended that you run with an additional `dialyzer` option:
         - `--unknown` gives more warnings about unknown functions/types,
           which usually indicate incorrect type specifications due to e.g. missing aliases.
