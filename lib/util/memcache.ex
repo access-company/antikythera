@@ -19,7 +19,7 @@ defmodule Antikythera.Memcache do
 
   ## Limits
 
-  The number of records and the size of keys and values is limited.
+  The number of records and the size of keys and values are limited.
 
   - The maximum number of records for each executor pool is #{AntikytheraCore.ExecutorPool.MemcacheWriter.max_records()}.
       - If exceeds the limit, records whose expiration time is nearest are evicted.
