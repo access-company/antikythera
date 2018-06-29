@@ -100,7 +100,7 @@ defmodule AntikytheraLocal.RunningEnvironment do
         String.split(body, "\n", trim: true)
         |> Enum.find_value(fn line ->
           case String.split(line) do
-            [^app_name_str, v] -> v
+            [^app_name_str, v] -> {:ok, v}
             _                  -> nil
           end
         end)
