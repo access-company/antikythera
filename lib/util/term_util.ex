@@ -3,6 +3,15 @@
 use Croma
 
 defmodule Antikythera.TermUtil do
+  @moduledoc """
+  Utils for calculating the actual size of terms.
+
+  These utils traverse terms and accumulate the size of terms including the actual size of binary.
+  """
+
+  @doc """
+  Returns the actual size of `term` in bytes.
+  """
   defun size(term :: term) :: non_neg_integer do
     :erts_debug.flat_size(term) * :erlang.system_info(:wordsize) + total_binary_size(term)
   end
@@ -14,6 +23,11 @@ defmodule Antikythera.TermUtil do
     _                              -> 0
   end
 
+  @doc """
+  Returns whether actual size of `term` exceeds `limit` bytes.
+
+  This is more efficient than deciding by using `size/1` because this function returns immediately after exceeding `limit`, not traverses the entire term.
+  """
   defun size_smaller_or_equal?(term :: term, limit :: non_neg_integer) :: boolean do
     case limit - :erts_debug.flat_size(term) * :erlang.system_info(:wordsize) do
       new_limit when new_limit >= 0 -> limit_minus_total_binary_size(term, new_limit) >= 0

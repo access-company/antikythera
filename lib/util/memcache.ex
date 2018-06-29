@@ -4,12 +4,49 @@ use Croma
 
 defmodule Antikythera.Memcache do
   @moduledoc """
-  In-memory cache for each executor pool.
+  Easy-to-use in-memory cache for each executor pool.
 
-      iex> Antikythera.Memcache.write("foo", "bar", epool_id)
+  #{inspect(__MODULE__)} behaves as a key-value storage.
+  Cached key-value pairs are internally stored in ETS.
+  It accepts arbitrary (but not too large) terms as both keys and values.
+
+  ## Usage
+
+      iex> Antikythera.Memcache.write("foo", "bar", epool_id, 3_600)
       :ok
       iex> Antikythera.Memcache.read("foo", epool_id)
       {:ok, "bar"}
+
+  ## Limits
+
+  The number of records and the size of keys and values are limited.
+
+  - The maximum number of records for each executor pool is #{AntikytheraCore.ExecutorPool.MemcacheWriter.max_records()}.
+      - If exceeds the limit, a record nearest to expiration is evicted so that a new record can be inserted.
+  - The maximum size of keys and values is defined in `Antikythera.Memcache.Key` and `Antikythera.Memcache.Value`.
+      - To know how the size of keys and values is calculated, see `Antikythera.TermUtil`.
+      - If exceeds the limit, `write/5` returns an error `:too_large_key` or `:too_large_value`.
+
+  ## Lifetime of records
+
+  There are 2 cases where records in #{inspect(__MODULE__)} are evicted:
+
+  1. Records are expired (see [Mechanism of Expiration](#module-mechanism-of-expiration) below for more details)
+  2. Reach the maximum number of records for each executor pool (as mentioned in [Limits](#module-limits))
+
+  Please note that records in #{inspect(__MODULE__)} could be evicted anytime.
+
+  ## Mechanism of Expiration
+
+  The lifetime of records must be set as `lifetime_in_sec` in `write/5`.
+  This lifetime does not guarantee that records remain in the entire specified lifetime.
+
+  To avoid the [thundering herd](https://en.wikipedia.org/wiki/Thundering_herd_problem), whether records are expired is decided probabilistically.
+  The probability of expiration is shown in the following.
+
+  ![Mechanism of Expiration](assets/MemcacheExpiration.png)
+
+  If the thundering herd becomes a big problem, adjust `prob_lifetime_ratio` in `write/5`.
   """
 
   @default_ratio 0.9
@@ -20,7 +57,12 @@ defmodule Antikythera.Memcache do
   alias AntikytheraCore.Ets.Memcache
   alias Antikythera.Memcache.{Key, Value, NormalizedFloat}
 
-  defun read(key :: term, epool_id :: v[EPoolId.t]) :: R.t(term, :not_found) do
+  @doc """
+  Read the value associated with the `key` from #{inspect(__MODULE__)}.
+
+  Please note that records in #{inspect(__MODULE__)} could be evicted anytime so the error handling must be needed.
+  """
+  defun read(key :: Key.t, epool_id :: v[EPoolId.t]) :: R.t(Value.t, :not_found) do
     Memcache.read(key, epool_id)
     |> R.bind(fn {_, expire_at, prob_expire_at, value} ->
       if expired?(expire_at, prob_expire_at) do
@@ -43,6 +85,11 @@ defmodule Antikythera.Memcache do
     end
   end
 
+  @doc """
+  Write a key-value pair to #{inspect(__MODULE__)}.
+
+  See above descriptions for more details.
+  """
   defun write(key                 :: Key.t,
               value               :: Value.t,
               epool_id            :: v[EPoolId.t],
@@ -58,6 +105,13 @@ defmodule Antikythera.Memcache do
   defmodule Key do
     @max_size 128
 
+    @moduledoc """
+    A type module of keys for `Antikythera.Memcache`.
+
+    The maximum size of keys is #{@max_size} bytes.
+    To know how the size is calculated, see `Antikythera.TermUtil`.
+    """
+
     @type t :: any
     defun valid?(key :: term) :: boolean do
       Antikythera.TermUtil.size_smaller_or_equal?(key, @max_size)
@@ -68,6 +122,13 @@ defmodule Antikythera.Memcache do
 
   defmodule Value do
     @max_size 65536
+
+    @moduledoc """
+    A type module of values for `Antikythera.Memcache`.
+
+    The maximum size of values is #{@max_size} bytes.
+    To know how the size is calculated, see `Antikythera.TermUtil`.
+    """
 
     @type t :: any
     defun valid?(value :: term) :: boolean do
