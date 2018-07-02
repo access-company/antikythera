@@ -10,7 +10,7 @@ defmodule Antikythera.EnumUtil do
   @type context :: any
   @type element :: Enum.element
 
-  @not_found_error_msg "element not found"
+  @not_found_error_msg "no matching element found"
 
   @doc """
   Updates items of an enumerable with the given function, depending on context.
