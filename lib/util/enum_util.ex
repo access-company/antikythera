@@ -8,8 +8,7 @@ defmodule Antikythera.EnumUtil do
   """
 
   @type context :: any
-  @type item    :: any
-  @type element :: any
+  @type element :: Enum.element
 
   @not_found_error_msg "element not found"
 
@@ -24,7 +23,7 @@ defmodule Antikythera.EnumUtil do
 
   then, return both as tuple `{new_item, new_context}`.
   """
-  defun map_with_context(e :: Enum.t, c :: context, fun :: (item, context -> {item, context})) :: [item] do
+  defun map_with_context(e :: Enum.t, c :: context, fun :: (element, context -> {element, context})) :: [element] do
     Enum.map_reduce(e, c, fun) |> elem(0)
   end
 
