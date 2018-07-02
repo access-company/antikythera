@@ -95,16 +95,22 @@ defmodule AntikytheraLocal.RunningEnvironment do
   defp fetch_current_version(app_name_str) do
     url = "http://#{AntikytheraCore.Cmd.hostname()}:8080/versions"
     token = File.read!(@system_info_access_token_path)
-    case Httpc.get(url, %{"authorization" => token}) do
-      {:ok, %Httpc.Response{status: 200, body: body}} ->
-        String.split(body, "\n", trim: true)
-        |> Enum.find_value(fn line ->
-          case String.split(line) do
-            [^app_name_str, v] -> {:ok, v}
-            _                  -> nil
-          end
-        end)
-      {:error, :econnrefused} = error -> error
+    Httpc.get(url, %{"authorization" => token})
+    |> R.bind(fn %Httpc.Response{status: 200, body: body} -> extract_version_str(body, app_name_str) end)
+  end
+
+  defp extract_version_str(body, app_name_str) do
+    String.split(body, "\n", trim: true)
+    |> Enum.find(fn line -> String.starts_with?(line, app_name_str) end)
+    |> wrap_if_version_str_exists(app_name_str)
+  end
+
+  defp wrap_if_version_str_exists(str_or_nil, app_name_str) do
+    if str_or_nil do
+      version_str = String.split(str_or_nil) |> Enum.fetch!(1)
+      {:ok, version_str}
+    else
+      raise "#{app_name_str} not found in the body!"
     end
   end
 
