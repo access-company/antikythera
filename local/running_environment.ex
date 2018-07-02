@@ -4,7 +4,7 @@ use Croma
 
 defmodule AntikytheraLocal.RunningEnvironment do
   alias Croma.Result, as: R
-  alias Antikythera.{Env, GearNameStr, VersionStr, Httpc}
+  alias Antikythera.{Env, GearNameStr, VersionStr, Httpc, EnumUtil}
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraLocal.{Cmd, StartScript}
 
@@ -96,22 +96,17 @@ defmodule AntikytheraLocal.RunningEnvironment do
     url = "http://#{AntikytheraCore.Cmd.hostname()}:8080/versions"
     token = File.read!(@system_info_access_token_path)
     Httpc.get(url, %{"authorization" => token})
-    |> R.bind(fn %Httpc.Response{status: 200, body: body} -> extract_version_str(body, app_name_str) end)
+    |> R.map(fn %Httpc.Response{status: 200, body: body} -> extract_version_str(body, app_name_str) end)
   end
 
   defp extract_version_str(body, app_name_str) do
     String.split(body, "\n", trim: true)
-    |> Enum.find(fn line -> String.starts_with?(line, app_name_str) end)
-    |> wrap_if_version_str_exists(app_name_str)
-  end
-
-  defp wrap_if_version_str_exists(str_or_nil, app_name_str) do
-    if str_or_nil do
-      version_str = String.split(str_or_nil) |> Enum.fetch!(1)
-      {:ok, version_str}
-    else
-      raise "#{app_name_str} not found in the body!"
-    end
+    |> EnumUtil.find_value!(fn line ->
+      case String.split(line) do
+        [^app_name_str, v] -> v
+        _                  -> nil
+      end
+    end)
   end
 
   defp create_dir_same_as_node() do
