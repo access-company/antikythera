@@ -8,7 +8,10 @@ defmodule Antikythera.EnumUtil do
   """
 
   @type context :: any
-  @type item :: any
+  @type item    :: any
+  @type element :: any
+
+  @not_found_error_msg "element not found"
 
   @doc """
   Updates items of an enumerable with the given function, depending on context.
@@ -23,5 +26,25 @@ defmodule Antikythera.EnumUtil do
   """
   defun map_with_context(e :: Enum.t, c :: context, fun :: (item, context -> {item, context})) :: [item] do
     Enum.map_reduce(e, c, fun) |> elem(0)
+  end
+
+  @doc """
+  `Enum.find/3` extension for Antikythera.
+
+  If an element is not found, it will crash instead of returning `nil`.
+  Also, only the default value is allowed for the second argument.
+  """
+  defun find!(e :: Enum.t, fun :: (element -> any)) :: element do
+    Enum.find(e, fun) || raise @not_found_error_msg
+  end
+
+  @doc """
+  `Enum.find_value/3` extension for Antikythera.
+
+  If an element is not found, it will crash instead of returning `nil`.
+  Also, only the default value is allowed for the second argument.
+  """
+  defun find_value!(e :: Enum.t, fun :: (element -> any)) :: any do
+    Enum.find_value(e, fun) || raise @not_found_error_msg
   end
 end
