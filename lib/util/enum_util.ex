@@ -28,20 +28,14 @@ defmodule Antikythera.EnumUtil do
   end
 
   @doc """
-  `Enum.find/3` extension for Antikythera.
-
-  If an element is not found, it will crash instead of returning `nil`.
-  Also, only the default value is allowed for the second argument.
+  A variant of `Enum.find/2` that raises an exception when no matching element is found.
   """
   defun find!(e :: Enum.t, fun :: (element -> any)) :: element do
     Enum.find(e, fun) || raise @not_found_error_msg
   end
 
   @doc """
-  `Enum.find_value/3` extension for Antikythera.
-
-  If an element is not found, it will crash instead of returning `nil`.
-  Also, only the default value is allowed for the second argument.
+  A variant of `Enum.find_value/2` that raises an exception when no matching element is found.
   """
   defun find_value!(e :: Enum.t, fun :: (element -> any)) :: any do
     Enum.find_value(e, fun) || raise @not_found_error_msg
