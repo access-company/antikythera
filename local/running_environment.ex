@@ -3,7 +3,8 @@
 use Croma
 
 defmodule AntikytheraLocal.RunningEnvironment do
-  alias Antikythera.{Env, GearNameStr, VersionStr, Httpc}
+  alias Croma.Result, as: R
+  alias Antikythera.{Env, GearNameStr, VersionStr, Httpc, EnumUtil}
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraLocal.{Cmd, StartScript}
 
@@ -82,7 +83,8 @@ defmodule AntikytheraLocal.RunningEnvironment do
       raise "Upgrade of #{app_name_str} to #{sha1} hasn't been applied!"
     else
       :timer.sleep(10_000)
-      if fetch_current_version(app_name_str) |> String.ends_with?(sha1) do
+      current_version = fetch_current_version(app_name_str)
+      if R.ok?(current_version) and R.get!(current_version) |> String.ends_with?(sha1) do
         :ok
       else
         wait_until_upgrade_applied_impl(app_name_str, sha1, count + 1)
@@ -93,9 +95,13 @@ defmodule AntikytheraLocal.RunningEnvironment do
   defp fetch_current_version(app_name_str) do
     url = "http://#{AntikytheraCore.Cmd.hostname()}:8080/versions"
     token = File.read!(@system_info_access_token_path)
-    %Httpc.Response{status: 200, body: body} = Httpc.get!(url, %{"authorization" => token})
+    Httpc.get(url, %{"authorization" => token})
+    |> R.map(fn %Httpc.Response{status: 200, body: body} -> extract_version_str(body, app_name_str) end)
+  end
+
+  defp extract_version_str(body, app_name_str) do
     String.split(body, "\n", trim: true)
-    |> Enum.find_value(fn line ->
+    |> EnumUtil.find_value!(fn line ->
       case String.split(line) do
         [^app_name_str, v] -> v
         _                  -> nil
