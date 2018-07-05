@@ -7,8 +7,8 @@
 - We strongly recommend [asdf](https://github.com/asdf-vm/asdf) to manage this synchronization.
     - See [antikythera's `.tool-versions` file](https://github.com/access-company/antikythera/blob/master/.tool-versions)
       for the versions of Erlang and Elixir supported in current revision.
-        - Antikythera itself has strict version checking mechanism and raises on compile if different versions are used in your environment.
-        - (This may change later so that Erlang and Elixir versions can be checked by individual antikythera instances, not by antikythera)
+        - Antikythera itself requires Elixir 1.6 or higher, and Erlang's minimum requirement does not exist.
+        - Erlang and Elixir versions can be checked by individual antikythera instances, not by antikythera
 - Other requirements:
     - Some dependencies contain C source code and thus a reasonably new C compiler is required.
     - In macOS you may be warned by outdated GNU make version during compiling antikythera's dependencies.
