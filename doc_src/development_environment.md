@@ -5,10 +5,8 @@
 - Before anything else, do note that **an antikythera instance and its gears run in the same ErlangVM cluster**.
   Therefore, obviously, all development AND deployment environments must have the same Erlang and Elixir versions!
 - We strongly recommend [asdf](https://github.com/asdf-vm/asdf) to manage this synchronization.
-    - See [antikythera's `.tool-versions` file](https://github.com/access-company/antikythera/blob/master/.tool-versions)
-      for the versions of Erlang and Elixir supported in current revision.
-        - Antikythera itself requires Elixir 1.6 or higher, and Erlang's minimum requirement does not exist.
-        - Erlang and Elixir versions can be checked by individual antikythera instances, not by antikythera
+- Antikythera itself doesn't impose any version restrictions other than the one specified in `mix.exs`.
+  Individual antikythera instance project may enforce a more fine-grained restrictions on language versions.
 - Other requirements:
     - Some dependencies contain C source code and thus a reasonably new C compiler is required.
     - In macOS you may be warned by outdated GNU make version during compiling antikythera's dependencies.
