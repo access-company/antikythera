@@ -9,23 +9,9 @@
 #
 
 defmodule Antikythera.MixCommon do
-  versions =
-    File.read!(Path.join(__DIR__, ".tool-versions"))
-    |> String.split("\n", trim: true)
-    |> Map.new(fn line -> [n, v] = String.split(line, " ", trim: true); {n, v} end)
-  @otp_version    Map.fetch!(versions, "erlang")
-  @elixir_version Map.fetch!(versions, "elixir")
-
-  # Strictly enforce Erlang/OTP version
-  otp_version_path    = Path.join([:code.root_dir(), "releases", System.otp_release(), "OTP_VERSION"])
-  current_otp_version = File.read!(otp_version_path) |> String.trim_trailing()
-  if current_otp_version != @otp_version do
-    Mix.raise("Incorrect Erlang/OTP version! required: '#{@otp_version}', used: '#{current_otp_version}'")
-  end
-
   def common_project_settings() do
     [
-      elixir:            @elixir_version, # Enforce elixir version
+      elixir:            "~> 1.6",
       elixirc_options:   [warnings_as_errors: true],
       build_embedded:    Mix.env() == :prod,
       test_coverage:     [tool: ExCoveralls],
