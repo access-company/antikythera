@@ -1,4 +1,4 @@
-defmodule <%= gear_name_camel %>Test do
+defmodule <%= gear_name_camel %>.Controller.HelloTest do
   use ExUnit.Case
 
   test "hello should render HAML template as HTML" do
