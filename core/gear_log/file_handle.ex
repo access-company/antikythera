@@ -48,10 +48,14 @@ defmodule AntikytheraCore.GearLog.FileHandle do
   end
 
   defunp do_write(io_device :: :file.io_device, {time, level, context_id, msg} :: Message.t) :: :ok do
-    prefix = log_prefix(time, level, context_id)
-    formatted_lines_str = String.split(msg, "\n", trim: true) |> Enum.map_join(&(prefix <> &1 <> "\n"))
-    IO.write(io_device, formatted_lines_str)
-    write_debug_log(level, formatted_lines_str)
+    try do
+      prefix = log_prefix(time, level, context_id)
+      formatted_lines_str = String.split(msg, "\n", trim: true) |> Enum.map_join(&(prefix <> &1 <> "\n"))
+      IO.write(io_device, formatted_lines_str)
+      write_debug_log(level, formatted_lines_str)
+    rescue
+      _ in ErlangError -> write_debug_log(level, "The write process was skipped because it received malformed data.\n")
+    end
   end
 
   defunp log_prefix(time :: v[Time.t], level :: v[Level.t], context_id :: v[String.t]) :: String.t do
