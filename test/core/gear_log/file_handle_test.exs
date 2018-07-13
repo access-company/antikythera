@@ -46,8 +46,7 @@ defmodule AntikytheraCore.GearLog.FileHandleTest do
     assert_file_content([log_msg])
   end
 
-  test "write/2 should rescue and continue processing normally" <>
-    "when process crashed by receiving data that is not UTF8 string" do
+  test "write/2 should skip malformed (non-UTF8) log message" do
     log_with_invalid_msg = {@log_time, :info, @context_id, <<222>>}
     handle = FileHandle.open(@log_file_path)
     {:kept_open, _} = FileHandle.write(handle, log_with_invalid_msg)
