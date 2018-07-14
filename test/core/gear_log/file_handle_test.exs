@@ -53,7 +53,7 @@ defmodule AntikytheraCore.GearLog.FileHandleTest do
     log_with_invalid_msg = {@log_time, :info, @context_id, <<222>>}
     handle1 = FileHandle.open(@log_file_path)
     {:kept_open, handle2} = FileHandle.write(handle1, log_with_invalid_msg)
-    {:kept_open, _} = FileHandle.write(handle2, @gear_log)
+    {:kept_open, _      } = FileHandle.write(handle2, @gear_log)
     FileHandle.close(handle2)
     assert_file_content([@message_about_malformed_log_message, @gear_log])
   end
