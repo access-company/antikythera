@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.GearLog.FileHandle do
-  alias Antikythera.Time
+  alias Antikythera.{Time, ContextId}
   alias AntikytheraCore.GearLog.{Level, Message}
 
   defmodule SizeCheck do
@@ -54,7 +54,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
     write_debug_log(level, formatted_lines_str)
   end
 
-  defunp log_prefix(time :: v[Time.t], level :: v[Level.t], context_id :: v[String.t]) :: String.t do
+  defunp log_prefix(time :: v[Time.t], level :: v[Level.t], context_id :: v[ContextId.t]) :: String.t do
     Time.to_iso_timestamp(time) <> " [#{level}] context=#{context_id} "
   end
 

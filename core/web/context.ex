@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Context do
-  alias Antikythera.{Time, GearName}
+  alias Antikythera.{Time, GearName, ContextId}
   alias Antikythera.Context, as: LContext
   alias Antikythera.Context.GearEntryPoint
   alias Antikythera.ExecutorPool.Id, as: EPoolId
@@ -11,7 +11,7 @@ defmodule AntikytheraCore.Context do
 
   defun make(gear_name   :: v[GearName.t],
              entry_point :: v[nil | GearEntryPoint.t],
-             context_id  :: v[nil | String.t] \\ nil,
+             context_id  :: v[nil | ContextId.t] \\ nil,
              epool_id    :: v[nil | EPoolId.t] \\ nil) :: LContext.t do
     now = Time.now()
     %LContext{
