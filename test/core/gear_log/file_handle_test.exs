@@ -46,6 +46,16 @@ defmodule AntikytheraCore.GearLog.FileHandleTest do
     assert_file_content([log_msg])
   end
 
+  test "write/2 should accept malformed (non-UTF8) log message" do
+    log_with_malformed_msg = {@log_time, :info, @context_id, <<222>>}
+    handle = FileHandle.open(@log_file_path)
+    {:kept_open, _} = FileHandle.write(handle, @gear_log)
+    {:kept_open, _} = FileHandle.write(handle, log_with_malformed_msg)
+    {:kept_open, _} = FileHandle.write(handle, @gear_log)
+    FileHandle.close(handle)
+    assert_file_content([@gear_log, log_with_malformed_msg, @gear_log])
+  end
+
   test "rotate/1" do
     handle1 = FileHandle.open(@log_file_path)
     log_before_rotate = {@log_time, :info, @context_id, "before_rotate"}
