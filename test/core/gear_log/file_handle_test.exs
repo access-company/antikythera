@@ -9,6 +9,7 @@ defmodule AntikytheraCore.GearLog.FileHandleTest do
   @log_time      Time.now()
   @context_id    AntikytheraCore.Context.make_context_id(@log_time)
   @gear_log      {@log_time, :info, @context_id, "test_log"}
+  @message_about_malformed_log_message "The write process was skipped because it received malformed data."
 
   setup do
     File.rm_rf(@tmp_dir)
@@ -17,11 +18,13 @@ defmodule AntikytheraCore.GearLog.FileHandleTest do
 
   defp assert_file_content(logs) do
     logs_on_file = File.read!(@log_file_path) |> :zlib.gunzip() |> String.split("\n", trim: true)
-    expected_logs = Enum.flat_map(logs, fn {time, level, context_id, message} ->
-      String.split(message, "\n", trim: true)
-      |> Enum.map(fn line ->
-        Time.to_iso_timestamp(time) <> " [#{level}] context=#{context_id} #{line}"
-      end)
+    expected_logs = Enum.flat_map(logs, fn
+      {time, level, context_id, message} ->
+        String.split(message, "\n", trim: true)
+        |> Enum.map(fn line ->
+          Time.to_iso_timestamp(time) <> " [#{level}] context=#{context_id} #{line}"
+        end)
+      @message_about_malformed_log_message -> [@message_about_malformed_log_message]
     end)
     assert logs_on_file == expected_logs
   end
@@ -44,6 +47,15 @@ defmodule AntikytheraCore.GearLog.FileHandleTest do
     {:rotated, handle2} = FileHandle.write(handle1, log_msg)
     FileHandle.close(handle2)
     assert_file_content([log_msg])
+  end
+
+  test "write/2 should skip malformed (non-UTF8) log message" do
+    log_with_invalid_msg = {@log_time, :info, @context_id, <<222>>}
+    handle1 = FileHandle.open(@log_file_path)
+    {:kept_open, handle2} = FileHandle.write(handle1, log_with_invalid_msg)
+    {:kept_open, _      } = FileHandle.write(handle2, @gear_log)
+    FileHandle.close(handle2)
+    assert_file_content([@message_about_malformed_log_message, @gear_log])
   end
 
   test "rotate/1" do

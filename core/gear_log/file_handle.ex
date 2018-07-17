@@ -21,6 +21,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
   end
 
   @opaque t :: {Path.t, Time.t, File.io_device}
+  @message_about_malformed_log_message "The write process was skipped because it received malformed data."
 
   defun open(file_path :: Path.t) :: t do
     :ok = File.mkdir_p(Path.dirname(file_path))
@@ -30,28 +31,39 @@ defmodule AntikytheraCore.GearLog.FileHandle do
     {file_path, Time.now(), open_file(file_path)}
   end
 
-  defun write({file_path, last_checked_at, io_device} = handle   :: t,
+  defun write({file_path, last_checked_at, _}         = handle   :: t,
               {now, _, _, _}                          = gear_log :: Message.t) :: {:kept_open | :rotated, t} do
     if SizeCheck.check_now?(now, last_checked_at) do
       if SizeCheck.exceeds_limit?(file_path) do
-        {_, _, new_io_device} = new_handle = rotate(handle)
-        do_write(new_io_device, gear_log)
-        {:rotated, new_handle}
+        new_handle = rotate(handle)
+        same_or_updated_handle = do_write(new_handle, gear_log)
+        {:rotated, same_or_updated_handle}
       else
-        do_write(io_device, gear_log)
-        {:kept_open, {file_path, now, io_device}}
+        same_or_updated_handle = do_write(handle, gear_log)
+        {:kept_open, {file_path, now, elem(same_or_updated_handle, 2)}}
       end
     else
-      do_write(io_device, gear_log)
-      {:kept_open, handle}
+      same_or_updated_handle = do_write(handle, gear_log)
+      {:kept_open, same_or_updated_handle}
     end
   end
 
-  defunp do_write(io_device :: :file.io_device, {time, level, context_id, msg} :: Message.t) :: :ok do
+  defunp do_write({file_path, last_checked_at, io_device} = handle :: t,
+                  {time, level, context_id, msg}                   :: Message.t) :: t do
     prefix = log_prefix(time, level, context_id)
     formatted_lines_str = String.split(msg, "\n", trim: true) |> Enum.map_join(&(prefix <> &1 <> "\n"))
-    IO.write(io_device, formatted_lines_str)
-    write_debug_log(level, formatted_lines_str)
+    try do
+      IO.write(io_device, formatted_lines_str)
+      write_debug_log(level, formatted_lines_str)
+      handle
+    catch
+      :error, :no_translation ->
+        debug_assert(not Process.alive?(io_device))
+        reopened_io_device = open_file(file_path)
+        IO.write(reopened_io_device, @message_about_malformed_log_message <> "\n")
+        write_debug_log(level, @message_about_malformed_log_message <> "\n")
+        {file_path, last_checked_at, reopened_io_device}
+    end
   end
 
   defunp log_prefix(time :: v[Time.t], level :: v[Level.t], context_id :: v[ContextId.t]) :: String.t do
