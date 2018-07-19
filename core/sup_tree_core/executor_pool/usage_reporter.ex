@@ -38,6 +38,10 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporter do
     MetricsUploader.submit(uploader_name, make_metrics_list(epool_id), epool_id)
     {:noreply, state, @interval}
   end
+  def handle_info(_, state) do
+    # neglect other message (possibly a delayed reply from the queue)
+    {:noreply, state}
+  end
 
   defunp make_metrics_list(epool_id :: v[EPoolId.t]) :: DataList.t do
     {working_a, max_a} = fetch_usage_action(epool_id)
