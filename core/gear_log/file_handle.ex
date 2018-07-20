@@ -50,7 +50,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
   defunp do_write(io_device :: :file.io_device, {time, level, context_id, msg} :: Message.t) :: :ok do
     prefix = log_prefix(time, level, context_id)
     formatted_lines_str = String.split(msg, "\n", trim: true) |> Enum.map_join(&(prefix <> &1 <> "\n"))
-    IO.write(io_device, formatted_lines_str)
+    IO.binwrite(io_device, formatted_lines_str)
     write_debug_log(level, formatted_lines_str)
   end
 
@@ -65,7 +65,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
   end
 
   defunp open_file(file_path :: Path.t) :: File.io_device do
-    File.open!(file_path, [:write, {:encoding, :utf8}, :compressed])
+    File.open!(file_path, [:write, :compressed])
   end
 
   defun close({_, _, io_device} :: t) :: :ok do
@@ -93,7 +93,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
           :debug -> IO.ANSI.cyan() <> formatted <> IO.ANSI.reset()
           _      -> formatted
         end
-        |> IO.write()
+        |> IO.binwrite()
       else
         :ok # don't put logs during tests
       end
