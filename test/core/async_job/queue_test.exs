@@ -107,6 +107,14 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
     end)
 
     [
+      [bypass_job_queue: true, retry_interval: {0, 2.0}                                  ],
+      [bypass_job_queue: true, attempts:       9                                         ],
+      [bypass_job_queue: true, schedule:       {:once, Time.shift_seconds(Time.now(), 1)}],
+    ] |> Enum.each(fn options ->
+      {:error, {:invalid_key_combination, _, _}} = register_job(options)
+    end)
+
+    [
       id:               String.duplicate("a", 32),
       schedule:         {:once, Time.shift_seconds(Time.now(), 1)},
       schedule:         {:once, Time.shift_days(Time.now(), 49)},
