@@ -142,7 +142,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
 
   defp job_succeeded(%{queue_name: queue_name, job_key: job_key} = state) do
     report_on_finish(state, Time.now(), "success")
-    Queue.remove_locked_job(queue_name, job_key)
+    if queue_name, do: Queue.remove_locked_job(queue_name, job_key)
   end
 
   defp job_failed(%{queue_name:  queue_name,
@@ -158,11 +158,11 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     case remaining_attempts do
       1 ->
         report_on_finish(state, end_time, "failure_abandon")
-        Queue.remove_locked_job(queue_name, job_key)
+        if queue_name, do: Queue.remove_locked_job(queue_name, job_key)
         execute_abandon_callback(state)
       _ ->
         report_on_finish(state, end_time, "failure_retry")
-        Queue.unlock_job_for_retry(queue_name, job_key)
+        if queue_name, do: Queue.unlock_job_for_retry(queue_name, job_key)
     end
   end
 

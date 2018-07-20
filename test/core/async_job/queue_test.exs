@@ -119,6 +119,8 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
       retry_interval: {300_000, 2.0},
       retry_interval: {10_000, 1.0},
       retry_interval: {10_000, 5.0},
+      immediate:      true,
+      immediate:      false,
     ] |> Enum.each(fn option_pair ->
       AsyncJobHelper.reset_rate_limit_status(@epool_id)
       assert register_job([option_pair]) == :ok
@@ -144,6 +146,12 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
     ] |> Enum.each(fn epool_id ->
       assert AsyncJob.register(:testgear, TestJob, @payload, epool_id, []) == {:error, {:invalid_executor_pool, epool_id}}
     end)
+  end
+
+  test "register should not add a job with :immediate option to the queue" do
+    assert Queue.fetch_job(@queue_name)    == nil
+    assert register_job([immediate: true]) == :ok
+    assert Queue.fetch_job(@queue_name)    == nil
   end
 
   test "register => remove_locked" do

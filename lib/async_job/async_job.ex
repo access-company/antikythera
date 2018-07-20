@@ -155,6 +155,7 @@ defmodule Antikythera.AsyncJob do
                 | {:max_duration  , MaxDuration.t  }
                 | {:attempts      , Attempts.t     }
                 | {:retry_interval, RetryInterval.t}
+                | {:immediate     , boolean        }
 
   defmacro __using__(_) do
     gear_name = Mix.Project.config()[:app]

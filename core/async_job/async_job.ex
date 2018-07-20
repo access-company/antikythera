@@ -9,6 +9,7 @@ defmodule AntikytheraCore.AsyncJob do
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.ExecutorPool.Id, as: CoreEPoolId
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
+  alias AntikytheraCore.ExecutorPool.AsyncJobRunner
   alias AntikytheraCore.AsyncJob.Queue
 
   @max_start_time_from_now 50 * 24 * 60 * 60_000
@@ -23,6 +24,7 @@ defmodule AntikytheraCore.AsyncJob do
     remaining_attempts: Attempts,
     retry_interval:     RetryInterval,
     payload:            Croma.Map, # opaque data given and used by gear
+    immediate:          Croma.Boolean,
   ]
 
   @typep option :: Antikythera.AsyncJob.option
@@ -90,7 +92,22 @@ defmodule AntikytheraCore.AsyncJob do
       remaining_attempts: attempts,
       retry_interval:     Keyword.get(options, :retry_interval, RetryInterval.default()),
       payload:            payload,
+      immediate:          immediate_job?(options),
     ])
+  end
+
+  defunp immediate_job?(options :: v[[option]]) :: boolean do
+    case options[:immediate] do
+      true ->
+        debug_assert(
+          [:schedule, :attempts, :retry_interval]
+          |> Enum.map(fn disallowed -> not Keyword.has_key?(options, disallowed) end)
+          |> Enum.all?(),
+          ":schedule, :attempts and :retry_interval cannot used with :immediate option"
+        )
+        true
+      _ -> false
+    end
   end
 
   defunp do_register(epool_id          :: v[EPoolId.t],
@@ -98,10 +115,27 @@ defmodule AntikytheraCore.AsyncJob do
                      job               :: v[t],
                      start_time_millis :: v[MilliSecondsSinceEpoch.t],
                      now_millis        :: v[MilliSecondsSinceEpoch.t]) :: R.t(Id.t) do
-    queue_name = RegName.async_job_queue(epool_id)
-    case Queue.add_job(queue_name, job_id, job, start_time_millis, now_millis) do
-      :ok   -> {:ok, job_id}
-      error -> error
+    if job.immediate do
+      run_immediately(epool_id, job_id, job, now_millis)
+    else
+      queue_name = RegName.async_job_queue(epool_id)
+      case Queue.add_job(queue_name, job_id, job, start_time_millis, now_millis) do
+        :ok   -> {:ok, job_id}
+        error -> error
+      end
+    end
+  end
+
+  defunp run_immediately(epool_id   :: v[EPoolId.t],
+                         job_id     :: v[Id.t],
+                         job        :: v[t],
+                         now_millis :: v[MilliSecondsSinceEpoch.t]) :: R.t(Id.t) do
+    pool_name = RegName.async_job_runner_pool(epool_id)
+    case PoolSup.checkout_nonblocking(pool_name) do
+      nil -> {:error, :no_available_workers}
+      pid ->
+        AsyncJobRunner.run(pid, nil, {now_millis, job_id}, job)
+        {:ok, job_id}
     end
   end
 
