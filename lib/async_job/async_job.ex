@@ -150,12 +150,12 @@ defmodule Antikythera.AsyncJob do
   @callback abandon(map, Metadata.t, Context.t) :: any
   @callback inspect_payload(map) :: String.t
 
-  @type option :: {:id            , Id.t           }
-                | {:schedule      , Schedule.t     }
-                | {:max_duration  , MaxDuration.t  }
-                | {:attempts      , Attempts.t     }
-                | {:retry_interval, RetryInterval.t}
-                | {:immediate     , boolean        }
+  @type option :: {:id              , Id.t           }
+                | {:schedule        , Schedule.t     }
+                | {:max_duration    , MaxDuration.t  }
+                | {:attempts        , Attempts.t     }
+                | {:retry_interval  , RetryInterval.t}
+                | {:bypass_job_queue, boolean        }
 
   defmacro __using__(_) do
     gear_name = Mix.Project.config()[:app]

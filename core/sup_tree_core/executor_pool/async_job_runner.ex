@@ -54,7 +54,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     {pid, monitor_ref, timer_ref} = start_monitor(job, metadata, context)
     new_state = %{
       epool_id:    epool_id,
-      queue_name:  queue_name,
+      queue_name:  queue_name, # can be `nil` if the job is executed with `:bypass_job_queue` option
       worker:      pid,
       monitor:     monitor_ref,
       timer:       timer_ref,
@@ -224,7 +224,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   #
   # Public API
   #
-  defun run(pid :: v[pid], queue_name :: v[atom], job_key :: v[JobKey.t], job :: v[AsyncJob.t]) :: :ok do
+  defun run(pid :: v[pid], queue_name :: v[atom | nil], job_key :: v[JobKey.t], job :: v[AsyncJob.t]) :: :ok do
     GenServer.cast(pid, {:run, queue_name, job_key, job})
   end
 end

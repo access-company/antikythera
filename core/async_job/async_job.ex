@@ -24,7 +24,6 @@ defmodule AntikytheraCore.AsyncJob do
     remaining_attempts: Attempts,
     retry_interval:     RetryInterval,
     payload:            Croma.Map, # opaque data given and used by gear
-    immediate:          Croma.Boolean,
   ]
 
   @typep option :: Antikythera.AsyncJob.option
@@ -38,9 +37,10 @@ defmodule AntikytheraCore.AsyncJob do
     R.m do
       epool_id                      <- find_executor_pool(gear_name, context_or_epool_id)
       job_id                        <- extract_job_id(options)
+      bypass?                       <- bypass_job_queue?(options)
       {schedule, start_time_millis} <- validate_schedule(now_millis, options)
       job                           <- make_job(gear_name, module, payload, schedule, options)
-      do_register(epool_id, job_id, job, start_time_millis, now_millis)
+      do_register(epool_id, job_id, job, bypass?, start_time_millis, now_millis)
     end
   end
 
@@ -55,6 +55,23 @@ defmodule AntikytheraCore.AsyncJob do
     case options[:id] do
       nil -> {:ok, Id.generate()}
       id  -> R.wrap_if_valid(id, Id)
+    end
+  end
+
+  defunp bypass_job_queue?(options :: v[[option]]) :: R.t(boolean) do
+    case options[:bypass_job_queue] do
+      true ->
+        [:schedule, :attempts, :retry_interval]
+        |> Enum.map(fn disallowed ->
+          if Keyword.has_key?(options, disallowed) do
+            {:error, {:invalid_key_combination, :bypass_job_queue, disallowed}}
+          else
+            {:ok, nil}
+          end
+        end)
+        |> R.sequence()
+        |> R.map(fn _ -> true end)
+      _ -> {:ok, false}
     end
   end
 
@@ -92,31 +109,17 @@ defmodule AntikytheraCore.AsyncJob do
       remaining_attempts: attempts,
       retry_interval:     Keyword.get(options, :retry_interval, RetryInterval.default()),
       payload:            payload,
-      immediate:          immediate_job?(options),
     ])
-  end
-
-  defunp immediate_job?(options :: v[[option]]) :: boolean do
-    case options[:immediate] do
-      true ->
-        debug_assert(
-          [:schedule, :attempts, :retry_interval]
-          |> Enum.map(fn disallowed -> not Keyword.has_key?(options, disallowed) end)
-          |> Enum.all?(),
-          ":schedule, :attempts and :retry_interval cannot used with :immediate option"
-        )
-        true
-      _ -> false
-    end
   end
 
   defunp do_register(epool_id          :: v[EPoolId.t],
                      job_id            :: v[Id.t],
                      job               :: v[t],
+                     bypass?           :: v[boolean],
                      start_time_millis :: v[MilliSecondsSinceEpoch.t],
                      now_millis        :: v[MilliSecondsSinceEpoch.t]) :: R.t(Id.t) do
-    if job.immediate do
-      run_immediately(epool_id, job_id, job, now_millis)
+    if bypass? do
+      run_immediately_bypassing_job_queue(epool_id, job_id, job, now_millis)
     else
       queue_name = RegName.async_job_queue(epool_id)
       case Queue.add_job(queue_name, job_id, job, start_time_millis, now_millis) do
@@ -126,10 +129,10 @@ defmodule AntikytheraCore.AsyncJob do
     end
   end
 
-  defunp run_immediately(epool_id   :: v[EPoolId.t],
-                         job_id     :: v[Id.t],
-                         job        :: v[t],
-                         now_millis :: v[MilliSecondsSinceEpoch.t]) :: R.t(Id.t) do
+  defunp run_immediately_bypassing_job_queue(epool_id   :: v[EPoolId.t],
+                                             job_id     :: v[Id.t],
+                                             job        :: v[t],
+                                             now_millis :: v[MilliSecondsSinceEpoch.t]) :: R.t(Id.t) do
     pool_name = RegName.async_job_runner_pool(epool_id)
     case PoolSup.checkout_nonblocking(pool_name) do
       nil -> {:error, :no_available_workers}

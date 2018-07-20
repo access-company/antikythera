@@ -107,20 +107,20 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
     end)
 
     [
-      id:             String.duplicate("a", 32),
-      schedule:       {:once, Time.shift_seconds(Time.now(), 1)},
-      schedule:       {:once, Time.shift_days(Time.now(), 49)},
-      schedule:       {:cron, Cron.parse!("* * * * *")},
-      attempts:       1,
-      attempts:       10,
-      max_duration:   1,
-      max_duration:   1_800_000,
-      retry_interval: {0, 2.0},
-      retry_interval: {300_000, 2.0},
-      retry_interval: {10_000, 1.0},
-      retry_interval: {10_000, 5.0},
-      immediate:      true,
-      immediate:      false,
+      id:               String.duplicate("a", 32),
+      schedule:         {:once, Time.shift_seconds(Time.now(), 1)},
+      schedule:         {:once, Time.shift_days(Time.now(), 49)},
+      schedule:         {:cron, Cron.parse!("* * * * *")},
+      attempts:         1,
+      attempts:         10,
+      max_duration:     1,
+      max_duration:     1_800_000,
+      retry_interval:   {0, 2.0},
+      retry_interval:   {300_000, 2.0},
+      retry_interval:   {10_000, 1.0},
+      retry_interval:   {10_000, 5.0},
+      bypass_job_queue: true,
+      bypass_job_queue: false,
     ] |> Enum.each(fn option_pair ->
       AsyncJobHelper.reset_rate_limit_status(@epool_id)
       assert register_job([option_pair]) == :ok
@@ -148,10 +148,10 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
     end)
   end
 
-  test "register should not add a job with :immediate option to the queue" do
-    assert Queue.fetch_job(@queue_name)    == nil
-    assert register_job([immediate: true]) == :ok
-    assert Queue.fetch_job(@queue_name)    == nil
+  test "register should not add a job with :bypass_job_queue option to the queue" do
+    assert Queue.fetch_job(@queue_name)           == nil
+    assert register_job([bypass_job_queue: true]) == :ok
+    assert Queue.fetch_job(@queue_name)           == nil
   end
 
   test "register => remove_locked" do
