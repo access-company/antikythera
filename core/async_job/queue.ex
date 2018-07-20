@@ -360,7 +360,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   defun cancel(queue_name :: v[atom], job_id :: v[Id.t]) :: :ok | {:error, :not_found | {:rate_limit_reached, pos_integer}} do
-    run_command_with_rate_limit_check(queue_name, {:cancel, job_id}, System.system_time(:milliseconds))
+    run_command_with_rate_limit_check(queue_name, {:cancel, job_id}, System.system_time(:millisecond))
   end
 
   defp run_command_with_rate_limit_check(queue_name, cmd, now_millis) do
@@ -386,7 +386,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     :ok = run_command(queue_name, {:remove_broker_from_waiting_list, self()})
   end
 
-  defp run_command(queue_name, cmd, now_millis \\ System.system_time(:milliseconds)) do
+  defp run_command(queue_name, cmd, now_millis \\ System.system_time(:millisecond)) do
     {:ok, ret} = RaftFleet.command(queue_name, {cmd, now_millis})
     ret
   end
@@ -395,7 +395,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     # Note that:
     # - we call `RaftedValue.command` instead of `RaftFleet.command` in order not to send message to remote node
     # - we use command instead of query so that it can trigger some of the stored jobs
-    now_millis = System.system_time(:milliseconds)
+    now_millis = System.system_time(:millisecond)
     case RaftedValue.command(pid, {:get_metrics, now_millis}) do
       {:ok, metrics_data} -> metrics_data
       {:error, _}         -> nil

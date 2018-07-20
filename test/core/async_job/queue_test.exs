@@ -213,26 +213,26 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
   end
 
   test "consecutive fetchings of status should sleep-and-retry on hitting rate limit" do
-    t1 = System.system_time(:milliseconds)
+    t1 = System.system_time(:millisecond)
     Enum.each(1..RateLimit.max_tokens(), fn _ ->
       assert Queue.status(@queue_name, @job_id) == {:error, :not_found}
     end)
-    t2 = System.system_time(:milliseconds)
+    t2 = System.system_time(:millisecond)
     assert t2 - t1 < 100
     assert Queue.status(@queue_name, @job_id) == {:error, :not_found}
-    t3 = System.system_time(:milliseconds)
+    t3 = System.system_time(:millisecond)
     assert t3 - t2 > RateLimit.milliseconds_per_token() - 100
   end
 
   test "consecutive listings should sleep-and-retry on hitting rate limit" do
-    t1 = System.system_time(:milliseconds)
+    t1 = System.system_time(:millisecond)
     Enum.each(1..RateLimit.max_tokens(), fn _ ->
       assert Queue.list(@queue_name) == []
     end)
-    t2 = System.system_time(:milliseconds)
+    t2 = System.system_time(:millisecond)
     assert t2 - t1 < 100
     assert Queue.list(@queue_name) == []
-    t3 = System.system_time(:milliseconds)
+    t3 = System.system_time(:millisecond)
     assert t3 - t2 > RateLimit.milliseconds_per_token() - 100
   end
 end
@@ -245,7 +245,7 @@ defmodule AntikytheraCore.AsyncJob.QueueCommandTest do
   alias AntikytheraCore.AsyncJob
   alias AntikytheraCore.AsyncJob.Queue
 
-  @now_millis System.system_time(:milliseconds)
+  @now_millis System.system_time(:millisecond)
   @now        Time.from_epoch_milliseconds(@now_millis)
   @cron       Cron.parse!("* * * * *")
   @job_id     Id.generate()

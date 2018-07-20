@@ -28,7 +28,7 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheWriter do
   def handle_call({:write, key, value, lifetime, ratio}, _from, state) do
     new_state =
       state
-      |> evict_expired_records(System.monotonic_time(:milliseconds))
+      |> evict_expired_records(System.monotonic_time(:millisecond))
       |> do_write(key, value, lifetime, ratio)
       |> evict_head_records_if_exceeds_limit()
     {:reply, :ok, new_state, @timeout}
@@ -36,7 +36,7 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheWriter do
 
   @impl true
   def handle_info(:timeout, state) do
-    new_state = evict_expired_records(state, System.monotonic_time(:milliseconds))
+    new_state = evict_expired_records(state, System.monotonic_time(:millisecond))
     {:noreply, new_state, @timeout}
   end
 
@@ -69,7 +69,7 @@ defmodule AntikytheraCore.ExecutorPool.MemcacheWriter do
   end
 
   defp do_write(%{records: records, expire_at_set: expire_at_set, epool_id: epool_id} = state, key, value, lifetime, ratio) do
-    now            = System.monotonic_time(:milliseconds)
+    now            = System.monotonic_time(:millisecond)
     expire_at      = now + lifetime * 1_000
     prob_expire_at = now + round(lifetime * ratio * 1_000)
     Memcache.write(key, value, expire_at, prob_expire_at, epool_id)

@@ -31,7 +31,7 @@ defmodule AntikytheraCore.TenantExecutorPoolsManager do
 
   defmodule OneOffFetcher do
     def run(last_checked_at) do
-      checked_at = System.system_time(:seconds)
+      checked_at = System.system_time(:second)
       result = TenantSetting.fetch_all_modified(last_checked_at)
       exit({:ok, checked_at, result})
     end
@@ -61,7 +61,7 @@ defmodule AntikytheraCore.TenantExecutorPoolsManager do
   end
 
   defunp fetch_and_apply_on_init() :: state do
-    checked_at = System.system_time(:seconds)
+    checked_at = System.system_time(:second)
     {:all, all_settings} = TenantSetting.fetch_all_modified(0)
     {settings, _, _} = apply_modifications(%{}, :all, all_settings)
     %{last_checked_at: checked_at, settings: settings, fetcher: nil, to_remove: [], to_disassociate: %{}}

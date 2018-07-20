@@ -32,7 +32,7 @@ defmodule AntikytheraCore.AsyncJob do
                  payload             :: v[map],
                  context_or_epool_id :: v[EPoolId.t | Context.t],
                  options             :: v[[option]]) :: R.t(Id.t) do
-    now_millis = System.system_time(:milliseconds)
+    now_millis = System.system_time(:millisecond)
     R.m do
       epool_id                      <- find_executor_pool(gear_name, context_or_epool_id)
       job_id                        <- extract_job_id(options)

@@ -18,7 +18,7 @@ Code.compiler_options(ignore_module_conflict: false)
 case File.ls(Path.join(__DIR__, "tmp")) do
   {:error, :enoent} -> :ok
   {:ok, entries}    ->
-    one_month_ago_in_seconds = System.system_time(:seconds) - 30 * 24 * 60 * 60
+    one_month_ago_in_seconds = System.system_time(:second) - 30 * 24 * 60 * 60
     Enum.each(entries, fn entry ->
       path = Path.join([__DIR__, "tmp", entry])
       if File.stat!(path, [time: :posix]).mtime < one_month_ago_in_seconds do
@@ -73,11 +73,11 @@ defmodule Antikythera.Mixfile do
       {:hackney     , "1.9.0" , [antikythera_internal: true]},
       {:calliope    , "0.4.1" , [antikythera_internal: true]}, # 0.4.2 is broken!
       {:pool_sup    , "0.5.0" , [antikythera_internal: true]},
-      {:raft_fleet  , "0.8.2" , [antikythera_internal: true]},
-      {:rafted_value, "0.9.2" , [antikythera_internal: true]},
+      {:raft_fleet  , "0.8.3" , [antikythera_internal: true]},
+      {:rafted_value, "0.9.3" , [antikythera_internal: true]},
       {:syn         , "1.6.3" , [antikythera_internal: true]},
       {:fast_xml    , "1.1.29", [antikythera_internal: true]},
-      {:recon       , "2.3.5" , [antikythera_internal: true]},
+      {:recon       , "2.3.6" , [antikythera_internal: true]},
       {:relx        , "3.23.1", [antikythera_internal: true, only: :prod, runtime: false]}, # only to generate release
 
       # The following libraries are used by both antikythera itself and gears.
@@ -85,15 +85,15 @@ defmodule Antikythera.Mixfile do
       {:gettext  , "0.15.0"},
       {:croma    , "0.9.3" },
       {:pbkdf2   , "2.0.0" },
-      {:foretoken, "0.1.1" },
+      {:foretoken, "0.1.2" },
 
       # tools
       {:exsync          , "0.2.3" , [only: :dev ]},
-      {:ex_doc          , "0.18.3", [only: :dev , runtime: false]},
+      {:ex_doc          , "0.18.4", [only: :dev , runtime: false]},
       {:dialyxir        , "0.5.1" , [only: :dev , runtime: false]},
       {:credo           , "0.8.10", [only: :dev , runtime: false]},
       {:mix_test_watch  , "0.6.0" , [only: :dev , runtime: false]},
-      {:meck            , "0.8.9" , [only: :test]},
+      {:meck            , "0.8.11", [only: :test]},
       {:mox             , "0.3.2" , [only: :test]},
       {:excoveralls     , "0.8.1" , [only: :test]},
       {:stream_data     , "0.4.2" , [only: :test]},

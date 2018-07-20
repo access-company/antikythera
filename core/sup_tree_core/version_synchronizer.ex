@@ -35,7 +35,7 @@ defmodule AntikytheraCore.VersionSynchronizer do
 
   defp check_updates(%{instance_started?: started?, last_checked_at: last_checked_at} = state) do
     if started? do
-      checked_at = System.system_time(:seconds)
+      checked_at = System.system_time(:second)
       check_and_notify_code_update(last_checked_at)
       %{state | last_checked_at: checked_at}
     else

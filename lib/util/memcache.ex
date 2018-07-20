@@ -74,7 +74,7 @@ defmodule Antikythera.Memcache do
   end
 
   defp expired?(expire_at, prob_expire_at) do
-    case System.monotonic_time(:milliseconds) do
+    case System.monotonic_time(:millisecond) do
       now when now < prob_expire_at -> false
       now when expire_at < now      -> true
       now ->

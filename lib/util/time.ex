@@ -44,7 +44,7 @@ defmodule Antikythera.Time do
   @time_epoch_offset_milliseconds (:calendar.datetime_to_gregorian_seconds({{1970, 1, 1}, {0, 0, 0}}) * 1000)
 
   defun now() :: t do
-    from_epoch_milliseconds(System.system_time(:milliseconds))
+    from_epoch_milliseconds(System.system_time(:millisecond))
   end
 
   defun to_iso_timestamp({__MODULE__, {y, mon, d}, {h, min, s}, millis} :: t) :: IsoTimestamp.t do
