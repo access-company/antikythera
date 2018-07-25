@@ -4,7 +4,9 @@ use Croma
 
 defmodule Antikythera.Httpc do
   @default_max_body  10 * 1024 * 1024
-  @maximum_max_body 100 * 1024 * 1024
+  @maximum_max_body 120 * 1024 * 1024 # To fetch log files created by `GearLog.Writer` this must be larger than the max log file size.
+  defun default_max_body() :: pos_integer, do: @default_max_body
+  defun maximum_max_body() :: pos_integer, do: @maximum_max_body
 
   @max_retry_attempts 3
 
