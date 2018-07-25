@@ -112,6 +112,21 @@ defmodule Antikythera.AsyncJob do
           - 4th attempt (3rd retry) after failure of 3rd attempt is started in `40`s,
           - and so on.
       - If you want to set constant interval, specify `1.0` to second element.
+  - `bypass_job_queue`: Whether or not to run the job immediately, skipping addition to the job queue.
+    Defaults to `false`.
+      - When this option is `true`, `register/3` tries to pick a worker process in the executor pool in the same node
+        and then immediately start the job using the worker process.
+        If all processes in the local executor pool are busy, `register/3` returns `{:error, :no_available_workers}`.
+        In that case you have 2 options:
+          - give up running the job, or
+          - call `register/3` again without `bypass_job_queue` option so that the job will be executed afterward, possibly in another node.
+      - Execution with `bypass_job_queue` option takes advantage of being free from rate limiting (see below)
+        and having no overhead with pushing to the distributed job queue.
+        Please note that if you bypass the job queue you cannot
+          - specify start time of the job (it's started immediately and only once), and
+          - the job is not retried when its execution results in a failure.
+      - Therefore this option cannot be used with `schedule`, `attempts` or `retry_interval`.
+        Note also that jobs running with `bypass_job_queue: true` cannot be inspected by `Antikythera.AsyncJob.list/1` or `Antikythera.AsyncJob.status/2`.
 
   `register/3` returns a tuple of `{:ok, Antikythera.AsyncJob.Id.t}` on success.
   You can register jobs up to #{Queue.max_jobs()}.
