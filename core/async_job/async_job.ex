@@ -9,6 +9,7 @@ defmodule AntikytheraCore.AsyncJob do
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.ExecutorPool.Id, as: CoreEPoolId
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
+  alias AntikytheraCore.ExecutorPool.AsyncJobRunner
   alias AntikytheraCore.AsyncJob.Queue
 
   @max_start_time_from_now 50 * 24 * 60 * 60_000
@@ -36,9 +37,10 @@ defmodule AntikytheraCore.AsyncJob do
     R.m do
       epool_id                      <- find_executor_pool(gear_name, context_or_epool_id)
       job_id                        <- extract_job_id(options)
+      bypass?                       <- bypass_job_queue?(options)
       {schedule, start_time_millis} <- validate_schedule(now_millis, options)
       job                           <- make_job(gear_name, module, payload, schedule, options)
-      do_register(epool_id, job_id, job, start_time_millis, now_millis)
+      do_register(epool_id, job_id, job, bypass?, start_time_millis, now_millis)
     end
   end
 
@@ -53,6 +55,23 @@ defmodule AntikytheraCore.AsyncJob do
     case options[:id] do
       nil -> {:ok, Id.generate()}
       id  -> R.wrap_if_valid(id, Id)
+    end
+  end
+
+  defunp bypass_job_queue?(options :: v[[option]]) :: R.t(boolean) do
+    case options[:bypass_job_queue] do
+      true ->
+        [:schedule, :attempts, :retry_interval]
+        |> Enum.map(fn disallowed ->
+          if Keyword.has_key?(options, disallowed) do
+            {:error, {:invalid_key_combination, :bypass_job_queue, disallowed}}
+          else
+            {:ok, nil}
+          end
+        end)
+        |> R.sequence()
+        |> R.map(fn _ -> true end)
+      _ -> {:ok, false}
     end
   end
 
@@ -96,12 +115,30 @@ defmodule AntikytheraCore.AsyncJob do
   defunp do_register(epool_id          :: v[EPoolId.t],
                      job_id            :: v[Id.t],
                      job               :: v[t],
+                     bypass?           :: v[boolean],
                      start_time_millis :: v[MilliSecondsSinceEpoch.t],
                      now_millis        :: v[MilliSecondsSinceEpoch.t]) :: R.t(Id.t) do
-    queue_name = RegName.async_job_queue(epool_id)
-    case Queue.add_job(queue_name, job_id, job, start_time_millis, now_millis) do
-      :ok   -> {:ok, job_id}
-      error -> error
+    if bypass? do
+      run_immediately_bypassing_job_queue(epool_id, job_id, job, now_millis)
+    else
+      queue_name = RegName.async_job_queue(epool_id)
+      case Queue.add_job(queue_name, job_id, job, start_time_millis, now_millis) do
+        :ok   -> {:ok, job_id}
+        error -> error
+      end
+    end
+  end
+
+  defunp run_immediately_bypassing_job_queue(epool_id   :: v[EPoolId.t],
+                                             job_id     :: v[Id.t],
+                                             job        :: v[t],
+                                             now_millis :: v[MilliSecondsSinceEpoch.t]) :: R.t(Id.t) do
+    pool_name = RegName.async_job_runner_pool(epool_id)
+    case PoolSup.checkout_nonblocking(pool_name) do
+      nil -> {:error, :no_available_workers}
+      pid ->
+        AsyncJobRunner.run(pid, nil, {now_millis, job_id}, job)
+        {:ok, job_id}
     end
   end
 

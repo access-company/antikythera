@@ -54,7 +54,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     {pid, monitor_ref, timer_ref} = start_monitor(job, metadata, context)
     new_state = %{
       epool_id:    epool_id,
-      queue_name:  queue_name,
+      queue_name:  queue_name, # can be `nil` if the job is executed with `:bypass_job_queue` option
       worker:      pid,
       monitor:     monitor_ref,
       timer:       timer_ref,
@@ -142,7 +142,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
 
   defp job_succeeded(%{queue_name: queue_name, job_key: job_key} = state) do
     report_on_finish(state, Time.now(), "success")
-    Queue.remove_locked_job(queue_name, job_key)
+    if queue_name, do: Queue.remove_locked_job(queue_name, job_key)
   end
 
   defp job_failed(%{queue_name:  queue_name,
@@ -158,11 +158,11 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     case remaining_attempts do
       1 ->
         report_on_finish(state, end_time, "failure_abandon")
-        Queue.remove_locked_job(queue_name, job_key)
+        if queue_name, do: Queue.remove_locked_job(queue_name, job_key)
         execute_abandon_callback(state)
       _ ->
         report_on_finish(state, end_time, "failure_retry")
-        Queue.unlock_job_for_retry(queue_name, job_key)
+        if queue_name, do: Queue.unlock_job_for_retry(queue_name, job_key)
     end
   end
 
@@ -224,7 +224,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   #
   # Public API
   #
-  defun run(pid :: v[pid], queue_name :: v[atom], job_key :: v[JobKey.t], job :: v[AsyncJob.t]) :: :ok do
+  defun run(pid :: v[pid], queue_name :: v[atom | nil], job_key :: v[JobKey.t], job :: v[AsyncJob.t]) :: :ok do
     GenServer.cast(pid, {:run, queue_name, job_key, job})
   end
 end
