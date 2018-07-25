@@ -16,6 +16,7 @@ defmodule Antikythera.HttpcTest do
   test "validate ReqBody" do
     assert Httpc.ReqBody.valid?("hoge")
     assert Httpc.ReqBody.valid?("*")
+    assert Httpc.ReqBody.valid?([:crypto.strong_rand_bytes(1), :crypto.strong_rand_bytes(5), :crypto.strong_rand_bytes(10)])
     assert Httpc.ReqBody.valid?({:form, ["foo": "bar", "hoge": "fuga"]})
     assert Httpc.ReqBody.valid?({:json, %{"str" => "foo", :atom => %{"bar" => "baz"}}})
     assert Httpc.ReqBody.valid?({:file, "/path/to/file"})
