@@ -24,6 +24,7 @@ defmodule Antikythera.Httpc do
   The `body` argument in `post/4`, `put/4`, `patch/4`, `request/5` takes either:
 
   - `binary` - Sends raw data
+  - `iolist` - Sends raw data list (for more details see [documentation for built-in types](https://hexdocs.pm/elixir/typespecs.html#built-in-types))
   - `{:form, [{key, value}]}` - Sends key-value data as x-www-form-urlencoded
   - `{:json, map}` - Converts map into JSON and sends as application/json
   - `{:file, path}` - Sends given file contents
@@ -59,10 +60,11 @@ defmodule Antikythera.Httpc do
     """
 
     @type json_obj :: %{(atom | String.t) => any}
-    @type t        :: binary | {:form, [{term, term}]} | {:json, json_obj} | {:file, Path.t}
+    @type t        :: binary | iolist | {:form, [{term, term}]} | {:json, json_obj} | {:file, Path.t}
 
     defun valid?(t :: term) :: boolean do
       b          when is_binary(b) -> true
+      io         when is_list(io)  -> true
       {:form, l} when is_list(l)   -> true
       {:json, m} when is_map(m)    -> true
       {:file, b} when is_binary(b) -> true
