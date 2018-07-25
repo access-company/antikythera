@@ -112,6 +112,12 @@ defmodule Antikythera.AsyncJob do
           - 4th attempt (3rd retry) after failure of 3rd attempt is started in `40`s,
           - and so on.
       - If you want to set constant interval, specify `1.0` to second element.
+  - `bypass_job_queue`: Whether or not to run the job immediately, skipping addition to the job queue.
+    Defaults to `false`.
+    If all processes in the executor pool are busy, `register/3` returns `{:error, :no_available_workers}`.
+    In that case, you should call `register/3` again without `bypass_job_queue` option if you really have to run the job.
+    Execution with `bypass_job_queue` option takes advantage of being free from rate limiting (see below) and having no overhead with pushing to the distributed job queue.
+    Please note that this option cannot be used with `schedule`, `attempts` or `retry_interval` because of bypassing the job queue.
 
   `register/3` returns a tuple of `{:ok, Antikythera.AsyncJob.Id.t}` on success.
   You can register jobs up to #{Queue.max_jobs()}.
