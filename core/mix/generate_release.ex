@@ -78,6 +78,8 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
 
   defp prepare_sys_config(sys_config_path) do
     config = Mix.Config.read!(Mix.Project.config()[:config_path])
+    # In Elixir v1.7.x we'll change this line into:
+    # {config, _} = Mix.Config.eval!(Mix.Project.config()[:config_path])
     pretty_config_str = :io_lib.fwrite('~p.\n', [config]) |> List.to_string()
     File.write!(sys_config_path, pretty_config_str)
     IO.puts("Generated #{sys_config_path}.")
@@ -182,6 +184,8 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
 
   defp generate_appup_files(release_name, rel_version, from_rel_version, release_output_dir) do
     current_deps = Mix.Dep.loaded(env: Mix.env()) |> Enum.map(&dep_struct_to_triplet/1)
+    # In Elixir v1.7.x we'll change this line into:
+    # current_deps = Mix.Dep.load_on_environment(env: Mix.env()) |> Enum.map(&dep_struct_to_triplet/1)
     release_name_str = Atom.to_string(release_name)
     instance_otp_app = {release_name, rel_version, Path.join([Mix.Project.build_path(), "lib", release_name_str])}
     current_otp_apps = [instance_otp_app | current_deps]
