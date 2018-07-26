@@ -15,7 +15,7 @@ defmodule Antikythera.MixCommon do
       elixirc_options:   [warnings_as_errors: true],
       build_embedded:    Mix.env() == :prod,
       test_coverage:     [tool: ExCoveralls],
-      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.html": :test, "antikythera_local.upgrade_compatibility_test": :test],
+      preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.html": :test, "antikythera_local.upgrade_compatibility_test": :test],
     ]
   end
 
@@ -226,6 +226,9 @@ defmodule Antikythera.GearProject do
     # if antikythera instance is not yet available, raise `Mix.Config.LoadError` and fallback to `AntikytheraGearInitialSetup`.
     config_path = Path.join([antikythera_instance_dir(instance_name), "config", "config.exs"])
     Mix.Config.persist(Mix.Config.read!(config_path))
+    # Since 1.7.x `Mix.Config.read!/1` is deprecated. This line should be changed as follows:
+    # {configs, _} = Mix.Config.eval!(config_path)
+    # Mix.Config.persist(configs)
   end
 
   def get_antikythera_instance_project_settings!(instance_name) do
