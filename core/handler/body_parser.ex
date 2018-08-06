@@ -49,7 +49,7 @@ defmodule AntikytheraCore.Handler.BodyParser do
 
   defunp parse_json(raw :: v[RawBody.t]) :: R.t(Body.t) do
     # Try `decode_json_stream` to accept applications using line-delimited JSON without proper content-type (e.g. Kibana4.x)
-    R.or_else(Poison.decode(raw), parse_json_stream(raw))
+    R.or_else(decode_json(raw), parse_json_stream(raw))
   end
 
   defunp parse_json_stream(raw :: v[RawBody.t]) :: R.t([map]) do
@@ -58,7 +58,7 @@ defmodule AntikytheraCore.Handler.BodyParser do
       |> String.split("\n", trim: true)
       |> Enum.reduce({"", []}, fn(new_line, {acc_string, acc_parsed_jsons}) ->
         joined = acc_string <> new_line
-        case Poison.decode(joined) do
+        case decode_json(joined) do
           {:ok, parsed_json} -> {"", [parsed_json | acc_parsed_jsons]}
           _                  -> {joined <> "\n", acc_parsed_jsons}  # restoring delimiter
         end
@@ -67,6 +67,17 @@ defmodule AntikytheraCore.Handler.BodyParser do
       {"", []}           -> {:error, :empty_body}
       {"", parsed_jsons} -> {:ok, Enum.reverse(parsed_jsons)}
       _                  -> {:error, :invalid_body}
+    end
+  end
+
+  defunp decode_json(raw :: v[RawBody.t]) :: R.t(Body.t) do
+    # This function is introduced to work-around issue in Poison v2.2.0:
+    # number in JSON that doesn't fit into IEEE 754 double causes an `ArgumentError` (instead of returning `{:error, _}`).
+    # After we migrate to a fixed version this can be removed.
+    try do
+      Poison.decode(raw)
+    rescue
+      ArgumentError -> {:error, :too_large_number}
     end
   end
 
