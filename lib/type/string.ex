@@ -161,5 +161,5 @@ defmodule Antikythera.TenantId do
   @notenant "notenant"
   defun notenant() :: String.t, do: @notenant
 
-  use Croma.SubtypeOfString, pattern: ~r/\A(?!^#{@notenant}$)\w{3,32}\z/
+  use Croma.SubtypeOfString, pattern: ~r/\A(?!^#{@notenant}$)[0-9A-Za-z_]{3,32}\z/
 end
