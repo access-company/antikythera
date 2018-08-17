@@ -12,7 +12,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   alias Antikythera.{Time, Cron, MilliSecondsSinceEpoch}
   alias Antikythera.AsyncJob.{Id, MaxDuration, StateLabel, Status}
   alias AntikytheraCore.AsyncJob
-  alias AntikytheraCore.AsyncJob.RateLimit
+  alias AntikytheraCore.AsyncJob.{RateLimit, RaftedValueConfigMaker}
   alias AntikytheraCore.ExecutorPool.AsyncJobBroker, as: Broker
 
   @max_jobs 1000
@@ -342,17 +342,11 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   #
   # Public API
   #
-  defun add_consensus_group(queue_name :: v[atom]) :: :ok | {:error, :already_added | :no_leader} do
-    config = RaftedValue.make_config(__MODULE__, [
-      leader_hook_module:                  Hook,
-      heartbeat_timeout:                   1_000,
-      election_timeout:                    2_000,
-      election_timeout_clock_drift_margin: 1_000,
-    ])
-    # Note that the consensus group may already be started by some other node, resulting in `:already_added`.
-    # If `RaftFleet.add_consensus_group/3` times-out (due to recovery from large snapshot/logs),
-    # the caller should retry afterward in the hope that the consensus group will become ready.
-    RaftFleet.add_consensus_group(queue_name, 3, config)
+  @default_rv_config_options Keyword.put(RaftedValueConfigMaker.options(), :leader_hook_module, Hook)
+
+  defun make_rv_config(opts :: Keyword.t \\ @default_rv_config_options) :: RaftedValue.Config.t do
+    opts = Keyword.put(opts, :leader_hook_module, Hook) # :leader_hook_module must not be modified
+    RaftedValue.make_config(__MODULE__, opts)
   end
 
   defun add_job(queue_name :: v[atom], job_id :: v[Id.t], job :: v[AsyncJob.t], start_time_millis :: v[pos_integer], now_millis :: v[pos_integer]) :: :ok | {:error, :full | :existing_id | {:rate_limit_reached, pos_integer}} do

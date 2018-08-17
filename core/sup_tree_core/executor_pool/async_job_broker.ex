@@ -107,7 +107,10 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
   end
 
   defp ensure_queue_added(%{queue_name: queue_name}) do
-    case Queue.add_consensus_group(queue_name) do
+    # Note that the consensus group may already be started by some other node, resulting in `:already_added`.
+    # If `RaftFleet.add_consensus_group/1` times-out (due to recovery from large snapshot/logs),
+    # the caller should retry afterward in the hope that the consensus group will become ready.
+    case RaftFleet.add_consensus_group(queue_name) do
       :ok                      -> true
       {:error, :already_added} -> true
       {:error, reason}         ->

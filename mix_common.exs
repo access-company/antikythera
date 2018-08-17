@@ -174,7 +174,8 @@ defmodule Antikythera.MixConfig do
 
       # Persist Raft logs & snapshots for async job queues.
       raft_fleet: [
-        per_member_options_maker: AntikytheraCore.AsyncJob.RaftOptionsMaker,
+        rafted_value_config_maker: AntikytheraCore.AsyncJob.RaftedValueConfigMaker,
+        per_member_options_maker:  AntikytheraCore.AsyncJob.RaftPerMemberOptionsMaker,
       ],
     ]
   end
