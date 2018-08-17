@@ -73,7 +73,7 @@ defmodule Antikythera.Mixfile do
       {:hackney     , "1.9.0" , [antikythera_internal: true]},
       {:calliope    , "0.4.1" , [antikythera_internal: true]}, # 0.4.2 is broken!
       {:pool_sup    , "0.6.0" , [antikythera_internal: true]},
-      {:raft_fleet  , "0.9.0" , [antikythera_internal: true]},
+      {:raft_fleet  , "0.9.1" , [antikythera_internal: true]},
       {:rafted_value, "0.10.0", [antikythera_internal: true]},
       {:syn         , "1.6.3" , [antikythera_internal: true]},
       {:fast_xml    , "1.1.32", [antikythera_internal: true]},
@@ -92,8 +92,8 @@ defmodule Antikythera.Mixfile do
       {:ex_doc          , "0.18.4", [only: :dev , runtime: false]},
       {:dialyxir        , "0.5.1" , [only: :dev , runtime: false]},
       {:credo           , "0.8.10", [only: :dev , runtime: false]},
-      {:mix_test_watch  , "0.7.0" , [only: :dev , runtime: false]},
-      {:meck            , "0.8.11", [only: :test]},
+      {:mix_test_watch  , "0.8.0" , [only: :dev , runtime: false]},
+      {:meck            , "0.8.12", [only: :test]},
       {:mox             , "0.4.0" , [only: :test]},
       {:excoveralls     , "0.8.1" , [only: :test]},
       {:stream_data     , "0.4.2" , [only: :test]},
@@ -117,8 +117,7 @@ defmodule Antikythera.Mixfile do
       # indirect tool deps
       {:bunt       , "0.2.0", [indirect: true, only: :dev ]}, # credo
       {:earmark    , "1.2.5", [indirect: true, only: :dev ]}, # ex_doc
-      {:file_system, "0.2.6", [indirect: true, only: :dev ]}, # exsync
-      {:fs         , "0.9.1", [indirect: true, only: :dev ]}, # mix_test_watch, 0.9.2 is available on hex.pm but it's broken!
+      {:file_system, "0.2.6", [indirect: true, only: :dev ]}, # exsync and mix_test_watch
       {:exjsx      , "4.0.0", [indirect: true, only: :test]}, # excoveralls
       {:jsx        , "2.8.3", [indirect: true, only: :test]}, # excoveralls
     ]
