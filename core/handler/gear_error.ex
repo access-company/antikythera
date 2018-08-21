@@ -34,14 +34,18 @@ defmodule AntikytheraCore.Handler.GearError do
 
   defun ws_too_many_connections(conn :: v[Conn.t]) :: Conn.t do
     case CoreConn.gear_name(conn) |> GearModule.error_handler() do
-      nil -> %Conn{conn | status: 503, resp_body: "TooManyWebsocketConnections"}
+      nil -> ws_too_many_connections_default(conn)
       mod ->
         try do
           mod.ws_too_many_connections(conn)
         rescue
-          UndefinedFunctionError -> %Conn{conn | status: 503, resp_body: "TooManyWebsocketConnections"}
+          UndefinedFunctionError -> ws_too_many_connections_default(conn)
         end
     end
+  end
+
+  defunp ws_too_many_connections_default(conn :: v[Conn.t]) :: Conn.t do
+    %Conn{conn | status: 503, resp_body: "TooManyWebsocketConnections"}
   end
 
   defunp output_error_to_log(%Conn{request: request} = conn, reason :: reason, stacktrace :: stacktrace) :: :ok do
