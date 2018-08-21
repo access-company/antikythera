@@ -6,6 +6,7 @@ defmodule Antikythera.AsyncJob do
   alias Croma.Result, as: R
   alias Antikythera.{Time, Context, GearName}
   alias Antikythera.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.ExecutorPool.BadIdReason
   alias Antikythera.AsyncJob.{Id, Schedule, MaxDuration, Attempts, RetryInterval, Metadata, Status, StateLabel}
   alias AntikytheraCore.AsyncJob.{Queue, RateLimit}
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
@@ -209,7 +210,7 @@ defmodule Antikythera.AsyncJob do
   """
   defun cancel(gear_name           :: v[GearName.t],
                context_or_epool_id :: v[Context.t | EPoolId.t],
-               job_id              :: v[Id.t]) :: :ok | {:error, :not_found | CoreEPoolId.reason | {:rate_limit_reached, pos_integer}} do
+               job_id              :: v[Id.t]) :: :ok | {:error, :not_found | BadIdReason.t | {:rate_limit_reached, pos_integer}} do
     epool_id1 = exec_pool_id(context_or_epool_id)
     case CoreEPoolId.validate_association(epool_id1, gear_name) do
       {:ok, epool_id2} -> Queue.cancel(RegName.async_job_queue(epool_id2), job_id)
