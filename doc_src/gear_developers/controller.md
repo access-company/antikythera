@@ -22,9 +22,10 @@
 - To customize response on error, you can define your gear's custom error handlers by:
     - Add `YourGear.Controller.Error` module.
     - Inside the module define all of the following 3 functions:
-        - `error/2`: (receives a `Conn` and an error reason of type `Antikythera.ErrorReason.gear_action_error_reason`)
+        - `error/2`
         - `no_route/1`
         - `bad_request/1`
+        - `bad_executor_pool_id/2` (optional)
         - `ws_too_many_connections/1` (optional)
     - These functions must return a `Antikythera.Conn.t` as in regular controller actions.
 - Note that custom error handlers should do as little task as possible to avoid further troubles.

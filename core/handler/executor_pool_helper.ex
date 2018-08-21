@@ -6,6 +6,7 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
   alias Croma.Result, as: R
   alias Antikythera.{GearName, Conn, Context}
   alias Antikythera.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.ExecutorPool.BadIdReason
   alias AntikytheraCore.MetricsUploader
   alias AntikytheraCore.Handler.{GearError, HelperModules}
   alias AntikytheraCore.Conn, as: CoreConn
@@ -20,13 +21,13 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
                       f              :: ((pid, Conn.t) -> Conn.t)) :: Conn.t do
     case find_executor_pool(conn, gear_name, helper_modules) do
       {:ok, epool_id}  -> run_within_executor_pool(conn, helper_modules, epool_id, f)
-      {:error, reason} -> error_with_log(conn, helper_modules, reason)
+      {:error, reason} -> GearError.bad_executor_pool_id(conn, reason)
     end
   end
 
   defunp find_executor_pool(conn      :: v[Conn.t],
                             gear_name :: v[GearName.t],
-                            %HelperModules{top: top}) :: R.t(EPoolId.t) do
+                            %HelperModules{top: top}) :: R.t(EPoolId.t, BadIdReason.t) do
     top.executor_pool_for_web_request(conn) |> CoreEPoolId.validate_association(gear_name)
   end
 
@@ -44,13 +45,6 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
         report_failure_in_checkout(helper_modules, epool_id)
         GearError.error(conn2, :timeout_in_epool_checkout, [])
     end
-  end
-
-  defp error_with_log(%Conn{context: %Context{start_time: start_time, context_id: context_id}} = conn,
-                      %HelperModules{logger: logger},
-                      reason) do
-    Writer.info(logger, start_time, context_id, "Invalid executor pool ID: #{inspect(reason)}")
-    %Conn{conn | status: 404, resp_body: "Invalid executor pool ID"}
   end
 
   defp report_failure_in_checkout(%HelperModules{metrics_uploader: metrics_uploader}, epool_id) do

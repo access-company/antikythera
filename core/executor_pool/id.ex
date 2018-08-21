@@ -3,12 +3,12 @@
 use Croma
 
 defmodule AntikytheraCore.ExecutorPool.Id do
-  alias Antikythera.{Env, GearName, TenantId}
+  alias Croma.Result, as: R
+  alias Antikythera.{Env, GearName}
   alias Antikythera.ExecutorPool.Id, as: EPoolId
+  alias Antikythera.ExecutorPool.BadIdReason
 
-  @type reason :: {:invalid_executor_pool, EPoolId.t} | {:unavailable_tenant, TenantId.t}
-
-  defun validate_association(epool_id :: v[EPoolId.t], gear_name :: v[GearName.t]) :: {:ok, EPoolId.t} | {:error, reason} do
+  defun validate_association(epool_id :: v[EPoolId.t], gear_name :: v[GearName.t]) :: R.t(EPoolId.t, BadIdReason.t) do
     case epool_id do
       {:gear, ^gear_name}  -> {:ok, epool_id}
       {:tenant, tenant_id} -> find_tenant_executor_pool_id(tenant_id, gear_name)
