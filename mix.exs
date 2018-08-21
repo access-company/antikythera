@@ -106,6 +106,7 @@ defmodule Antikythera.Mixfile do
       {:idna               , "5.1.2" , [indirect: true]}, # hackney
       {:metrics            , "1.0.1" , [indirect: true]}, # hackney
       {:mimerl             , "1.0.2" , [indirect: true]}, # hackney
+      {:parse_trans        , "3.2.0" , [indirect: true]}, # certifi
       {:unicode_util_compat, "0.3.1" , [indirect: true]}, # idna
       {:p1_utils           , "1.0.12", [indirect: true]}, # fast_xml
       {:bbmustache         , "1.0.4" , [indirect: true, only: :prod, runtime: false]}, # relx
