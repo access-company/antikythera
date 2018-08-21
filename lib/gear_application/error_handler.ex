@@ -11,11 +11,12 @@ defmodule Antikythera.GearApplication.ErrorHandler do
   - is named `YourGear.Controller.Error`, and
   - defines the following functions:
       - Mandatory error handlers
-          - `error/2`
-          - `no_route/1`
-          - `bad_request/1`
-      - Optional error handlers (when your gear uses websocket)
-          - `ws_too_many_connections/1`
+          - `error(Antikythera.Conn.t, Antikythera.ErrorReason.gear_action_error_reason) :: Antikythera.Conn.t`
+          - `no_route(Antikythera.Conn.t) :: Antikythera.Conn.t`
+          - `bad_request(Antikythera.Conn.t) :: Antikythera.Conn.t`
+      - Optional error handlers
+          - `bad_executor_pool_id(Antikythera.Conn.t, Antikythera.ExecutorPool.BadIdReason.t) :: Antikythera.Conn.t`
+          - `ws_too_many_connections(Antikythera.Conn.t) :: Antikythera.Conn.t` (when your gear uses websocket)
 
   This module generates `YourGear.error_handler_module/0` function, which is called by antikythera when handling errors.
   """
