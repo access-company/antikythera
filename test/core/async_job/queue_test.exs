@@ -47,7 +47,9 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
       |> Enum.find(&match?({Broker, _, :worker, _}, &1))
     Broker.deactivate(broker_pid)  # don't run jobs throughout this test case
     _ = :sys.get_state(broker_pid) # wait until deactivate message gets processed
-
+    queue_pid = Process.whereis(@queue_name)
+    assert Process.alive?(queue_pid)
+    assert Process.info(queue_pid, :priority) == {:priority, :high}
     on_exit(fn ->
       ExecutorPoolHelper.kill_and_wait(@epool_id)
     end)
