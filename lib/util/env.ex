@@ -129,4 +129,11 @@ defmodule Antikythera.Env do
       "http://" <> Routing.default_domain(gear_name, env) <> ":#{port_to_listen()}"
     end
   end
+
+  defun asset_base_url(gear_name :: v[GearName.t | GearNameStr.t]) :: Url.t do
+    case Application.fetch_env!(:antikythera, :asset_cdn_endpoint) do
+      nil      -> default_base_url(gear_name)
+      base_url -> base_url
+    end
+  end
 end
