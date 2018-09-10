@@ -46,7 +46,7 @@ defmodule AntikytheraCore.Handler.GearError do
   end
 
   defunp bad_executor_pool_id_default(conn :: v[Conn.t]) :: Conn.t do
-    %Conn{conn | status: 404, resp_body: "Invalid executor pool ID"}
+    %Conn{conn | status: 404, resp_body: "InvalidExecutorPoolId"}
   end
 
   defun ws_too_many_connections(conn :: v[Conn.t]) :: Conn.t do
