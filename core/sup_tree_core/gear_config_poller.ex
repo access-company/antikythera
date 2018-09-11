@@ -20,7 +20,7 @@ defmodule AntikytheraCore.GearConfigPoller do
   use GenServer
   alias AntikytheraCore.Config.Gear, as: GearConfig
 
-  @interval 60_000
+  @interval 120_000
 
   @typep state_t :: %{last_checked_at: pos_integer}
 

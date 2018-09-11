@@ -11,7 +11,7 @@ defmodule AntikytheraCore.CoreConfigPoller do
   use GenServer
   alias AntikytheraCore.Config.Core, as: CoreConfig
 
-  @interval 60_000
+  @interval 120_000
 
   def start_link([]) do
     GenServer.start_link(__MODULE__, :ok, [])

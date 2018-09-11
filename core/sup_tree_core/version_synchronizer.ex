@@ -15,7 +15,7 @@ defmodule AntikytheraCore.VersionSynchronizer do
   alias AntikytheraCore.Version.History
 
   @start_wait_interval      500
-  @version_monitor_interval (if Antikythera.Env.compile_env() == :local, do: 3_000, else: 60_000)
+  @version_monitor_interval (if Antikythera.Env.compile_env() == :local, do: 3_000, else: 120_000)
 
   def start_link([]) do
     GenServer.start_link(__MODULE__, :ok)

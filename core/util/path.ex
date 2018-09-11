@@ -98,11 +98,14 @@ defmodule AntikytheraCore.Path do
   #
   # utilities
   #
-  @file_modification_time_margin_in_seconds (if Env.compiling_for_cloud?(), do: 2, else: 0)
+  # In order not to miss file modifications due to NFS caching (if any) and/or clock skew,
+  # we make margin by shifting `since` by a few seconds.
+  # We don't care if the same modification is observed multiple times here.
+  # The value comes from: default max lifetime of NFS client-side caches (60s) added by 2s to avoid issues due to clock skew.
+  # (Should we make this a mix config item?)
+  @file_modification_time_margin_in_seconds (if Env.compiling_for_cloud?(), do: 62, else: 0)
 
   defun list_modified_files(dir :: Path.t, since :: v[SecondsSinceEpoch.t]) :: [String.t] do
-    # In order not to miss file changes (due to clock skew and/or NFS delay),
-    # we make margin by shifting `since` by a few seconds
     since_with_margin = max(0, since - @file_modification_time_margin_in_seconds)
     Path.wildcard(Path.join(dir, "*"))
     |> Enum.filter(fn path -> modified_regular_file?(path, since_with_margin) end)
