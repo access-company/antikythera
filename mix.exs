@@ -79,6 +79,7 @@ defmodule Antikythera.Mixfile do
       {:fast_xml    , "1.1.32", [antikythera_internal: true]},
       {:recon       , "2.3.6" , [antikythera_internal: true]},
       {:relx        , "3.23.1", [antikythera_internal: true, only: :prod, runtime: false]}, # only to generate release
+      {:foretoken   , "0.2.0" , [antikythera_internal: true]},
 
       # The following libraries are used by both antikythera itself and gears.
       {:poison   , "2.2.0" },
@@ -86,7 +87,6 @@ defmodule Antikythera.Mixfile do
       {:gettext  , "0.16.0"},
       {:croma    , "0.10.1"},
       {:pbkdf2   , "2.0.0" },
-      {:foretoken, "0.2.0" },
 
       # tools
       {:exsync          , "0.2.3" , [only: :dev ]},
