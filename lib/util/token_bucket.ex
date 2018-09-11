@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule Antikythera.Foretoken do
+defmodule Antikythera.TokenBucket do
   @moduledoc """
   A thin wrapper around [`Foretoken`](https://github.com/skirino/foretoken) to avoid collisions between bucket names by prefixing executor pool IDs.
   For details, refer to [Foretoken's documentation](https://hexdocs.pm/foretoken/api-reference.html).
