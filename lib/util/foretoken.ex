@@ -2,14 +2,14 @@
 
 use Croma
 
-defmodule Antikythera.ForeToken do
+defmodule Antikythera.Foretoken do
   @moduledoc """
-  A thin wrapper around [`ForeToken`](https://github.com/skirino/foretoken) to avoid collisions of bucket name between executor pool.
-  For details, refer to [ForeToken's documentation](https://hexdocs.pm/foretoken/api-reference.html).
+  A thin wrapper around [`Foretoken`](https://github.com/skirino/foretoken) to avoid collisions of bucket name between executor pool.
+  For details, refer to [Foretoken's documentation](https://hexdocs.pm/foretoken/api-reference.html).
   """
 
   @doc """
-  Usage of this function is same as `ForeToken.token/4` except that an executor pool argument is added.
+  Usage of this function is same as `Foretoken.token/4` except that an executor pool argument is added.
   """
   defun take(epool_id               :: v[Antikythera.ExecutorPool.Id.t],
              bucket                 :: any,
