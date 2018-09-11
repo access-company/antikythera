@@ -3,7 +3,6 @@
 defmodule Antikythera.TokenBucketTest do
   use Croma.TestCase
   alias Croma.Result, as: R
-  alias Antikythera.TokenBucket
 
   test "should use different bucket if executor_pool is different" do
     assert TokenBucket.take({:gear, :gear1}, "bucket_name", 100, 1, 1) == :ok
