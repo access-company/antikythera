@@ -121,7 +121,7 @@ defmodule Antikythera.Memcache do
   end
 
   defmodule Value do
-    @max_size 65536
+    @max_size 65_536
 
     @moduledoc """
     A type module of values for `Antikythera.Memcache`.

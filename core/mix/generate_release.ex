@@ -181,7 +181,6 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
     apply(:relx, :do, [relx_opts, commands])
   end
 
-
   defp generate_appup_files(release_name, rel_version, from_rel_version, release_output_dir) do
     current_deps = Mix.Dep.loaded(env: Mix.env()) |> Enum.map(&dep_struct_to_triplet/1)
     # In Elixir v1.7.x we'll change this line into:
