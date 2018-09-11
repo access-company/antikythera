@@ -58,19 +58,21 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   @impl true
-  defun command(q1 :: v[t], {arg, now_millis} :: RVData.command_arg) :: {RVData.command_ret, t} do
-    {ret, q2} =
-      case arg do
-        {:add, job_key, job}                    -> insert(q1, job_key, job)
-        {:fetch, broker}                        -> fetch(q1, broker, now_millis)
-        {:remove_locked, job_key}               -> {:ok, remove_locked(q1, job_key, now_millis)}
-        {:unlock_for_retry, job_key}            -> {:ok, unlock_for_retry(q1, job_key, now_millis)}
-        {:remove_broker_from_waiting_list, pid} -> {:ok, remove_broker(q1, pid)}
-        {:cancel, job_id}                       -> cancel_job(q1, job_id)
-        :get_metrics                            -> {metrics(q1), q1}
-        _                                       -> {:ok, q1} # failsafe: not to crash on unexpected command
-      end
-    {ret, maintain_invariants(q2, now_millis)}
+  defun command(q1 :: v[t], cmd :: RVData.command_arg) :: {RVData.command_ret, t} do
+    case cmd do
+      {{:add, job_key, job}                   , now_millis} -> insert(q1, job_key, job)                         |> maintain_invariants_and_return(now_millis)
+      {{:fetch, broker}                       , now_millis} -> fetch(q1, broker, now_millis)                    |> maintain_invariants_and_return(now_millis)
+      {{:remove_locked, job_key}              , now_millis} -> {:ok, remove_locked(q1, job_key, now_millis)}    |> maintain_invariants_and_return(now_millis)
+      {{:unlock_for_retry, job_key}           , now_millis} -> {:ok, unlock_for_retry(q1, job_key, now_millis)} |> maintain_invariants_and_return(now_millis)
+      {{:remove_broker_from_waiting_list, pid}, now_millis} -> {:ok, remove_broker(q1, pid)}                    |> maintain_invariants_and_return(now_millis)
+      {{:cancel, job_id}                      , now_millis} -> cancel_job(q1, job_id)                           |> maintain_invariants_and_return(now_millis)
+      {:get_metrics                           , now_millis} -> {metrics(q1), q1}                                |> maintain_invariants_and_return(now_millis)
+      _                                                     -> {:ok, q1} # failsafe: not to crash on unexpected command
+    end
+  end
+
+  defp maintain_invariants_and_return({ret, q}, now_millis) do
+    {ret, maintain_invariants(q, now_millis)}
   end
 
   defp maintain_invariants(q, now_millis) do

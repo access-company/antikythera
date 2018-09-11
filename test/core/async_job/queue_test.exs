@@ -392,4 +392,10 @@ defmodule AntikytheraCore.AsyncJob.QueueCommandTest do
     {:ok, q4} = Queue.command(q3, {{:remove_broker_from_waiting_list, self()}, @now_millis})
     assert q4.brokers_waiting == []
   end
+
+  test "command/2 and query/2 should not crash on receipt of unexpected command" do
+    q = Queue.new()
+    assert Queue.command(q, nil) == {:ok, q}
+    assert Queue.query(q, nil)   == q
+  end
 end
