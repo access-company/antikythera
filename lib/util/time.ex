@@ -154,8 +154,7 @@ defmodule Antikythera.Time do
   end
 
   defun from_epoch_milliseconds(milliseconds :: v[integer]) :: t do
-    milliseconds + @time_epoch_offset_milliseconds
-    |> from_gregorian_milliseconds
+    from_gregorian_milliseconds(milliseconds + @time_epoch_offset_milliseconds)
   end
 
   @doc """
