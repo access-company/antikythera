@@ -23,7 +23,7 @@ defmodule AntikytheraCore.AsyncJob do
     attempts:           Attempts,
     remaining_attempts: Attempts,
     retry_interval:     RetryInterval,
-    payload:            Croma.Map, # opaque data given and used by gear
+    payload:            Croma.TypeGen.union([Croma.Map, Croma.Binary]), # opaque data given and used by gear
   ]
 
   @typep option :: Antikythera.AsyncJob.option
@@ -108,7 +108,7 @@ defmodule AntikytheraCore.AsyncJob do
       attempts:           attempts,
       remaining_attempts: attempts,
       retry_interval:     Keyword.get(options, :retry_interval, RetryInterval.default()),
-      payload:            payload,
+      payload:            :erlang.term_to_binary(payload),
     ])
   end
 

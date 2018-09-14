@@ -102,7 +102,8 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     mod_str    = Atom.to_string(module) |> String.replace_leading("Elixir.", "")
     run_at_str = Time.to_iso_timestamp(run_at)
     prefix     = "<async_job> module=#{mod_str} job_id=#{job_id} attempt=#{attempts - remaining + 1}th/#{attempts} run_at=#{run_at_str} "
-    case module.inspect_payload(payload) do
+    payload_term = decode_payload(payload)
+    case module.inspect_payload(payload_term) do
       ""          -> prefix
       payload_str -> prefix <> "payload=#{payload_str} "
     end
@@ -113,7 +114,8 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
                                max_duration: max_duration},
                      metadata,
                      context) do
-    {pid, monitor_ref} = GearProcess.spawn_monitor(__MODULE__, :do_run, [module, payload, metadata, context])
+    {pid, monitor_ref} =
+      GearProcess.spawn_monitor(__MODULE__, :do_run, [module, payload, metadata, context])
     timer_ref = Process.send_after(self(), :running_too_long, max_duration)
     {pid, monitor_ref, timer_ref}
   end
@@ -201,13 +203,16 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
       end)
   end
 
+  defp decode_payload(payload) when is_binary(payload), do: :erlang.binary_to_term(payload)
+  defp decode_payload(payload)                        , do: payload
+
   #
   # Public functions to run within a separate process
   #
-  defun do_run(module :: v[module], payload :: v[map], metadata :: v[Metadata.t], context :: v[Context.t]) :: any do
+  defun do_run(module :: v[module], payload :: v[map | binary], metadata :: v[Metadata.t], context :: v[Context.t]) :: any do
     ContextHelper.set(context)
     try do
-      module.run(payload, metadata, context)
+      module.run(decode_payload(payload), metadata, context)
       # if no error occurs the process exits with `:normal`
     catch
       :error, error  -> exit({:shutdown, {{:error, error }, System.stacktrace()}})
@@ -216,9 +221,9 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     end
   end
 
-  defun do_abandon(module :: v[module], payload :: v[map], metadata :: v[Metadata.t], context :: v[Context.t]) :: any do
+  defun do_abandon(module :: v[module], payload :: v[map | binary], metadata :: v[Metadata.t], context :: v[Context.t]) :: any do
     ContextHelper.set(context)
-    module.abandon(payload, metadata, context)
+    module.abandon(decode_payload(payload), metadata, context)
   end
 
   #

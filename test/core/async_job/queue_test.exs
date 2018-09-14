@@ -66,8 +66,8 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
     assert GenServerHelper.receive_cast_message() == :job_registered
     assert waiting_brokers()                      == []
     {_job_key, job1} = Queue.fetch_job(@queue_name)
-    assert job1.payload      == @payload
-    assert waiting_brokers() == []
+    assert :erlang.binary_to_term(job1.payload) == @payload
+    assert waiting_brokers()                    == []
 
     # fetch => register with start time; no notification
     assert Queue.fetch_job(@queue_name) == nil
@@ -77,14 +77,14 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
     refute_received(_)
     :timer.sleep(10)
     {_job_key, job2} = Queue.fetch_job(@queue_name)
-    assert job2.payload      == @payload
-    assert waiting_brokers() == []
+    assert :erlang.binary_to_term(job2.payload) == @payload
+    assert waiting_brokers()                    == []
 
     # register => fetch; no notification
     assert register_job([]) == :ok
     {_job_key, job3} = Queue.fetch_job(@queue_name)
-    assert job3.payload      == @payload
-    assert waiting_brokers() == []
+    assert :erlang.binary_to_term(job3.payload) == @payload
+    assert waiting_brokers()                    == []
     refute_received(_)
   end
 
