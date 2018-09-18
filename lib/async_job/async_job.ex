@@ -165,7 +165,7 @@ defmodule Antikythera.AsyncJob do
 
   Payloads are registered by calling `register/3` and used in `run/3`, `abandon/3` or `inspect_payload/1`.
   Payloads are compressed as binary when `register/3` is called and kept in memory until job executions, so large payloads could degrade overall system performance.
-  Please avoid including large data in payloads and fetch large data in `run/3` if you can.
+  Please avoid including large data in payloads; instead put ID of the data in payload and fetch the whole data in run/3.
   """
 
   @callback run(map, Metadata.t, Context.t) :: any
