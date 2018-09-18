@@ -45,13 +45,14 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
 
   @impl true
   def handle_cast({:run, queue_name, {run_at_ms, job_id} = job_key, job}, %{executor_pool_id: epool_id}) do
-    run_at      = Time.from_epoch_milliseconds(run_at_ms)
-    metadata    = make_metadata(job, job_id, run_at)
-    context     = %Context{start_time: context_start_time, context_id: context_id} = make_context(job, epool_id)
-    logger_name = GearModule.logger(job.gear_name)
-    log_prefix  = log_prefix(job, job_id, run_at)
+    run_at          = Time.from_epoch_milliseconds(run_at_ms)
+    metadata        = make_metadata(job, job_id, run_at)
+    context         = %Context{start_time: context_start_time, context_id: context_id} = make_context(job, epool_id)
+    logger_name     = GearModule.logger(job.gear_name)
+    decoded_payload = decode_payload(job.payload)
+    log_prefix      = log_prefix(job, job_id, run_at, decoded_payload)
     Writer.info(logger_name, context_start_time, context_id, log_prefix <> "START")
-    {pid, monitor_ref, timer_ref} = start_monitor(job, metadata, context)
+    {pid, monitor_ref, timer_ref} = start_monitor(job, metadata, context, decoded_payload)
     new_state = %{
       epool_id:    epool_id,
       queue_name:  queue_name, # can be `nil` if the job is executed with `:bypass_job_queue` option
@@ -96,26 +97,26 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     }
   end
 
-  defp log_prefix(%AsyncJob{module: module, attempts: attempts, remaining_attempts: remaining, payload: payload},
+  defp log_prefix(%AsyncJob{module: module, attempts: attempts, remaining_attempts: remaining},
                   job_id,
-                  run_at) do
+                  run_at,
+                  decoded_payload) do
     mod_str    = Atom.to_string(module) |> String.replace_leading("Elixir.", "")
     run_at_str = Time.to_iso_timestamp(run_at)
     prefix     = "<async_job> module=#{mod_str} job_id=#{job_id} attempt=#{attempts - remaining + 1}th/#{attempts} run_at=#{run_at_str} "
-    payload_term = decode_payload(payload)
-    case module.inspect_payload(payload_term) do
+    case module.inspect_payload(decoded_payload) do
       ""          -> prefix
       payload_str -> prefix <> "payload=#{payload_str} "
     end
   end
 
   defp start_monitor(%AsyncJob{module:       module,
-                               payload:      payload,
                                max_duration: max_duration},
                      metadata,
-                     context) do
+                     context,
+                     decoded_payload) do
     {pid, monitor_ref} =
-      GearProcess.spawn_monitor(__MODULE__, :do_run, [module, payload, metadata, context])
+      GearProcess.spawn_monitor(__MODULE__, :do_run, [module, decoded_payload, metadata, context])
     timer_ref = Process.send_after(self(), :running_too_long, max_duration)
     {pid, monitor_ref, timer_ref}
   end
@@ -209,10 +210,10 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   #
   # Public functions to run within a separate process
   #
-  defun do_run(module :: v[module], payload :: v[map | binary], metadata :: v[Metadata.t], context :: v[Context.t]) :: any do
+  defun do_run(module :: v[module], payload :: v[map], metadata :: v[Metadata.t], context :: v[Context.t]) :: any do
     ContextHelper.set(context)
     try do
-      module.run(decode_payload(payload), metadata, context)
+      module.run(payload, metadata, context)
       # if no error occurs the process exits with `:normal`
     catch
       :error, error  -> exit({:shutdown, {{:error, error }, System.stacktrace()}})
