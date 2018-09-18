@@ -108,7 +108,7 @@ defmodule AntikytheraCore.AsyncJob do
       attempts:           attempts,
       remaining_attempts: attempts,
       retry_interval:     Keyword.get(options, :retry_interval, RetryInterval.default()),
-      payload:            :erlang.term_to_binary(payload),
+      payload:            :erlang.term_to_binary(payload, [:compressed]),
     ])
   end
 
