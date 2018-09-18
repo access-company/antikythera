@@ -39,7 +39,7 @@ defmodule AntikytheraCore.AsyncJob do
       job_id                        <- extract_job_id(options)
       bypass?                       <- bypass_job_queue?(options)
       {schedule, start_time_millis} <- validate_schedule(now_millis, options)
-      job                           <- make_job(gear_name, module, payload, schedule, options)
+      job                           <- make_job(gear_name, module, payload, schedule, bypass?, options)
       do_register(epool_id, job_id, job, bypass?, start_time_millis, now_millis)
     end
   end
@@ -98,8 +98,10 @@ defmodule AntikytheraCore.AsyncJob do
                    module    :: v[module],
                    payload   :: v[map],
                    schedule  :: v[Schedule.t],
+                   bypass?   :: v[boolean],
                    options   :: v[[option]]) :: R.t(t) do
-    attempts = Keyword.get(options, :attempts, Attempts.default())
+    attempts        = Keyword.get(options, :attempts, Attempts.default())
+    encoded_payload = if bypass?, do: payload, else: :erlang.term_to_binary(payload, [:compressed])
     new([
       gear_name:          gear_name,
       module:             module,
@@ -108,7 +110,7 @@ defmodule AntikytheraCore.AsyncJob do
       attempts:           attempts,
       remaining_attempts: attempts,
       retry_interval:     Keyword.get(options, :retry_interval, RetryInterval.default()),
-      payload:            :erlang.term_to_binary(payload, [:compressed]),
+      payload:            encoded_payload,
     ])
   end
 

@@ -268,8 +268,8 @@ defmodule AntikytheraCore.AsyncJob.QueueCommandTest do
   @cron       Cron.parse!("* * * * *")
   @job_id     Id.generate()
   @job_key    {@now_millis, @job_id}
-  @job        AsyncJob.make_job(:testgear, Testgear.DummyModule, %{}, {:once, @now }, []) |> R.get!()
-  @job_cron   AsyncJob.make_job(:testgear, Testgear.DummyModule, %{}, {:cron, @cron}, []) |> R.get!()
+  @job        AsyncJob.make_job(:testgear, Testgear.DummyModule, %{}, {:once, @now }, true, []) |> R.get!()
+  @job_cron   AsyncJob.make_job(:testgear, Testgear.DummyModule, %{}, {:cron, @cron}, true, []) |> R.get!()
 
   defp make_queue_with_started_job(job) do
     q0 = Queue.new()
