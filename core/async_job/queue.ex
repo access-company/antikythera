@@ -402,14 +402,34 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     {:ok, result} =
       RateLimit.check_with_retry_for_query(queue_name, fn -> RaftFleet.query(queue_name, {:status, job_id}) end)
     R.map(result, fn {job, start_time_millis, state} ->
-      common_fields = Map.take(job, [:gear_name, :module, :payload, :schedule, :max_duration, :attempts, :remaining_attempts, :retry_interval])
-      %{
-        __struct__: Status, # Avoid error due to missing enforced keys
-        id:         job_id,
-        start_time: Time.from_epoch_milliseconds(start_time_millis),
-        state:      state,
-      } |> Map.merge(common_fields)
+      job_to_status(job, job_id, start_time_millis, state)
     end)
+  end
+
+  defp job_to_status(%AsyncJob{gear_name:          gear_name,
+                               module:             module,
+                               payload:            payload,
+                               schedule:           schedule,
+                               max_duration:       max_duration,
+                               attempts:           attempts,
+                               remaining_attempts: remaining_attempts,
+                               retry_interval:     retry_interval},
+                     job_id,
+                     start_time_millis,
+                     state) do
+    %Status{
+      id:                 job_id,
+      start_time:         Time.from_epoch_milliseconds(start_time_millis),
+      state:              state,
+      gear_name:          gear_name,
+      module:             module,
+      payload:            (if is_binary(payload), do: :erlang.binary_to_term(payload), else: payload),
+      schedule:           schedule,
+      max_duration:       max_duration,
+      attempts:           attempts,
+      remaining_attempts: remaining_attempts,
+      retry_interval:     retry_interval,
+    }
   end
 
   defun list(queue_name :: v[atom]) :: [{Time.t, Id.t, StateLabel.t}] do
