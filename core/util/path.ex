@@ -105,6 +105,12 @@ defmodule AntikytheraCore.Path do
   # (Should we make this a mix config item?)
   @file_modification_time_margin_in_seconds (if Env.compiling_for_cloud?(), do: 62, else: 0)
 
+  defun changed?(path :: Path.t, since :: v[SecondsSinceEpoch.t]) :: boolean do
+    since_with_margin = max(0, since - @file_modification_time_margin_in_seconds)
+    %File.Stat{mtime: mtime} = File.stat!(path, [time: :posix])
+    since_with_margin <= mtime
+  end
+
   defun list_modified_files(dir :: Path.t, since :: v[SecondsSinceEpoch.t]) :: [String.t] do
     since_with_margin = max(0, since - @file_modification_time_margin_in_seconds)
     Path.wildcard(Path.join(dir, "*"))

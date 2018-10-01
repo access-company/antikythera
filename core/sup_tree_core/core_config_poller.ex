@@ -20,12 +20,12 @@ defmodule AntikytheraCore.CoreConfigPoller do
   @impl true
   def init(:ok) do
     # Assuming that core config is already loaded in `AntikytheraCore.start/2`, we don't have to hurry here.
-    {:ok, %{last_checked_at: 0}, @interval}
+    {:ok, %{last_changed_at: 0}, @interval}
   end
 
   @impl true
-  def handle_info(:timeout, %{last_checked_at: t} = state1) do
-    state2 = %{state1 | last_checked_at: CoreConfig.load(t)}
+  def handle_info(:timeout, %{last_changed_at: t} = state1) do
+    state2 = %{state1 | last_changed_at: CoreConfig.load(t)}
     {:noreply, state2, @interval}
   end
 end

@@ -12,11 +12,11 @@ defmodule AntikytheraCore.Config.Core do
   alias AntikytheraCore.Alert.Manager, as: CoreAlertManager
   require AntikytheraCore.Logger, as: L
 
-  defunp read(last_checked_at :: v[SecondsSinceEpoch.t]) :: {map, SecondsSinceEpoch.t} | :not_modified do
+  defunp read(last_changed_at :: v[SecondsSinceEpoch.t]) :: {map, SecondsSinceEpoch.t} | :not_modified do
     path = CorePath.core_config_file_path()
     case File.stat(path, [time: :posix]) do
       {:ok, %File.Stat{mtime: mtime}} ->
-        if mtime > last_checked_at do
+        if mtime > last_changed_at do
           {:ok, value} = File.read!(path) |> decrypt_and_eval()
           {value, mtime}
         else
@@ -41,15 +41,15 @@ defmodule AntikytheraCore.Config.Core do
     end)
   end
 
-  defun load(last_checked_at :: v[SecondsSinceEpoch.t] \\ 0) :: SecondsSinceEpoch.t do
-    case read(last_checked_at) do
-      :not_modified            -> last_checked_at
-      {new_config, checked_at} ->
+  defun load(last_changed_at :: v[SecondsSinceEpoch.t] \\ 0) :: SecondsSinceEpoch.t do
+    case read(last_changed_at) do
+      :not_modified            -> last_changed_at
+      {new_config, changed_at} ->
         L.info("found change in core config")
         ConfigCache.Core.write(new_config)
         alert_config = Map.get(new_config, :alerts, %{})
         CoreAlertManager.update_handler_installations(:antikythera, alert_config)
-        checked_at
+        changed_at
     end
   end
 

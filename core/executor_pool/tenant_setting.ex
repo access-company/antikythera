@@ -20,7 +20,7 @@ defmodule AntikytheraCore.ExecutorPool.TenantSetting do
   @typep fetch_result :: {:all | :partial, %{TenantId.t => t}}
 
   defun fetch_all_modified(since :: v[SecondsSinceEpoch.t]) :: fetch_result do
-    if changed?(CorePath.tenant_ids_file_path(), since) or changed?(CorePath.tenant_setting_dir(), since) do
+    if CorePath.changed?(CorePath.tenant_ids_file_path(), since) or CorePath.changed?(CorePath.tenant_setting_dir(), since) do
       all_tenants_with_default_settings =
         File.read!(CorePath.tenant_ids_file_path())
         |> :zlib.gunzip()
@@ -46,7 +46,7 @@ defmodule AntikytheraCore.ExecutorPool.TenantSetting do
       parsed     <- Poison.decode(content)
       gear_names =  Enum.map(parsed["gears"], &String.to_atom/1) # generate atom from trusted data source
       replaced1  =  Map.put(parsed, "gears", gear_names)
-      replaced2  =  Map.merge(%{"ws_max_connections" => 100}, replaced1) # fill the default value to migrate from JSON without "ws_max_connections" to JSON with the field
+      replaced2  =  Map.put_new(replaced1, "ws_max_connections", 100) # fill the default value to migrate from JSON without "ws_max_connections" to JSON with the field
       tsetting   <- new(replaced2)
       pure {tenant_id, tsetting}
     end
@@ -55,11 +55,6 @@ defmodule AntikytheraCore.ExecutorPool.TenantSetting do
       {:error, :enoent} -> nil # the file has been removed between `CorePath.list_modified_files/2` and `File.read/1`
       {:error, reason}  -> L.error("skipping invalid tenant setting JSON at '#{json_path}': #{inspect(reason)}"); nil
     end
-  end
-
-  defunp changed?(path :: Path.t, since :: v[SecondsSinceEpoch.t]) :: boolean do
-    %File.Stat{mtime: mtime} = File.stat!(path, [time: :posix])
-    since <= mtime
   end
 
   defunpt fetch_or_default(tenant_id :: v[TenantId.t]) :: t do
