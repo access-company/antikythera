@@ -76,7 +76,7 @@ defmodule Antikythera.Mixfile do
       {:raft_fleet  , "0.9.1" , [antikythera_internal: true]},
       {:rafted_value, "0.10.1", [antikythera_internal: true]},
       {:syn         , "1.6.3" , [antikythera_internal: true]},
-      {:fast_xml    , "1.1.32", [antikythera_internal: true]},
+      {:fast_xml    , "1.1.34", [antikythera_internal: true]},
       {:foretoken   , "0.2.0" , [antikythera_internal: true]},
       {:recon       , "2.3.6" , [antikythera_internal: true]},
       {:relx        , "3.23.1", [antikythera_internal: true, only: :prod, runtime: false]}, # only to generate release
@@ -92,11 +92,11 @@ defmodule Antikythera.Mixfile do
       {:exsync          , "0.2.3" , [only: :dev ]},
       {:ex_doc          , "0.18.4", [only: :dev , runtime: false]},
       {:dialyxir        , "0.5.1" , [only: :dev , runtime: false]},
-      {:credo           , "0.10.0", [only: :dev , runtime: false]},
-      {:mix_test_watch  , "0.8.0" , [only: :dev , runtime: false]},
+      {:credo           , "0.10.2", [only: :dev , runtime: false]},
+      {:mix_test_watch  , "0.9.0" , [only: :dev , runtime: false]},
       {:meck            , "0.8.12", [only: :test]},
       {:mox             , "0.4.0" , [only: :test]},
-      {:excoveralls     , "0.10.0", [only: :test]},
+      {:excoveralls     , "0.10.1", [only: :test]},
       {:stream_data     , "0.4.2" , [only: :test]},
       {:websocket_client, "1.3.0" , [only: :test]}, # as a websocket client implementation to use during test (including upgrade_compatibility_test)
 
@@ -109,7 +109,7 @@ defmodule Antikythera.Mixfile do
       {:mimerl             , "1.0.2" , [indirect: true]}, # hackney
       {:parse_trans        , "3.2.0" , [indirect: true]}, # certifi
       {:unicode_util_compat, "0.3.1" , [indirect: true]}, # idna
-      {:p1_utils           , "1.0.12", [indirect: true]}, # fast_xml
+      {:p1_utils           , "1.0.13", [indirect: true]}, # fast_xml
       {:bbmustache         , "1.0.4" , [indirect: true, only: :prod, runtime: false]}, # relx
       {:cf                 , "0.2.2" , [indirect: true, only: :prod, runtime: false]}, # relx
       {:erlware_commons    , "1.0.0" , [indirect: true, only: :prod, runtime: false]}, # relx
