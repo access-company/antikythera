@@ -140,33 +140,30 @@ defmodule Antikythera.Conn do
     %__MODULE__{conn | before_send: [callback | before_send]}
   end
 
+  # These session-related functions assume that the `conn` is processed by `Antikythera.Plug.Session`
+  # and thus it contains `:session` field in `:assigns`.
   defun get_session(%__MODULE__{assigns: %{session: session}}, key :: v[String.t]) :: any do
     Session.get(session, key)
   end
 
   defun put_session(%__MODULE__{assigns: %{session: session}} = conn, key :: v[String.t], value :: any) :: t do
-    new_session = Session.put(session, key, value)
-    assign(conn, :session, new_session)
+    assign(conn, :session, Session.put(session, key, value))
   end
 
   defun delete_session(%__MODULE__{assigns: %{session: session}} = conn, key :: v[String.t]) :: t do
-    new_session = Session.delete(session, key)
-    assign(conn, :session, new_session)
+    assign(conn, :session, Session.delete(session, key))
   end
 
   defun clear_session(%__MODULE__{assigns: %{session: session}} = conn) :: t do
-    new_session = Session.clear(session)
-    assign(conn, :session, new_session)
+    assign(conn, :session, Session.clear(session))
   end
 
   defun renew_session(%__MODULE__{assigns: %{session: session}} = conn) :: t do
-    new_session = Session.renew(session)
-    assign(conn, :session, new_session)
+    assign(conn, :session, Session.renew(session))
   end
 
   defun destroy_session(%__MODULE__{assigns: %{session: session}} = conn) :: t do
-    new_session = Session.destroy(session)
-    assign(conn, :session, new_session)
+    assign(conn, :session, Session.destroy(session))
   end
 
   defun assign(%__MODULE__{assigns: assigns} = conn, key :: v[atom], value :: any) :: t do
