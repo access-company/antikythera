@@ -2,12 +2,14 @@ instance_dep = <%= instance_dep %>
 
 try do
   deps_dir =
-    case Application.get_env(:antikythera, :deps_dir) do
-      nil ->
+    # Gears use mix settings of both antikythera and antikythera instance and thus paths to these projects must be available.
+    # We have to remember `deps_path()` so that gear dependencies with `:path` option can reach these projects.
+    case Application.get_env(:antikythera, :compile_time_deps_dir) do
+      nil -> # this gear project is the toplevel mix project
         deps_path = Mix.Project.deps_path()
-        Application.put_env(:antikythera, :deps_dir, deps_path)
+        Application.put_env(:antikythera, :compile_time_deps_dir, deps_path)
         deps_path
-      deps_path -> deps_path
+      deps_path -> deps_path # this gear project is used by another gear as a gear dependency
     end
   Code.require_file(Path.join([deps_dir, "antikythera", "mix_common.exs"]))
 
