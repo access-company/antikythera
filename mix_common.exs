@@ -213,7 +213,7 @@ defmodule Antikythera.GearProject do
   `__using__/1` of this module receives the following key in its argument.
 
   - (required) `:antikythera_instance_dep` : Dependency on the antikythera instance which this gear belongs to.
-  - (optional) `:source_url`           : If given it's used as both `source_url` (and also `homepage_url`).
+  - (optional) `:source_url`               : If given it's used as both `source_url` (and also `homepage_url`).
 
   The following private functions are used by this module and thus mandatory.
 
