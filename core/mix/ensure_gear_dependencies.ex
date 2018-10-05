@@ -31,12 +31,12 @@ defmodule Mix.Tasks.Compile.EnsureGearDependencies do
 
   defp gear_dir(gear_name, opts) do
     case Keyword.fetch(opts, :path) do
-      {:ok, path} -> gear_dir_as_local_dep(path)
-      :error      -> gear_dir_as_remote_dep(gear_name)
+      {:ok, path} -> gear_dir_as_path_dep(path)
+      :error      -> gear_dir_as_non_path_dep(gear_name)
     end
   end
 
-  defp gear_dir_as_local_dep(path) do
+  defp gear_dir_as_path_dep(path) do
     if Antikythera.Env.compiling_for_cloud?() do
       Mix.raise("Local path dependencies are not allowed in cloud environment (#{path}).")
     else
@@ -44,7 +44,7 @@ defmodule Mix.Tasks.Compile.EnsureGearDependencies do
     end
   end
 
-  defp gear_dir_as_remote_dep(gear_name) do
+  defp gear_dir_as_non_path_dep(gear_name) do
     cwd               = File.cwd!()
     parent_dir_of_cwd = Path.expand("..", cwd)
     gear_name_str     = Atom.to_string(gear_name)
