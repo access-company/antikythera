@@ -11,12 +11,12 @@ defmodule AntikytheraCore.Path do
   if Env.compiling_for_cloud?() do
     # Use compile-time application config
     @antikythera_root_dir Application.fetch_env!(:antikythera, :antikythera_root_dir)
-    defun antikythera_root_dir()  :: Path.t, do: @antikythera_root_dir
-    defun compiled_core_dir() :: Path.t, do: Path.join(antikythera_root_dir(), "releases")
+    defun antikythera_root_dir() :: Path.t, do: @antikythera_root_dir
+    defun compiled_core_dir()    :: Path.t, do: Path.join(antikythera_root_dir(), "releases")
   else
     # Use runtime application config
-    defun antikythera_root_dir()  :: Path.t, do: Application.fetch_env!(:antikythera, :antikythera_root_dir)
-    defun compiled_core_dir() :: Path.t do
+    defun antikythera_root_dir() :: Path.t, do: Application.fetch_env!(:antikythera, :antikythera_root_dir)
+    defun compiled_core_dir()    :: Path.t do
       parent_dir = Path.join([__DIR__, "..", "..", ".."]) |> Path.expand()
       release_generating_project_dir =
         case Path.basename(parent_dir) do
