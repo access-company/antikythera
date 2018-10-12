@@ -13,10 +13,9 @@ defmodule AntikytheraCore.Cluster do
   end
 
   defun connect_to_other_nodes(running_hosts :: %{String.t => boolean}) :: boolean do
-    in_service_hosts = for {host, in_service?} <- running_hosts, in_service?, do: host
     connected_hosts = [Node.self() | Node.list()] |> Enum.map(&node_to_host/1)
     # Compare hostnames so as not to be confused by "name" part of nodenames (substring before '@').
-    unconnected_in_service_hosts = in_service_hosts -- connected_hosts
+    unconnected_in_service_hosts = Map.keys(running_hosts) -- connected_hosts
     Enum.each(unconnected_in_service_hosts, &connect/1)
     connected_to_majority?(map_size(running_hosts))
   end
@@ -33,7 +32,7 @@ defmodule AntikytheraCore.Cluster do
   end
 
   defunp connected_to_majority?(n_all_hosts :: v[non_neg_integer]) :: boolean do
-    2 * (length(Node.list) + 1) > n_all_hosts
+    2 * (length(Node.list()) + 1) > n_all_hosts
   end
 
   defun node_to_host(n :: v[atom]) :: String.t do
