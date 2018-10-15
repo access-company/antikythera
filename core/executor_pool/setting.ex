@@ -5,6 +5,7 @@ use Croma
 defmodule AntikytheraCore.ExecutorPool.Setting do
   alias Antikythera.{MapUtil, GearName}
   alias AntikytheraCore.Ets.ConfigCache
+  alias AntikytheraCore.ExecutorPool.WsConnectionsCapping
 
   use Croma.Struct, recursive_new?: true, fields: [
     n_pools_a:          Croma.NonNegInteger,
@@ -31,6 +32,7 @@ defmodule AntikytheraCore.ExecutorPool.Setting do
     |> Map.get(:gears, %{})
     |> MapUtil.map_values(fn {_, map} ->
       Map.merge(@default, Map.get(map, :executor_pool, %{}))
+      |> WsConnectionsCapping.cap_based_on_available_memory()
     end)
   end
 end

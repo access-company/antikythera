@@ -56,7 +56,7 @@ defmodule AntikytheraCore.Config.Core do
   @doc """
   Writes a map to antikythera's config file.
 
-  Currently this function is never called in the repository; it's to be used within remote_console.
+  Currently this function is intended to be used within remote_console.
   """
   defun write(config :: v[map]) :: :ok do
     path = CorePath.core_config_file_path()
