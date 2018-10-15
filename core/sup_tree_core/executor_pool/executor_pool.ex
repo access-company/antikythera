@@ -18,11 +18,11 @@ defmodule AntikytheraCore.ExecutorPool do
   @wait_time_for_broker_termination (if Mix.env() == :test, do: 100, else: TenantExecutorPoolsManager.polling_interval() * 2)
 
   @impl true
-  def init(_arg) do
+  def init(_init_arg) do
     DynamicSupervisor.init([strategy: :one_for_one])
   end
 
-  def start_link([epool_id, uploader, setting]), do: start_link(epool_id, uploader, setting)
+  def start_link([epool_id, uploader, epool_setting]), do: start_link(epool_id, uploader, epool_setting)
 
   defunp start_link(epool_id :: v[EPoolId.t],
                     uploader :: v[atom | pid],
