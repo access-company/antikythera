@@ -3,7 +3,6 @@
 use Croma
 
 defmodule AntikytheraCore.ExecutorPool do
-  use DynamicSupervisor
   alias Antikythera.GearName
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
@@ -17,16 +16,22 @@ defmodule AntikytheraCore.ExecutorPool do
 
   @wait_time_for_broker_termination (if Mix.env() == :test, do: 100, else: TenantExecutorPoolsManager.polling_interval() * 2)
 
-  @impl true
+  def child_spec(args) do
+    %{
+      id:       __MODULE__,
+      start:    {__MODULE__, :start_link, args},
+      shutdown: :infinity,
+      type:     :supervisor,
+    }
+  end
+
   def init(_init_arg) do
     DynamicSupervisor.init([strategy: :one_for_one])
   end
 
-  def start_link([epool_id, uploader, epool_setting]), do: start_link(epool_id, uploader, epool_setting)
-
-  defunp start_link(epool_id :: v[EPoolId.t],
-                    uploader :: v[atom | pid],
-                    %EPoolSetting{n_pools_a: n_pools_a, pool_size_a: size_a, pool_size_j: size_j, ws_max_connections: ws_max}) :: {:ok, pid} do
+  defun start_link(epool_id :: v[EPoolId.t],
+                   uploader :: v[atom | pid],
+                   %EPoolSetting{n_pools_a: n_pools_a, pool_size_a: size_a, pool_size_j: size_j, ws_max_connections: ws_max}) :: {:ok, pid} do
     # Only during initialization of each ExecutorPool; allowed to call unsafe functions as long as `epool_id` argument is under control
     sup_name        = RegName.supervisor_unsafe(epool_id)
     job_pool_name   = RegName.async_job_runner_pool_unsafe(epool_id)
@@ -100,7 +105,7 @@ defmodule AntikytheraCore.ExecutorPool do
       nil -> :ok
       pid ->
         L.info("killing executor pool for #{inspect(epool_id)}")
-        :ok = DynamicSupervisor.terminate_child(__MODULE__.Sup, pid)
+        :ok = Supervisor.terminate_child(__MODULE__.Sup, pid)
         remove_job_queue(epool_id)
     end
   end
@@ -136,11 +141,13 @@ defmodule AntikytheraCore.ExecutorPool do
   end
 
   defmodule Sup do
-    use DynamicSupervisor
-
-    @impl true
-    def init(_init_arg) do
-      DynamicSupervisor.init([strategy: :one_for_one])
+    def child_spec(args) do
+      %{
+        id:       __MODULE__,
+        start:    {__MODULE__, :start_link, [args]},
+        shutdown: :infinity,
+        type:     :supervisor,
+      }
     end
 
     defun start_link([]) :: {:ok, pid} do

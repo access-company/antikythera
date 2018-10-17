@@ -12,7 +12,7 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporterTest do
   @epool_id {:gear, :testgear}
 
   setup do
-    {:ok, exec_pool_pid} = ExecutorPool.start_link([@epool_id, self(), EPoolSetting.default()])
+    {:ok, exec_pool_pid} = ExecutorPool.start_link(@epool_id, self(), EPoolSetting.default())
     {_, pid, _, _} = Supervisor.which_children(exec_pool_pid) |> Enum.find(&match?({UsageReporter, _, :worker, _}, &1))
     ExecutorPoolHelper.wait_until_async_job_queue_added(@epool_id)
 
