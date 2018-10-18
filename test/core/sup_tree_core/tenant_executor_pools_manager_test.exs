@@ -5,7 +5,7 @@ defmodule AntikytheraCore.TenantExecutorPoolsManagerTest do
   alias Antikythera.Test.ProcessHelper
   alias AntikytheraCore.ExecutorPool
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
-  alias AntikytheraCore.ExecutorPool.TenantSetting
+  alias AntikytheraCore.ExecutorPool.{TenantSetting, WsConnectionsCapping}
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.Ets.TenantToGearsMapping
   alias AntikytheraCore.Path, as: CorePath
@@ -134,5 +134,12 @@ defmodule AntikytheraCore.TenantExecutorPoolsManagerTest do
     send_check_and_wait()
     assert Map.has_key?(TenantExecutorPoolsManager.all(), @tenant_id)
     ExecutorPoolHelper.assert_current_setting(@epool_id, 1, 5, 1, 100)
+  end
+
+  test "should cap ws_max_connections based on available amount of memory" do
+    limit = WsConnectionsCapping.upper_limit()
+    put_tenant_setting(make_setting(1, 3, 1, limit + 1, [:gear1]))
+    ExecutorPoolHelper.assert_current_setting(@epool_id, 1, 3, 1, limit)
+    ExecutorPoolHelper.wait_until_async_job_queue_added(@epool_id)
   end
 end

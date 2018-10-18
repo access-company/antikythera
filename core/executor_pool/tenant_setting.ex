@@ -7,6 +7,7 @@ defmodule AntikytheraCore.ExecutorPool.TenantSetting do
   alias Antikythera.{GearName, TenantId, SecondsSinceEpoch}
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
+  alias AntikytheraCore.ExecutorPool.WsConnectionsCapping
   alias AntikytheraCore.TenantExecutorPoolsManager
   require AntikytheraCore.Logger, as: L
 
@@ -48,7 +49,8 @@ defmodule AntikytheraCore.ExecutorPool.TenantSetting do
       replaced1  =  Map.put(parsed, "gears", gear_names)
       replaced2  =  Map.put_new(replaced1, "ws_max_connections", 100) # fill the default value to migrate from JSON without "ws_max_connections" to JSON with the field
       tsetting   <- new(replaced2)
-      pure {tenant_id, tsetting}
+      capped     =  WsConnectionsCapping.cap_based_on_available_memory(tsetting)
+      pure {tenant_id, capped}
     end
     |> case do
       {:ok, pair}       -> pair

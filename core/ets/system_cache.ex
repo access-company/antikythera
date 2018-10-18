@@ -8,6 +8,7 @@ defmodule AntikytheraCore.Ets.SystemCache do
     AntikytheraCore.Cluster.NodeId.init()
     AntikytheraCore.Config.EncryptionKey.init()
     AntikytheraCore.Handler.SystemInfoExporter.AccessToken.init()
+    AntikytheraCore.OsUtil.init()
   end
 
   defun table_name() :: atom do
