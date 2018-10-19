@@ -50,12 +50,10 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
 
   ### Build
 
-  #### 1. Using [npm-scripts](https://docs.npmjs.com/misc/scripts)
+  #### Using [npm-scripts](https://docs.npmjs.com/misc/scripts)
 
   - Prerequisite: `antikythera_prepare_assets` script in `package.json` file
   - Command: `npm run antikythera_prepare_assets`
-  - This is the recommended method.
-  - **This method takes precedance over `gulp`**.
   - Within `antikythera_prepare_assets` script, you may execute any asset-related actions such as:
       - Linting
       - Type Checking
@@ -65,26 +63,6 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
       - etc...
   - How to organize these actions is up to you. You may use whatever tools available in `npm`,
     such as [`webpack`](https://webpack.js.org/) or [`browserify`](http://browserify.org/).
-      - You can even call `gulp` tasks from the script.
-
-  #### 2. Using [`gulp`](https://gulpjs.com/) (Deprecated)
-
-  - Prerequisite: `gulpfile.js` file
-  - Command: `node_modules/.bin/gulp`
-      - `default` gulp task will be executed.
-  - This is the old and deprecated method, kept for backward compatibility. Use npm-scripts method for new gears.
-  - As is the case in npm-scripts, you may execute any asset-related actions in your `default` gulp task.
-  - You can safely migrate to npm-scripts by putting `antikythera_prepare_assets` script in your `package.json` file like this:
-
-  ```
-  {
-    ...
-    "scripts": {
-      ...
-      "antikythera_prepare_assets": "gulp"
-    }
-  }
-  ```
 
   #### Note on implementation
 
