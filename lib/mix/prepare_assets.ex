@@ -112,19 +112,15 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
       nil ->
         IO.puts("Skipping. Asset preparation is not configured.")
         IO.puts("Define `antikythera_prepare_assets` npm-script if you want antikythera to prepare assets for your gear.")
-      step ->
+      :npm_script ->
         install_packages!(env)
-        build_assets!(step, env)
+        build_assets!(env)
         dump_asset_file_paths()
     end
   end
 
-  defunp find_build_step_in_project(env :: v[String.t]) :: nil | :npm_script | :gulp do
-    cond do
-      npm_script_available?(env)  -> :npm_script
-      File.exists?("gulpfile.js") -> :gulp
-      true                        -> nil
-    end
+  defunp find_build_step_in_project(env :: v[String.t]) :: nil | :npm_script do
+    if npm_script_available?(env), do: :npm_script, else: nil
   end
 
   defp npm_script_available?(env) do
@@ -161,12 +157,8 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
     end
   end
 
-  defp build_assets!(:npm_script, env) do
+  defp build_assets!(env) do
     run_command!("npm", ["run", "antikythera_prepare_assets"], env)
-  end
-  defp build_assets!(:gulp, env) do
-    local_gulp_abs_path = Path.expand(Path.join(["node_modules", ".bin", "gulp"]))
-    run_command!(local_gulp_abs_path, [], env)
   end
 
   def dump_asset_file_paths() do
