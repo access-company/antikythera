@@ -137,17 +137,15 @@ defmodule AntikytheraCore.ExecutorPool do
   end
 
   defmodule Sup do
-    def child_spec(args) do
-      %{
-        id:       __MODULE__,
-        start:    {__MODULE__, :start_link, [args]},
-        shutdown: :infinity,
-        type:     :supervisor,
-      }
-    end
+    use DynamicSupervisor
 
     defun start_link([]) :: {:ok, pid} do
-      DynamicSupervisor.start_link([strategy: :one_for_one, name: __MODULE__])
+      DynamicSupervisor.start_link(__MODULE__, [], [name: __MODULE__])
+    end
+
+    @impl true
+    def init([]) do
+      DynamicSupervisor.init([strategy: :one_for_one])
     end
   end
 end
