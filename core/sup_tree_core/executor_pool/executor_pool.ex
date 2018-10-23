@@ -25,10 +25,6 @@ defmodule AntikytheraCore.ExecutorPool do
     }
   end
 
-  def init(_init_arg) do
-    DynamicSupervisor.init([strategy: :one_for_one])
-  end
-
   defun start_link(epool_id :: v[EPoolId.t],
                    uploader :: v[atom | pid],
                    %EPoolSetting{n_pools_a: n_pools_a, pool_size_a: size_a, pool_size_j: size_j, ws_max_connections: ws_max}) :: {:ok, pid} do
@@ -105,7 +101,7 @@ defmodule AntikytheraCore.ExecutorPool do
       nil -> :ok
       pid ->
         L.info("killing executor pool for #{inspect(epool_id)}")
-        :ok = Supervisor.terminate_child(__MODULE__.Sup, pid)
+        :ok = DynamicSupervisor.terminate_child(__MODULE__.Sup, pid)
         remove_job_queue(epool_id)
     end
   end
@@ -151,7 +147,7 @@ defmodule AntikytheraCore.ExecutorPool do
     end
 
     defun start_link([]) :: {:ok, pid} do
-      DynamicSupervisor.start_link(AntikytheraCore.ExecutorPool, [], [name: __MODULE__])
+      DynamicSupervisor.start_link([strategy: :one_for_one, name: __MODULE__])
     end
   end
 end
