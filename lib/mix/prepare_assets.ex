@@ -43,7 +43,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
 
   - Prerequisite: `yarn.lock` file
   - Command: `yarn`
-  - **This method takes precedance over `npm install`**.
+  - **This method takes precedence over `npm install`**.
 
   #### 2. Using `npm install`
 
