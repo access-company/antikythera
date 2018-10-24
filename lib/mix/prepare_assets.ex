@@ -30,9 +30,11 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
 
   Asset preparation process is split into two steps: package installation step and build step.
 
-  Any combinations of available methods are acceptable.
+  Either combination of available methods is acceptable.
 
-  Note that if none of prerequisites for build steps are present,
+  - Prerequisite: `package.json` file and `antikythera_prepare_assets` script in it
+
+  Note that if the above prerequisite is not present,
   **the whole asset preparation process will be skipped** since package installation is unnecessary.
 
   ### Package Installation
@@ -45,14 +47,12 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
 
   #### 2. Using `npm install`
 
-  - Prerequisite: `package.json` file
   - Command: `npm install`
 
   ### Build
 
   #### Using [npm-scripts](https://docs.npmjs.com/misc/scripts)
 
-  - Prerequisite: `antikythera_prepare_assets` script in `package.json` file
   - Command: `npm run antikythera_prepare_assets`
   - Within `antikythera_prepare_assets` script, you may execute any asset-related actions such as:
       - Linting
