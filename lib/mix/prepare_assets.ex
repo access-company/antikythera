@@ -103,16 +103,11 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   end
 
   defp install_packages!(env) do
-    cond do
-      File.exists?("yarn.lock") ->
-        run_command!("yarn", [], env)
-      File.exists?("package.json") ->
-        remove_node_modules_if_dependencies_changed!()
-        run_command!("npm", ["install"], env)
-      true ->
-        # Both `yarn` and `npm install` will exit with 0 when required files do not exist.
-        # Such cases are considered an error in this context.
-        raise("Missing 'yarn.lock' or 'package.json'.")
+    if File.exists?("yarn.lock") do
+      run_command!("yarn", [], env)
+    else
+      remove_node_modules_if_dependencies_changed!()
+      run_command!("npm", ["install"], env)
     end
   end
 
