@@ -86,19 +86,14 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   end
 
   defp run_impl(env) do
-    case find_build_step_in_project(env) do
-      nil ->
-        IO.puts("Skipping. Asset preparation is not configured.")
-        IO.puts("Define `antikythera_prepare_assets` npm-script if you want antikythera to prepare assets for your gear.")
-      :npm_script ->
-        install_packages!(env)
-        build_assets!(env)
-        dump_asset_file_paths()
+    if npm_script_available?(env) do
+      install_packages!(env)
+      build_assets!(env)
+      dump_asset_file_paths()
+    else
+      IO.puts("Skipping. Asset preparation is not configured.")
+      IO.puts("Define `antikythera_prepare_assets` npm-script if you want antikythera to prepare assets for your gear.")
     end
-  end
-
-  defunp find_build_step_in_project(env :: v[String.t]) :: nil | :npm_script do
-    if npm_script_available?(env), do: :npm_script, else: nil
   end
 
   defp npm_script_available?(env) do
