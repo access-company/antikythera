@@ -13,11 +13,9 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   See `Antikythera.Asset` for details.
 
   If your gear uses some kind of preprocessing tools to generate asset files (JS, CSS, etc.),
-  you have to set up any of the supported asset preparation methods described in the next section.
+  you have to set up the supported asset preparation method described in the next section.
 
-  This mix task detects available asset preparation methods in your gear repository, then executes them in sequence.
-  If any part of the preparation resulted in failure (non-zero exit code),
-  the whole task will abort and thus auto-deploy will fail.
+  This mix task checks if asset preparation method in your gear repository is available, then execute it if possible.
 
   Normally you do not have to invoke this mix task when you locally develop your assets.
   Though you may do so in order to confirm asset preparation is working as you intended.
@@ -26,11 +24,11 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   (see also `Antikythera.Env`).
   You can use this environment variable to distinguish for which environment current script is running.
 
-  ## Supported Asset Preparation Methods
+  ## Supported Asset Preparation Method
 
   Asset preparation process is split into two steps: package installation step and build step.
-
-  Either combination of available methods is acceptable.
+  If any part of the preparation process resulted in failure (non-zero exit code),
+  the whole task will abort and thus auto-deploy will fail.
 
   - Prerequisite: `package.json` file and `antikythera_prepare_assets` script in it
 
@@ -39,15 +37,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
 
   ### Package Installation
 
-  #### 1. Using [`yarn`](https://yarnpkg.com/en/)
-
-  - Prerequisite: `yarn.lock` file
-  - Command: `yarn`
-  - **This method takes precedence over `npm install`**.
-
-  #### 2. Using `npm install`
-
-  - Command: `npm install`
+  Use [`yarn`](https://yarnpkg.com/en/) if `yarn.lock` file exists, otherwise use `npm install`.
 
   ### Build
 
