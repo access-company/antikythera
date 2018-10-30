@@ -87,16 +87,13 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   end
 
   defp npm_script_available?() do
-    path = "package.json"
-    File.exists?(path) and exists_prepare_assets_key?(path)
-  end
-
-  defp exists_prepare_assets_key?(path) do
-    prepare_assets_key =
-      File.read!(path)
-      |> Poison.decode!()
-      |> get_in(["scripts", "antikythera_prepare_assets"])
-    not is_nil(prepare_assets_key)
+    with {:ok, json}                            <- File.read("package.json"),
+         {:ok, %{"scripts" => map}}             <- Poison.decode(json),
+         %{"antikythera_prepare_assets" => cmd} <- map do
+      is_binary(cmd)
+    else
+      _ -> false
+    end
   end
 
   defp install_packages!(env) do
