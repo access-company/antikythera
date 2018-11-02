@@ -48,8 +48,8 @@
       ```ex
       defp gear_deps() do
         [
-          {:gear_a, [git: "git@github.com:your_org/gear_a.git"]},
-          {:gear_b, "1.0.0", [organization: "your_org"]}, # Private packages; see https://hex.pm/docs/private
+          {:gear_a, [git: "git@github.com:your-organization/gear_a.git"]},
+          {:gear_b, "1.0.0", [organization: "your-organization"]}, # Private packages; see https://hex.pm/docs/private
         ]
       end
       ```
