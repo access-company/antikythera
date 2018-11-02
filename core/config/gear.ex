@@ -105,7 +105,7 @@ defmodule AntikytheraCore.Config.Gear do
     end)
   end
 
-  # To be used by ac_console
+  # To be used by administrative gears
   defun read_all() :: Keyword.t(t) do
     all_known_gears = Enum.uniq(gear_names_having_modified_config_files(0) ++ GearManager.running_gear_names())
     Enum.map(all_known_gears, fn gear_name -> {gear_name, read(gear_name)} end)
