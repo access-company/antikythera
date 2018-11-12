@@ -7,7 +7,7 @@
 - It is also possible to send alerts without logging,
   by calling `YourGear.AlertManager.notify/1` function from any part of your gear code.
 - Currently, only email alerting interface is defined as a behaviour `AntikytheraEal.AlertMailer`.
-    - [HipChat](https://www.hipchat.com/), [Linkit](https://jin-soku.biz/linkit/) and [Twillio](https://www.twilio.com/)
+    - [Slack](https://slack.com) and [Twillio](https://www.twilio.com)
       are candidates for alternative notification channels to support. Requests and contributions are welcomed.
 
 ## Alert behavior and configurations
