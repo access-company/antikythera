@@ -82,7 +82,7 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
   @deployments         Application.fetch_env!(:antikythera, :deployments)
   @current_compile_env Env.compile_env()
 
-  # Also used by ac_console
+  # This can also used by administrative gears
   defun default_domain(gear_name :: v[GearName.t | GearNameStr.t], env :: v[Env.t] \\ @current_compile_env) :: Domain.t do
     gear_name_replaced = to_string(gear_name) |> String.replace("_", "-")
     base_domain =

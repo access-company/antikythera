@@ -190,7 +190,7 @@ defmodule AntikytheraCore.TenantExecutorPoolsManager do
     end
   end
 
-  # To be used by ac_console (and tests)
+  # To be used by administrative gears (and tests)
   defun all() :: settings do
     %{settings: settings} = :sys.get_state(__MODULE__) # simply use `:sys.get_state/1` and skip defining internal message
     settings

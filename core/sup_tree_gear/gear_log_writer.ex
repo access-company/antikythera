@@ -132,18 +132,26 @@ defmodule AntikytheraCore.GearLog.Writer do
   end
 
   defun set_min_level(gear_name :: v[GearName.t], level :: v[Level.t]) :: :ok do
-    GenServer.cast(logger_name(gear_name), {:set_min_level, level})
+    case logger_name(gear_name) do
+      nil  -> :ok
+      name -> GenServer.cast(name, {:set_min_level, level})
+    end
   end
 
   defun rotate_and_start_upload_in_all_nodes(gear_name :: v[GearName.t]) :: :abcast do
-    GenServer.abcast(logger_name(gear_name), {:rotate_and_start_upload, gear_name})
+    case logger_name(gear_name) do
+      nil  -> :ok
+      name -> GenServer.abcast(name, {:rotate_and_start_upload, gear_name})
+    end
   end
 
-  defunp logger_name(gear_name :: v[GearName.t]) :: atom do
+  defunp logger_name(gear_name :: v[GearName.t]) :: nil | atom do
     try do
       AntikytheraCore.GearModule.logger(gear_name)
     rescue
-      ArgumentError -> L.info("#{gear_name} isn't installed")
+      ArgumentError ->
+        L.info("#{gear_name} isn't installed")
+        nil
     end
   end
 

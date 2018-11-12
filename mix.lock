@@ -33,7 +33,7 @@
   "poison": {:hex, :poison, "2.2.0", "4763b69a8a77bd77d26f477d196428b741261a761257ff1cf92753a0d4d24a63", [:mix], [], "hexpm"},
   "pool_sup": {:hex, :pool_sup, "0.6.0", "c2aec12ebbe2459294ed3646926300862cec22bdb28af8ad98f77f31287af933", [:mix], [{:croma, "~> 0.9", [hex: :croma, repo: "hexpm", optional: false]}], "hexpm"},
   "providers": {:hex, :providers, "1.6.0", "db0e2f9043ae60c0155205fcd238d68516331d0e5146155e33d1e79dc452964a", [:rebar3], [{:getopt, "0.8.2", [hex: :getopt, repo: "hexpm", optional: false]}], "hexpm"},
-  "raft_fleet": {:hex, :raft_fleet, "0.9.1", "69ec257112b4ae213ce8ef5767b8923a84331c2d87aca58294bcf17a42bdbbad", [:mix], [{:croma, "~> 0.9", [hex: :croma, repo: "hexpm", optional: false]}, {:rafted_value, "~> 0.9", [hex: :rafted_value, repo: "hexpm", optional: false]}], "hexpm"},
+  "raft_fleet": {:hex, :raft_fleet, "0.9.2", "1c15f09acb5fdbc3ae86338e94d53ecbaa94822e26ee3a35d64684bea03f908f", [:mix], [{:croma, "~> 0.9", [hex: :croma, repo: "hexpm", optional: false]}, {:rafted_value, "~> 0.9", [hex: :rafted_value, repo: "hexpm", optional: false]}], "hexpm"},
   "rafted_value": {:hex, :rafted_value, "0.10.1", "a1dc5eea652f11d9b9a8e9b5a8eeb3d7368bd121ab9f47bb9a8cb44479bb7822", [:mix], [{:croma, "~> 0.9", [hex: :croma, repo: "hexpm", optional: false]}], "hexpm"},
   "ranch": {:hex, :ranch, "1.4.0", "10272f95da79340fa7e8774ba7930b901713d272905d0012b06ca6d994f8826b", [:rebar3], [], "hexpm"},
   "recon": {:hex, :recon, "2.3.6", "2bcad0cf621fb277cabbb6413159cd3aa30265c2dee42c968697988b30108604", [:rebar3], [], "hexpm"},

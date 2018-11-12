@@ -78,7 +78,7 @@ defmodule AntikytheraCore.ExecutorPool.TenantSetting do
     end
   end
 
-  # To be used by ac_console
+  # To be used by administrative gears
   defun associate_with_gear(gear_name :: v[GearName.t], tenant_id :: v[TenantId.t]) :: :ok do
     change_association(tenant_id, true, fn gear_names ->
       [gear_name | gear_names] |> Enum.uniq() |> Enum.sort()

@@ -30,7 +30,7 @@ defmodule Mix.Tasks.Antikythera.Gear.New do
 
   You can also manually specify your antikythera instance via `#{@dep_env_var}` environment variable like so:
 
-      #{@dep_env_var}='{:instance_name, [git: "git@github.com:your_org/instance_name.git"]}' mix antikythera.gear.new PATH
+      #{@dep_env_var}='{:instance_name, [git: "git@github.com:your-organization/instance_name.git"]}' mix antikythera.gear.new PATH
 
   `#{@dep_env_var}` must be a valid dependency tuple used in `mix.exs` files.
   See [`mix deps` doc](https://hexdocs.pm/mix/Mix.Tasks.Deps.html) for available options.

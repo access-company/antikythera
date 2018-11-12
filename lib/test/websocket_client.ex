@@ -33,9 +33,9 @@ defmodule Antikythera.Test.WebsocketClient do
         {:ok, pid} = :websocket_client.start_link(url, __MODULE__, [self()])
         receive do
           :connected    -> pid
-          :disconnected -> raise "failed to establish websocket connection"
+          :disconnected -> raise "failed to establish websocket connection: disconnected"
         after
-          timeout -> raise "failed to establish websocket connection"
+          timeout -> raise "failed to establish websocket connection: timeout"
         end
       end
 
