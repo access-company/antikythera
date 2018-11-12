@@ -15,12 +15,10 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   If your gear uses some kind of preprocessing tools to generate asset files (JS, CSS, etc.),
   you have to set up the supported asset preparation method described in the next section.
 
-  This mix task checks if asset preparation method in your gear repository is available, then execute it if possible.
-
   Normally you do not have to invoke this mix task when you locally develop your assets.
   Though you may do so in order to confirm asset preparation is working as you intended.
 
-  This mix task invokes the chosen preprocessing tools with `ANTIKYTHERA_COMPILE_ENV` environment variable
+  This mix task invokes the preprocessing tools with `ANTIKYTHERA_COMPILE_ENV` environment variable
   (see also `Antikythera.Env`).
   You can use this environment variable to distinguish for which environment current script is running.
 
@@ -39,9 +37,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
 
   Use [`yarn`](https://yarnpkg.com/en/) if `yarn.lock` file exists, otherwise use `npm install`.
 
-  ### Build
-
-  #### Using [npm-scripts](https://docs.npmjs.com/misc/scripts)
+  ### Build using [npm-scripts](https://docs.npmjs.com/misc/scripts)
 
   - Command: `npm run antikythera_prepare_assets`
   - Within `antikythera_prepare_assets` script, you may execute any asset-related actions such as:
