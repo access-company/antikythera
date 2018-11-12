@@ -56,7 +56,7 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
       end)
     after
       checkout_and_deps_get(branch)
-      run_mix_task(["antikythera_local.stop"])
+      _ = run_mix_task(["antikythera_local.stop"])
     end
     exit({:shutdown, status})
   end
@@ -127,7 +127,7 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
     Enum.each(gears_map, fn {gear_name, gear_dir} ->
       IO.puts("Test whether #{gear_name} is correctly functioning")
       env = %{"TEST_MODE" => "blackbox_local"}
-      run_mix_task(["test"], [env: env, cd: gear_dir], true)
+      0 = run_mix_task(["test"], [env: env, cd: gear_dir], true)
     end)
   end
 
