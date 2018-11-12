@@ -72,7 +72,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   end
 
   defp run_impl(env) do
-    if npm_script_available?(env) do
+    if npm_script_available?() do
       install_packages!(env)
       build_assets!(env)
       dump_asset_file_paths()
@@ -82,10 +82,14 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
     end
   end
 
-  defp npm_script_available?(env) do
-    run_command!("npm", ["run"], env)
-    |> String.split("\n", trim: true)
-    |> Enum.member?("  antikythera_prepare_assets")
+  defp npm_script_available?() do
+    with {:ok, json}                            <- File.read("package.json"),
+         {:ok, %{"scripts" => map}}             <- Poison.decode(json),
+         %{"antikythera_prepare_assets" => cmd} <- map do
+      is_binary(cmd)
+    else
+      _ -> false
+    end
   end
 
   defp install_packages!(env) do
