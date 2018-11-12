@@ -82,11 +82,11 @@ defmodule Antikythera.Mixfile do
       {:relx        , "3.23.1", [antikythera_internal: true, only: :prod, runtime: false]}, # only to generate release
 
       # The following libraries are used by both antikythera itself and gears.
-      {:poison   , "2.2.0" },
-      {:jason    , "1.1.1" },
-      {:gettext  , "0.16.0"},
-      {:croma    , "0.10.1"},
-      {:pbkdf2   , "2.0.0" },
+      {:poison , "2.2.0" },
+      {:jason  , "1.1.1" },
+      {:gettext, "0.16.0"},
+      {:croma  , "0.10.1"},
+      {:pbkdf2 , "2.0.0" },
 
       # tools
       {:exsync          , "0.2.3" , [only: :dev ]},
