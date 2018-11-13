@@ -104,7 +104,12 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     mod_str    = Atom.to_string(module) |> String.replace_leading("Elixir.", "")
     run_at_str = Time.to_iso_timestamp(run_at)
     prefix     = "<async_job> module=#{mod_str} job_id=#{job_id} attempt=#{attempts - remaining + 1}th/#{attempts} run_at=#{run_at_str} "
-    case module.inspect_payload(decoded_payload) do
+    try do
+      module.inspect_payload(decoded_payload)
+    rescue
+      _ -> "" # `inspect_payload/1` has bug or `module` has already been removed/renamed.
+    end
+    |> case do
       ""          -> prefix
       payload_str -> prefix <> "payload=#{payload_str} "
     end
