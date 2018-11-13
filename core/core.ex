@@ -4,6 +4,7 @@ use Croma
 
 defmodule AntikytheraCore do
   use Application
+  require AntikytheraCore.Logger, as: L
 
   @impl true
   def start(_type, _args) do
@@ -38,7 +39,10 @@ defmodule AntikytheraCore do
     else
       case AntikytheraCore.Cluster.connect_to_other_nodes_on_start() do
         {:ok, true} -> :ok
-        _otherwise  -> establish_connections_to_other_nodes(tries_remaining - 1)
+        _otherwise  ->
+          L.info("failed to establish connections to other nodes; retry afterward")
+          :timer.sleep(5_000)
+          establish_connections_to_other_nodes(tries_remaining - 1)
       end
     end
   end
