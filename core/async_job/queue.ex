@@ -209,12 +209,12 @@ defmodule AntikytheraCore.AsyncJob.Queue do
                                  index_running: index_running} = q,
                      {_, job_id} = job_key,
                      now_millis) do
-    case Map.pop(jobs, job_id) do
-      {{j, _, :running}, jobs2} ->
-        index_running2 = :gb_sets.delete(job_key, index_running)
-        %__MODULE__{q | jobs: jobs2, index_running: index_running2}
-        |> requeue_if_recurring(j, job_id, now_millis)
-      _not_running_or_job_not_found -> q
+    if :gb_sets.is_member(job_key, index_running) do
+      {{j, _, :running}, jobs2} = Map.pop(jobs, job_id)
+      %__MODULE__{q | jobs: jobs2, index_running: :gb_sets.delete(job_key, index_running)}
+      |> requeue_if_recurring(j, job_id, now_millis)
+    else
+      q
     end
   end
 

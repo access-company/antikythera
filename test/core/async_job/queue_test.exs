@@ -398,4 +398,11 @@ defmodule AntikytheraCore.AsyncJob.QueueCommandTest do
     assert Queue.command(q, nil) == {:ok, q}
     assert Queue.query(q, nil)   == q
   end
+
+  test "remove_locked with outdated job key should simply be ignored" do
+    q0 = make_queue_with_started_job(@job)
+    job_key_old = {@now_millis - 1000, @job_id}
+    {:ok, q1} = Queue.command(q0, {{:remove_locked, job_key_old}, @now_millis})
+    assert q1 == q0
+  end
 end
