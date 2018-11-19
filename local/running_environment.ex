@@ -136,7 +136,7 @@ defmodule AntikytheraLocal.RunningEnvironment do
     Cmd.exec_and_output_log!("mix", ["deps.get"], cd: gear_repo_dir, env: @compile_environment_vars) # fetch antikythera instance
     Cmd.exec_and_output_log!("mix", ["deps.get"], cd: gear_repo_dir, env: @compile_environment_vars) # fetch antikythera (if changed)
     Cmd.exec_and_output_log!("mix", ["compile" ], cd: gear_repo_dir, env: @compile_environment_vars)
-    Path.join([gear_repo_dir, "_build", "prod", "lib", gear_name_str])
+    Path.join([gear_repo_dir, "_build_local", "prod", "lib", gear_name_str])
   end
 
   defunp generate_appup(gear_name_str :: v[GearNameStr.t], gear_repo_dir :: Path.t) :: :ok do

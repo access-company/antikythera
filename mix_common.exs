@@ -13,10 +13,19 @@ defmodule Antikythera.MixCommon do
     [
       elixir:            "~> 1.6",
       elixirc_options:   [warnings_as_errors: true],
+      build_path:        build_path(),
       build_embedded:    Mix.env() == :prod,
       test_coverage:     [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.html": :test, "antikythera_local.upgrade_compatibility_test": :test],
     ]
+  end
+
+  defp build_path() do
+    # Antikythera comes with some tests that runs gears (e.g. testgear) within an OTP release.
+    # In such tests we compile both release and gears with a specific set of environment variables (see also `Antikythera.Env`).
+    # In order not to be confused by beam files generated with a different set of env vars,
+    # we switch `build_path` for this particular case.
+    if System.get_env("ANTIKYTHERA_COMPILE_ENV") == "local", do: "_build_local", else: "_build"
   end
 
   #
@@ -261,6 +270,7 @@ defmodule Antikythera.GearProject do
         [
           app:              gear_name(),
           version:          Antikythera.MixCommon.version_with_last_commit_info(version()),
+          build_path:       build_path(),
           elixirc_paths:    ["lib", "web"],
           compilers:        [:ensure_gear_dependencies, :gettext, :propagate_file_modifications] ++ Mix.compilers() ++ [:gear_static_analysis],
           start_permanent:  false,
