@@ -100,12 +100,12 @@ alias Antikythera.{GearName, GearNameStr}
 
 ## Do not abuse `import`
 
-`import`ing a module will allow you to use its function without `SomeModule.` prefix.
+`import`ing a module will allow you to use its functions without `SomeModule.` prefix.
 However it SHOULD NOT be abused because it can lead to name conflicts.
 
 - Use only when you are absolutely sure it is safe and useful there.
-- Limit its target with `:only` option.
-- Consider limiting its scope by placing it inside specific scope.
+- Limit its targets with `:only` option.
+- Consider limiting its scope by placing it inside a specific scope.
 
 ## Function calling syntax
 
