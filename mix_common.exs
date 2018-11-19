@@ -270,7 +270,6 @@ defmodule Antikythera.GearProject do
         [
           app:              gear_name(),
           version:          Antikythera.MixCommon.version_with_last_commit_info(version()),
-          build_path:       build_path(),
           elixirc_paths:    ["lib", "web"],
           compilers:        [:ensure_gear_dependencies, :gettext, :propagate_file_modifications] ++ Mix.compilers() ++ [:gear_static_analysis],
           start_permanent:  false,
