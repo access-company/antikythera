@@ -104,8 +104,8 @@ All of them are helpful! Follow the guidelines provided here.
 - Implement by a (relatively) small chunk.
     - Your feature might require quite a large addition or changes.
     - Such a large patch is hard to read and review, leads to blocking of reviewers' activities.
-    - Keep your components (modules/functions) loosely-coupled, and follow single responsibility principle.
-      So that they can be implemented/tested separately, thus can be reviewed/merged steadily.
+    - Keep your components (modules/functions) loosely-coupled and follow the single responsibility principle,
+      so that they can be implemented/tested separately, thus can be reviewed/merged steadily.
 - Make use of our [style guide](https://github.com/access-company/antikythera/blob/master/STYLE_GUIDE.md).
 
 #### Use `testgear` for testing antikythera's features
