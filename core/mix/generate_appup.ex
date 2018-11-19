@@ -16,10 +16,15 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateAppup do
     config       = Mix.Project.config()
     name         = config[:app]
     new_version  = config[:version]
-    new_dir      = "_build/#{Mix.env()}/lib/#{name}"
+    new_dir      = "#{build_path()}/#{Mix.env()}/lib/#{name}"
     prev_version = AntikytheraCore.Version.read_from_app_file(prev_dir, name)
 
     Appup.make(name, prev_version, new_version, prev_dir, new_dir)
     IO.puts("Successfully generated #{new_dir}/ebin/#{name}.appup")
+  end
+
+  defp build_path() do
+    # See also `Antikythera.MixCommon.build_path/0`
+    if System.get_env("ANTIKYTHERA_COMPILE_ENV") == "local", do: "_build_local", else: "_build"
   end
 end
