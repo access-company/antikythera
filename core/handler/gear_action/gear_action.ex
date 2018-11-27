@@ -26,9 +26,10 @@ defmodule AntikytheraCore.Handler.GearAction do
 
   defp make_metrics_data(status, processing_time, sender_info) do
     prefix = if is_atom(sender_info), do: "g2g_", else: "web_"
-    request_count = {prefix <> "request_count", :request_count, status}
-    response_time = {prefix <> "response_time_ms", :time_distribution, processing_time}
-    [request_count, response_time]
+    [
+      {prefix <> "request_count"   , :request_count    , status || 500  }, # If status is not given at this point it's due to a bug in the gear's action.
+      {prefix <> "response_time_ms", :time_distribution, processing_time},
+    ]
   end
 
   defunp with_logging(conn        :: v[Conn.t],

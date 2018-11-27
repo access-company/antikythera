@@ -68,13 +68,19 @@ defmodule AntikytheraCore.Conn do
     }
   end
 
-  def reply_as_cowboy_res(%Conn{status: status, resp_headers: headers, resp_cookies: resp_cookies, resp_body: body}, req) do
-    headers_with_defaults = add_default_resp_headers(headers)
-    req2 = CoreCookies.merge_cookies_to_cowboy_req(resp_cookies, req)
-    if body == nil or body == "" do
-      :cowboy_req.reply(status, headers_with_defaults, req2)
-    else
-      :cowboy_req.reply(status, headers_with_defaults, body, req2)
+  def reply_as_cowboy_res(%Conn{status: status, resp_headers: headers, resp_cookies: resp_cookies, resp_body: body} = conn, req) do
+    try do
+      headers_with_defaults = add_default_resp_headers(headers)
+      req2 = CoreCookies.merge_cookies_to_cowboy_req(resp_cookies, req)
+      if body == nil or body == "" do
+        :cowboy_req.reply(status, headers_with_defaults, req2)
+      else
+        :cowboy_req.reply(status, headers_with_defaults, body, req2)
+      end
+    rescue
+      e ->
+        # Field in `conn` is of unexpected type; we must fall-back to the gear's error handler (and then recur).
+        GearError.error(conn, {:error, e}, System.stacktrace()) |> reply_as_cowboy_res(req)
     end
   end
 
@@ -93,22 +99,26 @@ defmodule AntikytheraCore.Conn do
     Map.merge(@default_secure_headers, headers_without_cl)
   end
 
-  def reply_as_g2g_res(%Conn{status: status, resp_headers: headers, resp_cookies: resp_cookies, resp_body: body}) do
+  def reply_as_g2g_res(%Conn{status: status, resp_headers: headers, resp_cookies: resp_cookies, resp_body: body} = conn) do
     downcased_headers = Map.new(headers, fn {key, value} -> {String.downcase(key), value} end)
-    GRes.new!([status: status, headers: downcased_headers, cookies: resp_cookies, body: body])
-  end
-
-  def run_before_send(%Conn{before_send: before_send} = conn, _conn_before_action) do
     try do
-      Enum.reduce(before_send, conn, &(&1.(&2)))
+      GRes.new!([status: status, headers: downcased_headers, cookies: resp_cookies, body: body])
     rescue
-      e -> GearError.error(conn, {:error, e}, System.stacktrace())
+      e ->
+        # Field in `conn` is of unexpected type; we must fall-back to the gear's error handler (and then recur).
+        GearError.error(conn, {:error, e}, System.stacktrace()) |> reply_as_g2g_res()
     end
   end
-  def run_before_send(_not_a_conn, conn_before_action) do
-    conn_before_action
-    |> Conn.put_status(500)
-    |> Conn.put_resp_body("UndefinedResponseError")
+
+  def run_before_send(conn, conn_before_action) do
+    try do
+      case conn do
+        %Conn{before_send: before_send} -> Enum.reduce(before_send, conn, &(&1.(&2)))
+        _                               -> raise "unexpected value returned by controller action"
+      end
+    rescue
+      e -> GearError.error(conn_before_action, {:error, e}, System.stacktrace())
+    end
   end
 
   defun gear_name(%Conn{context: %Context{gear_name: gear_name}}) :: GearName.t, do: gear_name
