@@ -80,7 +80,10 @@ defmodule AntikytheraCore.Conn do
     rescue
       e ->
         # Field in `conn` is of unexpected type; we must fall-back to the gear's error handler (and then recur).
-        GearError.error(conn, {:error, e}, System.stacktrace()) |> reply_as_cowboy_res(req)
+        st = System.stacktrace()
+        %Conn{conn | resp_body: ""} # Just to suppress validation error (due to invalid resp_body) during testing
+        |> GearError.error({:error, e}, st)
+        |> reply_as_cowboy_res(req)
     end
   end
 
@@ -102,11 +105,17 @@ defmodule AntikytheraCore.Conn do
   def reply_as_g2g_res(%Conn{status: status, resp_headers: headers, resp_cookies: resp_cookies, resp_body: body} = conn) do
     downcased_headers = Map.new(headers, fn {key, value} -> {String.downcase(key), value} end)
     try do
+      if not is_binary(body) do
+        raise "unexpected `resp_body` returned by controller action"
+      end
       GRes.new!([status: status, headers: downcased_headers, cookies: resp_cookies, body: body])
     rescue
       e ->
         # Field in `conn` is of unexpected type; we must fall-back to the gear's error handler (and then recur).
-        GearError.error(conn, {:error, e}, System.stacktrace()) |> reply_as_g2g_res()
+        st = System.stacktrace()
+        %Conn{conn | resp_body: ""} # Just to suppress validation error (due to invalid resp_body) during testing
+        |> GearError.error({:error, e}, st)
+        |> reply_as_g2g_res()
     end
   end
 

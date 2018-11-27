@@ -61,7 +61,7 @@ defmodule Antikythera.Conn do
     status:       Croma.TypeGen.nilable(Http.Status.Int),
     resp_headers: Http.Headers,
     resp_cookies: Http.SetCookiesMap,
-    resp_body:    Http.Body,
+    resp_body:    Http.RawBody,
     before_send:  BeforeSend,
     assigns:      Assigns,
   ]
