@@ -6,7 +6,7 @@ defmodule AntikytheraCore.ExecutorPool.WsConnectionsCapping do
   alias AntikytheraCore.OsUtil
   alias AntikytheraCore.ExecutorPool.{Setting, TenantSetting}
 
-  # The following constants are heuristic values, not rigorous ones.
+  # The following constants are heuristic values, not rigorously determined ones.
   # (Should we make them mix config items?)
   @ratio_of_max_memory_occupation_by_ws_connections_in_1_epool 0.5
   @ws_connections_per_megabytes                                10
