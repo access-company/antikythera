@@ -83,8 +83,8 @@ defmodule Antikythera.Mixfile do
 
       # The following libraries are used by both antikythera itself and gears.
       {:poison , "2.2.0" },
-      {:jason  , "1.1.1" },
-      {:gettext, "0.16.0"},
+      {:jason  , "1.1.2" },
+      {:gettext, "0.16.1"},
       {:croma  , "0.10.1"},
       {:pbkdf2 , "2.0.0" },
 
@@ -92,11 +92,11 @@ defmodule Antikythera.Mixfile do
       {:exsync          , "0.2.3" , [only: :dev ]},
       {:ex_doc          , "0.18.4", [only: :dev , runtime: false]},
       {:dialyxir        , "0.5.1" , [only: :dev , runtime: false]},
-      {:credo           , "0.10.2", [only: :dev , runtime: false]},
+      {:credo           , "1.0.0", [only: :dev , runtime: false]},
       {:mix_test_watch  , "0.9.0" , [only: :dev , runtime: false]},
       {:meck            , "0.8.12", [only: :test]},
       {:mox             , "0.4.0" , [only: :test]},
-      {:excoveralls     , "0.10.1", [only: :test]},
+      {:excoveralls     , "0.10.3", [only: :test]},
       {:stream_data     , "0.4.2" , [only: :test]},
       {:websocket_client, "1.3.0" , [only: :test]}, # as a websocket client implementation to use during test (including upgrade_compatibility_test)
 
@@ -118,7 +118,7 @@ defmodule Antikythera.Mixfile do
 
       # indirect tool deps
       {:bunt       , "0.2.0", [indirect: true, only: :dev]}, # credo
-      {:earmark    , "1.2.6", [indirect: true, only: :dev]}, # ex_doc
+      {:earmark    , "1.3.0", [indirect: true, only: :dev]}, # ex_doc
       {:file_system, "0.2.6", [indirect: true, only: :dev]}, # exsync and mix_test_watch
     ]
   end
