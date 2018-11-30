@@ -6,9 +6,9 @@ defmodule AntikytheraCore.AsyncJob.RaftedValueConfigMaker do
   @behaviour RaftFleet.RaftedValueConfigMaker
 
   @options [
-    heartbeat_timeout:                   1000,
-    election_timeout:                    2000,
-    election_timeout_clock_drift_margin:  500,
+    heartbeat_timeout:                   1_000,
+    election_timeout:                    5_000,
+    election_timeout_clock_drift_margin:   500,
   ]
   defun options() :: Keyword.t, do: @options
 
