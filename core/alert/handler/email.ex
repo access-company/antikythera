@@ -6,8 +6,10 @@ defmodule AntikytheraCore.Alert.Handler.Email do
   @default_errors_per_body 3
 
   @moduledoc """
-  Alert handler implementation with email backend.
-  This is considered 'default' alert backend and used for testing of `AntikytheraCore.Alert.Manager`.
+  Alert handler implementation that sends an email.
+
+  This is considered the default alert backend (and also used for testing of `AntikytheraCore.Alert.Manager`).
+  Email delivery method is provided by a callback module of `AntikytheraEal.AlertMailer.Behaviour`.
 
   ## Handler config
 

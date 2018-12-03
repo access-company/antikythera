@@ -3,10 +3,6 @@
 use Croma
 
 defmodule AntikytheraEal.AlertMailer do
-  @moduledoc """
-  Interface to mailer backend for Core/Gear alerts.
-  """
-
   defmodule Mail do
     use Croma.Struct, recursive_new?: true, fields: [
       from:    Croma.String,
@@ -17,8 +13,19 @@ defmodule AntikytheraEal.AlertMailer do
   end
 
   defmodule Behaviour do
+    @moduledoc """
+    Interface to email delivery backend for core/gear alerts.
+
+    See `AntikytheraEal` for common information about pluggable interfaces defined in antikythera.
+    """
+
     @doc """
-    Minimal `mail` delivering API. CC/BCC or HTML mail is omitted for simplicity.
+    Sends an alert email.
+
+    CC/BCC and HTML mail is omitted for simplicity.
+
+    This callback is called in `AntikytheraCore.Alert.Handler.Email`, that is,
+    when an alert email about error(s) in either antikythera core or gear is sent.
     """
     @callback deliver(mail :: Mail.t) :: :ok | {:error, term}
   end
@@ -43,8 +50,9 @@ defmodule AntikytheraEal.AlertMailer do
       end
     end
 
+    #
     # API for test
-
+    #
     def get() do
       ensure_memory_inbox_started()
       |> Agent.get(&(&1))

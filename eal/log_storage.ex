@@ -3,16 +3,46 @@
 use Croma
 
 defmodule AntikytheraEal.LogStorage do
-  @moduledoc """
-  Interface to work with storage of log files.
-  """
-
   alias Antikythera.GearName
   alias AntikytheraCore.Path, as: CorePath
 
   defmodule Behaviour do
-    @callback list(GearName.t, String.t) :: [{String.t, non_neg_integer}]
-    @callback download_urls([String.t]) :: [String.t]
+    @moduledoc """
+    Interface to work with storage of gear log files.
+
+    See `AntikytheraEal` for common information about pluggable interfaces defined in antikythera.
+
+    Gear's log messages are written to a file in local filesystem (by `AntikytheraCore.GearLog.Writer`).
+    Log files are then rotated after certain times and then uploaded to log storage.
+
+    Typically rotated log files are uploaded by a script that runs outside of antikythera,
+    in order to correctly upload logs even after ErlangVM crashes.
+    `upload_rotated_logs/1` can also be used to upload logs to the storage, but this callback is
+    basically intended for on-demand (i.e. gear administrator initiated) uploads.
+    """
+
+    @doc """
+    Lists already-uploaded log files, whose last log messages are generated on the specified date, of a gear.
+
+    `date_str` is of the form of `"20180101"`.
+
+    Returns list of pairs, where each pair consists of
+
+    - key which identifies the log file
+    - size of the log file
+    """
+    @callback list(gear_name :: GearName.t, date_str :: String.t) :: [{String.t, non_neg_integer}]
+
+    @doc """
+    Generates download URLs of multiple log files specified by list of keys.
+
+    Keys can be obtained by `list/2`.
+    """
+    @callback download_urls(keys :: [String.t]) :: [String.t]
+
+    @doc """
+    Upload all log files which have already been rotated but not yet uploaded.
+    """
     @callback upload_rotated_logs(GearName.t) :: :ok
   end
 

@@ -3,23 +3,6 @@
 use Croma
 
 defmodule AntikytheraEal.MetricsStorage do
-  @moduledoc """
-  Interface to storage for metrics data.
-  The storage is sliced per day.
-
-  JSON format of metrics results in data storage is as follows:
-
-      {
-        "@timestamp": <ISO8601_timestamp>,
-        "node_id": "ip-XXX-XXX-XXX-XXX",
-        "otp_app_name": <otp_app_name>,
-        "epool_id": <antikythera or gearname>,
-        <metrics_label>: <metrics_value>,
-        <metrics_label>: <metrics_value>,
-        ...
-      }
-  """
-
   alias Antikythera.Time
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.Metrics.{Buffer, Results}
@@ -29,7 +12,23 @@ defmodule AntikytheraEal.MetricsStorage do
   @type metrics_per_unit :: {Buffer.metrics_unit, Results.per_unit_results_map}
 
   defmodule Behaviour do
-    @callback upload(atom, NodeId.t, Results.t) :: [S.metrics_per_unit]
+    @moduledoc """
+    Interface to storage for metrics data.
+
+    See `AntikytheraEal` for common information about pluggable interfaces defined in antikythera.
+
+    Metrics data generated during runtime is buffered for a while by `AntikytheraCore.MetricsUploader`
+    processes and then transferred to metrics storage using `upload/3` callback.
+    """
+
+    @doc """
+    Uploads the metrics data to the metrics storage.
+
+    `otp_app_name` is either a gear name or `:antikythera`.
+    `node_id` is the name of the current node and callback implementation may include `node_id`
+    in the body of the upload.
+    """
+    @callback upload(otp_app_name :: atom, node_id :: NodeId.t, results :: Results.t) :: [S.metrics_per_unit]
   end
 
   defmodule Memory do
