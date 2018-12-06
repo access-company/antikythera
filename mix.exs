@@ -68,8 +68,8 @@ defmodule Antikythera.Mixfile do
     [
       # The following libraries are included to realize antikythera's features;
       # these are considered as implementation details of antikythera and thus must not be used by gear implementations.
-      {:cowboy      , "2.2.2" , [antikythera_internal: true]},
-      {:cowlib      , "2.1.0" , [antikythera_internal: true]},
+      {:cowboy      , "2.6.1" , [antikythera_internal: true]},
+      {:cowlib      , "2.7.0" , [antikythera_internal: true]},
       {:hackney     , "1.13.0", [antikythera_internal: true]},
       {:calliope    , "0.4.1" , [antikythera_internal: true]}, # 0.4.2 is broken!
       {:pool_sup    , "0.6.0" , [antikythera_internal: true]},
@@ -101,7 +101,7 @@ defmodule Antikythera.Mixfile do
       {:websocket_client, "1.3.0" , [only: :test]}, # as a websocket client implementation to use during test (including upgrade_compatibility_test)
 
       # indirect deps
-      {:ranch              , "1.4.0" , [indirect: true]}, # cowboy
+      {:ranch              , "1.7.1" , [indirect: true]}, # cowboy
       {:certifi            , "2.3.1" , [indirect: true]}, # hackney
       {:ssl_verify_fun     , "1.1.1" , [indirect: true]}, # hackney
       {:idna               , "5.1.2" , [indirect: true]}, # hackney

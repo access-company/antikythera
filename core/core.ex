@@ -63,10 +63,10 @@ defmodule AntikytheraCore do
 
   defp start_cowboy_http() do
     dispatch_rules = AntikytheraCore.Handler.CowboyRouting.compiled_routes([], false)
-    ranch_transport_opts = [
-      port:            Antikythera.Env.port_to_listen(),
+    ranch_transport_opts = %{
       max_connections: :infinity, # limit is imposed on a per-executor pool basis
-    ]
+      socket_opts:     [port: Antikythera.Env.port_to_listen()],
+    }
     cowboy_proto_opts = %{
       idle_timeout:    120_000, # increase idle timeout of keepalive connections; this should be longer than LB's idle timeout
       request_timeout: 30_000,  # timeout must be sufficiently longer than the gear action timeout (10_000)

@@ -19,7 +19,8 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
   @type http_reply :: {:ok, :cowboy_req.req, nil}
   @type ws_upgrade :: {:cowboy_websocket, :cowboy_req.req, Conn.t, timeout}
 
-  @ws_upgrade_options %{idle_timeout: 60_000, compress: true}
+  max_frame_size = 5_000_000 # (Should we make this a mix config item?)
+  @ws_upgrade_options %{idle_timeout: 60_000, compress: true, max_frame_size: max_frame_size}
 
   @impl true
   defun init(req1                        :: :cowboy_req.req,
