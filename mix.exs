@@ -70,7 +70,7 @@ defmodule Antikythera.Mixfile do
       # these are considered as implementation details of antikythera and thus must not be used by gear implementations.
       {:cowboy      , "2.6.1" , [antikythera_internal: true]},
       {:cowlib      , "2.7.0" , [antikythera_internal: true]},
-      {:hackney     , "1.13.0", [antikythera_internal: true]},
+      {:hackney     , "1.14.3", [antikythera_internal: true]},
       {:calliope    , "0.4.1" , [antikythera_internal: true]}, # 0.4.2 is broken!
       {:pool_sup    , "0.6.0" , [antikythera_internal: true]},
       {:raft_fleet  , "0.9.2" , [antikythera_internal: true]},
@@ -102,13 +102,13 @@ defmodule Antikythera.Mixfile do
 
       # indirect deps
       {:ranch              , "1.7.1" , [indirect: true]}, # cowboy
-      {:certifi            , "2.3.1" , [indirect: true]}, # hackney
-      {:ssl_verify_fun     , "1.1.1" , [indirect: true]}, # hackney
-      {:idna               , "5.1.2" , [indirect: true]}, # hackney
+      {:certifi            , "2.4.2" , [indirect: true]}, # hackney
+      {:ssl_verify_fun     , "1.1.4" , [indirect: true]}, # hackney
+      {:idna               , "6.0.0" , [indirect: true]}, # hackney
       {:metrics            , "1.0.1" , [indirect: true]}, # hackney
       {:mimerl             , "1.0.2" , [indirect: true]}, # hackney
-      {:parse_trans        , "3.2.0" , [indirect: true]}, # certifi
-      {:unicode_util_compat, "0.3.1" , [indirect: true]}, # idna
+      {:parse_trans        , "3.3.0" , [indirect: true]}, # certifi
+      {:unicode_util_compat, "0.4.1" , [indirect: true]}, # idna
       {:p1_utils           , "1.0.13", [indirect: true]}, # fast_xml
       {:bbmustache         , "1.0.4" , [indirect: true, only: :prod, runtime: false]}, # relx
       {:cf                 , "0.2.2" , [indirect: true, only: :prod, runtime: false]}, # relx
