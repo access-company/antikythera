@@ -94,7 +94,7 @@ defmodule Antikythera.Memcache do
               value               :: Value.t,
               epool_id            :: v[EPoolId.t],
               lifetime_in_sec     :: v[non_neg_integer],
-              prob_lifetime_ratio :: v[NormalizedFloat.t] \\ @default_ratio) :: :ok | {:error, :too_large_key} | {:error, :too_large_value} do
+              prob_lifetime_ratio :: v[NormalizedFloat.t] \\ @default_ratio) :: :ok | {:error, :too_large_key | :too_large_value} do
     cond do
       not Key.valid?(key)     -> {:error, :too_large_key}
       not Value.valid?(value) -> {:error, :too_large_value}
