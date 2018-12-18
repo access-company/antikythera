@@ -84,8 +84,8 @@ defmodule Antikythera.Memcache do
   defun read(key                 :: Key.t,
              epool_id            :: v[EPoolId.t],
              lifetime_in_sec     :: v[non_neg_integer],
-             fun                 :: (-> Value.t),
-             prob_lifetime_ratio :: v[NormalizedFloat.t] \\ @default_ratio) :: R.t(Value.t, :too_large_key | :too_large_value) do
+             prob_lifetime_ratio :: v[NormalizedFloat.t] \\ @default_ratio,
+             fun                 :: (-> Value.t)) :: R.t(Value.t, :too_large_key | :too_large_value) do
     read(key, epool_id)
     |> case do
       {:ok, value}         -> {:ok, value}
