@@ -38,6 +38,12 @@ defmodule Antikythera.MemcacheTest do
     assert Memcache.read( "foo", @epool_id)                    == {:ok, "hoge"}
   end
 
+  test "should write values to memcache and read them with read_or_else_write/5" do
+    assert Memcache.read("foo", @epool_id)                                           == {:error, :not_found}
+    assert Memcache.read_or_else_write("foo", @epool_id, @lifetime, fn -> "bar" end) == {:ok, "bar"}
+    assert Memcache.read("foo", @epool_id)                                           == {:ok, "bar"}
+  end
+
   test "should return an error with non existing keys" do
     assert Memcache.write("foo", "bar", @epool_id, @lifetime) == :ok
     assert Memcache.read( "non_existing_key", @epool_id)      == {:error, :not_found}
@@ -62,12 +68,14 @@ defmodule Antikythera.MemcacheTest do
   test "should return an error with too large keys" do
     large_binary = String.duplicate("a", @max_key_size)
     assert TermUtil.size(large_binary) > @max_key_size
-    assert Memcache.write(large_binary, "bar", @epool_id, @lifetime) == {:error, :too_large_key}
+    assert Memcache.write(large_binary, "bar", @epool_id, @lifetime)                        == {:error, :too_large_key}
+    assert Memcache.read_or_else_write(large_binary, @epool_id, @lifetime, fn -> "bar" end) == {:error, :too_large_key}
   end
 
   test "should return an error with too large values" do
     large_binary = String.duplicate("a", @max_value_size)
     assert TermUtil.size(large_binary) > @max_value_size
-    assert Memcache.write("foo", large_binary, @epool_id, @lifetime) == {:error, :too_large_value}
+    assert Memcache.write("foo", large_binary, @epool_id, @lifetime)                        == {:error, :too_large_value}
+    assert Memcache.read_or_else_write("foo", @epool_id, @lifetime, fn -> large_binary end) == {:error, :too_large_value}
   end
 end
