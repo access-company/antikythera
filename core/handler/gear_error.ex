@@ -13,56 +13,49 @@ defmodule AntikytheraCore.Handler.GearError do
 
   defun error(conn :: v[Conn.t], reason :: reason, stacktrace :: stacktrace) :: Conn.t do
     output_error_to_log(conn, reason, stacktrace)
-    case CoreConn.gear_name(conn) |> GearModule.error_handler() do
-      nil -> %Conn{conn | status: 500, resp_body: internal_error_body(conn, reason, stacktrace)}
-      mod -> mod.error(conn, reason)
-    end
+    invoke_error_handler(conn,
+                         fn mod -> mod.error(conn, reason) end,
+                         fn -> %Conn{conn | status: 500, resp_body: internal_error_body(conn, reason, stacktrace)} end)
   end
 
   defun no_route(conn :: v[Conn.t]) :: Conn.t do
-    case CoreConn.gear_name(conn) |> GearModule.error_handler() do
-      nil -> %Conn{conn | status: 400, resp_body: "NoRouteFound"}
-      mod -> mod.no_route(conn)
-    end
+    invoke_error_handler(conn,
+                         fn mod -> mod.no_route(conn) end,
+                         fn -> %Conn{conn | status: 400, resp_body: "NoRouteFound"} end)
   end
 
   defun bad_request(conn :: v[Conn.t]) :: Conn.t do
-    case CoreConn.gear_name(conn) |> GearModule.error_handler() do
-      nil -> %Conn{conn | status: 400, resp_body: "BadRequest"}
-      mod -> mod.bad_request(conn)
-    end
+    invoke_error_handler(conn,
+                         fn mod -> mod.bad_request(conn) end,
+                         fn -> %Conn{conn | status: 400, resp_body: "BadRequest"} end)
   end
 
   defun bad_executor_pool_id(conn :: v[Conn.t], reason :: v[BadIdReason.t]) :: Conn.t do
-    case CoreConn.gear_name(conn) |> GearModule.error_handler() do
-      nil -> bad_executor_pool_id_default(conn)
-      mod ->
-        try do
-          mod.bad_executor_pool_id(conn, reason)
-        rescue
-          UndefinedFunctionError -> bad_executor_pool_id_default(conn)
-        end
-    end
-  end
-
-  defunp bad_executor_pool_id_default(conn :: v[Conn.t]) :: Conn.t do
-    %Conn{conn | status: 404, resp_body: "InvalidExecutorPoolId"}
+    invoke_error_handler(conn,
+                         fn mod -> mod.bad_executor_pool_id(conn, reason) end,
+                         fn -> %Conn{conn | status: 404, resp_body: "InvalidExecutorPoolId"} end)
   end
 
   defun ws_too_many_connections(conn :: v[Conn.t]) :: Conn.t do
-    case CoreConn.gear_name(conn) |> GearModule.error_handler() do
-      nil -> ws_too_many_connections_default(conn)
-      mod ->
-        try do
-          mod.ws_too_many_connections(conn)
-        rescue
-          UndefinedFunctionError -> ws_too_many_connections_default(conn)
-        end
-    end
+    invoke_error_handler(conn,
+                         fn mod -> mod.ws_too_many_connections(conn) end,
+                         fn -> %Conn{conn | status: 503, resp_body: "TooManyWebsocketConnections"} end)
   end
 
-  defunp ws_too_many_connections_default(conn :: v[Conn.t]) :: Conn.t do
-    %Conn{conn | status: 503, resp_body: "TooManyWebsocketConnections"}
+  defunp invoke_error_handler(conn :: v[Conn.t], invoke_fn :: (module -> Conn.t), default_fn :: (() -> Conn.t)) :: Conn.t do
+    case CoreConn.gear_name(conn) |> GearModule.error_handler() do
+      nil -> default_fn.()
+      mod ->
+        try do
+          invoke_fn.(mod)
+        rescue
+          _ ->
+            # The raised exception can be an `UndefinedFunctionError` in case of optional handler functions;
+            # otherwise it can be an arbitrary exception due to bugs in handler implementations.
+            # Anyway we fallback to `default_fn`.
+            default_fn.()
+        end
+    end
   end
 
   defunp output_error_to_log(%Conn{request: request} = conn, reason :: reason, stacktrace :: stacktrace) :: :ok do
