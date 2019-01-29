@@ -127,9 +127,15 @@ defmodule AntikytheraLocal.RunningEnvironment do
     version = AntikytheraCore.Version.read_from_app_file(build_gear_dir, gear_name_str)
     IO.puts("Successfully built #{gear_name_str} (#{version})")
     if generate_appup?, do: generate_appup(gear_name_str, gear_repo_dir)
-    :ok = File.rename(build_gear_dir, Path.join(@compiled_gears_dir, "#{gear_name_str}-#{version}"))
+    rename_dir!(build_gear_dir, Path.join(@compiled_gears_dir, "#{gear_name_str}-#{version}"))
     {_, 0} = System.cmd("tar", ["-czhf", "#{gear_name_str}-#{version}.tgz", "#{gear_name_str}-#{version}"], [cd: @compiled_gears_dir])
     {gear_name_str, version}
+  end
+
+  defp rename_dir!(src, dest) do
+    # `File.rename/2` won't work across partitions
+    File.cp_r!(src, dest)
+    File.rm_rf!(src)
   end
 
   defunp build_gear(gear_name_str :: v[GearNameStr.t], gear_repo_dir :: Path.t) :: Path.t do
