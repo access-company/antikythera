@@ -55,7 +55,7 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
   end
 
   defunp normal_routes(gear_name :: v[GearName.t]) :: route_path do
-    {"/[...]", GearAction.Web, {gear_name, GearModule.request_helper_modules(gear_name)}}
+    {"/[...]", GearAction.Web, gear_name}
   end
 
   defunp domains_of(gear_name :: v[GearName.t]) :: [Domain.t] do

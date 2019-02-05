@@ -10,6 +10,7 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
   alias Antikythera.Context.GearEntryPoint
   alias AntikytheraCore.Handler.{GearAction, GearError, HelperModules, CowboyReq, ExecutorPoolHelper, WebsocketState}
   alias AntikytheraCore.Conn, as: CoreConn
+  alias AntikytheraCore.GearModule
   alias AntikytheraCore.ExecutorPool.ActionRunner
   alias AntikytheraCore.GearLog.ContextHelper
 
@@ -23,11 +24,11 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
   @ws_upgrade_options %{idle_timeout: 60_000, compress: true, max_frame_size: max_frame_size}
 
   @impl true
-  defun init(req1                        :: :cowboy_req.req,
-             {gear_name, helper_modules} :: {GearName.t, HelperModules.t}) :: http_reply | ws_upgrade do
+  defun init(req1 :: :cowboy_req.req, gear_name :: v[GearName.t]) :: http_reply | ws_upgrade do
     R.m do
       method                           <- CowboyReq.method(req1)
       path_info                        =  CowboyReq.path_info(req1)
+      helper_modules                   =  GearModule.request_helper_modules(gear_name)
       {entry_point, path_matches, ws?} <- find_route(req1, gear_name, method, path_info, helper_modules)
       routing_info                     =  {gear_name, entry_point, method, path_info, path_matches}
       qparams                          <- CowboyReq.query_params(req1, routing_info)
