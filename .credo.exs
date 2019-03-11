@@ -41,6 +41,7 @@
         {Credo.Check.Readability.StringSigils},
         {Credo.Check.Readability.TrailingBlankLine},
         {Credo.Check.Readability.TrailingWhiteSpace},
+        {Credo.Check.Readability.UnnecessaryAliasExpansion},
         {Credo.Check.Readability.VariableNames},
 
         {Credo.Check.Refactor.ABCSize},
@@ -52,6 +53,7 @@
         {Credo.Check.Refactor.LongQuoteBlocks},
         {Credo.Check.Refactor.MapInto},
         {Credo.Check.Refactor.MatchInCondition},
+        {Credo.Check.Refactor.ModuleDependencies, false},
         {Credo.Check.Refactor.NegatedConditionsInUnless},
         {Credo.Check.Refactor.NegatedConditionsWithElse},
         {Credo.Check.Refactor.Nesting},

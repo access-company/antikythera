@@ -4,7 +4,7 @@ use Croma
 
 defmodule AntikytheraCore.ErlangLogTranslator do
   @moduledoc """
-  Translator for `Logger`, installed via config.
+  Translator for `Logger`, installed via application config.
 
   Most of translations are delegated to `Logger.Translator`;
   this translator neglects messages of the following types:
