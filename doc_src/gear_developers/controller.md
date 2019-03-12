@@ -21,7 +21,7 @@
     - Websocket connections limit is reached.
 - To customize response on error, you can define your gear's custom error handlers by:
     - Add `YourGear.Controller.Error` module.
-    - Inside the module define all of the following 3 functions:
+    - Inside the module define the following functions:
         - `error/2`
         - `no_route/1`
         - `bad_request/1`

@@ -74,7 +74,7 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
         after
           0 -> :ok
         end
-        GearError.error(conn, :timeout, [])
+        GearError.error(conn, :killed, [])
     after
       Process.flag(:trap_exit, false)
     end

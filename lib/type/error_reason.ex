@@ -5,6 +5,14 @@ use Croma
 defmodule Antikythera.ErrorReason do
   @moduledoc """
   Type module for error that describes what went wrong during a process execution.
+
+  Possible values for `t:t/0` are:
+
+  - `{:error, Exception.t}` : An exception was thrown and was not handled.
+  - `:timeout`              : Execution timed out.
+  - `:killed`               : Process was brutally killed, typically due to heap limit violation.
+  - `{:throw, any}`         : A value was thrown but not caught.
+  - `{:exit, any}`          : Process exited before completing the execution.
   """
 
   @type t :: {:error, Exception.t} | {:throw, any} | {:exit, any} | :timeout | :killed

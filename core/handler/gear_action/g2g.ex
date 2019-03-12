@@ -46,6 +46,9 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
     mfa = {controller, :__action__, [conn, action]}
     GearTask.exec_wait(
       mfa, Env.gear_action_timeout(), &CoreConn.run_before_send(&1, conn),
-      fn(reason, stacktrace) -> GearError.error(conn, reason, stacktrace) end)
+      fn(reason, stacktrace) -> GearError.error(conn, convert_error_reason(reason), stacktrace) end)
   end
+
+  defp convert_error_reason({:exit, :killed}), do: :killed
+  defp convert_error_reason(reason          ), do: reason
 end
