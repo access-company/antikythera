@@ -10,7 +10,10 @@ defmodule Antikythera.TokenBucket do
   """
 
   @doc """
-  Usage of this function is the same as `take/4` except that an executor pool ID is required as an argument.
+  Takes the specified tokens from the bucket.
+
+  Internally the actual bucket name is prefixed with the given `epool_id`.
+  Note that return value on error is slightly different from that of `Foretoken.take/5` (for backward compatibility).
   """
   defun take(epool_id               :: v[Antikythera.ExecutorPool.Id.t],
              bucket                 :: any,
@@ -18,6 +21,9 @@ defmodule Antikythera.TokenBucket do
              max_tokens             :: g[pos_integer],
              tokens_to_take         :: g[pos_integer] \\ 1) :: :ok | {:error, pos_integer} do
     bucket_with_epool_id = {epool_id, bucket}
-    Foretoken.take(bucket_with_epool_id, milliseconds_per_token, max_tokens, tokens_to_take)
+    case Foretoken.take(bucket_with_epool_id, milliseconds_per_token, max_tokens, tokens_to_take) do
+      :ok                                   -> :ok
+      {:error, {:not_enough_token, millis}} -> {:error, millis}
+    end
   end
 end
