@@ -54,8 +54,10 @@ defmodule Antikythera.AsyncJob do
   when it takes longer, antikythera stops the execution of `abandon/3` in the middle.
 
   `inspect_payload/1` optional callback is solely for logging purpose.
-  By providing concrete implementation you can additionally include summary of each jobs's payload into logs.
-  As an example, suppose your `payload` contains "id" field; then it's natural to define the following `inspect_payload/1`:
+  By providing a concrete callback implementation you can additionally include
+  summary of each jobs's payload into logs.
+  As an example, suppose your `payload` contains "id" field; then it's natural to define
+  the following `inspect_payload/1`:
 
       def inspect_payload(%{"id" => id}) do
         id
@@ -69,15 +71,17 @@ defmodule Antikythera.AsyncJob do
 
       YourGear.SomeAsyncJob.register(%{"arbitrary" => "map"}, context, options)
 
-  Here first argument is an arbitrary map that is passed to `run/3` callback implementation.
+  Here first argument is an arbitrary map that is passed to `run/3` callback implementation
   (note that structs are maps and thus usable as payloads).
-  `context` is a value of `t:Antikythera.Context.t/0` and is used to obtain to which executor pool to register the job.
+  `context` is a value of `t:Antikythera.Context.t/0` and is used to obtain
+  the executor pool which this job is registered to.
   When you need to register a job to an executor pool that is not the current one,
   you can pass a `t:Antikythera.ExecutorPool.Id.t/0` instead of `t:Antikythera.Context.t/0`.
   `options` must be a `t:Keyword.t/0` which can include the following values:
 
   - `id`: An ID of the job.
-    If given it must match the regex pattern `~r/#{Id.pattern().source}/` and must be unique in the job queue specified by the second argument.
+    If given it must match the regex pattern `~r/#{Id.pattern().source}/` and must be
+    unique in the job queue specified by the second argument.
     If not given antikythera automatically generates one for you.
   - `schedule`: When to run the job as a 2-tuple.
     If not given it defaults to `{:once, Antikythera.Time.now()}`, i.e.,
@@ -89,13 +93,17 @@ defmodule Antikythera.AsyncJob do
             The time must be a future time and within #{div(AntikytheraCore.AsyncJob.max_start_time_from_now(), 24 * 60 * 60_000)} days from now.
       - `{:cron, Antikythera.Cron.t}`
           - The job is repeatedly executed at the given cron schedule.
-            After the job is either successfully completed or abandoned by failure(s), the job is requeued to the job queue.
+            After the job is either successfully completed or abandoned by failure(s),
+            the job is requeued to the job queue.
             Note that next start time is computed from the time of requeuing.
-            For example, if a job is scheduled on every 10 minutes ("*/10 * * * *") and its execution takes 15 minutes to complete,
+            For example, if a job is scheduled on every 10 minutes ("*/10 * * * *")
+            and its execution takes 15 minutes to complete,
             then the job will in effect run on every 20 minutes.
-            The schedule will repeat indefinitely; when you have done with the job you can remove it by `cancel/3`.
+            The schedule will repeat indefinitely; when you have done with the job
+            you can remove it by `cancel/3`.
   - `max_duration`: Maximum execution time (in milliseconds) of the job.
-    A job which has been running for more than `max_duration` is brutally killed and if it has remaining attempts it will be retried.
+    A job which has been running for more than `max_duration` is brutally killed and
+    if it has remaining attempts it will be retried.
     Defaults to `#{MaxDuration.default()}` (`#{div(MaxDuration.default(), 60_000)}` minutes).
     If explicitly given it cannot exceed `#{MaxDuration.max()}` (`#{div(MaxDuration.max(), 60_000)}` minutes).
   - `attempts`: A positive integer within `#{Attempts.min()}..#{Attempts.max()}`), up to which antikythera tries to run the job.
@@ -120,14 +128,16 @@ defmodule Antikythera.AsyncJob do
         If all processes in the local executor pool are busy, `register/3` returns `{:error, :no_available_workers}`.
         In that case you have 2 options:
           - give up running the job, or
-          - call `register/3` again without `bypass_job_queue` option so that the job will be executed afterward, possibly in another node.
+          - call `register/3` again without `bypass_job_queue` option so that the job
+            will be executed afterward, possibly in another node.
       - Execution with `bypass_job_queue` option takes advantage of being free from rate limiting (see below)
         and having no overhead with pushing to the distributed job queue.
         Please note that if you bypass the job queue you cannot
           - specify start time of the job (it's started immediately and only once), and
           - the job is not retried when its execution results in a failure.
       - Therefore this option cannot be used with `schedule`, `attempts` or `retry_interval`.
-        Note also that jobs running with `bypass_job_queue: true` cannot be inspected by `Antikythera.AsyncJob.list/1` or `Antikythera.AsyncJob.status/2`.
+        Note also that jobs running with `bypass_job_queue: true` cannot be inspected
+        by `Antikythera.AsyncJob.list/1` or `Antikythera.AsyncJob.status/2`.
 
   `register/3` returns a tuple of `{:ok, Antikythera.AsyncJob.Id.t}` on success.
   You can register jobs up to #{Queue.max_jobs()}.
@@ -164,8 +174,10 @@ defmodule Antikythera.AsyncJob do
   ### Payload
 
   Payloads are registered by calling `register/3` and used in `run/3`, `abandon/3` or `inspect_payload/1`.
-  Payloads are compressed as binary when `register/3` is called and kept in memory until job executions, so large payloads could degrade overall system performance.
-  Please avoid including large data in payloads; instead put ID of the data in payload and fetch the whole data in run/3.
+  Payloads are compressed as binary when `register/3` is called and kept in memory
+  until job executions, so large payloads could degrade overall system performance.
+  Please avoid including large data in payloads; instead put ID of the data in payload
+  and fetch the whole data in run/3.
   """
 
   @callback run(map, Metadata.t, Context.t) :: any
