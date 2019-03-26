@@ -117,7 +117,7 @@ defmodule Antikythera.Mixfile do
 
       # indirect tool deps
       {:bunt       , "0.2.0", [indirect: true, only: :dev]}, # credo
-      {:earmark    , "1.3.1", [indirect: true, only: :dev]}, # ex_doc
+      {:earmark    , "1.3.2", [indirect: true, only: :dev]}, # ex_doc
       {:file_system, "0.2.6", [indirect: true, only: :dev]}, # exsync and mix_test_watch
     ]
   end
