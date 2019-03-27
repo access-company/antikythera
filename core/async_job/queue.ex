@@ -352,39 +352,45 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   defun add_job(queue_name :: v[atom], job_id :: v[Id.t], job :: v[AsyncJob.t], start_time_millis :: v[pos_integer], now_millis :: v[pos_integer]) :: :ok | {:error, :full | :existing_id | {:rate_limit_reached, pos_integer}} do
-    run_command_with_rate_limit_check(queue_name, {:add, {start_time_millis, job_id}, job}, now_millis)
+    run_command_with_rate_limit_check!(queue_name, {:add, {start_time_millis, job_id}, job}, now_millis)
   end
 
   defun cancel(queue_name :: v[atom], job_id :: v[Id.t]) :: :ok | {:error, :not_found | {:rate_limit_reached, pos_integer}} do
-    run_command_with_rate_limit_check(queue_name, {:cancel, job_id}, System.system_time(:millisecond))
+    run_command_with_rate_limit_check!(queue_name, {:cancel, job_id}, System.system_time(:millisecond))
   end
 
-  defp run_command_with_rate_limit_check(queue_name, cmd, now_millis) do
+  defp run_command_with_rate_limit_check!(queue_name, cmd, now_millis) do
     case RateLimit.check_for_command(queue_name) do
-      :ok                      -> run_command(queue_name, cmd, now_millis)
+      :ok                      -> run_command!(queue_name, cmd, now_millis)
       {:error, millis_to_wait} -> {:error, {:rate_limit_reached, millis_to_wait}}
     end
   end
 
   defun fetch_job(queue_name :: v[atom]) :: nil | {JobKey.t, AsyncJob.t} do
-    run_command(queue_name, {:fetch, self()})
+    run_command!(queue_name, {:fetch, self()})
   end
 
   defun remove_locked_job(queue_name :: v[atom], job_key :: v[JobKey.t]) :: :ok do
-    :ok = run_command(queue_name, {:remove_locked, job_key})
+    :ok = run_command!(queue_name, {:remove_locked, job_key})
   end
 
   defun unlock_job_for_retry(queue_name :: v[atom], job_key :: v[JobKey.t]) :: :ok do
-    :ok = run_command(queue_name, {:unlock_for_retry, job_key})
+    :ok = run_command!(queue_name, {:unlock_for_retry, job_key})
   end
 
   defun remove_broker_from_waiting_list(queue_name :: v[atom]) :: :ok do
-    :ok = run_command(queue_name, {:remove_broker_from_waiting_list, self()})
+    case run_command(queue_name, {:remove_broker_from_waiting_list, self()}) do
+      {:ok, :ok}           -> :ok
+      {:error, :no_leader} -> :ok # We don't care if this operation succeeds or not, as this node is being terminated anyway.
+    end
+  end
+
+  defp run_command!(queue_name, cmd, now_millis \\ System.system_time(:millisecond)) do
+    run_command(queue_name, cmd, now_millis) |> R.get!()
   end
 
   defp run_command(queue_name, cmd, now_millis \\ System.system_time(:millisecond)) do
-    {:ok, ret} = RaftFleet.command(queue_name, {cmd, now_millis})
-    ret
+    RaftFleet.command(queue_name, {cmd, now_millis})
   end
 
   defun start_jobs_and_get_metrics(pid :: v[pid]) :: nil | tuple do
