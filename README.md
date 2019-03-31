@@ -73,6 +73,6 @@ For both core and gear development, please make use of our [Style Guide](https:/
 
 ## Copyright and License
 
-Copyright(c) 2015-2018 [ACCESS CO., LTD][ACCESS]. All rights reserved.
+Copyright(c) 2015-2019 [ACCESS CO., LTD][ACCESS]. All rights reserved.
 
 Antikythera source code is licensed under the [Apache License version 2.0](./LICENSE).

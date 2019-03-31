@@ -1,4 +1,4 @@
-# Copyright(c) 2015-2018 ACCESS CO., LTD. All rights reserved.
+# Copyright(c) 2015-2019 ACCESS CO., LTD. All rights reserved.
 
 defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
   @shortdoc "Generates a new release tarball for antikythera instance using relx"
