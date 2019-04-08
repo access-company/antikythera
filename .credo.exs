@@ -33,7 +33,6 @@
         {Credo.Check.Readability.ParenthesesOnZeroArityDefs, false},
         {Credo.Check.Readability.PredicateFunctionNames},
         {Credo.Check.Readability.PreferImplicitTry, false},
-        # {Credo.Check.Readability.PreferUnquotedAtoms}, # Not working(?); try again with Elixir 1.7.x
         {Credo.Check.Readability.RedundantBlankLines},
         {Credo.Check.Readability.SinglePipe, false},
         {Credo.Check.Readability.SpaceAfterCommas},
@@ -66,7 +65,6 @@
         {Credo.Check.Warning.ExpensiveEmptyEnumCheck},
         {Credo.Check.Warning.IExPry},
         {Credo.Check.Warning.IoInspect},
-        {Credo.Check.Warning.LazyLogging},
         {Credo.Check.Warning.MapGetUnsafePass},
         {Credo.Check.Warning.OperationOnSameValues},
         {Credo.Check.Warning.OperationWithConstantResult},

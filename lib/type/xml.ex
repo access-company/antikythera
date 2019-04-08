@@ -118,15 +118,6 @@ defmodule Antikythera.Xml do
     defp has_name?(%__MODULE__{name: n}, n), do: true
     defp has_name?(_, _), do: false
 
-    # In Elixir v1.7.0 `get/3` is removed as a callback. This will be removed when migrating to 1.7.x.
-    @impl true
-    def get(element, key, default) do
-      case fetch(element, key) do
-        {:ok, value} -> value
-        :error       -> default
-      end
-    end
-
     @impl true
     def get_and_update(%__MODULE__{} = e, key, f) when key in [:name, :attributes, :children] do
       case e |> Map.fetch!(key) |> f.() do
