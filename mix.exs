@@ -68,8 +68,8 @@ defmodule Antikythera.Mixfile do
     [
       # The following libraries are included to realize antikythera's features;
       # these are considered as implementation details of antikythera and thus must not be used by gear implementations.
-      {:cowboy      , "2.6.1" , [antikythera_internal: true]},
-      {:cowlib      , "2.7.0" , [antikythera_internal: true]},
+      {:cowboy      , "2.6.3" , [antikythera_internal: true]},
+      {:cowlib      , "2.7.3" , [antikythera_internal: true]},
       {:hackney     , "1.14.3", [antikythera_internal: true]},
       {:calliope    , "0.4.1" , [antikythera_internal: true]}, # 0.4.2 is broken!
       {:pool_sup    , "0.6.1" , [antikythera_internal: true]},
@@ -91,12 +91,12 @@ defmodule Antikythera.Mixfile do
       {:exsync          , "0.2.3" , [only: :dev ]},
       {:ex_doc          , "0.18.4", [only: :dev , runtime: false]},
       {:dialyxir        , "0.5.1" , [only: :dev , runtime: false]},
-      {:credo           , "1.0.3" , [only: :dev , runtime: false]},
+      {:credo           , "1.0.4" , [only: :dev , runtime: false]},
       {:mix_test_watch  , "0.9.0" , [only: :dev , runtime: false]},
       {:meck            , "0.8.13", [only: :test]},
       {:mox             , "0.5.0" , [only: :test]},
       {:excoveralls     , "0.10.6", [only: :test]},
-      {:stream_data     , "0.4.2" , [only: :test]},
+      {:stream_data     , "0.4.3" , [only: :test]},
       {:websocket_client, "1.3.0" , [only: :test]}, # as a websocket client implementation to use during test (including upgrade_compatibility_test)
 
       # indirect deps

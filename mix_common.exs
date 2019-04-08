@@ -227,8 +227,8 @@ defmodule Antikythera.GearProject do
   The following private functions are used by this module and thus mandatory.
 
   - `gear_name/0` : Name of the gear as an atom.
-  - `version/0    : Current version of the gear.
-  - `gear_deps/0  : Dependencies on other gears.
+  - `version/0`   : Current version of the gear.
+  - `gear_deps/0` : Dependencies on other gears.
   """
 
   def load_antikythera_instance_mix_config_file!(instance_name) do
