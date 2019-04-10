@@ -89,7 +89,7 @@ defmodule Antikythera.Mixfile do
 
       # tools
       {:exsync          , "0.2.3" , [only: :dev ]},
-      {:ex_doc          , "0.18.4", [only: :dev , runtime: false]},
+      {:ex_doc          , "0.20.1", [only: :dev , runtime: false]},
       {:dialyxir        , "0.5.1" , [only: :dev , runtime: false]},
       {:credo           , "1.0.4" , [only: :dev , runtime: false]},
       {:mix_test_watch  , "0.9.0" , [only: :dev , runtime: false]},
