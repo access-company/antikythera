@@ -28,17 +28,20 @@ defmodule Antikythera.AsyncJob do
       defmodule YourGear.SomeAsyncJob do
         use Antikythera.AsyncJob
 
-        # run/3 is required
+        # run/3 callback is required
+        @impl true
         def run(_payload, _metadata, _context) do
           # do something here
         end
 
         # abandon/3 callback is optional; you can omit it
+        @impl true
         def abandon(_payload, _metadata, _context) do
           # cleanup code when all retries failed
         end
 
-        # inspect_payload/1 is optional; you can omit it
+        # inspect_payload/1 callback is optional; you can omit it
+        @impl true
         def inspect_payload(payload) do
           # convert a payload to a short string that can be used to identify a job in logs
         end

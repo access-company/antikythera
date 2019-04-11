@@ -30,6 +30,7 @@ To use async job, gear implementation must define a module that `use`s `Antikyth
 defmodule YourGear.SomeAsyncJob do
   use Antikythera.AsyncJob
 
+  @impl true
   def run(payload, _job_id, _context) do
     # put arbitrary code here
     YourGear.Logger.info(inspect(payload))

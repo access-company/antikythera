@@ -116,9 +116,12 @@ defmodule Antikythera.Mixfile do
       {:providers          , "1.6.0" , [indirect: true, only: :prod, runtime: false]}, # relx
 
       # indirect tool deps
-      {:bunt       , "0.2.0", [indirect: true, only: :dev]}, # credo
-      {:earmark    , "1.3.2", [indirect: true, only: :dev]}, # ex_doc
-      {:file_system, "0.2.6", [indirect: true, only: :dev]}, # exsync and mix_test_watch
+      {:bunt         , "0.2.0" , [indirect: true, only: :dev]}, # credo
+      {:earmark      , "1.3.2" , [indirect: true, only: :dev]}, # ex_doc
+      {:makeup_elixir, "0.13.0", [indirect: true, only: :dev]}, # ex_doc
+      {:makeup       , "0.8.0" , [indirect: true, only: :dev]}, # makeup_elixir
+      {:nimble_parsec, "0.5.0" , [indirect: true, only: :dev]}, # makeup
+      {:file_system  , "0.2.6" , [indirect: true, only: :dev]}, # exsync and mix_test_watch
     ]
   end
 

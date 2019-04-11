@@ -11,7 +11,7 @@ defmodule AntikytheraCore.StartupManager do
 
   - Installing gears:
     Starting a gear requires that the antikythera instance (as an OTP application) has started;
-    this step is delegated to `VersionSynchronizer`.
+    this step is delegated to `AntikytheraCore.VersionSynchronizer`.
 
   This `GenServer` waits for the above procedures to complete and then changes the cowboy routing rules
   so that the current node can receive web requests from its upstream load balancer.

@@ -5,7 +5,7 @@ defmodule Antikythera.Gettext do
   A thin wrapper around `Gettext.__using__/1` to forward error logs to each gear's logger.
 
   Usage of this module is exactly the same as `Gettext`; just `use #{inspect(__MODULE__)}` instead of `use Gettext`.
-  Options given to `#{inspect(__MODULE__)}.__using__/1` are directly passed to `Gettext.__using__/1`.
+  Options given to `use #{inspect(__MODULE__)}` are directly passed to `use Gettext`.
   This module overrides the default implementation of `c:Gettext.Backend.handle_missing_bindings/2`
   to suit the use cases for antikythera gears.
   """

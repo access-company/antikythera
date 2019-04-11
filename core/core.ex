@@ -6,6 +6,13 @@ defmodule AntikytheraCore do
   use Application
   require AntikytheraCore.Logger, as: L
 
+  @doc """
+  Callback implementation of `Application.start/2`.
+
+  Interdependencies between initialization steps here are crucial.
+  See also `AntikytheraCore.StartupManager` for initializations after construction
+  of the supervision tree.
+  """
   @impl true
   def start(_type, _args) do
     add_gears_dir_to_erl_libs()

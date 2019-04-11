@@ -70,7 +70,7 @@
             - Port number to send HTTP requests to during `blackbox_local` tests. Defaults to `8080`.
         - `NO_LISTEN`:
             - A boolean flag for disabling web server functionality of antikythera. Defaults to `false`.
-            - `true` is implicitly set when using `Antikythera.Mix.Task.prepare_antikythera/0` in your mix task.
+            - `true` is implicitly set when using `Antikythera.Mix.Task.prepare_antikythera_instance/0` in your mix task.
         - `LOG_LEVEL`:
             - Log level of all gears. Defaults to `info`. See also [logging](https://hexdocs.pm/antikythera/logging.html).
         - `SOME_GEAR_CONFIG_JSON`:
