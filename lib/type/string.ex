@@ -90,8 +90,8 @@ defmodule Antikythera.Url do
 
   captured_ip_pattern = "(?<ip_str>(\\d{1,3}\\.){3}\\d{1,3})"
   host_pattern        = "(#{captured_ip_pattern}|#{Domain.pattern_body()})"
-  path_pattern        = "((/[^/ ?#]+)*/?)?"
-  @pattern              ~r"\Ahttps?://([^ :]+(:[^ :]+)?@)?#{host_pattern}(:\d{1,5})?#{path_pattern}(\?([^ #]*))?(#[^ ]*)?\z"
+  path_pattern        = "((/[^/\\s?#]+)*/?)?"
+  @pattern              ~r"\Ahttps?://([^\s:]+(:[^\s:]+)?@)?#{host_pattern}(:\d{1,5})?#{path_pattern}(\?([^\s#]*))?(#[^\s]*)?\z"
   def pattern(), do: @pattern
 
   defun valid?(v :: term) :: boolean do
