@@ -18,10 +18,10 @@ Code.compiler_options(ignore_module_conflict: false)
 case File.ls(Path.join(__DIR__, "tmp")) do
   {:error, :enoent} -> :ok
   {:ok, entries}    ->
-    one_month_ago_in_seconds = System.system_time(:second) - 30 * 24 * 60 * 60
+    one_day_ago_in_seconds = System.system_time(:second) - 24 * 60 * 60
     Enum.each(entries, fn entry ->
       path = Path.join([__DIR__, "tmp", entry])
-      if File.stat!(path, [time: :posix]).mtime < one_month_ago_in_seconds do
+      if File.stat!(path, [time: :posix]).mtime < one_day_ago_in_seconds do
         IO.puts("Removing old entry in tmp/ : #{path}")
         File.rm_rf!(path)
       end
