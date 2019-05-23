@@ -18,6 +18,24 @@ defmodule Antikythera.Zip do
 
   @typep opts :: {:encryption, boolean} | {:password, String.t}
 
+  @doc """
+  Creates a ZIP file.
+
+  Encryption using a password is supported in which `encryption` option is set `true`.
+
+  ## Example
+    Tmpdir.make(context, fn tmpdir ->
+      src_path = tmpdir <> "/src.txt"
+      zip_path = tmpdir <> "/archive.zip"
+      File.write!(src_path, "text")
+      Antikythera.Zip.zip(context, zip_path, src_path, [encryption: true, password: "password"])
+      |> case do
+        {:ok, archive_path} ->
+          ...
+      end
+      ...
+    end)
+  """
   defun zip(
     context_or_epool_id :: v[EPoolId.t | Context.t],
     zip_path            :: v[String.t],
