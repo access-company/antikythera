@@ -105,5 +105,17 @@ defmodule Antikythera.ZipTest do
       end)
       assert Zip.zip(@context, zip_path, src_path, [encryption: false, password: "password"]) == {:error, {:argument_error, %{encryption: false, password: "password"}}}
     end
+
+    test "returns error when shell command fails" do
+      Tmpdir.make(@context, fn tmpdir ->
+        zip_path = tmpdir <> "/archive.zip"
+        src_path = tmpdir <> "/src.txt"
+        :meck.expect(File, :exists?, fn
+          ^zip_path -> false
+          ^src_path -> true
+        end)
+        assert {:error, {:shell_runtime_error, _}} = Zip.zip(@context, zip_path, src_path)
+      end)
+    end
   end
 end
