@@ -18,12 +18,12 @@ defmodule Antikythera.ZipTest do
         {["/src_dir/"], [],                   "/src_dir/"},
         {["/src_dir/"], ["/src_dir/src.txt"], "/src_dir/src.txt"},
       ]
-      |> Enum.each(fn {dirs_to_create, files_to_write, path_to_archive} ->
+      |> Enum.each(fn {dirs_to_create, files_to_create, src_path} ->
         Tmpdir.make(@context, fn tmpdir ->
           zip_path = tmpdir <> "/archive.zip"
           Enum.each(dirs_to_create, &File.mkdir_p!(tmpdir <> &1))
-          Enum.each(files_to_write, &File.write!(tmpdir <> &1, "text"))
-          assert Zip.zip(@context, zip_path, tmpdir <> path_to_archive) == {:ok, zip_path}
+          Enum.each(files_to_create, &File.write!(tmpdir <> &1, "text"))
+          assert Zip.zip(@context, zip_path, tmpdir <> src_path) == {:ok, zip_path}
         end)
       end)
     end
@@ -34,12 +34,12 @@ defmodule Antikythera.ZipTest do
         {["/src_dir/"], [],                   "/src_dir/"},
         {["/src_dir/"], ["/src_dir/src.txt"], "/src_dir/src.txt"},
       ]
-      |> Enum.each(fn {dirs_to_create, files_to_write, path_to_archive} ->
+      |> Enum.each(fn {dirs_to_create, files_to_create, src_path} ->
         Tmpdir.make(@context, fn tmpdir ->
           zip_path = tmpdir <> "/archive.zip"
           Enum.each(dirs_to_create, &File.mkdir_p!(tmpdir <> &1))
-          Enum.each(files_to_write, &File.write!(tmpdir <> &1, "text"))
-          assert Zip.zip(@context, zip_path, tmpdir <> path_to_archive, [encryption: true, password: "password"]) == {:ok, zip_path}
+          Enum.each(files_to_create, &File.write!(tmpdir <> &1, "text"))
+          assert Zip.zip(@context, zip_path, tmpdir <> src_path, [encryption: true, password: "password"]) == {:ok, zip_path}
         end)
       end)
     end
