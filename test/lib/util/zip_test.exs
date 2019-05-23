@@ -69,5 +69,29 @@ defmodule Antikythera.ZipTest do
       :meck.expect(File, :exists?, fn _ -> flunk() end)
       assert Zip.zip(@context, zip_path, src_path) == {:error, {:permission_denied, %{path: zip_path, tmpdir: tmpdir}}}
     end
+
+    test "returns error when src is not found" do
+      tmpdir = "/tmpdir"
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, tmpdir} end)
+      zip_path = "/tmpdir/archive.zip"
+      src_path = "/tmpdir/src.txt"
+      :meck.expect(File, :exists?, fn
+        ^zip_path -> false
+        ^src_path -> false
+      end)
+      assert Zip.zip(@context, zip_path, src_path) == {:error, {:not_found, %{path: src_path}}}
+    end
+
+    test "returns error when resulting archive already exists" do
+      tmpdir = "/tmpdir"
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, tmpdir} end)
+      zip_path = "/tmpdir/archive.zip"
+      src_path = "/tmpdir/src.txt"
+      :meck.expect(File, :exists?, fn
+        ^zip_path -> true
+        ^src_path -> true
+      end)
+      assert Zip.zip(@context, zip_path, src_path) == {:error, {:already_exists, %{path: zip_path}}}
+    end
   end
 end
