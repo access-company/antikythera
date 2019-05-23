@@ -33,6 +33,8 @@ defmodule Antikythera.Zip do
     case map do
       %{encryption: true,  password: password} ->
         {:ok,    ["-P", password]}
+      %{encryption: false, password: _}        ->
+        {:error, {:argument_error, map}}
       _                                        ->
         {:ok,    []}
     end
