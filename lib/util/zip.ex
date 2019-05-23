@@ -8,10 +8,13 @@ defmodule Antikythera.Zip do
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.TmpdirTracker
 
+  @typep opts :: {:encryption, boolean} | {:password, String.t}
+
   defun zip(
     context_or_epool_id :: v[EPoolId.t | Context.t],
     zip_path            :: v[String.t],
-    src_path            :: v[String.t]
+    src_path            :: v[String.t],
+    _opts               :: v[list(opts)] \\ []
   ) :: R.t(Path.t) do
     epool_id = extract_epool_id(context_or_epool_id)
     with(
