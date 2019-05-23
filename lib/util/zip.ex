@@ -19,6 +19,8 @@ defmodule Antikythera.Zip do
     epool_id = extract_epool_id(context_or_epool_id)
     with(
       {:ok, tmpdir} <- TmpdirTracker.get(epool_id),
+      :ok           <- validate_within_tmpdir(zip_path, tmpdir),
+      :ok           <- validate_within_tmpdir(src_path, tmpdir),
       {:ok, args}   <- opts |> Map.new() |> extract_zip_args(),
       :ok           <- try_zip_cmd(args ++ [zip_path, src_path])
     ) do
@@ -28,6 +30,14 @@ defmodule Antikythera.Zip do
 
   defp extract_epool_id(%Context{executor_pool_id: epool_id}), do: epool_id
   defp extract_epool_id(epool_id),                             do: epool_id
+
+  defunp validate_within_tmpdir(path :: v[String.t], tmpdir :: v[String.t]) :: :ok | {:error, tuple} do
+    if path |> Path.expand() |> String.starts_with?("#{tmpdir}/") do
+      :ok
+    else
+      {:error, {:permission_denied, %{path: path, tmpdir: tmpdir}}}
+    end
+  end
 
   defunp extract_zip_args(map :: map) :: R.t(list(String.t)) do
     case map do
