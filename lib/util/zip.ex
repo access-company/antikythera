@@ -14,12 +14,13 @@ defmodule Antikythera.Zip do
     context_or_epool_id :: v[EPoolId.t | Context.t],
     zip_path            :: v[String.t],
     src_path            :: v[String.t],
-    _opts               :: v[list(opts)] \\ []
+    opts                :: v[list(opts)] \\ []
   ) :: R.t(Path.t) do
     epool_id = extract_epool_id(context_or_epool_id)
     with(
       {:ok, tmpdir} <- TmpdirTracker.get(epool_id),
-      :ok           <- try_zip_cmd([zip_path, src_path])
+      {:ok, args}   <- opts |> Map.new() |> extract_zip_args(),
+      :ok           <- try_zip_cmd(args ++ [zip_path, src_path])
     ) do
       {:ok, zip_path}
     end
@@ -27,6 +28,15 @@ defmodule Antikythera.Zip do
 
   defp extract_epool_id(%Context{executor_pool_id: epool_id}), do: epool_id
   defp extract_epool_id(epool_id),                             do: epool_id
+
+  defunp extract_zip_args(map :: map) :: R.t(list(String.t)) do
+    case map do
+      %{encryption: true,  password: password} ->
+        {:ok,    ["-P", password]}
+      _                                        ->
+        {:ok,    []}
+    end
+  end
 
   defunp try_zip_cmd(args :: v[list(String.t)]) :: :ok | {:error, tuple} do
     case System.cmd("zip", args) do
