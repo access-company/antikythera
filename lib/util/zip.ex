@@ -16,7 +16,7 @@ defmodule Antikythera.Zip do
     epool_id = extract_epool_id(context_or_epool_id)
     with(
       {:ok, tmpdir} <- TmpdirTracker.get(epool_id),
-      {_,   0}      <- try_zip_cmd([zip_path, src_path])
+      :ok           <- try_zip_cmd([zip_path, src_path])
     ) do
       {:ok, zip_path}
     end
@@ -24,4 +24,13 @@ defmodule Antikythera.Zip do
 
   defp extract_epool_id(%Context{executor_pool_id: epool_id}), do: epool_id
   defp extract_epool_id(epool_id),                             do: epool_id
+
+  defunp try_zip_cmd(args :: v[list(String.t)]) :: :ok | {:error, tuple} do
+    case System.cmd("zip", args) do
+      {_,   0}      ->
+        :ok
+      {msg, status} ->
+        {:error, {:shell_runtime_error, %{msg: msg, status: status}}}
+    end
+  end
 end
