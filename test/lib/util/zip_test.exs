@@ -93,5 +93,17 @@ defmodule Antikythera.ZipTest do
       end)
       assert Zip.zip(@context, zip_path, src_path) == {:error, {:already_exists, %{path: zip_path}}}
     end
+
+    test "returns error when encryption is disabled and password exists" do
+      tmpdir = "/tmpdir"
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, tmpdir} end)
+      zip_path = "/tmpdir/archive.zip"
+      src_path = "/tmpdir/src.txt"
+      :meck.expect(File, :exists?, fn
+        ^zip_path -> false
+        ^src_path -> true
+      end)
+      assert Zip.zip(@context, zip_path, src_path, [encryption: false, password: "password"]) == {:error, {:argument_error, %{encryption: false, password: "password"}}}
+    end
   end
 end
