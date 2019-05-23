@@ -10,6 +10,9 @@ defmodule Antikythera.ZipTest do
   end
 
   @context Antikythera.Test.ConnHelper.make_conn().context
+  @tmpdir   "/tmpdir"
+  @src_path "/tmpdir/src.txt"
+  @zip_path "/tmpdir/archive.zip"
 
   describe "Zip.zip/3" do
     test "returns path of resulting archive" do
@@ -46,64 +49,49 @@ defmodule Antikythera.ZipTest do
 
     test "returns error when tmpdir is not found" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:error, {:not_found, %{}}} end)
-      zip_path = "/tmpdir/archive.zip"
-      src_path = "/tmpdir/src.txt"
       :meck.expect(File, :exists?, fn _ -> flunk() end)
-      assert Zip.zip(@context, zip_path, src_path) == {:error, {:not_found, %{}}}
+      assert Zip.zip(@context, @zip_path, @src_path) == {:error, {:not_found, %{}}}
     end
 
     test "returns error when src is outside tmpdir" do
-      tmpdir = "/tmpdir"
-      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, tmpdir} end)
-      zip_path = "/tmpdir/archive.zip"
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       src_path = "/another_dir/src.txt"
       :meck.expect(File, :exists?, fn _ -> flunk() end)
-      assert Zip.zip(@context, zip_path, src_path) == {:error, {:permission_denied, %{path: src_path, tmpdir: tmpdir}}}
+      assert Zip.zip(@context, @zip_path, src_path) == {:error, {:permission_denied, %{tmpdir: @tmpdir, path: src_path}}}
     end
 
     test "returns error when resulting archive is outside tmpdir" do
-      tmpdir = "/tmpdir"
-      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, tmpdir} end)
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       zip_path = "/another_dir/archive.zip"
-      src_path = "/tmpdir/src.txt"
       :meck.expect(File, :exists?, fn _ -> flunk() end)
-      assert Zip.zip(@context, zip_path, src_path) == {:error, {:permission_denied, %{path: zip_path, tmpdir: tmpdir}}}
+      assert Zip.zip(@context, zip_path, @src_path) == {:error, {:permission_denied, %{tmpdir: @tmpdir, path: zip_path}}}
     end
 
     test "returns error when src is not found" do
-      tmpdir = "/tmpdir"
-      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, tmpdir} end)
-      zip_path = "/tmpdir/archive.zip"
-      src_path = "/tmpdir/src.txt"
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       :meck.expect(File, :exists?, fn
-        ^zip_path -> false
-        ^src_path -> false
+        @zip_path -> false
+        @src_path -> false
       end)
-      assert Zip.zip(@context, zip_path, src_path) == {:error, {:not_found, %{path: src_path}}}
+      assert Zip.zip(@context, @zip_path, @src_path) == {:error, {:not_found, %{path: @src_path}}}
     end
 
     test "returns error when resulting archive already exists" do
-      tmpdir = "/tmpdir"
-      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, tmpdir} end)
-      zip_path = "/tmpdir/archive.zip"
-      src_path = "/tmpdir/src.txt"
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       :meck.expect(File, :exists?, fn
-        ^zip_path -> true
-        ^src_path -> true
+        @zip_path -> true
+        @src_path -> true
       end)
-      assert Zip.zip(@context, zip_path, src_path) == {:error, {:already_exists, %{path: zip_path}}}
+      assert Zip.zip(@context, @zip_path, @src_path) == {:error, {:already_exists, %{path: @zip_path}}}
     end
 
     test "returns error when encryption is disabled and password exists" do
-      tmpdir = "/tmpdir"
-      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, tmpdir} end)
-      zip_path = "/tmpdir/archive.zip"
-      src_path = "/tmpdir/src.txt"
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       :meck.expect(File, :exists?, fn
-        ^zip_path -> false
-        ^src_path -> true
+        @zip_path -> false
+        @src_path -> true
       end)
-      assert Zip.zip(@context, zip_path, src_path, [encryption: false, password: "password"]) == {:error, {:argument_error, %{encryption: false, password: "password"}}}
+      assert Zip.zip(@context, @zip_path, @src_path, [encryption: false, password: "password"]) == {:error, {:argument_error, %{encryption: false, password: "password"}}}
     end
 
     test "returns error when shell command fails" do
