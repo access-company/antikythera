@@ -51,5 +51,23 @@ defmodule Antikythera.ZipTest do
       :meck.expect(File, :exists?, fn _ -> flunk() end)
       assert Zip.zip(@context, zip_path, src_path) == {:error, {:not_found, %{}}}
     end
+
+    test "returns error when src is outside tmpdir" do
+      tmpdir = "/tmpdir"
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, tmpdir} end)
+      zip_path = "/tmpdir/archive.zip"
+      src_path = "/another_dir/src.txt"
+      :meck.expect(File, :exists?, fn _ -> flunk() end)
+      assert Zip.zip(@context, zip_path, src_path) == {:error, {:permission_denied, %{path: src_path, tmpdir: tmpdir}}}
+    end
+
+    test "returns error when resulting archive is outside tmpdir" do
+      tmpdir = "/tmpdir"
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, tmpdir} end)
+      zip_path = "/another_dir/archive.zip"
+      src_path = "/tmpdir/src.txt"
+      :meck.expect(File, :exists?, fn _ -> flunk() end)
+      assert Zip.zip(@context, zip_path, src_path) == {:error, {:permission_denied, %{path: zip_path, tmpdir: tmpdir}}}
+    end
   end
 end
