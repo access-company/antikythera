@@ -62,6 +62,13 @@ defmodule Antikythera.ZipTest do
       end
     end
 
+    test "returns error when input file name is suffixed with / while it is a file" do
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
+      src_path = "/tmpdir/src/"
+      :meck.expect(File, :dir?, fn _path -> false end)
+      assert Zip.zip(@context, @zip_path, src_path) == {:error, {:not_dir, %{path: src_path}}}
+    end
+
     test "returns error when tmpdir is not found" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:error, {:not_found, %{}}} end)
       :meck.expect(File, :exists?, fn _ -> flunk() end)
