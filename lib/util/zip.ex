@@ -38,15 +38,17 @@ defmodule Antikythera.Zip do
   """
   defun zip(
     context_or_epool_id :: v[EPoolId.t | Context.t],
-    zip_path            :: v[String.t],
-    src_path            :: v[String.t],
+    zip_raw_path        :: v[String.t],
+    src_raw_path        :: v[String.t],
     opts                :: v[list(opts)] \\ []
   ) :: R.t(Path.t) do
     epool_id = extract_epool_id(context_or_epool_id)
     with(
       {:ok, tmpdir} <- TmpdirTracker.get(epool_id),
-      :ok           <- validate_path_type(zip_path, false),
-      :ok           <- validate_path_type(src_path, true),
+      :ok           <- validate_path_type(zip_raw_path, false),
+      :ok           <- validate_path_type(src_raw_path, true),
+      zip_path      <- Path.expand(zip_raw_path),
+      src_path      <- Path.expand(src_raw_path),
       :ok           <- validate_within_tmpdir(zip_path, tmpdir),
       :ok           <- validate_within_tmpdir(src_path, tmpdir),
       :ok           <- ensure_path_exists(zip_path, tmpdir),
@@ -75,7 +77,7 @@ defmodule Antikythera.Zip do
   end
 
   defunp validate_within_tmpdir(path :: v[String.t], tmpdir :: v[String.t]) :: :ok | {:error, tuple} do
-    if path |> Path.expand() |> String.starts_with?("#{tmpdir}/") do
+    if String.starts_with?(path, "#{tmpdir}/") do
       :ok
     else
       {:error, {:permission_denied, %{path: path, tmpdir: tmpdir}}}
@@ -97,7 +99,7 @@ defmodule Antikythera.Zip do
   end
 
   defunp validate_path_exists(path :: v[String.t]) :: :ok | {:error, tuple} do
-    if path |> Path.expand() |> File.exists?() do
+    if File.exists?(path) do
       :ok
     else
       {:error, {:not_found, %{path: path}}}
