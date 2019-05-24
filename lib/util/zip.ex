@@ -52,7 +52,7 @@ defmodule Antikythera.Zip do
       :ok           <- validate_within_tmpdir(zip_path, tmpdir),
       :ok           <- validate_within_tmpdir(src_path, tmpdir),
       :ok           <- validate_path_exists(src_path),
-      :ok           <- ensure_path_exists(zip_path, tmpdir),
+      :ok           <- ensure_dir_exists(zip_path, tmpdir),
       {:ok, args}   <- opts |> Map.new() |> extract_zip_args(),
       :ok           <- try_zip_cmd(args ++ [zip_path, src_path])
     ) do
@@ -92,7 +92,7 @@ defmodule Antikythera.Zip do
     end
   end
 
-  defunp ensure_path_exists(path :: v[String.t], tmpdir :: v[String.t]) :: :ok do
+  defunp ensure_dir_exists(path :: v[String.t], tmpdir :: v[String.t]) :: :ok do
     path
     |> Path.dirname()
     |> String.trim_leading(tmpdir <> "/")
@@ -102,7 +102,6 @@ defmodule Antikythera.Zip do
       File.mkdir_p!(child)
       child
     end)
-    File.touch!(path)
     :ok
   end
 
