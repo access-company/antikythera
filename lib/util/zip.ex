@@ -92,6 +92,7 @@ defmodule Antikythera.Zip do
       File.mkdir_p!(child)
       child
     end)
+    File.touch!(path)
     :ok
   end
 
