@@ -47,6 +47,7 @@ defmodule Antikythera.Zip do
       {:ok, tmpdir} <- TmpdirTracker.get(epool_id),
       :ok           <- validate_within_tmpdir(zip_path, tmpdir),
       :ok           <- validate_within_tmpdir(src_path, tmpdir),
+      :ok           <- ensure_zip_dir(zip_path, tmpdir),
       :ok           <- validate_path_exists(src_path),
       {:ok, args}   <- opts |> Map.new() |> extract_zip_args(),
       :ok           <- try_zip_cmd(args ++ [zip_path, src_path])
@@ -64,6 +65,19 @@ defmodule Antikythera.Zip do
     else
       {:error, {:permission_denied, %{path: path, tmpdir: tmpdir}}}
     end
+  end
+
+  defunp ensure_zip_dir(path :: v[String.t], tmpdir :: v[String.t]) :: :ok do
+    path
+    |> Path.dirname()
+    |> String.trim_leading(tmpdir <> "/")
+    |> String.split("/")
+    |> Enum.reduce(tmpdir, fn (x, acc) ->
+      child = acc <> "/" <> x
+      File.mkdir_p!(child)
+      child
+    end)
+    :ok
   end
 
   defunp validate_path_exists(path :: v[String.t]) :: :ok | {:error, tuple} do
