@@ -51,8 +51,8 @@ defmodule Antikythera.Zip do
       src_path      <- Path.expand(src_raw_path),
       :ok           <- validate_within_tmpdir(zip_path, tmpdir),
       :ok           <- validate_within_tmpdir(src_path, tmpdir),
-      :ok           <- ensure_path_exists(zip_path, tmpdir),
       :ok           <- validate_path_exists(src_path),
+      :ok           <- ensure_path_exists(zip_path, tmpdir),
       {:ok, args}   <- opts |> Map.new() |> extract_zip_args(),
       :ok           <- try_zip_cmd(args ++ [zip_path, src_path])
     ) do
@@ -84,6 +84,14 @@ defmodule Antikythera.Zip do
     end
   end
 
+  defunp validate_path_exists(path :: v[String.t]) :: :ok | {:error, tuple} do
+    if File.exists?(path) do
+      :ok
+    else
+      {:error, {:not_found, %{path: path}}}
+    end
+  end
+
   defunp ensure_path_exists(path :: v[String.t], tmpdir :: v[String.t]) :: :ok do
     path
     |> Path.dirname()
@@ -96,14 +104,6 @@ defmodule Antikythera.Zip do
     end)
     File.touch!(path)
     :ok
-  end
-
-  defunp validate_path_exists(path :: v[String.t]) :: :ok | {:error, tuple} do
-    if File.exists?(path) do
-      :ok
-    else
-      {:error, {:not_found, %{path: path}}}
-    end
   end
 
   defunp extract_zip_args(map :: map) :: R.t(list(String.t)) do
