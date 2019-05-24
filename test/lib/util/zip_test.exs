@@ -16,35 +16,43 @@ defmodule Antikythera.ZipTest do
 
   describe "Zip.zip/3" do
     test "returns path of resulting archive" do
-      [
-        {[],            ["/src.txt"],         "/src.txt"},
-        {["/src_dir/"], [],                   "/src_dir/"},
-        {["/src_dir/"], ["/src_dir/src.txt"], "/src_dir/src.txt"},
-      ]
-      |> Enum.each(fn {dirs_to_create, files_to_create, src_path} ->
+      for(
+        {dirs_to_create, files_to_create, src_path} <- [
+          {[],            ["/src.txt"],         "/src.txt"},
+          {["/src_dir/"], [],                   "/src_dir/"},
+          {["/src_dir/"], ["/src_dir/src.txt"], "/src_dir/src.txt"},
+        ],
+        zip_path <- [
+          "/archive.zip",
+          "/zip_dir/archive.zip",
+        ]
+      ) do
         Tmpdir.make(@context, fn tmpdir ->
-          zip_path = tmpdir <> "/archive.zip"
           Enum.each(dirs_to_create, &File.mkdir_p!(tmpdir <> &1))
           Enum.each(files_to_create, &File.write!(tmpdir <> &1, "text"))
-          assert Zip.zip(@context, zip_path, tmpdir <> src_path) == {:ok, zip_path}
+          assert Zip.zip(@context, tmpdir <> zip_path, tmpdir <> src_path) == {:ok, tmpdir <> zip_path}
         end)
-      end)
+      end
     end
 
     test "returns path of resulting archive encrypted with password" do
-      [
-        {[],            ["/src.txt"],         "/src.txt"},
-        {["/src_dir/"], [],                   "/src_dir/"},
-        {["/src_dir/"], ["/src_dir/src.txt"], "/src_dir/src.txt"},
-      ]
-      |> Enum.each(fn {dirs_to_create, files_to_create, src_path} ->
+      for(
+        {dirs_to_create, files_to_create, src_path} <- [
+          {[],            ["/src.txt"],         "/src.txt"},
+          {["/src_dir/"], [],                   "/src_dir/"},
+          {["/src_dir/"], ["/src_dir/src.txt"], "/src_dir/src.txt"},
+        ],
+        zip_path <- [
+          "/archive.zip",
+          "/zip_dir/archive.zip",
+        ]
+      ) do
         Tmpdir.make(@context, fn tmpdir ->
-          zip_path = tmpdir <> "/archive.zip"
           Enum.each(dirs_to_create, &File.mkdir_p!(tmpdir <> &1))
           Enum.each(files_to_create, &File.write!(tmpdir <> &1, "text"))
-          assert Zip.zip(@context, zip_path, tmpdir <> src_path, [encryption: true, password: "password"]) == {:ok, zip_path}
+          assert Zip.zip(@context, tmpdir <> zip_path, tmpdir <> src_path, [encryption: true, password: "password"]) == {:ok, tmpdir <> zip_path}
         end)
-      end)
+      end
     end
 
     test "returns error when tmpdir is not found" do
