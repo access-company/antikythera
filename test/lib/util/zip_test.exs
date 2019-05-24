@@ -91,19 +91,13 @@ defmodule Antikythera.ZipTest do
 
     test "returns error when src is not found" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
-      :meck.expect(File, :exists?, fn
-        @zip_path -> false
-        @src_path -> false
-      end)
+      :meck.expect(File, :exists?, fn @src_path -> false end)
       assert Zip.zip(@context, @zip_path, @src_path) == {:error, {:not_found, %{path: @src_path}}}
     end
 
     test "returns error when encryption is disabled and password exists" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
-      :meck.expect(File, :exists?, fn
-        @zip_path -> false
-        @src_path -> true
-      end)
+      :meck.expect(File, :exists?, fn @src_path -> true end)
       assert Zip.zip(@context, @zip_path, @src_path, [encryption: false, password: "password"]) == {:error, {:argument_error, %{encryption: false, password: "password"}}}
     end
 
@@ -111,10 +105,7 @@ defmodule Antikythera.ZipTest do
       Tmpdir.make(@context, fn tmpdir ->
         zip_path = tmpdir <> "/archive.zip"
         src_path = tmpdir <> "/src.txt"
-        :meck.expect(File, :exists?, fn
-          ^zip_path -> false
-          ^src_path -> true
-        end)
+        :meck.expect(File, :exists?, fn ^src_path -> true end)
         assert {:error, {:shell_runtime_error, _}} = Zip.zip(@context, zip_path, src_path)
       end)
     end
