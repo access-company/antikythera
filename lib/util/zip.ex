@@ -18,6 +18,10 @@ defmodule Antikythera.Zip do
 
   @typep opts :: {:encryption, boolean} | {:password, String.t}
 
+  defmodule FileName do
+    use Croma.SubtypeOfString, pattern: ~r/[^\/]\z/
+  end
+
   @doc """
   Creates a ZIP file.
 
@@ -38,15 +42,14 @@ defmodule Antikythera.Zip do
   """
   defun zip(
     context_or_epool_id :: v[EPoolId.t | Context.t],
-    zip_raw_path        :: v[String.t],
+    zip_raw_path        :: v[FileName.t],
     src_raw_path        :: v[String.t],
     opts                :: v[list(opts)] \\ []
   ) :: R.t(Path.t) do
     epool_id = extract_epool_id(context_or_epool_id)
     with(
       {:ok, tmpdir} <- TmpdirTracker.get(epool_id),
-      :ok           <- validate_path_type(zip_raw_path, false),
-      :ok           <- validate_path_type(src_raw_path, true),
+      :ok           <- validate_path_type(src_raw_path),
       zip_path      <- Path.expand(zip_raw_path),
       src_path      <- Path.expand(src_raw_path),
       :ok           <- validate_within_tmpdir(zip_path, tmpdir),
@@ -63,16 +66,11 @@ defmodule Antikythera.Zip do
   defp extract_epool_id(%Context{executor_pool_id: epool_id}), do: epool_id
   defp extract_epool_id(epool_id),                             do: epool_id
 
-  defunp validate_path_type(path :: v[String.t], allow_dir? :: v[boolean]) :: :ok | {:error, tuple} do
-    cond do
-      !String.ends_with?(path, "/") ->
-        :ok
-      !allow_dir?                   ->
-        {:error, {:is_dir, %{path: path}}}
-      File.dir?(path)               ->
-        :ok
-      true                          ->
-        {:error, {:not_dir, %{path: path}}}
+  defunp validate_path_type(path :: v[String.t]) :: :ok | {:error, tuple} do
+    if String.ends_with?(path, "/") and !File.dir?(path) do
+      {:error, {:not_dir, %{path: path}}}
+    else
+      :ok
     end
   end
 
