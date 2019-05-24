@@ -14,6 +14,13 @@ defmodule Antikythera.ZipTest do
   @src_path "/tmpdir/src.txt"
   @zip_path "/tmpdir/archive.zip"
 
+  describe "Zip.Filename.valid?/1" do
+    test "Exclude paths suffixed with /" do
+      assert Zip.Filename.valid?("/dir/file.ex")
+      refute Zip.Filename.valid?("/dir/")
+    end
+  end
+
   describe "Zip.zip/3" do
     test "returns path of resulting archive" do
       for(
