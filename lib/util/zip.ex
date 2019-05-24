@@ -69,14 +69,14 @@ defmodule Antikythera.Zip do
         :file
       end
     cond do
-      type not in types                ->
-        {:error, {:invalid_path_type, %{path: path, type: type}}}
-      type == :file                    ->
+      type == :file     ->
         :ok
-      type == :dir and File.dir?(path) ->
+      type not in types ->
+        {:error, {:is_dir, %{path: path}}}
+      File.dir?(path)   ->
         :ok
-      true ->
-        {:error, {:not_directory, %{path: path}}}
+      true              ->
+        {:error, {:not_dir, %{path: path}}}
     end
   end
 
