@@ -47,8 +47,7 @@ defmodule Antikythera.Zip do
       {:ok, tmpdir} <- TmpdirTracker.get(epool_id),
       :ok           <- validate_within_tmpdir(zip_path, tmpdir),
       :ok           <- validate_within_tmpdir(src_path, tmpdir),
-      :ok           <- validate_path_exists(zip_path, false),
-      :ok           <- validate_path_exists(src_path, true),
+      :ok           <- validate_path_exists(src_path),
       {:ok, args}   <- opts |> Map.new() |> extract_zip_args(),
       :ok           <- try_zip_cmd(args ++ [zip_path, src_path])
     ) do
@@ -67,14 +66,11 @@ defmodule Antikythera.Zip do
     end
   end
 
-  defunp validate_path_exists(path :: v[String.t], exists? :: v[boolean]) :: :ok | {:error, tuple} do
-    case File.exists?(path) do
-      ^exists? ->
-        :ok
-      true     ->
-        {:error, {:already_exists, %{path: path}}}
-      false    ->
-        {:error, {:not_found,      %{path: path}}}
+  defunp validate_path_exists(path :: v[String.t]) :: :ok | {:error, tuple} do
+    if path |> Path.expand() |> File.exists?() do
+      :ok
+    else
+      {:error, {:not_found, %{path: path}}}
     end
   end
 
