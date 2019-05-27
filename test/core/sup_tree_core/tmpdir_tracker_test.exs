@@ -17,6 +17,6 @@ defmodule AntikytheraCore.TmpdirTrackerTest do
         actual: TmpdirTracker.get(@context.executor_pool_id),
       }
     end)
-    assert {:error, {:not_found, _}} = TmpdirTracker.get(@context.executor_pool_id)
+    assert {:error, :not_found} = TmpdirTracker.get(@context.executor_pool_id)
   end
 end

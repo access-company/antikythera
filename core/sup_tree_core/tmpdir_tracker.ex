@@ -54,7 +54,7 @@ defmodule AntikytheraCore.TmpdirTracker do
   @impl true
   def handle_call({:get, pid, epool_id}, _from, %State{map: map} = state) do
     case Map.get(map, pid) do
-      nil -> {:reply, {:error, {:not_found, %{state: state}}}, state}
+      nil -> {:reply, {:error, :not_found}, state}
       _   -> {:reply, {:ok, tmpdir_path(state, pid, epool_id)}, state}
     end
   end
