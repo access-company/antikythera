@@ -40,6 +40,7 @@ defmodule Antikythera.ZipTest do
           Enum.each(dirs_to_create, &File.mkdir_p!(tmpdir <> &1))
           Enum.each(files_to_create, &File.write!(tmpdir <> &1, "text"))
           assert Zip.zip(@context, tmpdir <> zip_path, tmpdir <> src_path) == {:ok, tmpdir <> zip_path}
+          assert File.exists?(tmpdir <> zip_path)
         end)
       end
     end
@@ -60,6 +61,7 @@ defmodule Antikythera.ZipTest do
           Enum.each(dirs_to_create, &File.mkdir_p!(tmpdir <> &1))
           Enum.each(files_to_create, &File.write!(tmpdir <> &1, "text"))
           assert Zip.zip(@context, tmpdir <> zip_path, tmpdir <> src_path, [encryption: true, password: "password"]) == {:ok, tmpdir <> zip_path}
+          assert File.exists?(tmpdir <> zip_path)
         end)
       end
     end
