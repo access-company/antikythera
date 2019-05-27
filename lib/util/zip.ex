@@ -93,7 +93,12 @@ defmodule Antikythera.Zip do
   defunp ensure_dir_exists(path :: v[String.t], tmpdir :: v[String.t]) :: :ok | {:error, tuple} do
     dirname = Path.dirname(path)
     if dirname != tmpdir do
-      File.mkdir_p(dirname)
+      case File.mkdir_p(dirname) do
+        :ok ->
+          :ok
+        {:error, :eexist} ->
+          {:error, {:not_dir, %{path: path}}}
+      end
     else
       :ok
     end
