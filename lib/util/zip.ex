@@ -90,19 +90,13 @@ defmodule Antikythera.Zip do
     end
   end
 
-  defunp ensure_dir_exists(path :: v[String.t], tmpdir :: v[String.t]) :: :ok do
+  defunp ensure_dir_exists(path :: v[String.t], tmpdir :: v[String.t]) :: :ok | {:error, tuple} do
     dirname = Path.dirname(path)
     if dirname != tmpdir do
-      dirname
-      |> String.trim_leading(tmpdir <> "/")
-      |> String.split("/")
-      |> Enum.reduce(tmpdir, fn (x, acc) ->
-        child = acc <> "/" <> x
-        File.mkdir_p!(child)
-        child
-      end)
+      File.mkdir_p(dirname)
+    else
+      :ok
     end
-    :ok
   end
 
   defunp extract_zip_args(map :: map) :: R.t(list(String.t)) do
