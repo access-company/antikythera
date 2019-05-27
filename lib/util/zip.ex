@@ -49,7 +49,8 @@ defmodule Antikythera.Zip do
     epool_id = extract_epool_id(context_or_epool_id)
     with(
       {:ok, tmpdir} <- TmpdirTracker.get(epool_id),
-      :ok           <- validate_path_type(src_raw_path),
+      :ok           <- reject_existing_dir(zip_raw_path),
+      :ok           <- validate_suffix(src_raw_path),
       zip_path      <- Path.expand(zip_raw_path),
       src_path      <- Path.expand(src_raw_path),
       :ok           <- validate_within_tmpdir(zip_path, tmpdir),
@@ -66,9 +67,17 @@ defmodule Antikythera.Zip do
   defp extract_epool_id(%Context{executor_pool_id: epool_id}), do: epool_id
   defp extract_epool_id(epool_id),                             do: epool_id
 
-  defunp validate_path_type(path :: v[String.t]) :: :ok | {:error, tuple} do
+  defunp validate_suffix(path :: v[String.t]) :: :ok | {:error, tuple} do
     if String.ends_with?(path, "/") and !File.dir?(path) do
       {:error, {:not_dir, %{path: path}}}
+    else
+      :ok
+    end
+  end
+
+  defunp reject_existing_dir(path :: v[String.t]) :: :ok | {:error, tuple} do
+    if File.dir?(path) do
+      {:error, {:is_dir, %{path: path}}}
     else
       :ok
     end
