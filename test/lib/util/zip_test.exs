@@ -18,6 +18,8 @@ defmodule Antikythera.ZipTest do
     test "Exclude paths suffixed with /" do
       assert Zip.FileName.valid?("/dir/file.ex")
       refute Zip.FileName.valid?("/dir/")
+      refute Zip.FileName.valid?("/dir/.")
+      refute Zip.FileName.valid?("/dir/..")
     end
   end
 
