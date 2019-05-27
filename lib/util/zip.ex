@@ -124,12 +124,12 @@ defmodule Antikythera.Zip do
     end
   end
 
-  defunp try_zip_cmd(args :: v[list(String.t)]) :: :ok | {:error, tuple} do
+  defunp try_zip_cmd(args :: v[list(String.t)]) :: :ok | {:error, :shell_runtime_error} do
     case System.cmd("zip", args) do
-      {_,   0}      ->
+      {_,   0} ->
         :ok
-      {msg, status} ->
-        {:error, {:shell_runtime_error, %{msg: msg, status: status}}}
+      _        ->
+        {:error, :shell_runtime_error}
     end
   end
 end

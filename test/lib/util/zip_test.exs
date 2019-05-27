@@ -124,7 +124,7 @@ defmodule Antikythera.ZipTest do
         zip_path = tmpdir <> "/archive.zip"
         src_path = tmpdir <> "/src.txt"
         :meck.expect(File, :exists?, fn ^src_path -> true end)
-        assert {:error, {:shell_runtime_error, _}} = Zip.zip(@context, zip_path, src_path)
+        assert {:error, :shell_runtime_error} = Zip.zip(@context, zip_path, src_path)
       end)
     end
   end
