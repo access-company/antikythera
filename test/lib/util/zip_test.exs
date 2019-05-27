@@ -64,6 +64,12 @@ defmodule Antikythera.ZipTest do
       end
     end
 
+    test "returns error when a directory exists with same name as resulting archive" do
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
+      :meck.expect(File, :dir?, fn @zip_path -> true end)
+      assert Zip.zip(@context, @zip_path, @src_path) == {:error, {:is_dir, %{path: @zip_path}}}
+    end
+
     test "returns error when input file name is suffixed with / while it is a file" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       src_path = "/tmpdir/src/"
