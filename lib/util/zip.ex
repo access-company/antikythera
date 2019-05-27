@@ -19,7 +19,7 @@ defmodule Antikythera.Zip do
   @typep opts :: {:encryption, boolean} | {:password, String.t}
 
   defmodule FileName do
-    use Croma.SubtypeOfString, pattern: ~r/[^\/]\z/
+    use Croma.SubtypeOfString, pattern: ~r/[^\/]\.{0,2}\z/
   end
 
   @doc """
