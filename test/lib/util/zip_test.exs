@@ -81,7 +81,7 @@ defmodule Antikythera.ZipTest do
 
     test "returns error when tmpdir is not found" do
       :meck.expect(File, :exists?, fn _ -> flunk() end)
-      assert Zip.zip(@context, @zip_path, @src_path) == {:error, {:not_found, %{}}}
+      assert Zip.zip(@context, @zip_path, @src_path) == {:error, :not_found}
     end
 
     test "returns error when src is outside tmpdir" do
