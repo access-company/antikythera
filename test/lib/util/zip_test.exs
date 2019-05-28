@@ -114,7 +114,13 @@ defmodule Antikythera.ZipTest do
     test "returns error when encryption is disabled and password exists" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       :meck.expect(File, :exists?, fn @src_path -> true end)
-      assert Zip.zip(@context, @zip_path, @src_path, [encryption: false, password: "password"]) == {:error, {:argument_error, %{encryption: false, password: "password"}}}
+      [
+        {[encryption: false, password: "password"], %{encryption: false, password: "password"}},
+        {[encryption: true,  password: ""],         %{encryption: true,  password: ""}},
+        {[encryption: true],                        %{encryption: true}},
+      ] |> Enum.each(fn {invalid_args, expected} ->
+        assert Zip.zip(@context, @zip_path, @src_path, invalid_args) == {:error, {:argument_error, expected}}
+      end)
     end
 
     test "returns error when shell command fails" do

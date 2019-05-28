@@ -115,8 +115,12 @@ defmodule Antikythera.Zip do
 
   defunp extract_zip_args(map :: map) :: R.t(list(String.t)) do
     case map do
+      %{password: ""} ->
+        {:error, {:argument_error, map}}
       %{encryption: true,  password: password} ->
         {:ok,    ["-P", password]}
+      %{encryption: true} ->
+        {:error, {:argument_error, map}}
       %{encryption: false, password: _}        ->
         {:error, {:argument_error, map}}
       _                                        ->
