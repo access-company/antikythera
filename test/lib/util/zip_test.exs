@@ -3,7 +3,7 @@
 defmodule Antikythera.ZipTest do
   use Croma.TestCase
   alias AntikytheraCore.TmpdirTracker
-  alias Antikythera.{Tmpdir, Zip}
+  alias Antikythera.Tmpdir
 
   setup do
     on_exit(&:meck.unload/0)

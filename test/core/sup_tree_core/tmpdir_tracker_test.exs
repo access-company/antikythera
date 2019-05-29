@@ -3,7 +3,6 @@
 defmodule AntikytheraCore.TmpdirTrackerTest do
   use Croma.TestCase
   alias Antikythera.Tmpdir
-  alias AntikytheraCore.TmpdirTracker
 
   @context Antikythera.Test.ConnHelper.make_conn().context
 
