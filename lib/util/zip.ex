@@ -67,17 +67,17 @@ defmodule Antikythera.Zip do
   defp extract_epool_id(%Context{executor_pool_id: epool_id}), do: epool_id
   defp extract_epool_id(epool_id),                             do: epool_id
 
-  defunp validate_suffix(path :: v[String.t]) :: :ok | {:error, tuple} do
-    if String.ends_with?(path, "/") and !File.dir?(path) do
-      {:error, {:not_dir, %{path: path}}}
+  defunp reject_existing_dir(path :: v[String.t]) :: :ok | {:error, tuple} do
+    if File.dir?(path) do
+      {:error, {:is_dir, %{path: path}}}
     else
       :ok
     end
   end
 
-  defunp reject_existing_dir(path :: v[String.t]) :: :ok | {:error, tuple} do
-    if File.dir?(path) do
-      {:error, {:is_dir, %{path: path}}}
+  defunp validate_suffix(path :: v[String.t]) :: :ok | {:error, tuple} do
+    if String.ends_with?(path, "/") and !File.dir?(path) do
+      {:error, {:not_dir, %{path: path}}}
     else
       :ok
     end
