@@ -48,6 +48,16 @@ defmodule Antikythera.ZipTest do
       end
     end
 
+    test "returns path of resulting archive with .zip if no extension was assigned" do
+      Tmpdir.make(@context, fn tmpdir ->
+        zip_path = tmpdir <> "/no_extension"
+        src_path = tmpdir <> "/src.txt"
+        File.write!(src_path, "text")
+        assert Zip.zip(@context, zip_path, src_path) == {:ok, zip_path <> ".zip"}
+        assert File.exists?(zip_path <> ".zip")
+      end)
+    end
+
     test "returns path of resulting archive encrypted with password" do
       for(
         {dirs_to_create, files_to_create, src_path} <- [

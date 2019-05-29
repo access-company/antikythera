@@ -60,7 +60,11 @@ defmodule Antikythera.Zip do
       {:ok, args}   <- opts |> Map.new() |> extract_zip_args(),
       :ok           <- try_zip_cmd(args ++ [zip_path, src_path])
     ) do
-      {:ok, zip_path}
+      if zip_path |> Path.basename() |> String.contains?(".") do
+        {:ok, zip_path}
+      else
+        {:ok, zip_path <> ".zip"}
+      end
     end
   end
 
