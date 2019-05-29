@@ -40,26 +40,22 @@ defmodule Antikythera.Zip do
       ...
     end)
   """
-  defun zip(
-    context_or_epool_id :: v[EPoolId.t | Context.t],
-    zip_raw_path        :: v[FileName.t],
-    src_raw_path        :: v[String.t],
-    opts                :: v[list(opts)] \\ []
-  ) :: R.t(Path.t) do
+  defun zip(context_or_epool_id :: v[EPoolId.t | Context.t],
+            zip_raw_path        :: v[FileName.t],
+            src_raw_path        :: v[String.t],
+            opts                :: v[list(opts)] \\ []) :: R.t(Path.t) do
     epool_id = extract_epool_id(context_or_epool_id)
-    with(
-      {:ok, tmpdir} <- TmpdirTracker.get(epool_id),
-      :ok           <- reject_existing_dir(zip_raw_path),
-      :ok           <- validate_suffix(src_raw_path),
-      zip_path      <- Path.expand(zip_raw_path),
-      src_path      <- Path.expand(src_raw_path),
-      :ok           <- validate_within_tmpdir(zip_path, tmpdir),
-      :ok           <- validate_within_tmpdir(src_path, tmpdir),
-      :ok           <- validate_path_exists(src_path),
-      :ok           <- ensure_dir_exists(zip_path, tmpdir),
-      {:ok, args}   <- opts |> Map.new() |> extract_zip_args(),
-      :ok           <- try_zip_cmd(args ++ [zip_path, src_path])
-    ) do
+    with {:ok, tmpdir} <- TmpdirTracker.get(epool_id),
+         :ok           <- reject_existing_dir(zip_raw_path),
+         :ok           <- validate_suffix(src_raw_path),
+         zip_path      <- Path.expand(zip_raw_path),
+         src_path      <- Path.expand(src_raw_path),
+         :ok           <- validate_within_tmpdir(zip_path, tmpdir),
+         :ok           <- validate_within_tmpdir(src_path, tmpdir),
+         :ok           <- validate_path_exists(src_path),
+         :ok           <- ensure_dir_exists(zip_path, tmpdir),
+         {:ok, args}   <- opts |> Map.new() |> extract_zip_args(),
+         :ok           <- try_zip_cmd(args ++ [zip_path, src_path]) do
       if zip_path |> Path.basename() |> String.contains?(".") do
         {:ok, zip_path}
       else
