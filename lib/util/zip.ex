@@ -121,18 +121,18 @@ defmodule Antikythera.Zip do
         {:ok,    ["-P", password]}
       %{encryption: true} ->
         {:error, {:argument_error, map}}
-      %{encryption: false, password: _}        ->
+      %{encryption: false, password: _} ->
         {:error, {:argument_error, map}}
-      _                                        ->
+      _ ->
         {:ok,    []}
     end
   end
 
   defunp try_zip_cmd(args :: v[list(String.t)]) :: :ok | {:error, :shell_runtime_error} do
     case System.cmd("zip", args) do
-      {_,   0} ->
+      {_, 0} ->
         :ok
-      _        ->
+      _ ->
         {:error, :shell_runtime_error}
     end
   end
