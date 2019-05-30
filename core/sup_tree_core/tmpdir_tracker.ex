@@ -51,6 +51,14 @@ defmodule AntikytheraCore.TmpdirTracker do
     end
   end
 
+  @impl true
+  def handle_call({:get, pid, epool_id}, _from, %State{map: map} = state) do
+    case Map.get(map, pid) do
+      nil -> {:reply, {:error, :not_found}, state}
+      _   -> {:reply, {:ok, tmpdir_path(state, pid, epool_id)}, state}
+    end
+  end
+
   defp tmpdir_path(%State{gear_tmp_dir: gear_tmp_dir}, pid, epool_id) do
     Path.join([gear_tmp_dir, EPoolId.to_string(epool_id), Integer.to_string(:erlang.phash2(pid))])
   end
@@ -86,6 +94,10 @@ defmodule AntikytheraCore.TmpdirTracker do
       File.mkdir_p!(tmpdir)
       tmpdir
     end)
+  end
+
+  defun get(epool_id :: v[EPoolId.t]) :: R.t(Path.t) do
+    GenServer.call(__MODULE__, {:get, self(), epool_id})
   end
 
   defun finished() :: :ok do
