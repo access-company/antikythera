@@ -82,8 +82,8 @@ defmodule AntikytheraCore.Alert.Manager do
   defunp manager(otp_app_name :: v[:antikythera | GearName.t]) :: nil | pid do
     try do
       case otp_app_name do
-        :antikythera  -> AntikytheraCore.Alert.Manager
-        gear_name -> GearModule.alert_manager(gear_name)
+        :antikythera -> AntikytheraCore.Alert.Manager
+        gear_name    -> GearModule.alert_manager(gear_name)
       end
       |> Process.whereis()
     rescue

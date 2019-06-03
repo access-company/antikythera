@@ -114,6 +114,60 @@ defmodule AntikytheraCore.Alert.ManagerTest do
     assert %{message_buffer: [], busy?: false} = get_handler_state(EmailHandler)
   end
 
+  test "should ignore alerts if the message pattern matches any of the specified patterns" do
+    ignore_patterns = [
+      "\\(MatchError\\) no match of right hand side value:",
+      "(*CRLF)\\A\\*\\* \\(ArithmeticError\\) bad argument in arithmetic expression:.*second line3",
+    ]
+    valid_config = %{"email" => %{"to" => ["test@example.com"], "fast_interval" => 1, "ignore_patterns" => ignore_patterns}}
+    update_handler_installations_and_mock_core_config_cache(valid_config)
+    assert which_handlers() == [{AHandler, EmailHandler}, ErrorCountReporter]
+    assert %{message_buffer: [], busy?: false} = get_handler_state(EmailHandler)
+    assert MemoryInbox.get() == []
+
+    # to be ignored
+    assert CoreAlertManager.notify(CoreAlertManager, "** (MatchError) no match of right hand side value: 1\nsecond line1") == :ok
+    assert %{message_buffer: [], busy?: false} = get_handler_state(EmailHandler)
+    assert MemoryInbox.get() == []
+
+    # not to be ignored
+    assert CoreAlertManager.notify(CoreAlertManager, "** (UndefinedFunctionError) function Hoge.foo/0 is undefined (module Hoge is not available)\nsecond line2") == :ok
+    assert %{message_buffer: buffer1, busy?: true} = get_handler_state(EmailHandler)
+    assert [{time1, "** (UndefinedFunctionError) function Hoge.foo/0 is undefined (module Hoge is not available)\nsecond line2"}] = buffer1
+    assert MemoryInbox.get() == []
+
+    # to be ignored
+    assert CoreAlertManager.notify(CoreAlertManager, "** (ArithmeticError) bad argument in arithmetic expression: 1 / 0\nsecond line3") == :ok
+    assert %{message_buffer: buffer1, busy?: true} = get_handler_state(EmailHandler)
+    assert MemoryInbox.get() == []
+
+    # not to be ignored
+    assert CoreAlertManager.notify(CoreAlertManager, "** (ArithmeticError) bad argument in arithmetic expression: 1 / 0\nsecond line4") == :ok
+    assert %{message_buffer: buffer2, busy?: true} = get_handler_state(EmailHandler)
+    assert [
+      {time2, "** (ArithmeticError) bad argument in arithmetic expression: 1 / 0\nsecond line4"},
+      {time1, "** (UndefinedFunctionError) function Hoge.foo/0 is undefined (module Hoge is not available)\nsecond line2"},
+    ] = buffer2
+    assert MemoryInbox.get() == []
+
+    # After `fast_interval`, an alert that is not ignored is sent
+    :timer.sleep(1_100)
+    assert %{message_buffer: [], busy?: true} = get_handler_state(EmailHandler)
+    assert [%Mail{to: ["test@example.com"], subject: subject1, body: body1}] = MemoryInbox.get()
+    assert String.ends_with?(subject1, "** (UndefinedFunctionError) function Hoge.foo/0 is... [and other 1 error(s)]")
+    assert body1 ==
+      """
+      [#{Time.to_iso_timestamp(time1)}] ** (UndefinedFunctionError) function Hoge.foo/0 is undefined (module Hoge is not available)
+      second line2
+
+
+      [#{Time.to_iso_timestamp(time2)}] ** (ArithmeticError) bad argument in arithmetic expression: 1 / 0
+      second line4
+
+
+      """
+  end
+
   defp update_handler_installations_and_mock_core_config_cache(alert_config) do
     assert CoreAlertManager.update_handler_installations(:antikythera, alert_config) == :ok
     :meck.expect(ConfigCache.Core, :read, fn -> %{alerts: alert_config} end)
