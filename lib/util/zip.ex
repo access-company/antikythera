@@ -105,19 +105,19 @@ quote do
         end
       end
 
-  defunp ensure_dir_exists(path :: v[String.t], tmpdir :: v[String.t]) :: :ok | {:error, tuple} do
-    dirname = Path.dirname(path)
-    if dirname != tmpdir do
-      case File.mkdir_p(dirname) do
-        :ok ->
+      defunp ensure_dir_exists(path :: v[String.t], tmpdir :: v[String.t]) :: :ok | {:error, tuple} do
+        dirname = Path.dirname(path)
+        if dirname != tmpdir do
+          case File.mkdir_p(dirname) do
+            :ok ->
+              :ok
+            {:error, :eexist} ->
+              {:error, {:not_dir, %{path: path}}}
+          end
+        else
           :ok
-        {:error, :eexist} ->
-          {:error, {:not_dir, %{path: path}}}
+        end
       end
-    else
-      :ok
-    end
-  end
 
       defunp extract_zip_args(map :: map) :: R.t(list(String.t)) do
         case map do
