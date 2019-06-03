@@ -2,18 +2,6 @@
 
 use Croma
 
-defmodule Antikythera.Zip do
-  @moduledoc """
-  Wrapper module for `zip` command.
-
-  For the consistency in working with antikythera and other gears, scope of this module is limited under a temporary directory reserved by `Antikythera.Tmpdir.make/2`.
-
-  Functions only accept absolute paths for both source and resulting archive.
-  """
-
-  use Antikythera.Zip.ModuleTemplate, cmd: &System.cmd("zip", &1)
-end
-
 defmodule Antikythera.Zip.ModuleTemplate do
   defmacro __using__([cmd: cmd]) do
     quote do
@@ -148,4 +136,16 @@ defmodule Antikythera.Zip.ModuleTemplate do
       end
     end
   end
+end
+
+defmodule Antikythera.Zip do
+  @moduledoc """
+  Wrapper module for `zip` command.
+
+  For the consistency in working with antikythera and other gears, scope of this module is limited under a temporary directory reserved by `Antikythera.Tmpdir.make/2`.
+
+  Functions only accept absolute paths for both source and resulting archive.
+  """
+
+  use Antikythera.Zip.ModuleTemplate, cmd: &System.cmd("zip", &1)
 end
