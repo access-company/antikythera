@@ -11,6 +11,12 @@ defmodule Antikythera.Zip do
   Functions only accept absolute paths for both source and resulting archive.
   """
 
+  use Antikythera.Zip.ModuleTemplate, cmd: &System.cmd("zip", &1)
+end
+
+defmodule Antikythera.Zip.ModuleTemplate do
+defmacro __using__([cmd: cmd]) do
+quote do
   alias Croma.Result, as: R
   alias Antikythera.Context
   alias Antikythera.ExecutorPool.Id, as: EPoolId
@@ -129,11 +135,17 @@ defmodule Antikythera.Zip do
   end
 
   defunp try_zip_cmd(args :: v[list(String.t)]) :: :ok | {:error, :shell_runtime_error} do
-    case System.cmd("zip", args) do
+    case cmd(args) do
       {_, 0} ->
         :ok
       _ ->
         {:error, :shell_runtime_error}
     end
   end
+
+  defunpt cmd(args :: v[list(String.t)]) :: {binary, integer} do
+    unquote(cmd).(args)
+  end
+end
+end
 end
