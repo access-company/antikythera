@@ -15,8 +15,8 @@ defmodule Antikythera.Zip do
 end
 
 defmodule Antikythera.Zip.ModuleTemplate do
-defmacro __using__([cmd: cmd]) do
-quote do
+  defmacro __using__([cmd: cmd]) do
+    quote do
       alias Croma.Result, as: R
       alias Antikythera.Context
       alias Antikythera.ExecutorPool.Id, as: EPoolId
@@ -146,6 +146,6 @@ quote do
       defunpt cmd(args :: v[list(String.t)]) :: {binary, integer} do
         unquote(cmd).(args)
       end
-end
-end
+    end
+  end
 end
