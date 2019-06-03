@@ -17,16 +17,16 @@ end
 defmodule Antikythera.Zip.ModuleTemplate do
 defmacro __using__([cmd: cmd]) do
 quote do
-  alias Croma.Result, as: R
-  alias Antikythera.Context
-  alias Antikythera.ExecutorPool.Id, as: EPoolId
-  alias AntikytheraCore.TmpdirTracker
+      alias Croma.Result, as: R
+      alias Antikythera.Context
+      alias Antikythera.ExecutorPool.Id, as: EPoolId
+      alias AntikytheraCore.TmpdirTracker
 
-  @typep opts :: {:encryption, boolean} | {:password, String.t}
+      @typep opts :: {:encryption, boolean} | {:password, String.t}
 
-  defmodule FileName do
-    use Croma.SubtypeOfString, pattern: ~R/^(?!.*\/\.{0,2}\z).*\z/
-  end
+      defmodule FileName do
+        use Croma.SubtypeOfString, pattern: ~R/^(?!.*\/\.{0,2}\z).*\z/
+      end
 
       @doc """
       Creates a ZIP file.
