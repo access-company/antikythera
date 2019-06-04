@@ -75,6 +75,14 @@ defmodule Antikythera.Zip do
   defp extract_epool_id(%Context{executor_pool_id: epool_id}), do: epool_id
   defp extract_epool_id(epool_id),                             do: epool_id
 
+  defunp validate_within_tmpdir(path :: v[String.t], tmpdir :: v[String.t]) :: :ok | {:error, tuple} do
+    if path == tmpdir or String.starts_with?(path, "#{tmpdir}/") do
+      :ok
+    else
+      {:error, {:permission_denied, %{path: path, tmpdir: tmpdir}}}
+    end
+  end
+
   defunp reject_existing_file(path :: v[String.t]) :: :ok | {:error, tuple} do
     if File.dir?(path) do
       :ok
@@ -91,21 +99,17 @@ defmodule Antikythera.Zip do
     end
   end
 
-  defunp validate_suffix(src_raw_path :: v[String.t], cwd_path :: v[String.t]) :: :ok | {:error, tuple} do
-    suffixed = String.ends_with?(src_raw_path, "/")
-    path = Path.expand(src_raw_path, cwd_path)
-    if suffixed and !File.dir?(path) do
-      {:error, {:not_dir, %{path: path}}}
+  defunp ensure_dir_exists(path :: v[String.t], tmpdir :: v[String.t]) :: :ok | {:error, tuple} do
+    dirname = Path.dirname(path)
+    if dirname != tmpdir do
+      case File.mkdir_p(dirname) do
+        :ok ->
+          :ok
+        {:error, :eexist} ->
+          {:error, {:not_dir, %{path: path}}}
+      end
     else
       :ok
-    end
-  end
-
-  defunp validate_within_tmpdir(path :: v[String.t], tmpdir :: v[String.t]) :: :ok | {:error, tuple} do
-    if path == tmpdir or String.starts_with?(path, "#{tmpdir}/") do
-      :ok
-    else
-      {:error, {:permission_denied, %{path: path, tmpdir: tmpdir}}}
     end
   end
 
@@ -117,15 +121,11 @@ defmodule Antikythera.Zip do
     end
   end
 
-  defunp ensure_dir_exists(path :: v[String.t], tmpdir :: v[String.t]) :: :ok | {:error, tuple} do
-    dirname = Path.dirname(path)
-    if dirname != tmpdir do
-      case File.mkdir_p(dirname) do
-        :ok ->
-          :ok
-        {:error, :eexist} ->
-          {:error, {:not_dir, %{path: path}}}
-      end
+  defunp validate_suffix(src_raw_path :: v[String.t], cwd_path :: v[String.t]) :: :ok | {:error, tuple} do
+    suffixed = String.ends_with?(src_raw_path, "/")
+    path = Path.expand(src_raw_path, cwd_path)
+    if suffixed and !File.dir?(path) do
+      {:error, {:not_dir, %{path: path}}}
     else
       :ok
     end
