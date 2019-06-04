@@ -88,7 +88,7 @@ defmodule Antikythera.Zip do
   end
 
   defunp validate_within_tmpdir(path :: v[String.t], tmpdir :: v[String.t]) :: :ok | {:error, tuple} do
-    if String.starts_with?(path, "#{tmpdir}/") do
+    if path == tmpdir or String.starts_with?(path, "#{tmpdir}/") do
       :ok
     else
       {:error, {:permission_denied, %{path: path, tmpdir: tmpdir}}}
