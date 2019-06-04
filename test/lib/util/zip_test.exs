@@ -113,7 +113,7 @@ defmodule Antikythera.ZipTest do
       assert Zip.zip(@context, @tmpdir, invalid_zip_path, @src_path) == {:error, {:permission_denied, %{tmpdir: @tmpdir, path: invalid_zip_path}}}
     end
 
-    test "returns error when a directory exists with same name as resulting archive" do
+    test "returns error when zip_path is a directory" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       :meck.expect(File, :dir?, fn
         @tmpdir        -> true
@@ -134,7 +134,7 @@ defmodule Antikythera.ZipTest do
       assert Zip.zip(@context, @tmpdir, invalid_zip_path, @src_path) == {:error, {:not_dir, %{path: invalid_zip_full_path}}}
     end
 
-    test "returns error when input file name is suffixed with / while it is a file" do
+    test "returns error when src_path is a file suffixed with /" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       invalid_src_path = @src_path <> "/"
       :meck.expect(File, :exists?, fn @src_full_path -> true end)
