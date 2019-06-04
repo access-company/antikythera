@@ -51,28 +51,29 @@ defmodule Antikythera.Zip do
     end)
   """
   defun zip(context_or_epool_id :: v[EPoolId.t | Context.t],
-            cwd_raw_path        :: v[String.t],
-            zip_raw_path        :: v[FileName.t],
-            src_raw_path        :: v[NonTraversalPath.t],
+            cwd_path            :: v[String.t],
+            zip_path            :: v[FileName.t],
+            src_path            :: v[NonTraversalPath.t],
             opts                :: v[list(opts)] \\ []) :: R.t(Path.t) do
     epool_id = extract_epool_id(context_or_epool_id)
     with {:ok, tmpdir} <- TmpdirTracker.get(epool_id),
-         cwd_path      <- Path.expand(cwd_raw_path),
-         zip_path      <- Path.expand(zip_raw_path, cwd_path),
-         src_path      <- Path.expand(src_raw_path, cwd_path),
-         :ok           <- validate_within_tmpdir(cwd_path, tmpdir),
-         :ok           <- validate_within_tmpdir(zip_path, tmpdir),
-         :ok           <- reject_existing_file(cwd_path),
-         :ok           <- reject_existing_dir(zip_path),
-         :ok           <- ensure_dir_exists(zip_path, tmpdir),
-         :ok           <- validate_path_exists(src_path),
-         :ok           <- validate_suffix(src_raw_path, cwd_path),
+         cwd_full_path <- Path.expand(cwd_path),
+         zip_full_path <- Path.expand(zip_path, cwd_full_path),
+         src_full_path <- Path.expand(src_path, cwd_full_path),
+         :ok           <- validate_within_tmpdir(cwd_full_path, tmpdir),
+         :ok           <- validate_within_tmpdir(zip_full_path, tmpdir),
+
+         :ok           <- reject_existing_file(cwd_full_path),
+         :ok           <- reject_existing_dir(zip_full_path),
+         :ok           <- ensure_dir_exists(zip_full_path, tmpdir),
+         :ok           <- validate_path_exists(src_full_path),
+         :ok           <- validate_suffix(src_path, cwd_full_path),
          {:ok, args}   <- opts |> Map.new() |> extract_zip_args(),
-         :ok           <- try_zip_cmd(args ++ [zip_raw_path, src_raw_path], cwd_path) do
-      if zip_path |> Path.basename() |> String.contains?(".") do
-        {:ok, zip_path}
+         :ok           <- try_zip_cmd(args ++ [zip_path, src_path], cwd_full_path) do
+      if zip_full_path |> Path.basename() |> String.contains?(".") do
+        {:ok, zip_full_path}
       else
-        {:ok, zip_path <> ".zip"}
+        {:ok, zip_full_path <> ".zip"}
       end
     end
   end
@@ -126,11 +127,11 @@ defmodule Antikythera.Zip do
     end
   end
 
-  defunp validate_suffix(src_raw_path :: v[String.t], cwd_path :: v[String.t]) :: :ok | {:error, tuple} do
-    suffixed = String.ends_with?(src_raw_path, "/")
-    path = Path.expand(src_raw_path, cwd_path)
-    if suffixed and !File.dir?(path) do
-      {:error, {:not_dir, %{path: path}}}
+  defunp validate_suffix(src_path :: v[String.t], cwd_path :: v[String.t]) :: :ok | {:error, tuple} do
+    suffixed = String.ends_with?(src_path, "/")
+    src_full_path = Path.expand(src_path, cwd_path)
+    if suffixed and !File.dir?(src_full_path) do
+      {:error, {:not_dir, %{path: src_full_path}}}
     else
       :ok
     end
