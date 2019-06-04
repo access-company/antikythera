@@ -6,7 +6,13 @@ defmodule Antikythera.Zip do
   @moduledoc """
   Wrapper module for `zip` command.
 
-  For the consistency in working with antikythera and other gears, scope of this module is limited under a temporary directory reserved by `Antikythera.Tmpdir.make/2`.
+  For the security and consistency in working with antikythera and other gears,
+
+  scopes of
+  - working directory
+  - input file
+  - output file
+  are limited under a temporary directory reserved by `Antikythera.Tmpdir.make/2`.
 
   Functions only accept absolute paths for both source and resulting archive.
   """
