@@ -40,7 +40,7 @@ defmodule Antikythera.ZipTest do
     end
   end
 
-  describe "Zip.zip/4" do
+  describe "Zip.zip/5" do
     test "returns path of resulting archive" do
       for(
         {dirs_to_create, files_to_create, src_path} <- [
