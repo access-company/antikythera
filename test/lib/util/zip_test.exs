@@ -96,27 +96,6 @@ defmodule Antikythera.ZipTest do
       end
     end
 
-    test "returns error when a directory exists with same name as resulting archive" do
-      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
-      :meck.expect(File, :dir?, fn
-        @tmpdir        -> true
-        @zip_full_path -> true
-      end)
-      assert Zip.zip(@context, @tmpdir, @zip_path, @src_path) == {:error, {:is_dir, %{path: @zip_full_path}}}
-    end
-
-    test "returns error when input file name is suffixed with / while it is a file" do
-      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
-      invalid_src_path = @src_path <> "/"
-      :meck.expect(File, :exists?, fn @src_full_path -> true end)
-      :meck.expect(File, :dir?, fn
-        @tmpdir        -> true
-        @zip_full_path -> false
-        @src_full_path -> false
-      end)
-      assert Zip.zip(@context, @tmpdir, @zip_path, invalid_src_path) == {:error, {:not_dir, %{path: @src_full_path}}}
-    end
-
     test "returns error when tmpdir is not found" do
       :meck.expect(File, :exists?, fn _ -> flunk() end)
       assert Zip.zip(@context, @tmpdir, @zip_path, @src_path) == {:error, :not_found}
@@ -134,14 +113,13 @@ defmodule Antikythera.ZipTest do
       assert Zip.zip(@context, @tmpdir, invalid_zip_path, @src_path) == {:error, {:permission_denied, %{tmpdir: @tmpdir, path: invalid_zip_path}}}
     end
 
-    test "returns error when src is not found" do
+    test "returns error when a directory exists with same name as resulting archive" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       :meck.expect(File, :dir?, fn
         @tmpdir        -> true
-        @zip_full_path -> false
-        @src_full_path -> false
+        @zip_full_path -> true
       end)
-      assert Zip.zip(@context, @tmpdir, @zip_path, @src_path) == {:error, {:not_found, %{path: @src_full_path}}}
+      assert Zip.zip(@context, @tmpdir, @zip_path, @src_path) == {:error, {:is_dir, %{path: @zip_full_path}}}
     end
 
     test "returns error when zip path is through existing file name" do
@@ -154,6 +132,28 @@ defmodule Antikythera.ZipTest do
       end)
       :meck.expect(File, :mkdir_p, fn @src_full_path -> {:error, :eexist} end)
       assert Zip.zip(@context, @tmpdir, invalid_zip_path, @src_path) == {:error, {:not_dir, %{path: invalid_zip_full_path}}}
+    end
+
+    test "returns error when input file name is suffixed with / while it is a file" do
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
+      invalid_src_path = @src_path <> "/"
+      :meck.expect(File, :exists?, fn @src_full_path -> true end)
+      :meck.expect(File, :dir?, fn
+        @tmpdir        -> true
+        @zip_full_path -> false
+        @src_full_path -> false
+      end)
+      assert Zip.zip(@context, @tmpdir, @zip_path, invalid_src_path) == {:error, {:not_dir, %{path: @src_full_path}}}
+    end
+
+    test "returns error when src is not found" do
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
+      :meck.expect(File, :dir?, fn
+        @tmpdir        -> true
+        @zip_full_path -> false
+        @src_full_path -> false
+      end)
+      assert Zip.zip(@context, @tmpdir, @zip_path, @src_path) == {:error, {:not_found, %{path: @src_full_path}}}
     end
 
     test "returns error when encryption is disabled and password exists" do
