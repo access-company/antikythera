@@ -112,12 +112,6 @@ defmodule Antikythera.ZipTest do
       assert Zip.zip(@context, invalid_cwd_path, @zip_path, @src_path) == {:error, {:permission_denied, %{tmpdir: @tmpdir, path: invalid_cwd_path}}}
     end
 
-    test "returns error when src is outside tmpdir" do
-      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
-      invalid_src_path = "/another_dir" <> "/" <> @src_path
-      assert Zip.zip(@context, @tmpdir, @zip_path, invalid_src_path) == {:error, {:permission_denied, %{tmpdir: @tmpdir, path: invalid_src_path}}}
-    end
-
     test "returns error when resulting archive is outside tmpdir" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       invalid_zip_path = "/another_dir" <> "/" <> @zip_path
