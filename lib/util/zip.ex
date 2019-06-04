@@ -32,7 +32,7 @@ defmodule Antikythera.Zip do
       src_path = tmpdir <> "/src.txt"
       zip_path = tmpdir <> "/archive.zip"
       File.write!(src_path, "text")
-      Antikythera.Zip.zip(context, zip_path, src_path, [encryption: true, password: "password"])
+      Antikythera.Zip.zip(context, tmpdir, zip_path, src_path, [encryption: true, password: "password"])
       |> case do
         {:ok, archive_path} ->
           ...
@@ -41,21 +41,23 @@ defmodule Antikythera.Zip do
     end)
   """
   defun zip(context_or_epool_id :: v[EPoolId.t | Context.t],
+            cwd_raw_path        :: v[String.t],
             zip_raw_path        :: v[FileName.t],
             src_raw_path        :: v[String.t],
             opts                :: v[list(opts)] \\ []) :: R.t(Path.t) do
     epool_id = extract_epool_id(context_or_epool_id)
     with {:ok, tmpdir} <- TmpdirTracker.get(epool_id),
          :ok           <- reject_existing_dir(zip_raw_path),
-         :ok           <- validate_suffix(src_raw_path),
-         zip_path      <- Path.expand(zip_raw_path),
-         src_path      <- Path.expand(src_raw_path),
+         :ok           <- validate_suffix(src_raw_path, cwd_path),
+         cwd_path      <- Path.expand(cwd_raw_path),
+         zip_path      <- Path.expand(zip_raw_path, cwd_path),
+         src_path      <- Path.expand(src_raw_path, cwd_path),
          :ok           <- validate_within_tmpdir(zip_path, tmpdir),
          :ok           <- validate_within_tmpdir(src_path, tmpdir),
          :ok           <- validate_path_exists(src_path),
          :ok           <- ensure_dir_exists(zip_path, tmpdir),
          {:ok, args}   <- opts |> Map.new() |> extract_zip_args(),
-         :ok           <- try_zip_cmd(args ++ [zip_path, src_path]) do
+         :ok           <- try_zip_cmd(args ++ [zip_raw_path, src_raw_path], cwd_path) do
       if zip_path |> Path.basename() |> String.contains?(".") do
         {:ok, zip_path}
       else
@@ -128,8 +130,8 @@ defmodule Antikythera.Zip do
     end
   end
 
-  defunp try_zip_cmd(args :: v[list(String.t)]) :: :ok | {:error, :shell_runtime_error} do
-    case System.cmd("zip", args) do
+  defunp try_zip_cmd(args :: v[list(String.t)], cwd_path :: v[String.t]) :: :ok | {:error, :shell_runtime_error} do
+    case System.cmd("zip", args, [cd: cwd_path]) do
       {_, 0} ->
         :ok
       _ ->
