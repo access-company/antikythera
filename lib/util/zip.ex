@@ -39,9 +39,9 @@ defmodule Antikythera.Zip do
 
   ## Example
     Tmpdir.make(context, fn tmpdir ->
-      src_path = tmpdir <> "/src.txt"
-      zip_path = tmpdir <> "/archive.zip"
-      File.write!(src_path, "text")
+      src_path = "src.txt"
+      zip_path = "archive.zip"
+      File.write!(tmpdir <> "/" <> src_path, "text")
       Antikythera.Zip.zip(context, tmpdir, zip_path, src_path, [encryption: true, password: "password"])
       |> case do
         {:ok, archive_path} ->
