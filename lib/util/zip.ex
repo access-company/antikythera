@@ -50,6 +50,7 @@ defmodule Antikythera.Zip do
          cwd_path      <- Path.expand(cwd_raw_path),
          zip_path      <- Path.expand(zip_raw_path, cwd_path),
          src_path      <- Path.expand(src_raw_path, cwd_path),
+         :ok           <- validate_within_tmpdir(cwd_path, tmpdir),
          :ok           <- validate_within_tmpdir(zip_path, tmpdir),
          :ok           <- validate_within_tmpdir(src_path, tmpdir),
          :ok           <- reject_existing_dir(zip_path),
