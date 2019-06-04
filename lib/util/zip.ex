@@ -127,9 +127,9 @@ defmodule Antikythera.Zip do
     end
   end
 
-  defunp validate_suffix(src_path :: v[String.t], cwd_path :: v[String.t]) :: :ok | {:error, tuple} do
+  defunp validate_suffix(src_path :: v[String.t], cwd_full_path :: v[String.t]) :: :ok | {:error, tuple} do
     suffixed = String.ends_with?(src_path, "/")
-    src_full_path = Path.expand(src_path, cwd_path)
+    src_full_path = Path.expand(src_path, cwd_full_path)
     if suffixed and !File.dir?(src_full_path) do
       {:error, {:not_dir, %{path: src_full_path}}}
     else
