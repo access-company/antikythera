@@ -17,7 +17,7 @@ defmodule Antikythera.ZipTest do
   @zip_full_path @tmpdir <> "/" <> @zip_path
 
   describe "Zip.FileName.valid?/1" do
-    test "Exclude paths suffixed with /" do
+    test "excludes paths suffixed with /, /. or /.." do
       assert Zip.FileName.valid?("file.ex")
       assert Zip.FileName.valid?("file.")
       refute Zip.FileName.valid?("file\n")
@@ -29,7 +29,7 @@ defmodule Antikythera.ZipTest do
   end
 
   describe "Zip.NonTraversalPath.valid?/1" do
-    test "Exclude paths with .." do
+    test "excludes paths with .." do
       assert Zip.NonTraversalPath.valid?("file.txt")
       assert Zip.NonTraversalPath.valid?(".")
       refute Zip.NonTraversalPath.valid?("..")
@@ -39,14 +39,14 @@ defmodule Antikythera.ZipTest do
       refute Zip.NonTraversalPath.valid?("..a")
     end
 
-    test "Exclude absolute paths" do
+    test "excludes absolute paths" do
       refute Zip.NonTraversalPath.valid?("/")
       refute Zip.NonTraversalPath.valid?("/a")
     end
   end
 
   describe "Zip.zip/5" do
-    test "returns path of resulting archive" do
+    test "returns zip path" do
       for(
         {dirs_to_create, files_to_create, src_path} <- [
           {[],           ["src.txt"],         "src.txt"},
@@ -68,7 +68,7 @@ defmodule Antikythera.ZipTest do
       end
     end
 
-    test "returns path of resulting archive with .zip if no extension was assigned" do
+    test "returns zip path after compensating extension" do
       Tmpdir.make(@context, fn tmpdir ->
         zip_path = "no_extension"
         zip_full_path = tmpdir <> "/" <> zip_path <> ".zip"
@@ -79,7 +79,7 @@ defmodule Antikythera.ZipTest do
       end)
     end
 
-    test "returns path of resulting archive encrypted with password" do
+    test "returns zip path after encryption using password" do
       for(
         {dirs_to_create, files_to_create, src_path} <- [
           {[],           ["src.txt"],         "src.txt"},
@@ -106,25 +106,25 @@ defmodule Antikythera.ZipTest do
       assert Zip.zip(@context, @tmpdir, @zip_path, @src_path) == {:error, :not_found}
     end
 
-    test "returns error when cwd is outside tmpdir" do
+    test "returns error when cwd path is outside tmpdir" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       invalid_cwd_path = "/another_dir"
       assert Zip.zip(@context, invalid_cwd_path, @zip_path, @src_path) == {:error, {:permission_denied, %{tmpdir: @tmpdir, path: invalid_cwd_path}}}
     end
 
-    test "returns error when resulting archive is outside tmpdir" do
+    test "returns error when zip path is outside tmpdir" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       invalid_zip_path = "/another_dir" <> "/" <> @zip_path
       assert Zip.zip(@context, @tmpdir, invalid_zip_path, @src_path) == {:error, {:permission_denied, %{tmpdir: @tmpdir, path: invalid_zip_path}}}
     end
 
-    test "returns error when the cwd is not a directory" do
+    test "returns error when cwd path is not a directory" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       :meck.expect(File, :dir?, fn @tmpdir -> false end)
       assert Zip.zip(@context, @tmpdir, @zip_path, @src_path) == {:error, {:not_dir, %{path: @tmpdir}}}
     end
 
-    test "returns error when zip_path is a directory" do
+    test "returns error when zip path is a directory" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       :meck.expect(File, :dir?, fn
         @tmpdir        -> true
@@ -145,7 +145,7 @@ defmodule Antikythera.ZipTest do
       assert Zip.zip(@context, @tmpdir, invalid_zip_path, @src_path) == {:error, {:not_dir, %{path: invalid_zip_full_path}}}
     end
 
-    test "returns error when src_path is a file suffixed with /" do
+    test "returns error when src path is a file suffixed with /" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       invalid_src_path = @src_path <> "/"
       :meck.expect(File, :exists?, fn @src_full_path -> true end)
@@ -157,7 +157,7 @@ defmodule Antikythera.ZipTest do
       assert Zip.zip(@context, @tmpdir, @zip_path, invalid_src_path) == {:error, {:not_dir, %{path: @src_full_path}}}
     end
 
-    test "returns error when src is not found" do
+    test "returns error when src path is not found" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       :meck.expect(File, :dir?, fn
         @tmpdir        -> true
