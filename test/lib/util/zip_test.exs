@@ -101,6 +101,12 @@ defmodule Antikythera.ZipTest do
       assert Zip.zip(@context, @tmpdir, @zip_path, @src_path) == {:error, :not_found}
     end
 
+    test "returns error when cwd is outside tmpdir" do
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
+      invalid_cwd_path = "/another_dir"
+      assert Zip.zip(@context, invalid_cwd_path, @zip_path, @src_path) == {:error, {:permission_denied, %{tmpdir: @tmpdir, path: invalid_cwd_path}}}
+    end
+
     test "returns error when src is outside tmpdir" do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       invalid_src_path = "/another_dir" <> "/" <> @src_path
@@ -111,6 +117,12 @@ defmodule Antikythera.ZipTest do
       :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
       invalid_zip_path = "/another_dir" <> "/" <> @zip_path
       assert Zip.zip(@context, @tmpdir, invalid_zip_path, @src_path) == {:error, {:permission_denied, %{tmpdir: @tmpdir, path: invalid_zip_path}}}
+    end
+
+    test "returns error when the cwd is not a directory" do
+      :meck.expect(TmpdirTracker, :get, fn _ -> {:ok, @tmpdir} end)
+      :meck.expect(File, :dir?, fn @tmpdir -> false end)
+      assert Zip.zip(@context, @tmpdir, @zip_path, @src_path) == {:error, {:not_dir, %{path: @tmpdir}}}
     end
 
     test "returns error when zip_path is a directory" do
