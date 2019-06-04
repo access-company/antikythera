@@ -28,6 +28,18 @@ defmodule Antikythera.ZipTest do
     end
   end
 
+  describe "Zip.NonTraversalPath.valid?/1" do
+    test "Exclude paths with .." do
+      assert Zip.NonTraversalPath.valid?("file.txt")
+      assert Zip.NonTraversalPath.valid?(".")
+      refute Zip.NonTraversalPath.valid?("..")
+      refute Zip.NonTraversalPath.valid?("...")
+      refute Zip.NonTraversalPath.valid?("a..")
+      assert Zip.NonTraversalPath.valid?(".a.")
+      refute Zip.NonTraversalPath.valid?("..a")
+    end
+  end
+
   describe "Zip.zip/3" do
     test "returns path of resulting archive" do
       for(

@@ -22,6 +22,10 @@ defmodule Antikythera.Zip do
     use Croma.SubtypeOfString, pattern: ~R/\A(?!.*\/\.{0,2}\z).*\z/
   end
 
+  defmodule NonTraversalPath do
+    use Croma.SubtypeOfString, pattern: ~R/\A([^.]|(?<!\.)\.(?!\.))+\z/
+  end
+
   @doc """
   Creates a ZIP file.
 
@@ -43,7 +47,7 @@ defmodule Antikythera.Zip do
   defun zip(context_or_epool_id :: v[EPoolId.t | Context.t],
             cwd_raw_path        :: v[String.t],
             zip_raw_path        :: v[FileName.t],
-            src_raw_path        :: v[String.t],
+            src_raw_path        :: v[NonTraversalPath.t],
             opts                :: v[list(opts)] \\ []) :: R.t(Path.t) do
     epool_id = extract_epool_id(context_or_epool_id)
     with {:ok, tmpdir} <- TmpdirTracker.get(epool_id),
