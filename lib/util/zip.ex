@@ -29,7 +29,7 @@ defmodule Antikythera.Zip do
   end
 
   defmodule NonTraversalPath do
-    use Croma.SubtypeOfString, pattern: ~R/\A([^.]|(?<!\.)\.(?!\.))+\z/
+    use Croma.SubtypeOfString, pattern: ~R/\A([^.\/]|((?<!\.)\.)|((?<!\A)\/))+\z/
   end
 
   @doc """

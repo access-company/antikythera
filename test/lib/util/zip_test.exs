@@ -38,6 +38,11 @@ defmodule Antikythera.ZipTest do
       assert Zip.NonTraversalPath.valid?(".a.")
       refute Zip.NonTraversalPath.valid?("..a")
     end
+
+    test "Exclude absolute paths" do
+      refute Zip.NonTraversalPath.valid?("/")
+      refute Zip.NonTraversalPath.valid?("/a")
+    end
   end
 
   describe "Zip.zip/5" do
