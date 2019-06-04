@@ -53,6 +53,7 @@ defmodule Antikythera.Zip do
          :ok           <- validate_within_tmpdir(cwd_path, tmpdir),
          :ok           <- validate_within_tmpdir(zip_path, tmpdir),
          :ok           <- validate_within_tmpdir(src_path, tmpdir),
+         :ok           <- reject_existing_file(cwd_path),
          :ok           <- reject_existing_dir(zip_path),
          :ok           <- ensure_dir_exists(zip_path, tmpdir),
          :ok           <- validate_path_exists(src_path),
@@ -69,6 +70,14 @@ defmodule Antikythera.Zip do
 
   defp extract_epool_id(%Context{executor_pool_id: epool_id}), do: epool_id
   defp extract_epool_id(epool_id),                             do: epool_id
+
+  defunp reject_existing_file(path :: v[String.t]) :: :ok | {:error, tuple} do
+    if File.dir?(path) do
+      :ok
+    else
+      {:error, {:not_dir, %{path: path}}}
+    end
+  end
 
   defunp reject_existing_dir(path :: v[String.t]) :: :ok | {:error, tuple} do
     if File.dir?(path) do
