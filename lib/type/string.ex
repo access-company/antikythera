@@ -38,7 +38,7 @@ defmodule Antikythera.Domain do
 end
 
 defmodule Antikythera.DomainList do
-  use Croma.SubtypeOfList, elem_module: Antikythera.Domain, max_length: 2
+  use Croma.SubtypeOfList, elem_module: Antikythera.Domain, max_length: 10
 end
 
 defmodule Antikythera.PathSegment do
