@@ -22,6 +22,7 @@ defmodule AntikytheraCore.Alert.Handler do
   @default_delayed_interval 1_800
   @fast_interval_key        "fast_interval"
   @delayed_interval_key     "delayed_interval"
+  @ignore_patterns_key      "ignore_patterns"
 
   @moduledoc """
   Behaviour module for alert handlers.
@@ -76,12 +77,16 @@ defmodule AntikytheraCore.Alert.Handler do
   end
 
   @impl true
-  def handle_event(message, %HandlerState{busy?: true, message_buffer: buffer} = handler_state) do
-    {:ok, %HandlerState{handler_state | message_buffer: [message | buffer]}}
-  end
-  def handle_event(message, %HandlerState{busy?: false, otp_app_name: otp_app_name, handler_module: handler} = handler_state) do
-    handler_config = HandlerConfig.get(handler, otp_app_name)
-    schedule_handler_timeout(handler, handler_config, %{handler_state | message_buffer: [message]})
+  def handle_event(message, %HandlerState{busy?: busy?, message_buffer: buffer, otp_app_name: otp_app_name, handler_module: handler} = handler_state) do
+    handler_config  = HandlerConfig.get(handler, otp_app_name)
+    ignore_patterns = ignore_patterns(handler_config)
+    ignore_message? = ignore_message?(message, ignore_patterns)
+    new_buffer      = if ignore_message?, do: buffer, else: [message | buffer]
+    if busy? or ignore_message? do
+      {:ok, %HandlerState{handler_state | message_buffer: new_buffer}}
+    else
+      schedule_handler_timeout(handler, handler_config, %{handler_state | message_buffer: new_buffer})
+    end
   end
 
   @impl true
@@ -117,6 +122,11 @@ defmodule AntikytheraCore.Alert.Handler do
     end
   end
 
+  defp ignore_message?({_time, body}, ignore_patterns) do
+    Enum.map(ignore_patterns, &Regex.compile!/1)
+    |> Enum.any?(&(Regex.match?(&1, body)))
+  end
+
   defp fast_interval(handler_config) do
     case Map.get(handler_config, @fast_interval_key) do
       num when is_integer(num) and num > 0 -> num
@@ -128,6 +138,13 @@ defmodule AntikytheraCore.Alert.Handler do
     case Map.get(handler_config, @delayed_interval_key) do
       num when is_integer(num) and num > 0 -> num
       _                                    -> @default_delayed_interval
+    end
+  end
+
+  defp ignore_patterns(handler_config) do
+    case Map.get(handler_config, @ignore_patterns_key) do
+      patterns when is_list(patterns) -> patterns
+      _                               -> []
     end
   end
 
