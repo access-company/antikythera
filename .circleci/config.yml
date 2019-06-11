@@ -14,7 +14,7 @@ references:
       # Installing `locales` automatically triggers `locale-gen` once in postinstall step
       command: |
         echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen
-        apt-get update && apt-get install -y zip unzip locales
+        apt-get update && apt-get install -y unzip locales
         echo 'export LANG=en_US.UTF-8' >> $BASH_ENV
   restore_asdf_directory: &restore_asdf_directory
     restore_cache:
