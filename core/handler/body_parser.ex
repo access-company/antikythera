@@ -17,7 +17,7 @@ defmodule AntikytheraCore.Handler.BodyParser do
       do: {:ok, req2, raw, parsed}
   end
 
-  defunp get_body(req :: :cowboy_req.req) :: {:ok, :cowboy_req.req, RawBody.t} | invalid_tuple | timeout_tuple do
+  defunp get_body(req :: :cowboy_req.req) :: {:ok, RawBody.t, :cowboy_req.req} | invalid_tuple | timeout_tuple do
     try do
       # Read up to 8MB by one invocation of :cowboy_req.read_body/2; reject request with larger body
       period = 5_000 # default timeout (period + 1_000) is too long as period defaults to 15_000
