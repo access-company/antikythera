@@ -66,29 +66,18 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   @impl true
   defun command(q1 :: v[t], cmd :: RVData.command_arg) :: {RVData.command_ret, t} do
     case cmd do
-      {{:add, job_key, job}                   , now_millis} ->
-        insert(q1, job_key, job)
-        |> maintain_invariants_and_return(now_millis)
-      {{:fetch, broker}                       , now_millis} ->
-        fetch(q1, broker, now_millis)
-        |> maintain_invariants_and_return(now_millis)
-      {{:remove_locked, job_key}              , now_millis} ->
-        {:ok, remove_locked(q1, job_key, now_millis)}
-        |> maintain_invariants_and_return(now_millis)
-      {{:unlock_for_retry, job_key}           , now_millis} ->
-        {:ok, unlock_for_retry(q1, job_key, now_millis)}
-        |> maintain_invariants_and_return(now_millis)
-      {{:remove_broker_from_waiting_list, pid}, now_millis} ->
-        {:ok, remove_broker(q1, pid)}
-        |> maintain_invariants_and_return(now_millis)
-      {{:cancel, job_id}                      , now_millis} ->
-        cancel_job(q1, job_id)
-        |> maintain_invariants_and_return(now_millis)
-      {:get_metrics                           , now_millis} ->
-        {metrics(q1), q1}
-        |> maintain_invariants_and_return(now_millis)
-      _                                                     ->
-        {:ok, q1} # failsafe: not to crash on unexpected command
+      {{:add, job_key, job}                   , now_millis} -> {insert(q1, job_key, job),                         now_millis}
+      {{:fetch, broker}                       , now_millis} -> {fetch(q1, broker, now_millis),                    now_millis}
+      {{:remove_locked, job_key}              , now_millis} -> {{:ok, remove_locked(q1, job_key, now_millis)},    now_millis}
+      {{:unlock_for_retry, job_key}           , now_millis} -> {{:ok, unlock_for_retry(q1, job_key, now_millis)}, now_millis}
+      {{:remove_broker_from_waiting_list, pid}, now_millis} -> {{:ok, remove_broker(q1, pid)},                    now_millis}
+      {{:cancel, job_id}                      , now_millis} -> {cancel_job(q1, job_id),                           now_millis}
+      {:get_metrics                           , now_millis} -> { {metrics(q1), q1},                               now_millis}
+      _                                                     -> {{:ok, q1}} # failsafe: not to crash on unexpected command
+    end
+    |> case do
+      {first_arg, now_millis} -> maintain_invariants_and_return(first_arg, now_millis)
+      {failsafe}              -> failsafe
     end
   end
 
@@ -106,10 +95,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     %__MODULE__{q | abandoned_jobs: []}
     |> move_jobs_running_too_long(now_millis)
   end
-  defp move_jobs_running_too_long(%__MODULE__{jobs:           _,
-                                              index_waiting:  _,
-                                              index_running:  index_running,
-                                              abandoned_jobs: _} = q,
+  defp move_jobs_running_too_long(%__MODULE__{index_running: index_running} = q,
                                   now_millis) do
     threshold_time = now_millis - MaxDuration.max()
     target_job_info = take_smallest_with_earlier_timestamp(index_running, threshold_time)
@@ -131,10 +117,8 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   defp move_job_running_too_long(q, target_job_info, _now_millis, _threshold_time) when is_nil(target_job_info), do: q
-  defp move_job_running_too_long(%__MODULE__{jobs:           jobs,
-                                             index_waiting:  index_waiting,
-                                             index_running:  _,
-                                             abandoned_jobs: _} = q,
+  defp move_job_running_too_long(%__MODULE__{jobs:          jobs,
+                                             index_waiting: index_waiting} = q,
                                  {{_, job_id}, _} = target_job_info,
                                  now_millis,
                                  threshold_time) do
@@ -149,8 +133,6 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   defp abandon_job(%__MODULE__{jobs:           jobs,
-                               index_waiting:  _,
-                               index_running:  _,
                                abandoned_jobs: abandoned_jobs} = q,
                    {{_, job_id}, index_running2} = _target_job_info,
                    job) do
@@ -159,10 +141,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     %__MODULE__{q | jobs: jobs2, index_running: index_running2, abandoned_jobs: abandoned_jobs2}
   end
 
-  defp attempt_job(%__MODULE__{jobs:           jobs,
-                               index_waiting:  _,
-                               index_running:  _,
-                               abandoned_jobs: _} = q,
+  defp attempt_job(%__MODULE__{jobs: jobs} = q,
                    {{_, job_id} = job_key, index_running2} = _target_job_info,
                    job,
                    time,
@@ -178,22 +157,16 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     %__MODULE__{q | brokers_to_notify: []}
     |> move_now_runnable_jobs_impl(now_millis)
   end
-  defp move_now_runnable_jobs_impl(%__MODULE__{jobs:              _,
-                                               index_waiting:     index_waiting,
-                                               index_runnable:    _,
-                                               brokers_waiting:   _,
-                                               brokers_to_notify: _} = q,
+  defp move_now_runnable_jobs_impl(%__MODULE__{index_waiting: index_waiting} = q,
                                    now_millis) do
     target_job_info = take_smallest_with_earlier_timestamp(index_waiting, now_millis)
     move_now_runnable_job(q, target_job_info, now_millis)
   end
 
   defp move_now_runnable_job(q, target_job_info, _now_millis) when is_nil(target_job_info), do: q
-  defp move_now_runnable_job(%__MODULE__{jobs:              jobs,
-                                         index_waiting:     _,
-                                         index_runnable:    index_runnable,
-                                         brokers_waiting:   brokers_waiting,
-                                         brokers_to_notify: _} = q,
+  defp move_now_runnable_job(%__MODULE__{jobs:            jobs,
+                                         index_runnable:  index_runnable,
+                                         brokers_waiting: brokers_waiting} = q,
                                   {{_, job_id} = job_key, index_waiting2} = _target_job_info,
                                   now_millis) do
     jobs2 = Map.update!(jobs, job_id, fn {j, t, :waiting} -> {j, t, :runnable} end)
@@ -204,11 +177,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   defp move_first_waiting_broker(q, [] = _brokers_waiting), do: q
-  defp move_first_waiting_broker(%__MODULE__{jobs:              _,
-                                             index_waiting:     _,
-                                             index_runnable:    _,
-                                             brokers_waiting:   _,
-                                             brokers_to_notify: brokers_to_notify} = q,
+  defp move_first_waiting_broker(%__MODULE__{brokers_to_notify: brokers_to_notify} = q,
                                  [b | bs] = _brokers_waiting) do
     %__MODULE__{q | brokers_waiting: bs, brokers_to_notify: [b | brokers_to_notify]}
   end
@@ -230,8 +199,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     end
   end
 
-  defp fetch(%__MODULE__{index_waiting:   _,
-                         index_runnable:  index_runnable,
+  defp fetch(%__MODULE__{index_runnable:  index_runnable,
                          brokers_waiting: bs_waiting} = q,
              broker,
              now_millis) do
@@ -245,9 +213,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     end
   end
 
-  defp fetch_waiting_job(%__MODULE__{index_waiting:   index_waiting,
-                                     index_runnable:  _,
-                                     brokers_waiting: _} = q,
+  defp fetch_waiting_job(%__MODULE__{index_waiting: index_waiting} = q,
                          bs_waiting,
                          broker,
                          now_millis) do
@@ -329,10 +295,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     %__MODULE__{q | brokers_waiting: remove_brokers_by_node(brokers, pid)}
   end
 
-  defp cancel_job(%__MODULE__{jobs:           jobs,
-                              index_waiting:  _,
-                              index_runnable: _,
-                              index_running:  _} = q,
+  defp cancel_job(%__MODULE__{jobs: jobs} = q,
                   job_id) do
     case Map.pop(jobs, job_id) do
       {nil, _}                  -> {{:error, :not_found}, q}
@@ -343,8 +306,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     end
   end
 
-  defp cancel_job_impl(%__MODULE__{jobs:           _,
-                                   index_waiting:  index_waiting,
+  defp cancel_job_impl(%__MODULE__{index_waiting:  index_waiting,
                                    index_runnable: index_runnable,
                                    index_running:  index_running} = q,
                        state,
