@@ -71,7 +71,8 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
       :ok = Mix.Tasks.Compile.App.run(["--force"])
     rescue
       File.Error ->
-        # Directory for <antikythera_instance>.app does not exist, i.e. the antikythera instance is not yet compiled; run the normal compilation.
+        # Directory for <antikythera_instance>.app does not exist,
+        # i.e. the antikythera instance is not yet compiled; run the normal compilation.
         Mix.Tasks.Compile.run([])
     end
   end
@@ -185,6 +186,10 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
     instance_otp_app = {release_name, rel_version, Path.join([Mix.Project.build_path(), "lib", release_name_str])}
     current_otp_apps = [instance_otp_app | current_deps]
     prev_otp_apps = read_rel_file(release_name_str, from_rel_version, release_output_dir)
+    generate_appup_files_impl(release_name_str, current_otp_apps, prev_otp_apps, release_output_dir)
+  end
+
+  defp generate_appup_files_impl(release_name_str, current_otp_apps, prev_otp_apps, release_output_dir) do
     Enum.each(current_otp_apps, fn {name, version, dir} ->
       case prev_otp_apps[name] do
         nil          -> :ok
