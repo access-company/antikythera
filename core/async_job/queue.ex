@@ -54,13 +54,15 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   @impl true
   defun new() :: t do
     set = :gb_sets.empty()
-    %__MODULE__{jobs:              %{},
-                index_waiting:     set,
-                index_runnable:    set,
-                index_running:     set,
-                brokers_waiting:   [],
-                brokers_to_notify: [],
-                abandoned_jobs:    []}
+    %__MODULE__{
+      jobs:              %{},
+      index_waiting:     set,
+      index_runnable:    set,
+      index_running:     set,
+      brokers_waiting:   [],
+      brokers_to_notify: [],
+      abandoned_jobs:    [],
+    }
   end
 
   @impl true
@@ -116,7 +118,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     end
   end
 
-  defp move_job_running_too_long(q, target_job_info, _now_millis, _threshold_time) when is_nil(target_job_info), do: q
+  defp move_job_running_too_long(q, nil = _target_job_info, _now_millis, _threshold_time), do: q
   defp move_job_running_too_long(%__MODULE__{jobs:          jobs,
                                              index_waiting: index_waiting} = q,
                                  {{_, job_id}, _} = target_job_info,
@@ -163,7 +165,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     move_now_runnable_job(q, target_job_info, now_millis)
   end
 
-  defp move_now_runnable_job(q, target_job_info, _now_millis) when is_nil(target_job_info), do: q
+  defp move_now_runnable_job(q, nil = _target_job_info, _now_millis), do: q
   defp move_now_runnable_job(%__MODULE__{jobs:            jobs,
                                          index_runnable:  index_runnable,
                                          brokers_waiting: brokers_waiting} = q,
