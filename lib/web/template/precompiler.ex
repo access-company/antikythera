@@ -71,27 +71,17 @@ defmodule Antikythera.TemplatePrecompiler do
     for {var_name, count} <- free_vars_map, count > 0, do: var_name
   end
 
-  defp extract_vars_in_ast_node({:::, _, [_, {:binary, _, nil}]}, {acc_free, acc_bound} = _acc) do
-    {Map.update(acc_free, :binary, -1, &(&1 - 1)), acc_bound} # cancel count of type expr in AST of string interpolation
+  # credo:disable-for-lines:10
+  defp extract_vars_in_ast_node(t, {acc_free, acc_bound} = acc) do
+    case t do
+      {:::, _, [_, {:binary, _, nil}]}  -> {Map.update(acc_free, :binary, -1, &(&1 - 1)), acc_bound} # cancel count of type expr in AST of string interpolation
+      {:= , _, [lhs, _rhs]}             -> {acc_free, MapSet.union(collect_vars(lhs), acc_bound)}
+      {:<-, _, [lhs, _rhs]}             -> {acc_free, MapSet.union(collect_vars(lhs), acc_bound)}
+      {:->, _, [[lhs | _guards], _rhs]} -> {acc_free, MapSet.union(collect_vars(lhs), acc_bound)}
+      {name, _, nil}                    -> if name in acc_bound, do: acc, else: {Map.update(acc_free, name, 1, &(&1 + 1)), acc_bound}
+      _                                 -> acc
+    end
   end
-
-  defp extract_vars_in_ast_node({:=, _, [lhs, _rhs]}, {acc_free, acc_bound} = _acc) do
-    {acc_free, MapSet.union(collect_vars(lhs), acc_bound)}
-  end
-
-  defp extract_vars_in_ast_node({:<-, _, [lhs, _rhs]}, {acc_free, acc_bound} = _acc) do
-    {acc_free, MapSet.union(collect_vars(lhs), acc_bound)}
-  end
-
-  defp extract_vars_in_ast_node({:->, _, [[lhs | _guards], _rhs]}, {acc_free, acc_bound} = _acc) do
-    {acc_free, MapSet.union(collect_vars(lhs), acc_bound)}
-  end
-
-  defp extract_vars_in_ast_node({name, _, nil}, {acc_free, acc_bound} = acc) do
-    if name in acc_bound, do: acc, else: {Map.update(acc_free, name, 1, &(&1 + 1)), acc_bound}
-  end
-
-  defp extract_vars_in_ast_node(_, acc), do: acc
 
   defunp collect_vars(q :: Macro.t) :: MapSet.t do
     MacroUtil.prewalk_accumulate(q, [], fn(t, acc) ->
