@@ -103,7 +103,11 @@ defmodule Antikythera.Httpc do
     ]
   end
 
-  defun request(method :: v[Method.t], url :: v[Url.t], body :: v[ReqBody.t], headers :: v[Headers.t] \\ %{}, options :: Keyword.t \\ []) :: R.t(Response.t) do
+  defun request(method  :: v[Method.t],
+                url     :: v[Url.t],
+                body    :: v[ReqBody.t],
+                headers :: v[Headers.t] \\ %{},
+                options :: Keyword.t \\ []) :: R.t(Response.t) do
     downcased_headers     = Map.new(headers, fn {k, v} -> {String.downcase(k), v} end)
     headers_with_encoding = Map.put_new(downcased_headers, "accept-encoding", "gzip")
     options_map = normalize_options(options)
@@ -125,7 +129,11 @@ defmodule Antikythera.Httpc do
       request_impl(method, url_with_params, headers, hackney_body, hackney_opts, options_map)
     end)
   end
-  defun request!(method :: Method.t, url :: Url.t, body :: ReqBody.t, headers :: Headers.t \\ %{}, options :: Keyword.t \\ []) :: Response.t do
+  defun request!(method  :: Method.t,
+                 url     :: Url.t,
+                 body    :: ReqBody.t,
+                 headers :: Headers.t \\ %{},
+                 options :: Keyword.t \\ []) :: Response.t do
     request(method, url, body, headers, options) |> R.get!()
   end
 
@@ -178,25 +186,34 @@ defmodule Antikythera.Httpc do
 
   defp make_response(status, headers_list, body1, options_map) do
     if byte_size(body1) <= options_map[:max_body] do
-      headers_grouped1 = Enum.group_by(headers_list, fn {k, _} -> String.downcase(k) end, &elem(&1, 1))
-      {cookie_strings, headers_grouped2} = Map.pop(headers_grouped1, "set-cookie", [])
-      headers_map1 = MapUtil.map_values(headers_grouped2, fn {_, vs} -> Enum.join(vs, ", ") end)
-      {body2, headers_map2} =
-        if body1 != "" and !options_map[:skip_body_decompression] and headers_map1["content-encoding"] == "gzip" do
-          uncompressed    = :zlib.gunzip(body1)
-          content_length  = Integer.to_string(byte_size(uncompressed))
-          new_headers_map = headers_map1 |> Map.delete("content-encoding") |> Map.put("content-length", content_length)
-          {uncompressed, new_headers_map}
-        else
-          {body1, headers_map1}
-        end
-      cookies_map = Map.new(cookie_strings, &SetCookie.parse!/1)
-      {:ok, %Response{status: status, body: body2, headers: headers_map2, cookies: cookies_map}}
+      headers_grouped = Enum.group_by(headers_list, fn {k, _} -> String.downcase(k) end, &elem(&1, 1))
+      {body2, headers_map, cookies_map} = make_response_impl(headers_grouped, body1, options_map[:skip_body_decompression])
+      {:ok, %Response{status: status, body: body2, headers: headers_map, cookies: cookies_map}}
     else
       # The returned body might be truncated and thus we can't reliably uncompress the body if it's compressed.
       # In this case we give up returning partial information and simply return an error.
       {:error, :response_too_large}
     end
+  end
+
+  defp make_response_impl(headers_grouped1, body1, skip_body_decompression) do
+    {cookie_strings, headers_grouped2} = Map.pop(headers_grouped1, "set-cookie", [])
+    headers_map1 = MapUtil.map_values(headers_grouped2, fn {_, vs} -> Enum.join(vs, ", ") end)
+    {body2, headers_map2} =
+      if body1 != "" and !skip_body_decompression and headers_map1["content-encoding"] == "gzip" do
+        decompress_body(body1, headers_map1)
+      else
+        {body1, headers_map1}
+      end
+    cookies_map = Map.new(cookie_strings, &SetCookie.parse!/1)
+    {body2, headers_map2, cookies_map}
+  end
+
+  defp decompress_body(body, headers_map) do
+    uncompressed    = :zlib.gunzip(body)
+    content_length  = Integer.to_string(byte_size(uncompressed))
+    new_headers_map = headers_map |> Map.delete("content-encoding") |> Map.put("content-length", content_length)
+    {uncompressed, new_headers_map}
   end
 
   defp normalize_options(options) do
