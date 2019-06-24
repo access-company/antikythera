@@ -17,12 +17,7 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
   end
 
   def run([testgear_dir]) do
-    {_, 0} = System.cmd("epmd", ["-daemon"]) # epmd must be up and running for distributed erlang
-    {:ok, _} = Node.start(:"test_client_node@host.local")
-    Node.set_cookie(:local)
-    {:ok, _} = Application.ensure_all_started(:hackney) # to use Antikythera.Httpc
-    Mix.Task.run("antikythera_local.start", [testgear_dir])
-    :timer.sleep(5_000)
+    start_antikythera_local(testgear_dir)
 
     instance_mixfile_path = Path.expand("mix.exs")
     testgear_mixfile_path = Path.join(testgear_dir, "mix.exs")
@@ -47,16 +42,29 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
         check_testgear_artifact_dirs:                    [["9.0.0", "9.0.1"]], # 0.0.1 should be removed
         check_new_version_with_noupgrade_is_not_applied: [:testgear, "9.0.2", testgear_original_version, testgear_mixfile_path],
         check_testgear_artifact_dirs:                    [["9.0.0", "9.0.1"]],
-      ] |> Enum.each(fn {fun_name, args} ->
-        IO.puts("#{fun_name} #{inspect(args)} ...")
-        apply(__MODULE__, fun_name, args)
-        IO.puts("#{fun_name} #{inspect(args)} OK")
-      end)
+      ] |> invoke_functions()
     after
       {_, 0} = System.cmd("git", ["checkout", "mix.exs"])
       {_, 0} = System.cmd("git", ["checkout", "mix.exs"], [cd: testgear_dir])
       Mix.Task.run("antikythera_local.stop")
     end
+  end
+
+  defp start_antikythera_local(testgear_dir) do
+    {_, 0} = System.cmd("epmd", ["-daemon"]) # epmd must be up and running for distributed erlang
+    {:ok, _} = Node.start(:"test_client_node@host.local")
+    Node.set_cookie(:local)
+    {:ok, _} = Application.ensure_all_started(:hackney) # to use Antikythera.Httpc
+    Mix.Task.run("antikythera_local.start", [testgear_dir])
+    :timer.sleep(5_000)
+  end
+
+  defp invoke_functions(fun_list) do
+    Enum.each(fun_list, fn {fun_name, args} ->
+      IO.puts("#{fun_name} #{inspect(args)} ...")
+      apply(__MODULE__, fun_name, args)
+      IO.puts("#{fun_name} #{inspect(args)} OK")
+    end)
   end
 
   defp version(app_name) do
@@ -123,7 +131,10 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
   defp run_mix_prepare(:testgear     , true , repo_dir ), do: System.cmd("mix", ["antikythera_local.prepare_gear", repo_dir,            ])
   defp run_mix_prepare(:testgear     , false, repo_dir ), do: System.cmd("mix", ["antikythera_local.prepare_gear", repo_dir, "noupgrade"])
 
-  defunp wait_until_version_changed(app_name :: g[atom], new_version :: g[String.t], old_version :: g[String.t], tries_remaining :: g[non_neg_integer]) :: :ok | :new_version_not_applied do
+  defunp wait_until_version_changed(app_name        :: g[atom],
+                                    new_version     :: g[String.t],
+                                    old_version     :: g[String.t],
+                                    tries_remaining :: g[non_neg_integer]) :: :ok | :new_version_not_applied do
     case tries_remaining do
       0 -> :new_version_not_applied
       _ ->
