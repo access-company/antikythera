@@ -41,13 +41,17 @@ defmodule Strategy.TimeDistribution do
   end
 
   defp find_nth_largest(index, [pivot | values]) do
-    {larger, smaller, larger_count} = Enum.reduce(values, {[], [], 0}, fn(v, {larger, smaller, count}) ->
-      if v > pivot, do: {[v | larger], smaller, count + 1}, else: {larger, [v | smaller], count}
-    end)
+    {larger, smaller, larger_count} = divide_by_pivot(values, pivot)
     cond do
       index <  larger_count -> find_nth_largest(index, larger)
       index == larger_count -> pivot
       true                  -> find_nth_largest(index - larger_count - 1, smaller)
     end
+  end
+
+  defp divide_by_pivot(values, pivot) do
+    Enum.reduce(values, {[], [], 0}, fn(v, {larger, smaller, count}) ->
+      if v > pivot, do: {[v | larger], smaller, count + 1}, else: {larger, [v | smaller], count}
+    end)
   end
 end

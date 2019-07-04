@@ -46,7 +46,7 @@ defmodule Antikythera.Cron do
     {Month     , 1, 12},
     {DayOfWeek , 0,  6},
   ] |> Enum.each(fn {mod, min, max} ->
-    m = Module.concat(__MODULE__, mod)
+    m = Module.safe_concat(__MODULE__, mod)
     defmodule m do
       defmodule Int do
         use Croma.SubtypeOfInt, min: min, max: max
@@ -126,23 +126,29 @@ defmodule Antikythera.Cron do
     case str do
       "*/" <> step -> {:ok, Enum.take_every(mod.min()..mod.max(), String.to_integer(step))}
       _            ->
-        {range, step} =
-          case String.split(str, "/") do
-            [r, s] -> {r, String.to_integer(s)}
-            [_]    -> {str, 1}
-          end
-        {first, last} =
-          case String.split(range, "-") do
-            [f, l] -> {String.to_integer(f), String.to_integer(l)}
-            [_]    ->
-              i = String.to_integer(range)
-              {i, i}
-          end
+        {range, step} = parse_range_and_step(str)
+        {first, last} = parse_first_and_last(range)
         cond do
           first < mod.min() -> {:error, {:invalid_value, [__MODULE__, mod]}}
           last  > mod.max() -> {:error, {:invalid_value, [__MODULE__, mod]}}
           true              -> {:ok, Enum.take_every(first..last, step)}
         end
+    end
+  end
+
+  defp parse_range_and_step(str) do
+    case String.split(str, "/") do
+      [r, s] -> {r, String.to_integer(s)}
+      [_]    -> {str, 1}
+    end
+  end
+
+  defp parse_first_and_last(range) do
+    case String.split(range, "-") do
+      [f, l] -> {String.to_integer(f), String.to_integer(l)}
+      [_]    ->
+        i = String.to_integer(range)
+        {i, i}
     end
   end
 
@@ -194,16 +200,19 @@ defmodule Antikythera.Cron do
   defp find_matching_date_by_day_of_week(%__MODULE__{day_of_week: day_of_week} = cron, ymd1) do
     {y, m, d1} = ymd2 = find_matching_month(cron, ymd1)
     dow1 = day_of_the_week(ymd2)
-    d2 =
-      case Enum.find(day_of_week, &(&1 >= dow1)) do
-        nil  -> d1 + hd(day_of_week) + 7 - dow1
-        dow2 -> d1 + dow2 - dow1
-      end
+    d2 = d1 + num_days_to_day_of_week(day_of_week, dow1)
     if d2 <= :calendar.last_day_of_the_month(y, m) do
       {y, m, d2}
     else
       # can't find matching date in this month; search again from the 1st day of the next month
       find_matching_date_by_day_of_week(cron, next_month_1st(y, m))
+    end
+  end
+
+  defp num_days_to_day_of_week(day_of_week, dow_offset) do
+    case Enum.find(day_of_week, &(&1 >= dow_offset)) do
+      nil  -> hd(day_of_week) + 7 - dow_offset
+      dow2 -> dow2 - dow_offset
     end
   end
 
@@ -231,13 +240,9 @@ defmodule Antikythera.Cron do
       ^h1 ->
         # no reset, `m1` is still valid
         case find_matching_value(minute, m1) do
-          nil ->
-            # can't find matching minute in this hour, search again from the next hour
-            case h1 do
-              23 -> nil
-              _  -> find_matching_hour_and_minute(cron, h1 + 1, 0)
-            end
-          m2 -> {h1, m2}
+          nil when h1 == 23 -> nil
+          nil               -> find_matching_hour_and_minute(cron, h1 + 1, 0)
+          m2                -> {h1, m2}
         end
       h2 -> {h2, find_matching_value(minute, 0)}
     end
