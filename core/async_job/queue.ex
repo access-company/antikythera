@@ -118,7 +118,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     end
   end
 
-  defp move_job_running_too_long(q, nil = _target_job_info, _now_millis, _threshold_time), do: q
+  defp move_job_running_too_long(q, nil, _now_millis, _threshold_time), do: q
   defp move_job_running_too_long(%__MODULE__{jobs:          jobs,
                                              index_waiting: index_waiting} = q,
                                  {{_, job_id}, _} = target_job_info,
@@ -165,7 +165,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     move_now_runnable_job(q, target_job_info, now_millis)
   end
 
-  defp move_now_runnable_job(q, nil = _target_job_info, _now_millis), do: q
+  defp move_now_runnable_job(q, nil, _now_millis), do: q
   defp move_now_runnable_job(%__MODULE__{jobs:            jobs,
                                          index_runnable:  index_runnable,
                                          brokers_waiting: brokers_waiting} = q,
@@ -178,7 +178,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     |> move_now_runnable_jobs_impl(now_millis)
   end
 
-  defp move_first_waiting_broker(q, [] = _brokers_waiting), do: q
+  defp move_first_waiting_broker(q, []), do: q
   defp move_first_waiting_broker(%__MODULE__{brokers_to_notify: brokers_to_notify} = q,
                                  [b | bs] = _brokers_waiting) do
     %__MODULE__{q | brokers_waiting: bs, brokers_to_notify: [b | brokers_to_notify]}
