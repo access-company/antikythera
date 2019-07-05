@@ -169,8 +169,8 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   defp move_now_runnable_job(%__MODULE__{jobs:            jobs,
                                          index_runnable:  index_runnable,
                                          brokers_waiting: brokers_waiting} = q,
-                                  {{_, job_id} = job_key, index_waiting2} = _target_job_info,
-                                  now_millis) do
+                             {{_, job_id} = job_key, index_waiting2} = _target_job_info,
+                             now_millis) do
     jobs2 = Map.update!(jobs, job_id, fn {j, t, :waiting} -> {j, t, :runnable} end)
     index_runnable2 = :gb_sets.add(job_key, index_runnable)
     q2 = %__MODULE__{q | jobs: jobs2, index_waiting: index_waiting2, index_runnable: index_runnable2}
