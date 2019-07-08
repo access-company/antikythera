@@ -74,7 +74,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
       {{:unlock_for_retry, job_key}           , now_millis} -> {{:ok, unlock_for_retry(q1, job_key, now_millis)}, now_millis}
       {{:remove_broker_from_waiting_list, pid}, now_millis} -> {{:ok, remove_broker(q1, pid)},                    now_millis}
       {{:cancel, job_id}                      , now_millis} -> {cancel_job(q1, job_id),                           now_millis}
-      {:get_metrics                           , now_millis} -> { {metrics(q1), q1},                               now_millis}
+      {:get_metrics                           , now_millis} -> {{metrics(q1), q1},                                now_millis}
       _                                                     -> {{:ok, q1}} # failsafe: not to crash on unexpected command
     end
     |> case do
