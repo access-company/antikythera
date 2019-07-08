@@ -116,12 +116,16 @@ defmodule Antikythera.Time do
 
   defp extract_timezone_offset_minutes(str) do
     case str do
-      <<"+", h :: binary-size(2), ":", m :: binary-size(2)>> ->   String.to_integer(h) * 60 + String.to_integer(m)
-      <<"+", h :: binary-size(2),      m :: binary-size(2)>> ->   String.to_integer(h) * 60 + String.to_integer(m)
-      <<"-", h :: binary-size(2), ":", m :: binary-size(2)>> -> -(String.to_integer(h) * 60 + String.to_integer(m))
-      <<"-", h :: binary-size(2),      m :: binary-size(2)>> -> -(String.to_integer(h) * 60 + String.to_integer(m))
+      <<"+", h :: binary-size(2), ":", m :: binary-size(2)>> ->  convert_to_minutes(h, m)
+      <<"+", h :: binary-size(2),      m :: binary-size(2)>> ->  convert_to_minutes(h, m)
+      <<"-", h :: binary-size(2), ":", m :: binary-size(2)>> -> -convert_to_minutes(h, m)
+      <<"-", h :: binary-size(2),      m :: binary-size(2)>> -> -convert_to_minutes(h, m)
       "Z"                                                    ->   0
     end
+  end
+
+  defp convert_to_minutes(hour, minute) do
+    String.to_integer(hour) * 60 + String.to_integer(minute)
   end
 
   defun shift_milliseconds(t :: v[t], milliseconds :: v[integer]) :: t do

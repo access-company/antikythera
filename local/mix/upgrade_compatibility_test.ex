@@ -38,22 +38,8 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
     {hash_from, hash_to} = upgrade_from_and_to(git_refs)
 
     status = try do
-      gear_names = Enum.join(Map.keys(gears_map), ", ")
-      IO.puts("Start #{@antikythera_instance_name} (#{hash_from}) with #{gear_names}")
-      checkout_and_deps_get(hash_from)
-      clean()
-      gear_dirs = Map.values(gears_map)
-      0 = run_mix_task(["antikythera_local.start" | gear_dirs])
-
-      with_websocket_client_process(has_testgear?, fn ->
-        IO.puts("Now upgrade #{@antikythera_instance_name} to #{hash_to}")
-        checkout_and_deps_get(hash_to)
-        clean()
-        0 = run_mix_task(["antikythera_local.prepare_core"])
-        RunningEnvironment.wait_until_upgrade_applied(@antikythera_instance_name, hash_to)
-
-        run_blackbox_test(gears_map)
-      end)
+      start_antikythera_local(gears_map, hash_from)
+      prepare_and_run_blackbox_test(has_testgear?, gears_map, hash_to)
     after
       checkout_and_deps_get(branch)
       _ = run_mix_task(["antikythera_local.stop"])
@@ -85,6 +71,27 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
   defp commit_hash(ref) do
     {hash, 0} = System.cmd("git", ["rev-parse", ref])
     String.trim_trailing(hash)
+  end
+
+  defp start_antikythera_local(gears_map, hash_from) do
+    gear_names = Enum.join(Map.keys(gears_map), ", ")
+    IO.puts("Start #{@antikythera_instance_name} (#{hash_from}) with #{gear_names}")
+    checkout_and_deps_get(hash_from)
+    clean()
+    gear_dirs = Map.values(gears_map)
+    0 = run_mix_task(["antikythera_local.start" | gear_dirs])
+  end
+
+  defp prepare_and_run_blackbox_test(has_testgear?, gears_map, hash_to) do
+    with_websocket_client_process(has_testgear?, fn ->
+      IO.puts("Now upgrade #{@antikythera_instance_name} to #{hash_to}")
+      checkout_and_deps_get(hash_to)
+      clean()
+      0 = run_mix_task(["antikythera_local.prepare_core"])
+      RunningEnvironment.wait_until_upgrade_applied(@antikythera_instance_name, hash_to)
+
+      run_blackbox_test(gears_map)
+    end)
   end
 
   defp checkout_and_deps_get(ref) do

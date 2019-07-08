@@ -252,11 +252,12 @@ defmodule Antikythera.GearProject do
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
-      @antikythera_instance_dep     Keyword.fetch!(opts, :antikythera_instance_dep)
-      @antikythera_instance_name    elem(@antikythera_instance_dep, 0)
-      @antikythera_instance_project Antikythera.GearProject.get_antikythera_instance_project_settings!(@antikythera_instance_name)
-      @antikythera_instance_deps    @antikythera_instance_project[:deps]
-      @source_url                   Keyword.get(opts, :source_url)
+      @antikythera_instance_dep       Keyword.fetch!(opts, :antikythera_instance_dep)
+      @antikythera_instance_name      elem(@antikythera_instance_dep, 0)
+      @antikythera_instance_project   Antikythera.GearProject.get_antikythera_instance_project_settings!(@antikythera_instance_name)
+      @antikythera_instance_deps      @antikythera_instance_project[:deps]
+      @antikythera_instance_compilers @antikythera_instance_project[:extra_compilers] |> List.wrap()
+      @source_url                     Keyword.get(opts, :source_url)
       Antikythera.GearProject.load_antikythera_instance_mix_config_file!(@antikythera_instance_name)
 
       # Deliberately undocumented option; only used by special gears (mostly for testing or administrative purposes)
@@ -269,7 +270,7 @@ defmodule Antikythera.GearProject do
           app:              gear_name(),
           version:          Antikythera.MixCommon.version_with_last_commit_info(version()),
           elixirc_paths:    ["lib", "web"],
-          compilers:        [:ensure_gear_dependencies, :gettext, :propagate_file_modifications] ++ Mix.compilers() ++ [:gear_static_analysis],
+          compilers:        [:ensure_gear_dependencies, :gettext, :propagate_file_modifications] ++ Mix.compilers() ++ [:gear_static_analysis] ++ @antikythera_instance_compilers,
           start_permanent:  false,
           deps:             deps(),
           docs:             [output: "exdoc"],
