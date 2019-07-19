@@ -71,6 +71,7 @@ defmodule Antikythera.TemplatePrecompiler do
     for {var_name, count} <- free_vars_map, count > 0, do: var_name
   end
 
+  # credo:disable-for-lines:10
   defp extract_vars_in_ast_node(t, {acc_free, acc_bound} = acc) do
     case t do
       {:::, _, [_, {:binary, _, nil}]}  -> {Map.update(acc_free, :binary, -1, &(&1 - 1)), acc_bound} # cancel count of type expr in AST of string interpolation
