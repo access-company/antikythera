@@ -124,12 +124,12 @@ defmodule AntikytheraCore.AsyncJob.Queue do
                                  {{_, job_id}, _} = target_job_info,
                                  now_millis,
                                  threshold_time) do
-    {j1, t, :running} = Map.fetch!(jobs, job_id)
-    case j1.remaining_attempts do
+    {job, t, :running} = Map.fetch!(jobs, job_id)
+    case job.remaining_attempts do
       1 ->
-        abandon_job(q, target_job_info, j1) |> requeue_if_recurring(j1, job_id, now_millis)
+        abandon_job(q, target_job_info, job) |> requeue_if_recurring(job, job_id, now_millis)
       remaining ->
-        attempt_job(q, target_job_info, j1, t, remaining, index_waiting)
+        attempt_job(q, target_job_info, job, t, remaining, index_waiting)
     end
     |> move_jobs_running_too_long(threshold_time)
   end
