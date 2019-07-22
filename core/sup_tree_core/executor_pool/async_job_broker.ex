@@ -107,6 +107,23 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
   end
 
   defp ensure_queue_added(%{queue_name: queue_name}) do
+    try do
+      groups = RaftFleet.consensus_groups()
+      if Map.has_key?(groups, queue_name) do
+        true
+      else
+        add_consensus_group(queue_name)
+      end
+    rescue
+      # If `RaftFleet.consensus_groups/1` times-out (due to recovery from large snapshot/logs),
+      # the caller should retry afterward in the hope that the consensus group will become ready.
+      e ->
+        L.error("failed to get consensus groups #{queue_name}: #{inspect(e)}")
+        false
+    end
+  end
+
+  defp add_consensus_group(queue_name) do
     # Note that the consensus group may already be started by some other node, resulting in `:already_added`.
     # If `RaftFleet.add_consensus_group/1` times-out (due to recovery from large snapshot/logs),
     # the caller should retry afterward in the hope that the consensus group will become ready.
