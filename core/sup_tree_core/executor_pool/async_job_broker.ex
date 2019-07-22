@@ -108,8 +108,8 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
 
   defp ensure_queue_added(%{queue_name: queue_name}) do
     try do
-      groups = RaftFleet.consensus_groups() |> Map.keys()
-      if Enum.member?(groups, queue_name) do
+      groups = RaftFleet.consensus_groups()
+      if Map.has_key?(groups, queue_name) do
         true
       else
         add_consensus_group(queue_name)
