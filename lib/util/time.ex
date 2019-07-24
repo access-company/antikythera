@@ -20,6 +20,7 @@ defmodule Antikythera.Time do
   alias Croma.Result, as: R
   alias Antikythera.{IsoTimestamp, ImfFixdate}
   alias Antikythera.IsoTimestamp.Basic, as: IsoBasic
+  alias Antikythera.MilliSecondsInGregorian
 
   @typep milliseconds :: 0..999
   @type t :: {__MODULE__, :calendar.date, :calendar.time, milliseconds}
@@ -40,8 +41,6 @@ defmodule Antikythera.Time do
   defun truncate_to_hour(  {__MODULE__, date, {hour, _     , _     }, _} :: t) :: t, do: {__MODULE__, date, {hour, 0     , 0     }, 0}
   defun truncate_to_minute({__MODULE__, date, {hour, minute, _     }, _} :: t) :: t, do: {__MODULE__, date, {hour, minute, 0     }, 0}
   defun truncate_to_second({__MODULE__, date, {hour, minute, second}, _} :: t) :: t, do: {__MODULE__, date, {hour, minute, second}, 0}
-
-  @time_epoch_offset_milliseconds (:calendar.datetime_to_gregorian_seconds({{1970, 1, 1}, {0, 0, 0}}) * 1000)
 
   defun now() :: t do
     from_epoch_milliseconds(System.system_time(:millisecond))
@@ -154,11 +153,11 @@ defmodule Antikythera.Time do
   end
 
   defun to_epoch_milliseconds(t :: v[t]) :: integer do
-    to_gregorian_milliseconds(t) - @time_epoch_offset_milliseconds
+    to_gregorian_milliseconds(t) - MilliSecondsInGregorian.time_epoch_offset_milliseconds()
   end
 
-  defun from_epoch_milliseconds(milliseconds :: v[integer]) :: t do
-    from_gregorian_milliseconds(milliseconds + @time_epoch_offset_milliseconds)
+  defun from_epoch_milliseconds(milliseconds :: v[MilliSecondsInGregorian.t]) :: t do
+    from_gregorian_milliseconds(milliseconds + MilliSecondsInGregorian.time_epoch_offset_milliseconds())
   end
 
   @doc """
