@@ -20,6 +20,7 @@ defmodule Antikythera.Time do
   alias Croma.Result, as: R
   alias Antikythera.{IsoTimestamp, ImfFixdate}
   alias Antikythera.IsoTimestamp.Basic, as: IsoBasic
+  alias Antikythera.MilliSecondsInGregorian
 
   @typep milliseconds :: 0..999
   @type t :: {__MODULE__, :calendar.date, :calendar.time, milliseconds}
@@ -152,11 +153,11 @@ defmodule Antikythera.Time do
   end
 
   defun to_epoch_milliseconds(t :: v[t]) :: integer do
-    to_gregorian_milliseconds(t) - Antikythera.MilliSecondsInGregorian.time_epoch_offset_milliseconds
+    to_gregorian_milliseconds(t) - MilliSecondsInGregorian.time_epoch_offset_milliseconds
   end
 
-  defun from_epoch_milliseconds(milliseconds :: v[Antikythera.MilliSecondsInGregorian.t]) :: t do
-    from_gregorian_milliseconds(milliseconds + Antikythera.MilliSecondsInGregorian.time_epoch_offset_milliseconds)
+  defun from_epoch_milliseconds(milliseconds :: v[MilliSecondsInGregorian.t]) :: t do
+    from_gregorian_milliseconds(milliseconds + MilliSecondsInGregorian.time_epoch_offset_milliseconds)
   end
 
   @doc """
