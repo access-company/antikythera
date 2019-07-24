@@ -11,7 +11,7 @@ end
 defmodule Antikythera.MilliSecondsInGregorian do
   @time_epoch_offset_milliseconds (:calendar.datetime_to_gregorian_seconds({{1970, 1, 1}, {0, 0, 0}}) * 1000)
 
-  def time_epoch_offset_milliseconds, do: @time_epoch_offset_milliseconds
+  def time_epoch_offset_milliseconds(), do: @time_epoch_offset_milliseconds
 
   # This restriction is temporarily expanded for backward compatibility.
   # See ticket #177930 for details.
