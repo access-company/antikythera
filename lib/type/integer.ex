@@ -13,6 +13,6 @@ defmodule Antikythera.MilliSecondsInGregorian do
   def time_epoch_offset_milliseconds(), do: @time_epoch_offset_milliseconds
 
   # This restriction is temporarily expanded for backward compatibility.
-  # See ticket #177930 for details.
+  # `- 999` will be removed in the future.
   use Croma.SubtypeOfInt, min: -@time_epoch_offset_milliseconds - 999
 end
