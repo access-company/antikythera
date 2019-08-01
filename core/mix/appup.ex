@@ -85,8 +85,9 @@ defmodule AntikytheraCore.Release.Appup do
         |> Enum.map(fn {{k, _}, _} -> k end)
       if changed_chunk_names == ['Dbgi'] do
         IO.puts("#{inspect(module_name)} is excluded from .appup file, because only Dbgi chunk is changed.")
-      else
         false
+      else
+        true
       end
     end
   end
