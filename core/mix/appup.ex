@@ -50,7 +50,7 @@ defmodule AntikytheraCore.Release.Appup do
     v1_ebin_dir = Path.join(v1_dir, "ebin") |> String.to_charlist()
     v2_ebin_dir = Path.join(v2_dir, "ebin") |> String.to_charlist()
     {only_v1, only_v2, diff_pairs} = :beam_lib.cmp_dirs(v1_ebin_dir, v2_ebin_dir)
-    diff = Enum.map(diff_pairs, fn {_f1, f2} -> f2 end)
+    diff = reject_unchanged_modules(diff_pairs) |> Enum.map(fn {_f1, f2} -> f2 end)
     file_content = {
       v2_charlist,
       [
@@ -63,6 +63,32 @@ defmodule AntikytheraCore.Release.Appup do
     v2_appup_path = Path.join([v2_dir, "ebin", "#{name}.appup"])
     file_content_string = :io_lib.fwrite('~p.\n', [file_content]) |> List.to_string()
     File.write!(v2_appup_path, file_content_string)
+  end
+
+  defp reject_unchanged_modules(path_pairs) do
+    Enum.filter(path_pairs, fn {old_path, new_path} ->
+      module_changed?(old_path, new_path)
+    end)
+  end
+
+  defp module_changed?(old_path, new_path) do
+    # `:beam_lib.cmp_dirs/2` can't ignore trivial changes such as debug-info-only changes.
+    # In order not to waste CPU, we shouldn't include these modules in .appup file.
+    {:ok, module_name, old_chunks} = :beam_lib.all_chunks(old_path)
+    {:ok, _          , new_chunks} = :beam_lib.all_chunks(new_path)
+    if length(old_chunks) != length(new_chunks) do
+      true
+    else
+      changed_chunk_names =
+        Enum.zip(Enum.sort(old_chunks), Enum.sort(new_chunks))
+        |> Enum.filter(fn {{_, ov}, {_, nv}} -> ov != nv end)
+        |> Enum.map(fn {{k, _}, _} -> k end)
+      if changed_chunk_names == ['Dbgi'] do
+        IO.puts("#{inspect(module_name)} is excluded from .appup file, because only Dbgi chunk is changed.")
+      else
+        false
+      end
+    end
   end
 
   defp generate_instructions(added, diff, deleted) do
