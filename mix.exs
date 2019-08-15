@@ -76,7 +76,7 @@ defmodule Antikythera.Mixfile do
       {:raft_fleet  , "0.10.0", [antikythera_internal: true]},
       {:rafted_value, "0.11.1", [antikythera_internal: true]},
       {:syn         , "1.6.3" , [antikythera_internal: true]},
-      {:fast_xml    , "1.1.37", [antikythera_internal: true]},
+      {:fast_xml    , "1.1.34", [antikythera_internal: true]},
       {:foretoken   , "0.3.0" , [antikythera_internal: true]},
       {:relx        , "3.23.1", [antikythera_internal: true, only: :prod, runtime: false]}, # only to generate release
 
@@ -108,7 +108,7 @@ defmodule Antikythera.Mixfile do
       {:mimerl             , "1.2.0" , [indirect: true]}, # hackney
       {:parse_trans        , "3.3.0" , [indirect: true]}, # certifi
       {:unicode_util_compat, "0.4.1" , [indirect: true]}, # idna
-      {:p1_utils           , "1.0.16", [indirect: true]}, # fast_xml
+      {:p1_utils           , "1.0.13", [indirect: true]}, # fast_xml
       {:bbmustache         , "1.0.4" , [indirect: true, only: :prod, runtime: false]}, # relx
       {:cf                 , "0.2.2" , [indirect: true, only: :prod, runtime: false]}, # relx
       {:erlware_commons    , "1.0.0" , [indirect: true, only: :prod, runtime: false]}, # relx
