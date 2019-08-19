@@ -19,6 +19,7 @@ defmodule AntikytheraCore.SystemMetricsReporter do
   alias Antikythera.Metrics.DataList
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.MetricsUploader
+  alias AntikytheraCore.Vm
 
   @interval 300_000
   @typep metrics_t :: [{String.t, non_neg_integer}]
@@ -58,7 +59,7 @@ defmodule AntikytheraCore.SystemMetricsReporter do
   defunp calc_metrics_data(old_metrics :: metrics_t, new_metrics :: metrics_t) :: DataList.t do
     memory_kw = :erlang.memory()
     absolute_values = [
-      {"vm_messages_in_mailboxes"  , count_messages_in_all_mailboxes()           },
+      {"vm_messages_in_mailboxes"  , Vm.count_messages_in_all_mailboxes()        },
       {"vm_process_count"          , :erlang.system_info(:process_count)         },
       {"vm_total_run_queue_lengths", :erlang.statistics(:total_run_queue_lengths)},
       {"vm_total_active_tasks"     , :erlang.statistics(:total_active_tasks     )},
@@ -74,14 +75,5 @@ defmodule AntikytheraCore.SystemMetricsReporter do
         {label, new_value - old_value}
       end)
     Enum.map(absolute_values ++ cumulative_values, fn {label, value} -> {label, :gauge, value} end)
-  end
-
-  defunp count_messages_in_all_mailboxes() :: non_neg_integer do
-    Enum.reduce(Process.list(), 0, fn(pid, acc) ->
-      case Process.info(pid, :message_queue_len) do
-        {:message_queue_len, len} -> len + acc
-        nil                       -> acc # `pid` doesn't exist anymore
-      end
-    end)
   end
 end
