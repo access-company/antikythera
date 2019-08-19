@@ -5,7 +5,7 @@ defmodule AntikytheraCore.VmTest do
   alias AntikytheraCore.Vm
 
   test "count_messages_in_all_mailboxes/0" do
-    count = Vm.count_messages_in_all_mailboxes
+    count = Vm.count_messages_in_all_mailboxes()
     assert count >= 0
   end
 end
