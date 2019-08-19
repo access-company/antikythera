@@ -20,7 +20,9 @@ defmodule AntikytheraCore.SystemMetricsReporter do
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.MetricsUploader
   alias AntikytheraCore.Vm
+  require AntikytheraCore.Logger, as: L
 
+  @log_message_size 100_000
   @interval 300_000
   @typep metrics_t :: [{String.t, non_neg_integer}]
 
@@ -58,6 +60,7 @@ defmodule AntikytheraCore.SystemMetricsReporter do
 
   defunp calc_metrics_data(old_metrics :: metrics_t, new_metrics :: metrics_t) :: DataList.t do
     memory_kw = :erlang.memory()
+    log_too_many_messages_processes()
     absolute_values = [
       {"vm_messages_in_mailboxes"  , Vm.count_messages_in_all_mailboxes()        },
       {"vm_process_count"          , :erlang.system_info(:process_count)         },
@@ -75,5 +78,18 @@ defmodule AntikytheraCore.SystemMetricsReporter do
         {label, new_value - old_value}
       end)
     Enum.map(absolute_values ++ cumulative_values, fn {label, value} -> {label, :gauge, value} end)
+  end
+
+  defp log_too_many_messages_processes() do
+    ps = :recon.proc_count(:message_queue_len, 5)
+    [{_pid, top_len, _info}|_] = ps
+    if top_len >= @log_message_size do
+      L.error("There are processes with more than #{@log_message_size} messages.")
+      Enum.each(ps, fn({pid, len, _info}) ->
+        if len >= @log_message_size do
+          pid |> :recon.info() |> inspect() |> L.error()
+        end
+      end)
+    end
   end
 end
