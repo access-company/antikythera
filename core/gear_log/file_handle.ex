@@ -55,7 +55,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
   end
 
   defunp log_prefix(time :: v[Time.t], level :: v[Level.t], context_id :: v[ContextId.t]) :: String.t do
-    Time.to_iso_timestamp(time) <> " [#{level}] context=#{context_id} "
+    Time.to_iso_timestamp(time) <> " [" <> Atom.to_string(level) <> "] context=" <> context_id <> " "
   end
 
   defun rotate({file_path, _, io_device} :: t) :: t do
