@@ -49,7 +49,8 @@ defmodule AntikytheraCore.GearLog.FileHandle do
 
   defunp do_write(io_device :: :file.io_device, {time, level, context_id, msg} :: Message.t) :: :ok do
     prefix = log_prefix(time, level, context_id)
-    formatted_lines_str = String.split(msg, "\n", trim: true) |> Enum.map_join(&(prefix <> &1 <> "\n"))
+    formatted_lines_str = String.split(msg, "\n", trim: true)
+      |> Enum.reduce("", fn(s, acc) -> acc <> prefix <> s <> "\n" end)
     :ok = IO.binwrite(io_device, formatted_lines_str)
     write_debug_log(level, formatted_lines_str)
   end
