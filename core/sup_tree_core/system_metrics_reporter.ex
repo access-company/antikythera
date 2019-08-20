@@ -82,7 +82,7 @@ defmodule AntikytheraCore.SystemMetricsReporter do
 
   defp log_too_many_messages_processes() do
     ps = :recon.proc_count(:message_queue_len, 5)
-    [{_pid, top_len, _info}|_] = ps
+    [{_pid, top_len, _info} | _] = ps
     if top_len >= @log_message_size do
       L.error("There are processes with more than #{@log_message_size} messages.")
       Enum.each(ps, fn({pid, len, _info}) ->
