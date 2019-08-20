@@ -22,7 +22,7 @@ defmodule AntikytheraCore.SystemMetricsReporter do
   alias AntikytheraCore.Vm
   require AntikytheraCore.Logger, as: L
 
-  @log_message_size 100_000
+  @log_message_queue_length 100_000
   @interval 300_000
   @typep metrics_t :: [{String.t, non_neg_integer}]
 
@@ -83,10 +83,10 @@ defmodule AntikytheraCore.SystemMetricsReporter do
   defp log_too_many_messages_processes() do
     ps = :recon.proc_count(:message_queue_len, 5)
     [{_pid, top_len, _info} | _] = ps
-    if top_len >= @log_message_size do
-      L.error("There are process(es) with more than or equal to #{@log_message_size} messages.")
+    if top_len >= @log_message_queue_length do
+      L.error("There are process(es) with more than or equal to #{@log_message_queue_length} messages.")
       Enum.each(ps, fn {pid, len, _info} ->
-        if len >= @log_message_size do
+        if len >= @log_message_queue_length do
           pid |> :recon.info() |> inspect() |> L.error()
         end
       end)
