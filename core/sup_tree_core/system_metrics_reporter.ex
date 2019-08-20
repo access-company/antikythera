@@ -85,7 +85,7 @@ defmodule AntikytheraCore.SystemMetricsReporter do
     [{_pid, top_len, _info} | _] = ps
     if top_len >= @log_message_size do
       L.error("There are processes with more than #{@log_message_size} messages.")
-      Enum.each(ps, fn({pid, len, _info}) ->
+      Enum.each(ps, fn {pid, len, _info} ->
         if len >= @log_message_size do
           pid |> :recon.info() |> inspect() |> L.error()
         end
