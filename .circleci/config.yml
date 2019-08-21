@@ -30,7 +30,8 @@ references:
       command: |
         echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
         source $BASH_ENV
-        asdf global elixir 1.7.4
+        elixir_version="$(curl https://raw.githubusercontent.com/access-company/antikythera_instance_example/master/.tool-versions | grep elixir)"
+        asdf global ${elixir_version}
   add_github_hostkey: &add_github_hostkey
     run:
       name: Add GitHub's server host key to known_hosts
@@ -82,8 +83,9 @@ jobs:
             echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
             source $BASH_ENV
             asdf plugin-add elixir || asdf plugin-update elixir
-            asdf install elixir 1.7.4
-            asdf global elixir 1.7.4
+            elixir_version="$(curl https://raw.githubusercontent.com/access-company/antikythera_instance_example/master/.tool-versions | grep elixir)"
+            asdf install ${elixir_version}
+            asdf global ${elixir_version}
             mix local.hex --force
             mix local.rebar --force
       - save_cache:
