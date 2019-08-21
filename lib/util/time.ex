@@ -48,12 +48,23 @@ defmodule Antikythera.Time do
 
   defun to_iso_timestamp({__MODULE__, {y, mon, d}, {h, min, s}, millis} :: t) :: IsoTimestamp.t do
     import Antikythera.StringFormat
-    "#{y}-#{pad2(mon)}-#{pad2(d)}T#{pad2(h)}:#{pad2(min)}:#{pad2(s)}.#{pad3(millis)}+00:00"
+    <<Integer.to_string(y) :: binary-size(4), "-",
+      pad2(mon)            :: binary-size(2), "-",
+      pad2(d)              :: binary-size(2), "T",
+      pad2(h)              :: binary-size(2), ":",
+      pad2(min)            :: binary-size(2), ":",
+      pad2(s)              :: binary-size(2), ".",
+      pad3(millis)         :: binary-size(3), "+00:00">>
   end
 
   defun to_iso_basic({__MODULE__, {y, mon, d}, {h, min, s}, _} :: t) :: IsoBasic.t do
     import Antikythera.StringFormat
-    "#{y}#{pad2(mon)}#{pad2(d)}T#{pad2(h)}#{pad2(min)}#{pad2(s)}Z"
+    <<Integer.to_string(y) :: binary-size(4),
+      pad2(mon)            :: binary-size(2),
+      pad2(d)              :: binary-size(2), "T",
+      pad2(h)              :: binary-size(2),
+      pad2(min)            :: binary-size(2),
+      pad2(s)              :: binary-size(2), "Z">>
   end
 
   defun from_iso_timestamp(s :: v[String.t]) :: R.t(t) do

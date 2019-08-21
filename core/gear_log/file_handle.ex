@@ -49,13 +49,14 @@ defmodule AntikytheraCore.GearLog.FileHandle do
 
   defunp do_write(io_device :: :file.io_device, {time, level, context_id, msg} :: Message.t) :: :ok do
     prefix = log_prefix(time, level, context_id)
-    formatted_lines_str = String.split(msg, "\n", trim: true) |> Enum.map_join(&(prefix <> &1 <> "\n"))
+    formatted_lines_str = String.split(msg, "\n", trim: true)
+      |> Enum.reduce("", fn(s, acc) -> acc <> prefix <> s <> "\n" end)
     :ok = IO.binwrite(io_device, formatted_lines_str)
     write_debug_log(level, formatted_lines_str)
   end
 
   defunp log_prefix(time :: v[Time.t], level :: v[Level.t], context_id :: v[ContextId.t]) :: String.t do
-    Time.to_iso_timestamp(time) <> " [#{level}] context=#{context_id} "
+    Time.to_iso_timestamp(time) <> " [" <> Atom.to_string(level) <> "] context=" <> context_id <> " "
   end
 
   defun rotate({file_path, _, io_device} :: t) :: t do
