@@ -78,6 +78,7 @@ defmodule Antikythera.Mixfile do
       {:syn         , "1.6.3" , [antikythera_internal: true]},
       {:fast_xml    , "1.1.34", [antikythera_internal: true]},
       {:foretoken   , "0.3.0" , [antikythera_internal: true]},
+      {:recon       , "2.5.0" , [antikythera_internal: true]},
       {:relx        , "3.23.1", [antikythera_internal: true, only: :prod, runtime: false]}, # only to generate release
 
       # The following libraries are used by both antikythera itself and gears.

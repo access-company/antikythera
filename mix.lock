@@ -39,6 +39,7 @@
   "raft_fleet": {:hex, :raft_fleet, "0.10.0", "ab33d67e01e008be305cdda028907391feedc94b6abe8309029e40e1720c9a70", [:mix], [{:croma, "~> 0.10", [hex: :croma, repo: "hexpm", optional: false]}, {:rafted_value, "~> 0.9", [hex: :rafted_value, repo: "hexpm", optional: false]}], "hexpm"},
   "rafted_value": {:hex, :rafted_value, "0.11.1", "8f220e12a6191ea13a40a4e89ad98bc58dce17f0ed59dba47945b8c4aba0d032", [:mix], [{:croma, "~> 0.9", [hex: :croma, repo: "hexpm", optional: false]}], "hexpm"},
   "ranch": {:hex, :ranch, "1.7.1", "6b1fab51b49196860b733a49c07604465a47bdb78aa10c1c16a3d199f7f8c881", [:rebar3], [], "hexpm"},
+  "recon": {:hex, :recon, "2.5.0", "2f7fcbec2c35034bade2f9717f77059dc54eb4e929a3049ca7ba6775c0bd66cd", [:mix, :rebar3], [], "hexpm"},
   "relx": {:hex, :relx, "3.23.1", "8af4433934d9bb664e8282d2e45ac5deaff44859ddaabbe50cd7d885581cd24d", [:rebar3], [{:bbmustache, "1.0.4", [hex: :bbmustache, repo: "hexpm", optional: false]}, {:cf, "0.2.2", [hex: :cf, repo: "hexpm", optional: false]}, {:erlware_commons, "1.0.0", [hex: :erlware_commons, repo: "hexpm", optional: false]}, {:getopt, "0.8.2", [hex: :getopt, repo: "hexpm", optional: false]}, {:providers, "1.6.0", [hex: :providers, repo: "hexpm", optional: false]}], "hexpm"},
   "ssl_verify_fun": {:hex, :ssl_verify_fun, "1.1.4", "f0eafff810d2041e93f915ef59899c923f4568f4585904d010387ed74988e77b", [:make, :mix, :rebar3], [], "hexpm"},
   "stream_data": {:hex, :stream_data, "0.4.3", "62aafd870caff0849a5057a7ec270fad0eb86889f4d433b937d996de99e3db25", [:mix], [], "hexpm"},
