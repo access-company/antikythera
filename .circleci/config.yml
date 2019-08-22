@@ -30,7 +30,7 @@ references:
       command: |
         echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
         source $BASH_ENV
-        elixir_version="$(curl https://raw.githubusercontent.com/access-company/antikythera_instance_example/master/.tool-versions | grep elixir)"
+        elixir_version="$(grep elixir /usr/local/asdf/tool-versions-copy)"
         asdf global ${elixir_version}
   add_github_hostkey: &add_github_hostkey
     run:
@@ -76,6 +76,13 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
+      # To use antikythera's `.tool-versions` file, take the repository here.
+      # Note that we won't save the repository because no change occurs during this job.
+      - restore_cache:
+          keys:
+            - antikythera-repo-{{ .Branch }}-{{ .Revision }}
+            - antikythera-repo-{{ .Branch }}-
+      - checkout
       - run:
           name: Make sure asdf, elixir and local hex/rebar installed
           command: |
@@ -83,11 +90,12 @@ jobs:
             echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
             source $BASH_ENV
             asdf plugin-add elixir || asdf plugin-update elixir
-            elixir_version="$(curl https://raw.githubusercontent.com/access-company/antikythera_instance_example/master/.tool-versions | grep elixir)"
+            elixir_version="$(grep elixir .tool-versions)"
             asdf install ${elixir_version}
             asdf global ${elixir_version}
             mix local.hex --force
             mix local.rebar --force
+            cp -rf .tool-versions /usr/local/asdf/tool-versions-copy
       - save_cache:
           key: asdf_directory-{{ .Branch }}-{{ .Revision }}
           paths:
