@@ -39,6 +39,9 @@ defmodule AntikytheraCore.GearLog.Writer do
 
   @impl true
   def init({gear_name, min_level}) do
+    # Since the log writer process receives a large number of messages, specifying this option improves performance.
+    Process.flag(:message_queue_data, :off_heap)
+
     handle = FileHandle.open(AntikytheraCore.Path.gear_log_file_path(gear_name))
     timer = arrange_next_rotation(nil)
     {:ok, %State{min_level: min_level, file_handle: handle, empty?: true, timer: timer}}
