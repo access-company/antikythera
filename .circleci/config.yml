@@ -95,7 +95,7 @@ jobs:
             asdf global ${elixir_version}
             mix local.hex --force
             mix local.rebar --force
-            cp -rf .tool-versions /usr/local/asdf/tool-versions-copy
+            cp -f .tool-versions /usr/local/asdf/tool-versions-copy
       - save_cache:
           key: asdf_directory-{{ .Branch }}-{{ .Revision }}
           paths:
@@ -164,6 +164,7 @@ jobs:
           # though artifacts compiled for MIX_ENV=test will be used in upgrade_compatibility_test.
           command: |
             sed -E -i -e "s/(^antikythera_dep .+ ref: )\".+\"/\1\"${CIRCLE_SHA1}\"/" mix.exs
+            cp -f /usr/local/asdf/tool-versions-copy .tool-versions
             mix deps.get || mix deps.get
             mix deps.get
             git --no-pager diff
