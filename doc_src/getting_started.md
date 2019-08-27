@@ -35,5 +35,5 @@
     - Take a look around and play around with it.
     - Check out documentations and see what you can do with antikythera and gears.
         - [Guide for instance administrators](./instance_administrators/) (TBD)
-        - [Guide for gear developers (i.e. developers of web services)](./gear_developers/README.md)
+        - [Guide for gear developers (i.e. developers of web services)](https://hexdocs.pm/antikythera/gear_developers.html)
         - [API References](https://hexdocs.pm/antikythera/api-reference.html) (To be published)
