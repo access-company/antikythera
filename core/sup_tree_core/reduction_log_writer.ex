@@ -83,7 +83,9 @@ defmodule AntikytheraCore.ReductionLogWriter do
   defp build_log(prev_reduction) do
     log = Antikythera.Time.to_iso_timestamp(Antikythera.Time.now())
     current_reduction = get_reduction_map()
-    msg = make_diff(current_reduction, prev_reduction) |> Enum.reduce(log, fn(diff, acc) ->
+    msg = make_diff(current_reduction, prev_reduction)
+    |> Enum.take(@dump_size)
+    |> Enum.reduce(log, fn(diff, acc) ->
       acc <> "\n" <> inspect(diff)
     end)
     {msg, current_reduction}
@@ -97,6 +99,6 @@ defmodule AntikytheraCore.ReductionLogWriter do
     current |> Enum.map(fn {pid, {count, other}} ->
       prev_cnt = elem(Map.get(prev, pid, {0, nil}), 0)
       {pid, {count - prev_cnt, other}}
-    end) |> Enum.sort_by(fn {_pid, {c, _}} -> -c end) |> Enum.take(@dump_size)
+    end) |> Enum.sort_by(fn {_pid, {c, _}} -> -c end)
   end
 end
