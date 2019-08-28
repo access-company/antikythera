@@ -11,7 +11,6 @@ defmodule AntikytheraCore.ReductionLogWriter do
   alias AntikytheraCore.GearLog.FileHandle
   alias Antikythera.{Time, ContextId}
 
-  @logger_name     "reduction"
   @interval        1000
   @dump_size       20
   @rotate_interval 7_200_000
@@ -32,7 +31,7 @@ defmodule AntikytheraCore.ReductionLogWriter do
 
   @impl true
   def init([]) do
-    handle = FileHandle.open(AntikytheraCore.Path.core_log_file_path(@logger_name), write_to_terminal: false)
+    handle = FileHandle.open(AntikytheraCore.Path.core_log_file_path("reduction"), write_to_terminal: false)
     timer = arrange_next_rotation(nil)
     reduction = get_reduction_map()
     {:ok, %State{file_handle: handle, empty?: true, timer: timer, reduction: reduction}, @interval}
