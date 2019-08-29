@@ -91,6 +91,10 @@ defmodule AntikytheraCore.ReductionLogWriter do
   end
 
   defp get_reduction_map() do
+    # If the second argument (number of processes to be acquired) is too small,
+    # the difference in reduction cannot be calculated correctly. But if it is
+    # too large, the load is high. So sufficiently large value is specified.
+    # The number of processes in a normal production environment is less than 5,000.
     :recon.proc_count(:reductions, 20_000) |> Map.new(fn {pid, count, other} -> {pid, {count, other}} end)
   end
 
