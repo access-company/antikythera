@@ -80,11 +80,11 @@ defmodule AntikytheraCore.ReductionLogWriter do
   end
 
   defp build_log(prev_reduction) do
-    log = Antikythera.Time.to_iso_timestamp(Antikythera.Time.now())
+    log_time = Antikythera.Time.to_iso_timestamp(Antikythera.Time.now())
     current_reduction = get_reduction_map()
     msg = make_diff(current_reduction, prev_reduction)
     |> Enum.take(@dump_size)
-    |> Enum.reduce(log, fn(diff, acc) ->
+    |> Enum.reduce(log_time, fn(diff, acc) ->
       acc <> "\n" <> inspect(diff)
     end)
     {msg, current_reduction}
