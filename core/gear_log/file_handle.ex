@@ -32,7 +32,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
   end
 
   defun write({file_path, last_checked_at, io_device, write_to_terminal?} = handle   :: t,
-              {now, _, _, _}                                             = gear_log :: Message.t) :: {:kept_open | :rotated, t} do
+              {now, _, _, _}                                              = gear_log :: Message.t) :: {:kept_open | :rotated, t} do
     if SizeCheck.check_now?(now, last_checked_at) do
       if SizeCheck.exceeds_limit?(file_path) do
         {_, _, new_io_device, _} = new_handle = rotate(handle)
