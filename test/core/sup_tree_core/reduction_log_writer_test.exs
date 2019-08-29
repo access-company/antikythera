@@ -5,7 +5,7 @@ defmodule AntikytheraCore.ReductionLogWriterTest do
 
   test "should exists" do
     assert Process.whereis(ReductionLogWriter) != nil
-    send(AntikytheraCore.ReductionLogWriter, :timeout)
+    send(ReductionLogWriter, :timeout)
     assert File.exists?(Path.join(@dir, "reduction.log.gz"))
   end
 end
