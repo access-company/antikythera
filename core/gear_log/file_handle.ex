@@ -22,7 +22,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
 
   @opaque t :: {Path.t, Time.t, File.io_device, boolean}
 
-  defun open(file_path :: Path.t, opts \\ []) :: t do
+  defun open(file_path :: Path.t, opts :: Keyword.t \\ []) :: t do
     write_to_terminal? = Keyword.get(opts, :write_to_terminal, determine_write_to_terminal())
     :ok = File.mkdir_p(Path.dirname(file_path))
     if File.exists?(file_path) do
