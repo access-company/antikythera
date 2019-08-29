@@ -54,7 +54,7 @@ defmodule AntikytheraCore.Path do
     Path.join(gear_log_dir(gear_name), "#{gear_name}.log.gz")
   end
 
-  defun core_log_file_path(name :: v[String.t]) :: String.t do
+  defun core_log_file_path(name :: v[String.t]) :: Path.t do
     Path.join(gear_log_dir(:antikythera), "#{name}.log.gz")
   end
 
