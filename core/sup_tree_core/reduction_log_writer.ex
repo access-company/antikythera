@@ -20,7 +20,6 @@ defmodule AntikytheraCore.ReductionLogWriter do
       file_handle: Croma.Tuple, # FileHandle.t
       empty?:      Croma.Boolean,
       timer:       Croma.Reference,
-      uploader:    Croma.TypeGen.nilable(Croma.Pid),
       reduction:   Croma.Map,
     ]
   end
@@ -52,9 +51,6 @@ defmodule AntikytheraCore.ReductionLogWriter do
   end
   def handle_info(:rotate, state) do
     {:noreply, rotate(state), @interval}
-  end
-  def handle_info({:DOWN, _ref, :process, _pid, _reason}, state) do
-    {:noreply, %State{state | uploader: nil}}
   end
 
   defp rotate(%State{file_handle: handle, empty?: empty?, timer: timer} = state0) do
