@@ -53,7 +53,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
     formatted_lines_str = String.split(msg, "\n", trim: true)
       |> Enum.reduce("", fn(s, acc) -> acc <> prefix <> s <> "\n" end)
     :ok = IO.binwrite(io_device, formatted_lines_str)
-    if write_to_terminal, do: write_debug_log(level, formatted_lines_str)
+    if write_to_terminal, do: write_debug_log(level, formatted_lines_str), else: :ok
   end
 
   defunp log_prefix(time :: v[Time.t], level :: v[Level.t], context_id :: v[ContextId.t]) :: String.t do
