@@ -106,7 +106,7 @@ defmodule AntikytheraCore do
       AntikytheraCore.TmpdirTracker             ,
     ]
     children_for_dev = if Antikythera.Env.runtime_env() == :prod, do: [], else: [
-      AntikytheraCore.ReductionLogWriter        ,
+      AntikytheraCore.ReductionLogWriter,
     ]
     opts = [strategy: :one_for_one, name: AntikytheraCore.Supervisor]
     Supervisor.start_link(children ++ children_for_dev, opts)
