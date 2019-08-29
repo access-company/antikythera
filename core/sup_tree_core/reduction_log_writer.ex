@@ -96,7 +96,7 @@ defmodule AntikytheraCore.ReductionLogWriter do
 
   defp make_diff(current, prev) do
     current |> Enum.map(fn {pid, {count, other}} ->
-      prev_cnt = elem(Map.get(prev, pid, {0, nil}), 0)
+      prev_cnt = Map.get(prev, pid, {0, nil}) |> elem(0)
       {pid, {count - prev_cnt, other}}
     end) |> Enum.sort_by(fn {_pid, {c, _}} -> -c end)
   end
