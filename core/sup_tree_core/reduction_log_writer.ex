@@ -98,6 +98,6 @@ defmodule AntikytheraCore.ReductionLogWriter do
     current |> Enum.map(fn {pid, {count, other}} ->
       prev_cnt = Map.get(prev, pid, {0, nil}) |> elem(0)
       {pid, {count - prev_cnt, other}}
-    end) |> Enum.sort_by(fn {_pid, {c, _}} -> -c end)
+    end) |> Enum.sort_by(fn {_pid, {c, _}} -> c end, &>=/2)
   end
 end
