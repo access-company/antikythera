@@ -87,7 +87,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
 
   defunp write_debug_log(level :: v[Level.t], formatted :: v[String.t]) :: :ok do
     case level do
-      :error -> IO.ANSI.red() <> formatted <> IO.ANSI.reset()
+      :error -> IO.ANSI.red()  <> formatted <> IO.ANSI.reset()
       :debug -> IO.ANSI.cyan() <> formatted <> IO.ANSI.reset()
       _      -> formatted
     end
