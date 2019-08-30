@@ -94,7 +94,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
     |> IO.binwrite()
   end
 
-  def determine_write_to_terminal() do
+  defp determine_write_to_terminal() do
     !Antikythera.Env.compiling_for_release?() && Mix.env() == :dev
   end
 end
