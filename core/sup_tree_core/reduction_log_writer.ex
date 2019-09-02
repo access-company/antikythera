@@ -69,7 +69,7 @@ defmodule AntikytheraCore.ReductionLogWriter do
   end
 
   defp arrange_next_rotation(timer) do
-    if timer do
+    if timer != nil do
       Process.cancel_timer(timer)
     end
     Process.send_after(self(), :rotate, @rotate_interval)
