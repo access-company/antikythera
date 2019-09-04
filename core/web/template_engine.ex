@@ -12,8 +12,8 @@ defmodule AntikytheraCore.TemplateEngine do
   @impl true
   def init(_opts) do
     %{
-      iodata:    [],
-      dynamic:   [],
+      iodata:     [],
+      dynamic:    [],
       vars_count: 0,
     }
   end
