@@ -5,46 +5,61 @@ defmodule AntikytheraCore.TemplateEngine do
   This is an implementation of `EEx.Engine` that auto-escape dynamic parts within HAML templates.
   """
 
-  use EEx.Engine
+  @behaviour EEx.Engine
+
   alias Antikythera.TemplateSanitizer
 
-  def init(_opts), do: {:safe, ""}
-
-  def handle_body({:safe, iodata}) do
-    q =
-      quote do
-        IO.iodata_to_binary(unquote(iodata))
-      end
-    {:safe, q}
+  @impl true
+  def init(_opts) do
+    %{
+      iodata:     [],
+      dynamic:    [],
+      vars_count: 0,
+    }
   end
 
-  def handle_text("", text) do
-    handle_text({:safe, ""}, text)
-  end
-  def handle_text({:safe, buffer}, text) do
-    q = quote do: [unquote(buffer) | unquote(text)]
-    {:safe, q}
+  @impl true
+  def handle_begin(state) do
+    %{state | iodata: [], dynamic: []}
   end
 
-  def handle_expr("", marker, expr) do
-    handle_expr({:safe, ""}, marker, expr)
+  @impl true
+  def handle_end(quoted) do
+    handle_body(quoted)
   end
-  def handle_expr({:safe, buffer}, "=", expr) do
+
+  @impl true
+  def handle_body(state) do
+    %{iodata: iodata, dynamic: dynamic} = state
     q =
       quote do
-        tmp = unquote(buffer)
-        [tmp | unquote(to_safe_expr(expr))]
+        IO.iodata_to_binary(unquote(Enum.reverse(iodata)))
       end
-    {:safe, q}
+    {:__block__, [], Enum.reverse([{:safe, q} | dynamic])}
   end
-  def handle_expr({:safe, buffer}, "", expr) do
+
+  @impl true
+  def handle_text(state, text) do
+    %{iodata: iodata} = state
+    %{state | iodata: [text | iodata]}
+  end
+
+  @impl true
+  def handle_expr(state, "=", expr) do
+    %{iodata: iodata, dynamic: dynamic, vars_count: vars_count} = state
+    var = Macro.var(:"arg#{vars_count}", __MODULE__)
     q =
       quote do
-        tmp = unquote(buffer)
-        unquote(expr)
-        tmp
+        unquote(var) = unquote(to_safe_expr(expr))
       end
-    {:safe, q}
+    %{state | dynamic: [q | dynamic], iodata: [var | iodata], vars_count: vars_count + 1}
+  end
+  def handle_expr(state, "", expr) do
+    %{dynamic: dynamic} = state
+    %{state | dynamic: [expr | dynamic]}
+  end
+  def handle_expr(state, marker, expr) do
+    EEx.Engine.handle_expr(state, marker, expr)
   end
 
   # For literals we can do the work at compile time
