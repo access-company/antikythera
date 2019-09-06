@@ -12,7 +12,7 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   This task is integrated into `mix compile` command so that these issues are detected each time gear's source code is compiled.
   """
 
-  use Mix.Task # change this to `Mix.Task.Compiler` when upgrading to Elixir v1.6.0
+  use Mix.Task.Compiler
   alias Antikythera.MacroUtil
 
   def run(_) do
