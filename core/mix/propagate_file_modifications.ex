@@ -27,7 +27,7 @@ defmodule Mix.Tasks.Compile.PropagateFileModifications do
     recompilation/reload in iex session because `priv/static/**` is not monitored by `:exsync` (in current configuration).
   """
 
-  use Mix.Task # change this to `Mix.Task.Compiler` when upgrading to Elixir v1.6.0
+  use Mix.Task.Compiler
 
   def run(_) do
     mix_common_path = Path.join([__DIR__, "..", "..", "mix_common.exs"])
