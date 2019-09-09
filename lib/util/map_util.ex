@@ -25,7 +25,11 @@ defmodule Antikythera.MapUtil do
       end)
       |> Enum.reject(&is_nil/1)
       |> Map.new()
-    {Map.take(m1, keys_only_in_m1), diffs_with_common_keys, Map.take(m2, keys_only_in_m2)}
+    {
+      Map.take(m1, MapSet.to_list(keys_only_in_m1)),
+      diffs_with_common_keys,
+      Map.take(m2, MapSet.to_list(keys_only_in_m2)),
+    }
   end
 
   @doc """
