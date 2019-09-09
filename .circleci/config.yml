@@ -55,11 +55,11 @@ references:
   restore_updated_antikythera_instance_example_directory: &restore_updated_antikythera_instance_example_directory
     restore_cache:
       keys:
-        - antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Revision }}
+        - antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   restore_testgear_directory: &restore_testgear_directory
     restore_cache:
       keys:
-        - testgear-repo-{{ .Branch }}-{{ .Revision }}
+        - testgear-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   edit_etc_hosts: &edit_etc_hosts
     run:
       name: Add testgear.localhost and <hostname>.local to /etc/hosts
@@ -67,7 +67,7 @@ references:
   restore_updated_testgear_directory: &restore_updated_testgear_directory
     restore_cache:
       keys:
-        - testgear-updated_repo-{{ .Branch }}-{{ .Revision }}
+        - testgear-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
 
 jobs:
   prepare_elixir:
@@ -130,7 +130,6 @@ jobs:
       - *enable_asdf_and_elixir
       - restore_cache:
           keys:
-            - antikythera_instance_example-repo-{{ .Branch }}-{{ .Revision }}
             - antikythera_instance_example-repo-{{ .Branch }}-
             - antikythera_instance_example-repo-
       - *add_github_hostkey
@@ -148,7 +147,7 @@ jobs:
             MIX_ENV=test mix compile
             MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
       - save_cache:
-          key: antikythera_instance_example-repo-{{ .Branch }}-{{ .Revision }}
+          key: antikythera_instance_example-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - .
             - ~/.cache
@@ -173,7 +172,7 @@ jobs:
             MIX_ENV=test mix compile
             MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
       - save_cache:
-          key: antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Revision }}
+          key: antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - .
             - ~/.cache
@@ -186,7 +185,6 @@ jobs:
       - *enable_asdf_and_elixir
       - restore_cache:
           keys:
-            - testgear-repo-{{ .Branch }}-{{ .Revision }}
             - testgear-repo-{{ .Branch }}-
             - testgear-repo-
       - *add_github_hostkey
@@ -216,7 +214,7 @@ jobs:
             MIX_ENV=test mix compile
             MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
       - save_cache:
-          key: testgear-repo-{{ .Branch }}-{{ .Revision }}
+          key: testgear-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - .
             - ~/.cache
@@ -269,7 +267,7 @@ jobs:
             MIX_ENV=dev mix compile
             MIX_ENV=test mix compile
       - save_cache:
-          key: testgear-updated_repo-{{ .Branch }}-{{ .Revision }}
+          key: testgear-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - .
             - ~/.cache
