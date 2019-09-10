@@ -252,12 +252,12 @@ jobs:
       - *restore_updated_antikythera_instance_example_directory
       - *add_github_hostkey
       - run: |
-        if [ -n "$(git --no-pager diff HEAD origin/master)" ]; then
-          git --no-pager show
-          git push git@github.com:access-company/antikythera_instance_example.git HEAD:master
-        else
-          echo "skip git push"
-        fi
+          if [ -n "$(git --no-pager diff HEAD origin/master)" ]; then
+            git --no-pager show
+            git push git@github.com:access-company/antikythera_instance_example.git HEAD:master
+          else
+            echo "skip git push"
+          fi
   update_testgear:
     <<: *container_config
     working_directory: /tmp/testgear
