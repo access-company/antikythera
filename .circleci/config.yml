@@ -169,8 +169,6 @@ jobs:
             if [ -n "$(git --no-pager diff)" ]; then
               git --no-pager diff
               git -c user.name='AntikytheraDeploy' -c user.email='antikythera-gr@access-company.com' commit -a -m '[CI] Update antikythera'
-            else
-              echo "skip git commit"
             fi
             MIX_ENV=dev mix compile
             MIX_ENV=test mix compile
@@ -255,8 +253,6 @@ jobs:
           if [ -n "$(git --no-pager diff HEAD origin/master)" ]; then
             git --no-pager show
             git push git@github.com:access-company/antikythera_instance_example.git HEAD:master
-          else
-            echo "skip git push"
           fi
   update_testgear:
     <<: *container_config
