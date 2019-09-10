@@ -55,11 +55,11 @@ references:
   restore_updated_antikythera_instance_example_directory: &restore_updated_antikythera_instance_example_directory
     restore_cache:
       keys:
-        - antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Revision }}
+        - antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   restore_testgear_directory: &restore_testgear_directory
     restore_cache:
       keys:
-        - testgear-repo-{{ .Branch }}-{{ .Revision }}
+        - testgear-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   edit_etc_hosts: &edit_etc_hosts
     run:
       name: Add testgear.localhost and <hostname>.local to /etc/hosts
@@ -67,7 +67,7 @@ references:
   restore_updated_testgear_directory: &restore_updated_testgear_directory
     restore_cache:
       keys:
-        - testgear-updated_repo-{{ .Branch }}-{{ .Revision }}
+        - testgear-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
 
 jobs:
   prepare_elixir:
@@ -130,7 +130,6 @@ jobs:
       - *enable_asdf_and_elixir
       - restore_cache:
           keys:
-            - antikythera_instance_example-repo-{{ .Branch }}-{{ .Revision }}
             - antikythera_instance_example-repo-{{ .Branch }}-
             - antikythera_instance_example-repo-
       - *add_github_hostkey
@@ -148,7 +147,7 @@ jobs:
             MIX_ENV=test mix compile
             MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
       - save_cache:
-          key: antikythera_instance_example-repo-{{ .Branch }}-{{ .Revision }}
+          key: antikythera_instance_example-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - .
             - ~/.cache
@@ -167,13 +166,15 @@ jobs:
             cp -f /usr/local/asdf/tool-versions-copy .tool-versions
             mix deps.get || mix deps.get
             mix deps.get
-            git --no-pager diff
-            git -c user.name='AntikytheraDeploy' -c user.email='antikythera-gr@access-company.com' commit -a -m '[CI] Update antikythera'
+            if ! git diff --quiet; then
+              git --no-pager diff
+              git -c user.name='AntikytheraDeploy' -c user.email='antikythera-gr@access-company.com' commit -a -m '[CI] Update antikythera'
+            fi
             MIX_ENV=dev mix compile
             MIX_ENV=test mix compile
             MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
       - save_cache:
-          key: antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Revision }}
+          key: antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - .
             - ~/.cache
@@ -186,7 +187,6 @@ jobs:
       - *enable_asdf_and_elixir
       - restore_cache:
           keys:
-            - testgear-repo-{{ .Branch }}-{{ .Revision }}
             - testgear-repo-{{ .Branch }}-
             - testgear-repo-
       - *add_github_hostkey
@@ -216,7 +216,7 @@ jobs:
             MIX_ENV=test mix compile
             MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
       - save_cache:
-          key: testgear-repo-{{ .Branch }}-{{ .Revision }}
+          key: testgear-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - .
             - ~/.cache
@@ -249,8 +249,11 @@ jobs:
     steps:
       - *restore_updated_antikythera_instance_example_directory
       - *add_github_hostkey
-      - run: git --no-pager show
-      - run: git push git@github.com:access-company/antikythera_instance_example.git HEAD:master
+      - run: |
+          if ! git diff --quiet HEAD origin/master; then
+            git --no-pager show
+            git push git@github.com:access-company/antikythera_instance_example.git HEAD:master
+          fi
   update_testgear:
     <<: *container_config
     working_directory: /tmp/testgear
@@ -269,7 +272,7 @@ jobs:
             MIX_ENV=dev mix compile
             MIX_ENV=test mix compile
       - save_cache:
-          key: testgear-updated_repo-{{ .Branch }}-{{ .Revision }}
+          key: testgear-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - .
             - ~/.cache
