@@ -34,7 +34,7 @@ defmodule Mix.Tasks.Compile.PropagateFileModifications do
     touch_if_older_than_any("mix.exs", [mix_common_path])
     touch_if_older_than_any_in_dir(Path.join("web", "template.ex"), Path.join("web", "template"))
     touch_if_older_than_any_in_dir(Path.join("web", "asset.ex"), Path.join("priv", "static"))
-    :ok
+    {:ok, []}
   end
 
   defp touch_if_older_than_any(target, dependencies) do

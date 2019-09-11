@@ -238,8 +238,8 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
     n_errors   = length(errors)
     cond do
       n_errors   > 0 -> Mix.raise("#{prefix} Found #{n_errors} errors and #{n_warnings} warnings. Please fix them and try again.")
-      n_warnings > 0 -> IO.puts("#{prefix} Found #{n_warnings} warnings.")
-      true           -> :ok
+      n_warnings > 0 -> {IO.puts("#{prefix} Found #{n_warnings} warnings."), []}
+      true           -> {:ok, []}
     end
   end
 end
