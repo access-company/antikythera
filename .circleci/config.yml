@@ -84,12 +84,27 @@ jobs:
             - antikythera-repo-{{ .Branch }}-
       - checkout
       - run:
-          name: Make sure asdf, elixir and local hex/rebar installed
+          name: Make sure asdf and its elixir plugin installed
           command: |
             [ -d /usr/local/asdf ] || git clone https://github.com/asdf-vm/asdf.git /usr/local/asdf --branch v0.4.3
             echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
             source $BASH_ENV
             asdf plugin-add elixir || asdf plugin-update elixir
+      - run:
+          name: Make sure a previous version of elixir installed if this commit updates elixir
+          command: |
+            if ! git diff --quiet HEAD~ HEAD .tool-versions; then
+              previous_elixir_version="$(git diff HEAD~ HEAD .tool-versions | grep -e '^-elixir' | sed 's/^-//')"
+              if [ -n "${previous_elixir_version}" ]; then
+                asdf install ${previous_elixir_version}
+                asdf global ${previous_elixir_version}
+                mix local.hex --force
+                mix local.rebar --force
+              fi
+            fi
+      - run:
+          name: Make sure a current version of elixir and local hex/rebar ready to use
+          command: |
             elixir_version="$(grep elixir .tool-versions)"
             asdf install ${elixir_version}
             asdf global ${elixir_version}
@@ -194,18 +209,6 @@ jobs:
           <<: *checkout_external
           environment:
             EXTERNAL_GIT_REPOSITORY: git@github.com:access-company/testgear.git
-      - run:
-          name: Ensure Elixir version used by the previous antikythera is available.
-          command: |
-            mix deps.update antikythera_instance_example
-            mix deps.get
-            required_elixir_version_number="$(grep elixir .tool-versions | awk '{print $2}')"
-            if ! asdf list elixir | grep --quiet "${required_elixir_version_number}"; then
-              asdf install elixir "${required_elixir_version_number}"
-              mix local.hex --force
-              mix local.rebar --force
-            fi
-            mix deps.clean --all
       - run:
           name: Fetch dependencies with latest antikythera_instance_example and compile
           command: |
