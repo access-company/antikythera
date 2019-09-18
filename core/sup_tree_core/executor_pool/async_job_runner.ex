@@ -28,7 +28,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   alias AntikytheraCore.AsyncJob.Queue.JobKey
   alias AntikytheraCore.Context, as: CoreContext
   alias AntikytheraCore.GearLog.{Writer, ContextHelper}
-  require AntikytheraCore.Logger, as: L
+  alias AntikytheraCore.ExecutorPool.AsyncJobLogWriter
 
   @idle_timeout 60_000
 
@@ -53,7 +53,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     decoded_payload = decode_payload(job.payload)
     log_prefix      = log_prefix(job, job_id, run_at, decoded_payload)
     Writer.info(logger_name, context_start_time, context_id, log_prefix <> "START")
-    L.info("context=" <> context_id <> " " <> log_prefix <> "START")
+    AsyncJobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "START")
     {pid, monitor_ref, timer_ref} = start_monitor(job, metadata, context, decoded_payload)
     new_state = %{
       epool_id:    epool_id,
@@ -165,7 +165,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
                   stacktrace) do
     end_time = Time.now()
     Writer.error(logger_name, end_time, context_id, log_prefix <> ErrorReason.format(reason, stacktrace))
-    L.info("context=" <> context_id <> " " <> log_prefix <> "FAILED")
+    AsyncJobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "FAILED")
     case remaining_attempts do
       1 ->
         report_on_finish(state, end_time, "failure_abandon")
@@ -185,7 +185,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
                         job_result) do
     diff = Time.diff_milliseconds(end_time, start_time)
     Writer.info(logger_name, end_time, context_id, log_prefix <> "END status=#{job_result} time=#{diff}ms")
-    L.info("context=" <> context_id <> " " <> log_prefix <> "END status=#{job_result} time=#{diff}ms")
+    AsyncJobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "END status=#{job_result} time=#{diff}ms")
     submit_metrics(state, end_time, diff, job_result)
   end
 
