@@ -14,6 +14,10 @@ defmodule AntikytheraCore.MessageLogWriter do
   @interval        1000
   @rotate_interval 7_200_000
 
+  @max_proc_to_log     5
+  @max_msg_to_log      10
+  @queue_len_threshold 100
+
   defmodule State do
     use Croma.Struct, recursive_new?: true, fields: [
       file_handle: Croma.Tuple, # FileHandle.t
@@ -78,8 +82,8 @@ defmodule AntikytheraCore.MessageLogWriter do
 
   defp build_log() do
     procs =
-      :recon.proc_count(:message_queue_len, 5)
-      |> Enum.filter(fn({_pid, qlen, _info}) -> qlen >= 100 end)
+      :recon.proc_count(:message_queue_len, @max_proc_to_log)
+      |> Enum.filter(fn({_pid, qlen, _info}) -> qlen >= @queue_len_threshold end)
     if procs != [] do
       log_time = Antikythera.Time.to_iso_timestamp(Antikythera.Time.now())
       procs
@@ -87,7 +91,7 @@ defmodule AntikytheraCore.MessageLogWriter do
         acc2 = acc <> "\n" <> Integer.to_string(qlen) <> " " <> inspect(info)
         Process.info(pid)
         |> Keyword.get(:messages)
-        |> Enum.take(10)
+        |> Enum.take(@max_msg_to_log)
         |> Enum.reduce(acc2, fn(msg, acc) -> acc <> "\n\t" <> inspect(msg) end)
       end)
     else
