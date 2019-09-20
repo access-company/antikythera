@@ -71,14 +71,14 @@ defmodule AntikytheraCore.Handler.GearError do
       [
         "InternalError",
         "",
-        "Error reason: #{inspect(reason)}",
+        "Error reason: #{inspect(reason, structs: false)}",
         "",
         "Conn:",
-        inspect(conn, pretty: true),
+        inspect(conn, pretty: true, structs: false),
         "",
         "Stacktrace (list of {module, function, arity, location}):",
         "[",
-        Enum.map(stacktrace, fn s -> "  #{inspect(s)}" end) |> Enum.join("\n"),
+        Enum.map(stacktrace, fn s -> "  #{inspect(s, structs: false)}" end) |> Enum.join("\n"),
         "]",
       ] |> Enum.join("\n")
     end
