@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule AntikytheraCore.PeriodicLogWriter do
+defmodule AntikytheraCore.PeriodicLog.Writer do
   @moduledoc """
   A `GenServer` that logs periodically
   """
@@ -81,70 +81,3 @@ defmodule AntikytheraCore.PeriodicLogWriter do
   end
 end
 
-defmodule AntikytheraCore.PeriodicLogWriter.Reduction do
-  @max_proc_to_log 20
-
-  def init() do
-    get_reduction_map()
-  end
-
-  def build_log(prev_reduction) do
-    log_time = Antikythera.Time.to_iso_timestamp(Antikythera.Time.now())
-    current_reduction = get_reduction_map()
-    msg =
-      make_diff(current_reduction, prev_reduction)
-      |> Enum.take(@max_proc_to_log)
-      |> Enum.reduce(log_time, fn(diff, acc) ->
-        acc <> "\n" <> inspect(diff, structs: false)
-      end)
-    {msg, current_reduction}
-  end
-
-  defp get_reduction_map() do
-    # If the second argument (number of processes to be acquired) is too small,
-    # the difference in reduction cannot be calculated correctly. But if it is
-    # too large, the load is high. So sufficiently large value is specified.
-    # The number of processes in a normal production environment is less than 5,000.
-    :recon.proc_count(:reductions, 20_000) |> Map.new(fn {pid, count, other} -> {pid, {count, other}} end)
-  end
-
-  defp make_diff(current, prev) do
-    current
-    |> Enum.map(fn {pid, {count, other}} ->
-      prev_cnt = Map.get(prev, pid, {0, nil}) |> elem(0)
-      {pid, {count - prev_cnt, other}}
-    end)
-    |> Enum.sort_by(fn {_pid, {c, _}} -> c end, &>=/2)
-  end
-end
-
-defmodule AntikytheraCore.PeriodicLogWriter.Message do
-  @max_proc_to_log     5
-  @max_msg_to_log      10
-  @queue_len_threshold 100
-
-  def init() do
-    nil
-  end
-
-  def build_log(state) do
-    procs =
-      :recon.proc_count(:message_queue_len, @max_proc_to_log)
-      |> Enum.filter(fn({_pid, qlen, _info}) -> qlen >= @queue_len_threshold end)
-    if procs != [] do
-      log_time = Antikythera.Time.to_iso_timestamp(Antikythera.Time.now())
-      log =
-        procs
-        |> Enum.reduce(log_time, fn({pid, qlen, info}, acc) ->
-          acc2 = acc <> "\n" <> Integer.to_string(qlen) <> " " <> inspect(info, structs: false)
-          Process.info(pid)
-          |> Keyword.get(:messages)
-          |> Enum.take(@max_msg_to_log)
-          |> Enum.reduce(acc2, fn(msg, acc) -> acc <> "\n\t" <> inspect(msg, structs: false) end)
-        end)
-      {log, state}
-    else
-      {nil, state}
-    end
-  end
-end
