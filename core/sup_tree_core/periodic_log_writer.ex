@@ -95,7 +95,7 @@ defmodule AntikytheraCore.PeriodicLogWriter.Reduction do
       make_diff(current_reduction, prev_reduction)
       |> Enum.take(@max_proc_to_log)
       |> Enum.reduce(log_time, fn(diff, acc) ->
-        acc <> "\n" <> inspect(diff)
+        acc <> "\n" <> inspect(diff, structs: false)
       end)
     {msg, current_reduction}
   end
@@ -136,11 +136,11 @@ defmodule AntikytheraCore.PeriodicLogWriter.Message do
       log =
         procs
         |> Enum.reduce(log_time, fn({pid, qlen, info}, acc) ->
-          acc2 = acc <> "\n" <> Integer.to_string(qlen) <> " " <> inspect(info)
+          acc2 = acc <> "\n" <> Integer.to_string(qlen) <> " " <> inspect(info, structs: false)
           Process.info(pid)
           |> Keyword.get(:messages)
           |> Enum.take(@max_msg_to_log)
-          |> Enum.reduce(acc2, fn(msg, acc) -> acc <> "\n\t" <> inspect(msg) end)
+          |> Enum.reduce(acc2, fn(msg, acc) -> acc <> "\n\t" <> inspect(msg, structs: false) end)
         end)
       {log, state}
     else
