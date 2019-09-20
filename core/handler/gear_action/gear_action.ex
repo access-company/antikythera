@@ -39,16 +39,12 @@ defmodule AntikytheraCore.Handler.GearAction do
     %Conn{context: %Context{start_time: t_start, context_id: context_id}} = conn
     log_message_base = "#{CoreConn.request_info(conn)} from=#{sender_info}"
     encoding = Conn.get_req_header(conn, "accept-encoding") || "(none)" # To see whether client accepts gzip/deflate compression or not
-    amzn_info =
-      case Conn.get_req_header(conn, "x-amzn-trace-id") do
-        nil -> ""
-        id  -> " amzn_trace_id=" <> id
-      end
-    Writer.info(logger, t_start, context_id, "#{log_message_base} START encoding=#{encoding}" <> amzn_info)
+    amzn_id = Conn.get_req_header(conn, "x-amzn-trace-id") || "(none)"
+    Writer.info(logger, t_start, context_id, "#{log_message_base} START encoding=#{encoding} amzn_trace_id=#{amzn_id}")
     %Conn{status: status} = conn2 = f.()
     t_end = Time.now()
     processing_time = Time.diff_milliseconds(t_end, t_start)
-    Writer.info(logger, t_end, context_id, "#{log_message_base} END status=#{status} time=#{processing_time}ms" <> amzn_info)
+    Writer.info(logger, t_end, context_id, "#{log_message_base} END status=#{status} time=#{processing_time}ms")
     {conn2, t_end, processing_time}
   end
 end
