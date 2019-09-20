@@ -106,8 +106,8 @@ defmodule AntikytheraCore do
       AntikytheraCore.TmpdirTracker             ,
     ]
     children_for_dev = if Antikythera.Env.runtime_env() == :prod, do: [], else: [
-      Supervisor.child_spec({AntikytheraCore.PeriodicLogWriter, ["reduction", AntikytheraCore.ReductionLogBuilder]}, id: :periodic_log_writer_1),
-      Supervisor.child_spec({AntikytheraCore.PeriodicLogWriter, ["messages" , AntikytheraCore.MessageLogBuilder  ]}, id: :periodic_log_writer_2),
+      Supervisor.child_spec({AntikytheraCore.PeriodicLogWriter, [AntikytheraCore.PeriodicLogWriter.Reduction, "reduction"]}, id: :periodic_log_writer_1),
+      Supervisor.child_spec({AntikytheraCore.PeriodicLogWriter, [AntikytheraCore.PeriodicLogWriter.Message  , "message"  ]}, id: :periodic_log_writer_2),
     ]
     opts = [strategy: :one_for_one, name: AntikytheraCore.Supervisor]
     Supervisor.start_link(children ++ children_for_dev, opts)
