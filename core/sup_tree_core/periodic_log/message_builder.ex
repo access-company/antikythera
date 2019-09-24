@@ -19,10 +19,16 @@ defmodule AntikytheraCore.PeriodicLog.MessageBuilder do
         procs
         |> Enum.reduce(log_time, fn({pid, qlen, info}, acc) ->
           acc2 = acc <> "\n" <> Integer.to_string(qlen) <> " " <> inspect(info, structs: false)
-          Process.info(pid)
-          |> Keyword.get(:messages)
-          |> Enum.take(@max_msg_to_log)
-          |> Enum.reduce(acc2, fn(msg, acc) -> acc <> "\n\t" <> inspect(msg, structs: false) end)
+          process_info = Process.info(pid)
+          if process_info != nil do
+            process_info
+            |> Keyword.get(:messages)
+            |> Enum.take(@max_msg_to_log)
+            |> Enum.reduce(acc2, fn(msg, acc) -> acc <> "\n\t" <> inspect(msg, structs: false) end)
+          else
+            # Since the process is already dead, write minimal information
+            acc2
+          end
         end)
       {log, state}
     else
