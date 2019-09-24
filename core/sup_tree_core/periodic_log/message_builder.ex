@@ -10,29 +10,28 @@ defmodule AntikytheraCore.PeriodicLog.MessageBuilder do
   end
 
   def build_log(state) do
-    procs =
+    log =
       :recon.proc_count(:message_queue_len, @max_proc_to_log)
       |> Enum.filter(fn({_pid, qlen, _info}) -> qlen >= @queue_len_threshold end)
-    if procs != [] do
-      log_time = Antikythera.Time.to_iso_timestamp(Antikythera.Time.now())
-      log =
-        procs
-        |> Enum.reduce(log_time, fn({pid, qlen, info}, acc) ->
-          acc2 = acc <> "\n" <> Integer.to_string(qlen) <> " " <> inspect(info, structs: false)
-          process_info = Process.info(pid)
-          if process_info != nil do
-            process_info
-            |> Keyword.get(:messages)
-            |> Enum.take(@max_msg_to_log)
-            |> Enum.reduce(acc2, fn(msg, acc) -> acc <> "\n\t" <> inspect(msg, structs: false) end)
-          else
-            # Since the process is already dead, write minimal information
-            acc2
-          end
-        end)
-      {log, state}
-    else
-      {nil, state}
-    end
+      |> build_log_from_processes()
+    {log, state}
+  end
+
+  defp build_log_from_processes([]), do: nil
+  defp build_log_from_processes(procs) do
+    log_time = Antikythera.Time.to_iso_timestamp(Antikythera.Time.now())
+    procs
+    |> Enum.reduce(log_time, fn({pid, qlen, info}, acc) ->
+      acc2 = acc <> "\n" <> Integer.to_string(qlen) <> " " <> inspect(info, structs: false)
+      append_messages_to_log(acc2, Process.info(pid))
+    end)
+  end
+
+  defp append_messages_to_log(log, nil), do: log
+  defp append_messages_to_log(log, process_info) do
+    process_info
+    |> Keyword.get(:messages)
+    |> Enum.take(@max_msg_to_log)
+    |> Enum.reduce(log, fn(msg, acc) -> acc <> "\n    " <> inspect(msg, structs: false) end)
   end
 end
