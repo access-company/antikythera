@@ -27,7 +27,7 @@ defmodule AntikytheraCore.PeriodicLog.MessageBuilder do
     end)
   end
 
-  defp append_messages_to_log(log, nil), do: log
+  defp append_messages_to_log(log, nil), do: log <> "\n    This process has already exited."
   defp append_messages_to_log(log, process_info) do
     process_info
     |> Keyword.get(:messages)
