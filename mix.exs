@@ -92,7 +92,7 @@ defmodule Antikythera.Mixfile do
       {:exsync          , "0.2.4" , [only: :dev ]},
       {:ex_doc          , "0.21.1", [only: :dev , runtime: false]},
       {:dialyxir        , "0.5.1" , [only: :dev , runtime: false]},
-      {:credo           , "1.1.2" , [only: :dev , runtime: false]},
+      {:credo           , "1.1.4" , [only: :dev , runtime: false]},
       {:mix_test_watch  , "0.9.0" , [only: :dev , runtime: false]},
       {:meck            , "0.8.13", [only: :test]},
       {:mox             , "0.5.1" , [only: :test]},
