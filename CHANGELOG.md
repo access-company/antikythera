@@ -5,7 +5,8 @@ which are exposed to antikythera instance administrators and/or gear developers.
 
 ---
 
-- Next minor version release
+- 0.3.0:
+    - Upgrade Elixir to v1.9 series.
     - Strict check of Erlang and Elixir versions is no longer done by antikythera. If an antikythera instance wants to make these versions in sync, it has to check these versions itself.
     - Error handler for invalid executor pool ID is added; log message is no longer automatically emitted.
 - 0.2.0:
