@@ -43,7 +43,7 @@ defmodule AntikytheraCore.GearLog.Writer do
     Process.flag(:message_queue_data, :off_heap)
 
     log_file_path = AntikytheraCore.Path.gear_log_file_path(gear_name)
-    log_state = LogRotation.initialize(@rotate_interval, log_file_path, [])
+    log_state = LogRotation.initialize(@rotate_interval, log_file_path)
     {:ok, %State{log_state: log_state, min_level: min_level}}
   end
 

@@ -18,7 +18,7 @@ defmodule AntikytheraCore.GearLog.LogRotation do
     ]
   end
 
-  defun initialize(interval :: v[non_neg_integer], file_path :: Path.t, opts :: Keyword.t) :: State.t do
+  defun initialize(interval :: v[non_neg_integer], file_path :: Path.t, opts :: Keyword.t \\ []) :: State.t do
     handle = FileHandle.open(file_path, opts)
     timer = arrange_next_rotation(nil, interval)
     %State{file_handle: handle, empty?: true, timer: timer, interval: interval}
