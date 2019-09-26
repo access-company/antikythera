@@ -12,17 +12,24 @@ defmodule AntikytheraCore.GearLog.Writer do
   After each successful log rotation, old log file is uploaded to cloud storage.
   """
 
-  use AntikytheraCore.LogWriter, [
-    rotate_interval:         (if Mix.env() == :test, do: 500, else: 7_200_000),
-    additional_state_fields: [min_level: Level, uploader: Croma.TypeGen.nilable(Croma.Pid)],
-  ]
+  use GenServer
   alias Antikythera.{Time, ContextId, GearName}
-  alias AntikytheraCore.GearLog.{Level, ContextHelper}
+  alias AntikytheraCore.GearLog.{LogRotation, Level, ContextHelper}
   alias AntikytheraCore.Config.Gear, as: GearConfig
   alias AntikytheraCore.Ets.ConfigCache
   alias AntikytheraCore.Alert.Manager, as: CoreAlertManager
   require AntikytheraCore.Logger, as: L
   alias AntikytheraEal.LogStorage
+
+  @rotate_interval (if Mix.env() == :test, do: 500, else: 2 * 60 * 60 * 1000)
+
+  defmodule State do
+    use Croma.Struct, recursive_new?: true, fields: [
+      log_state: LogRotation.State,
+      min_level: Level,
+      uploader:  Croma.TypeGen.nilable(Croma.Pid),
+    ]
+  end
 
   def start_link([gear_name, logger_name]) do
     opts = if logger_name, do: [name: logger_name], else: []
@@ -35,16 +42,16 @@ defmodule AntikytheraCore.GearLog.Writer do
     # Since the log writer process receives a large number of messages, specifying this option improves performance.
     Process.flag(:message_queue_data, :off_heap)
 
-    handle = FileHandle.open(AntikytheraCore.Path.gear_log_file_path(gear_name))
-    timer = arrange_next_rotation(nil)
-    {:ok, %State{min_level: min_level, file_handle: handle, empty?: true, timer: timer}}
+    log_file_path = AntikytheraCore.Path.gear_log_file_path(gear_name)
+    log_state = LogRotation.initialize(@rotate_interval, log_file_path, [])
+    {:ok, %State{log_state: log_state, min_level: min_level}}
   end
 
   @impl true
-  def handle_cast({_, level, _, _} = gear_log, %State{min_level: min_level} = state) do
+  def handle_cast({_, level, _, _} = gear_log, %State{log_state: log_state, min_level: min_level} = state) do
     if Level.write_to_log?(min_level, level) do
-      new_state = write_log(state, gear_log)
-      {:noreply, new_state}
+      new_log_state = LogRotation.write_log(log_state, gear_log)
+      {:noreply, %State{state | log_state: new_log_state}}
     else
       {:noreply, state}
     end
@@ -54,20 +61,29 @@ defmodule AntikytheraCore.GearLog.Writer do
   def handle_cast({:set_min_level, level}, state) do
     {:noreply, %State{state | min_level: level}}
   end
-  def handle_cast({:rotate_and_start_upload, gear_name}, state1) do
-    %State{uploader: uploader} = state2 = rotate(state1)
+  def handle_cast({:rotate_and_start_upload, gear_name}, %State{log_state: log_state, uploader: uploader} = state) do
+    new_log_state = LogRotation.rotate(log_state)
     if uploader do
       # Currently an uploader is working and recent log files will be uploaded => do nothing
-      {:noreply, state2}
+      {:noreply, %State{state | log_state: new_log_state}}
     else
       {pid, _ref} = spawn_monitor(LogStorage, :upload_rotated_logs, [gear_name])
-      {:noreply, %State{state2 | uploader: pid}}
+      {:noreply, %State{state | log_state: new_log_state, uploader: pid}}
     end
   end
 
   @impl true
+  def handle_info(:rotate, %State{log_state: log_state} = state) do
+    new_log_state = LogRotation.rotate(log_state)
+    {:noreply, %State{state | log_state: new_log_state}}
+  end
   def handle_info({:DOWN, _ref, :process, _pid, _reason}, state) do
     {:noreply, %State{state | uploader: nil}}
+  end
+
+  @impl true
+  def terminate(_reason, %State{log_state: log_state}) do
+    LogRotation.terminate(log_state)
   end
 
   #

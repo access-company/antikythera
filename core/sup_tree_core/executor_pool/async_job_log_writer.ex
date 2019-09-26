@@ -7,8 +7,11 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobLogWriter do
   A `GenServer` for logging, which is used in `AntikytheraCore.ExecutorPool.AsyncJobRunner`.
   """
 
-  use AntikytheraCore.LogWriter, [rotate_interval: 24 * 3_600_000]
+  use GenServer
   alias Antikythera.{Time, ContextId}
+  alias AntikytheraCore.GearLog.LogRotation
+
+  @rotate_interval 24 * 60 * 60 * 1000
 
   def start_link([]) do
     GenServer.start_link(__MODULE__, [], [name: __MODULE__])
@@ -16,16 +19,25 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobLogWriter do
 
   @impl true
   def init([]) do
-    handle = FileHandle.open(AntikytheraCore.Path.core_log_file_path("async_job"), write_to_terminal: false)
-    timer = arrange_next_rotation(nil)
-    {:ok, %State{file_handle: handle, empty?: true, timer: timer}}
+    log_file_path = AntikytheraCore.Path.core_log_file_path("async_job")
+    state = LogRotation.initialize(@rotate_interval, log_file_path, write_to_terminal: false)
+    {:ok, state}
   end
 
   @impl true
   def handle_cast(message, state) do
     log = {Time.now(), :info, ContextId.system_context(), message}
-    new_state = write_log(state, log)
-    {:noreply, new_state}
+    {:noreply, LogRotation.write_log(state, log)}
+  end
+
+  @impl true
+  def handle_info(:rotate, state) do
+    {:noreply, LogRotation.rotate(state)}
+  end
+
+  @impl true
+  def terminate(_reason, state) do
+    LogRotation.terminate(state)
   end
 
   def info(message) do
