@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule AntikytheraCore.ExecutorPool.AsyncJobLogWriter do
+defmodule AntikytheraCore.ExecutorPool.AsyncJobLog.Writer do
   @moduledoc """
   A `GenServer` for logging, which is used in `AntikytheraCore.ExecutorPool.AsyncJobRunner`.
   """
@@ -20,7 +20,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobLogWriter do
   @impl true
   def init([]) do
     log_file_path = AntikytheraCore.Path.core_log_file_path("async_job")
-    state = LogRotation.initialize(@rotate_interval, log_file_path, write_to_terminal: false)
+    state = LogRotation.init(@rotate_interval, log_file_path, write_to_terminal: false)
     {:ok, state}
   end
 

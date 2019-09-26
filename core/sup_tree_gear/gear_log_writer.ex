@@ -43,15 +43,15 @@ defmodule AntikytheraCore.GearLog.Writer do
     Process.flag(:message_queue_data, :off_heap)
 
     log_file_path = AntikytheraCore.Path.gear_log_file_path(gear_name)
-    log_state = LogRotation.initialize(@rotate_interval, log_file_path)
+    log_state = LogRotation.init(@rotate_interval, log_file_path)
     {:ok, %State{log_state: log_state, min_level: min_level}}
   end
 
   @impl true
   def handle_cast({_, level, _, _} = gear_log, %State{log_state: log_state, min_level: min_level} = state) do
     if Level.write_to_log?(min_level, level) do
-      new_log_state = LogRotation.write_log(log_state, gear_log)
-      {:noreply, %State{state | log_state: new_log_state}}
+      next_log_state = LogRotation.write_log(log_state, gear_log)
+      {:noreply, %State{state | log_state: next_log_state}}
     else
       {:noreply, state}
     end
@@ -62,20 +62,20 @@ defmodule AntikytheraCore.GearLog.Writer do
     {:noreply, %State{state | min_level: level}}
   end
   def handle_cast({:rotate_and_start_upload, gear_name}, %State{log_state: log_state, uploader: uploader} = state) do
-    new_log_state = LogRotation.rotate(log_state)
+    next_log_state = LogRotation.rotate(log_state)
     if uploader do
       # Currently an uploader is working and recent log files will be uploaded => do nothing
-      {:noreply, %State{state | log_state: new_log_state}}
+      {:noreply, %State{state | log_state: next_log_state}}
     else
       {pid, _ref} = spawn_monitor(LogStorage, :upload_rotated_logs, [gear_name])
-      {:noreply, %State{state | log_state: new_log_state, uploader: pid}}
+      {:noreply, %State{state | log_state: next_log_state, uploader: pid}}
     end
   end
 
   @impl true
   def handle_info(:rotate, %State{log_state: log_state} = state) do
-    new_log_state = LogRotation.rotate(log_state)
-    {:noreply, %State{state | log_state: new_log_state}}
+    next_log_state = LogRotation.rotate(log_state)
+    {:noreply, %State{state | log_state: next_log_state}}
   end
   def handle_info({:DOWN, _ref, :process, _pid, _reason}, state) do
     {:noreply, %State{state | uploader: nil}}
