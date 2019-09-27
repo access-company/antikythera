@@ -35,7 +35,7 @@
         {Credo.Check.Readability.PredicateFunctionNames},
         {Credo.Check.Readability.PreferImplicitTry, false},
         {Credo.Check.Readability.RedundantBlankLines},
-        {Credo.Check.Readability.Semicolons, false},
+        {Credo.Check.Readability.Semicolons},
         {Credo.Check.Readability.SinglePipe, false},
         {Credo.Check.Readability.SpaceAfterCommas},
         {Credo.Check.Readability.Specs, false},
@@ -62,7 +62,7 @@
         {Credo.Check.Refactor.PipeChainStart, false},
         {Credo.Check.Refactor.UnlessWithElse},
         {Credo.Check.Refactor.VariableRebinding},
-        {Credo.Check.Refactor.WithClauses, false}
+        {Credo.Check.Refactor.WithClauses}
 
         {Credo.Check.Warning.BoolOperationOnSameValues},
         {Credo.Check.Warning.ExpensiveEmptyEnumCheck},
