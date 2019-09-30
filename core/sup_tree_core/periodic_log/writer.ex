@@ -39,12 +39,12 @@ defmodule AntikytheraCore.PeriodicLog.Writer do
   def handle_info(:timeout, %State{log_state: log_state, build_mod: build_mod, build_state: build_state} = state) do
     {message, next_build_state} = build_mod.build_log(build_state)
     next_state =
-      if message != nil do
+      if is_nil(message) do
+        %State{state | build_state: next_build_state}
+      else
         log = {Time.now(), :info, ContextId.system_context(), message}
         next_log_state = LogRotation.write_log(log_state, log)
         %State{state | log_state: next_log_state, build_state: next_build_state}
-      else
-        %State{state | build_state: next_build_state}
       end
     {:noreply, next_state, @interval}
   end
