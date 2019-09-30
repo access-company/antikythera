@@ -28,7 +28,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   alias AntikytheraCore.AsyncJob.Queue.JobKey
   alias AntikytheraCore.Context, as: CoreContext
   alias AntikytheraCore.GearLog.{Writer, ContextHelper}
-  alias AntikytheraCore.ExecutorPool.AsyncJobLog.Writer, as: CoreWriter
+  alias AntikytheraCore.ExecutorPool.AsyncJobLog.Writer, as: JobLogWriter
 
   @idle_timeout 60_000
 
@@ -118,7 +118,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
 
   defp write_start_log(%Context{start_time: context_start_time, context_id: context_id}, logger_name, log_prefix) do
     Writer.info(logger_name, context_start_time, context_id, log_prefix <> "START")
-    CoreWriter.info("context=" <> context_id <> " " <> log_prefix <> "START")
+    JobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "START")
   end
 
   defp start_monitor(%AsyncJob{module:       module,
@@ -183,7 +183,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
                         end_time,
                         error_reason) do
     Writer.error(logger_name, end_time, context_id, log_prefix <> error_reason)
-    CoreWriter.info("context=" <> context_id <> " " <> log_prefix <> "FAILED")
+    JobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "FAILED")
   end
 
   defp report_on_finish(%{context:     %Context{context_id: context_id},
@@ -194,7 +194,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
                         job_result) do
     diff = Time.diff_milliseconds(end_time, start_time)
     Writer.info(logger_name, end_time, context_id, log_prefix <> "END status=#{job_result} time=#{diff}ms")
-    CoreWriter.info("context=" <> context_id <> " " <> log_prefix <> "END status=#{job_result} time=#{diff}ms")
+    JobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "END status=#{job_result} time=#{diff}ms")
     submit_metrics(state, end_time, diff, job_result)
   end
 
