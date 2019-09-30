@@ -40,6 +40,9 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobLog.Writer do
     LogRotation.terminate(state)
   end
 
+  #
+  # Public API
+  #
   def info(message) do
     GenServer.cast(__MODULE__, message)
   end
