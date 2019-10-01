@@ -10,7 +10,7 @@ defmodule AntikytheraCore.PeriodicLog.ReductionBuilderTest do
 
     state1 = :sys.get_state(pid)
     build_state1 = state1.build_state
-    # NOTE: The below `accert` statement won't pass. The process probably left its initial state
+    # NOTE: The below `assert` statement won't pass. The process probably left its initial state
     # because it has been running from the beginning of the test.
     # assert state1.log_state.empty?
 
