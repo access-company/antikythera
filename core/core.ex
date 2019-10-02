@@ -75,8 +75,10 @@ defmodule AntikytheraCore do
       socket_opts:     [port: Antikythera.Env.port_to_listen()],
     }
     cowboy_proto_opts = %{
-      idle_timeout:    30_000,  # timeout of a request with no data transfer; must be sufficiently longer than the gear action timeout (10_000)
-      request_timeout: 120_000, # timeout of a connection with no requests; this should be longer than LB's idle timeout
+      # (a) timeout of a request with no data transfer; must be sufficiently longer than the gear action timeout (10_000)
+      # (b) timeout of a connection with no requests; this should be longer than LB's idle timeout
+      idle_timeout:    30_000,  # (a)
+      request_timeout: 120_000, # (b)
       env:             %{dispatch: dispatch_rules},
       stream_handlers: [:cowboy_compress_h, :cowboy_stream_h],
     }
@@ -85,29 +87,36 @@ defmodule AntikytheraCore do
 
   defp start_sup() do
     children = [
-      AntikytheraCore.ErrorCountsAccumulator    ,
-      {AntikytheraCore.Alert.Manager            , [:antikythera, AntikytheraCore.Alert.Manager]},
-      AntikytheraCore.GearManager               ,
-      AntikytheraCore.ClusterHostsPoller        ,
-      AntikytheraCore.ClusterNodesConnector     ,
-      AntikytheraCore.MnesiaNodesCleaner        ,
-      AntikytheraCore.StartupManager            ,
-      AntikytheraCore.TerminationManager        ,
-      AntikytheraCore.CoreConfigPoller          ,
-      AntikytheraCore.GearConfigPoller          ,
-      AntikytheraCore.VersionUpgradeTaskQueue   ,
-      AntikytheraCore.VersionSynchronizer       ,
-      AntikytheraCore.StaleGearArtifactCleaner  ,
-      {AntikytheraCore.MetricsUploader          , [:antikythera, AntikytheraCore.MetricsUploader]},
-      {AntikytheraCore.SystemMetricsReporter    , [AntikytheraCore.MetricsUploader]},
-      AntikytheraCore.ExecutorPool.Sup          ,
-      AntikytheraCore.GearExecutorPoolsManager  ,
-      AntikytheraCore.TenantExecutorPoolsManager,
-      AntikytheraCore.TmpdirTracker             ,
+      AntikytheraCore.ErrorCountsAccumulator         ,
+      {AntikytheraCore.Alert.Manager                 , [:antikythera, AntikytheraCore.Alert.Manager]},
+      AntikytheraCore.GearManager                    ,
+      AntikytheraCore.ClusterHostsPoller             ,
+      AntikytheraCore.ClusterNodesConnector          ,
+      AntikytheraCore.MnesiaNodesCleaner             ,
+      AntikytheraCore.StartupManager                 ,
+      AntikytheraCore.TerminationManager             ,
+      AntikytheraCore.CoreConfigPoller               ,
+      AntikytheraCore.GearConfigPoller               ,
+      AntikytheraCore.VersionUpgradeTaskQueue        ,
+      AntikytheraCore.VersionSynchronizer            ,
+      AntikytheraCore.StaleGearArtifactCleaner       ,
+      {AntikytheraCore.MetricsUploader               , [:antikythera, AntikytheraCore.MetricsUploader]},
+      {AntikytheraCore.SystemMetricsReporter         , [AntikytheraCore.MetricsUploader]},
+      AntikytheraCore.ExecutorPool.Sup               ,
+      AntikytheraCore.GearExecutorPoolsManager       ,
+      AntikytheraCore.TenantExecutorPoolsManager     ,
+      AntikytheraCore.TmpdirTracker                  ,
+      AntikytheraCore.ExecutorPool.AsyncJobLog.Writer,
     ]
     children_for_dev = if Antikythera.Env.runtime_env() == :prod, do: [], else: [
-      Supervisor.child_spec({AntikytheraCore.PeriodicLog.Writer, [AntikytheraCore.PeriodicLog.ReductionBuilder, "reduction"]}, id: :periodic_log_writer_1),
-      Supervisor.child_spec({AntikytheraCore.PeriodicLog.Writer, [AntikytheraCore.PeriodicLog.MessageBuilder  , "message"  ]}, id: :periodic_log_writer_2),
+      Supervisor.child_spec({
+        AntikytheraCore.PeriodicLog.Writer,
+        [AntikytheraCore.PeriodicLog.ReductionBuilder, "reduction"],
+      }, id: :periodic_log_writer_1),
+      Supervisor.child_spec({
+        AntikytheraCore.PeriodicLog.Writer,
+        [AntikytheraCore.PeriodicLog.MessageBuilder, "message"],
+      }, id: :periodic_log_writer_2),
     ]
     opts = [strategy: :one_for_one, name: AntikytheraCore.Supervisor]
     Supervisor.start_link(children ++ children_for_dev, opts)

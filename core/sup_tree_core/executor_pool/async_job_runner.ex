@@ -28,7 +28,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   alias AntikytheraCore.AsyncJob.Queue.JobKey
   alias AntikytheraCore.Context, as: CoreContext
   alias AntikytheraCore.GearLog.{Writer, ContextHelper}
-  require AntikytheraCore.Logger, as: L
+  alias AntikytheraCore.ExecutorPool.AsyncJobLog.Writer, as: JobLogWriter
 
   @idle_timeout 60_000
 
@@ -48,12 +48,11 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   def handle_cast({:run, queue_name, {run_at_ms, job_id} = job_key, job}, %{executor_pool_id: epool_id}) do
     run_at          = Time.from_epoch_milliseconds(run_at_ms)
     metadata        = make_metadata(job, job_id, run_at)
-    context         = %Context{start_time: context_start_time, context_id: context_id} = make_context(job, epool_id)
+    context         = %Context{start_time: context_start_time} = make_context(job, epool_id)
     logger_name     = GearModule.logger(job.gear_name)
     decoded_payload = decode_payload(job.payload)
     log_prefix      = log_prefix(job, job_id, run_at, decoded_payload)
-    Writer.info(logger_name, context_start_time, context_id, log_prefix <> "START")
-    L.info("context=" <> context_id <> " " <> log_prefix <> "START")
+    write_start_log(context, logger_name, log_prefix)
     {pid, monitor_ref, timer_ref} = start_monitor(job, metadata, context, decoded_payload)
     new_state = %{
       epool_id:    epool_id,
@@ -117,6 +116,11 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     end
   end
 
+  defp write_start_log(%Context{start_time: context_start_time, context_id: context_id}, logger_name, log_prefix) do
+    Writer.info(logger_name, context_start_time, context_id, log_prefix <> "START")
+    JobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "START")
+  end
+
   defp start_monitor(%AsyncJob{module:       module,
                                max_duration: max_duration},
                      metadata,
@@ -155,17 +159,13 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     if queue_name, do: Queue.remove_locked_job(queue_name, job_key)
   end
 
-  defp job_failed(%{queue_name:  queue_name,
-                    job_key:     job_key,
-                    job:         %AsyncJob{remaining_attempts: remaining_attempts},
-                    context:     %Context{context_id: context_id},
-                    logger_name: logger_name,
-                    log_prefix:  log_prefix} = state,
+  defp job_failed(%{queue_name: queue_name,
+                    job_key:    job_key,
+                    job:        %AsyncJob{remaining_attempts: remaining_attempts}} = state,
                   reason,
                   stacktrace) do
     end_time = Time.now()
-    Writer.error(logger_name, end_time, context_id, log_prefix <> ErrorReason.format(reason, stacktrace))
-    L.info("context=" <> context_id <> " " <> log_prefix <> "FAILED")
+    write_failed_log(state, end_time, ErrorReason.format(reason, stacktrace))
     case remaining_attempts do
       1 ->
         report_on_finish(state, end_time, "failure_abandon")
@@ -177,6 +177,15 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     end
   end
 
+  defp write_failed_log(%{context:     %Context{context_id: context_id},
+                          logger_name: logger_name,
+                          log_prefix:  log_prefix},
+                        end_time,
+                        error_reason) do
+    Writer.error(logger_name, end_time, context_id, log_prefix <> error_reason)
+    JobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "FAILED")
+  end
+
   defp report_on_finish(%{context:     %Context{context_id: context_id},
                           logger_name: logger_name,
                           log_prefix:  log_prefix,
@@ -185,7 +194,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
                         job_result) do
     diff = Time.diff_milliseconds(end_time, start_time)
     Writer.info(logger_name, end_time, context_id, log_prefix <> "END status=#{job_result} time=#{diff}ms")
-    L.info("context=" <> context_id <> " " <> log_prefix <> "END status=#{job_result} time=#{diff}ms")
+    JobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "END status=#{job_result} time=#{diff}ms")
     submit_metrics(state, end_time, diff, job_result)
   end
 

@@ -14,20 +14,20 @@ defmodule AntikytheraCore.GearLog.Writer do
 
   use GenServer
   alias Antikythera.{Time, ContextId, GearName}
-  alias AntikytheraCore.GearLog.{FileHandle, Level, ContextHelper}
+  alias AntikytheraCore.GearLog.{LogRotation, Level, ContextHelper}
   alias AntikytheraCore.Config.Gear, as: GearConfig
   alias AntikytheraCore.Ets.ConfigCache
   alias AntikytheraCore.Alert.Manager, as: CoreAlertManager
   require AntikytheraCore.Logger, as: L
   alias AntikytheraEal.LogStorage
 
+  @rotate_interval (if Mix.env() == :test, do: 500, else: 2 * 60 * 60 * 1000)
+
   defmodule State do
     use Croma.Struct, recursive_new?: true, fields: [
-      min_level:   Level,
-      file_handle: Croma.Tuple, # FileHandle.t
-      empty?:      Croma.Boolean,
-      timer:       Croma.Reference,
-      uploader:    Croma.TypeGen.nilable(Croma.Pid),
+      log_state: LogRotation.State,
+      min_level: Level,
+      uploader:  Croma.TypeGen.nilable(Croma.Pid),
     ]
   end
 
@@ -42,23 +42,16 @@ defmodule AntikytheraCore.GearLog.Writer do
     # Since the log writer process receives a large number of messages, specifying this option improves performance.
     Process.flag(:message_queue_data, :off_heap)
 
-    handle = FileHandle.open(AntikytheraCore.Path.gear_log_file_path(gear_name))
-    timer = arrange_next_rotation(nil)
-    {:ok, %State{min_level: min_level, file_handle: handle, empty?: true, timer: timer}}
+    log_file_path = AntikytheraCore.Path.gear_log_file_path(gear_name)
+    log_state = LogRotation.init(@rotate_interval, log_file_path)
+    {:ok, %State{log_state: log_state, min_level: min_level}}
   end
 
   @impl true
-  def handle_cast({_, level, _, _} = gear_log,
-                  %State{min_level: min_level, file_handle: handle, timer: timer} = state) do
+  def handle_cast({_, level, _, _} = gear_log, %State{log_state: log_state, min_level: min_level} = state) do
     if Level.write_to_log?(min_level, level) do
-      case FileHandle.write(handle, gear_log) do
-        {:kept_open, new_handle} -> {:noreply, %State{state | file_handle: new_handle, empty?: false}}
-        {:rotated  , new_handle} ->
-          # Log file is just rotated as its size has exceeded the upper limit.
-          # Note that the current message is written to the newly-opened log file and thus it's not empty.
-          new_timer = arrange_next_rotation(timer)
-          {:noreply, %State{state | file_handle: new_handle, empty?: false, timer: new_timer}}
-      end
+      next_log_state = LogRotation.write_log(log_state, gear_log)
+      {:noreply, %State{state | log_state: next_log_state}}
     else
       {:noreply, state}
     end
@@ -68,47 +61,29 @@ defmodule AntikytheraCore.GearLog.Writer do
   def handle_cast({:set_min_level, level}, state) do
     {:noreply, %State{state | min_level: level}}
   end
-  def handle_cast({:rotate_and_start_upload, gear_name}, state1) do
-    %State{uploader: uploader} = state2 = rotate(state1)
+  def handle_cast({:rotate_and_start_upload, gear_name}, %State{log_state: log_state, uploader: uploader} = state) do
+    next_log_state = LogRotation.rotate(log_state)
     if uploader do
       # Currently an uploader is working and recent log files will be uploaded => do nothing
-      {:noreply, state2}
+      {:noreply, %State{state | log_state: next_log_state}}
     else
       {pid, _ref} = spawn_monitor(LogStorage, :upload_rotated_logs, [gear_name])
-      {:noreply, %State{state2 | uploader: pid}}
+      {:noreply, %State{state | log_state: next_log_state, uploader: pid}}
     end
   end
 
   @impl true
-  def handle_info(:rotate, state) do
-    {:noreply, rotate(state)}
+  def handle_info(:rotate, %State{log_state: log_state} = state) do
+    next_log_state = LogRotation.rotate(log_state)
+    {:noreply, %State{state | log_state: next_log_state}}
   end
   def handle_info({:DOWN, _ref, :process, _pid, _reason}, state) do
     {:noreply, %State{state | uploader: nil}}
   end
 
-  defp rotate(%State{file_handle: handle, empty?: empty?, timer: timer} = state0) do
-    new_timer = arrange_next_rotation(timer)
-    state1 = %State{state0 | timer: new_timer}
-    if empty? do
-      state1
-    else
-      %State{state1 | file_handle: FileHandle.rotate(handle), empty?: true}
-    end
-  end
-
   @impl true
-  def terminate(_reason, %State{file_handle: handle}) do
-    FileHandle.close(handle)
-  end
-
-  @rotate_interval (if Mix.env() == :test, do: 500, else: 7_200_000)
-
-  defp arrange_next_rotation(timer) do
-    if timer do
-      Process.cancel_timer(timer)
-    end
-    Process.send_after(self(), :rotate, @rotate_interval)
+  def terminate(_reason, %State{log_state: log_state}) do
+    LogRotation.terminate(log_state)
   end
 
   #

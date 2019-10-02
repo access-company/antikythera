@@ -27,7 +27,7 @@ defmodule AntikytheraCore.GearLog.WriterTest do
   end
 
   defp assert_empty?(pid, b) do
-    assert :sys.get_state(pid).empty? == b
+    assert :sys.get_state(pid).log_state.empty? == b
   end
 
   defp wait_for_timer(pid) do
@@ -39,7 +39,7 @@ defmodule AntikytheraCore.GearLog.WriterTest do
   end
 
   defp get_timer(pid) do
-    :sys.get_state(pid) |> Map.get(:timer)
+    :sys.get_state(pid).log_state |> Map.get(:timer)
   end
 
   setup_all do

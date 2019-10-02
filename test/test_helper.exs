@@ -2,6 +2,14 @@
 
 ExUnit.start()
 
+ExUnit.after_suite(fn(_result) ->
+  Path.join([__DIR__, "..", "_build", "test", "log", "antikythera"])
+  |> Path.expand()
+  |> Path.join("{async_job,message,reduction}.log.*.gz")
+  |> Path.wildcard()
+  |> Enum.each(fn(path) -> :ok = File.rm(path) end)
+end)
+
 defmodule ExecutorPoolHelper do
   import ExUnit.Assertions
   alias Antikythera.Test.{ProcessHelper, GenServerHelper}
