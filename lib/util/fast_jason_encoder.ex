@@ -1,3 +1,5 @@
+# Copyright(c) 2015-2019 ACCESS CO., LTD. All rights reserved.
+
 defmodule Antikythera.FastJasonEncoder do
   @moduledoc """
   This module converts structures to JSON at low load by avoiding protocol calls. Internally jason is used.
