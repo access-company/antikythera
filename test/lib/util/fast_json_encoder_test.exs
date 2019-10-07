@@ -46,4 +46,16 @@ defmodule Antikythera.FastJasonEncoderTest do
     values = ["\\500", "\"", "foo\nbar", "</script>", "日本語"]
     Enum.each(values, &validate(&1))
   end
+
+  defmodule MyStruct do
+    defstruct name: nil
+  end
+  test "module" do
+    values = [%MyStruct{name: nil}, %MyStruct{name: "Taro"}]
+    Enum.each(values, fn(value) ->
+      {:ok, json} = FastJasonEncoder.encode(value)
+      assert json == Poison.encode!(value)
+      assert json == Poison.encode!(Map.from_struct(value))
+    end)
+  end
 end
