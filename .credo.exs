@@ -62,7 +62,7 @@
         {Credo.Check.Refactor.PipeChainStart, false},
         {Credo.Check.Refactor.UnlessWithElse},
         {Credo.Check.Refactor.VariableRebinding},
-        {Credo.Check.Refactor.WithClauses}
+        {Credo.Check.Refactor.WithClauses},
 
         {Credo.Check.Warning.BoolOperationOnSameValues},
         {Credo.Check.Warning.ExpensiveEmptyEnumCheck},
