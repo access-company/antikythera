@@ -46,6 +46,7 @@ defmodule Antikythera.Conn do
 
   alias Antikythera.{Request, Context}
   alias Antikythera.Session
+  alias Antikythera.FastJasonEncoder
 
   defmodule BeforeSend do
     use Croma.SubtypeOfList, elem_module: Croma.Function, default: []
@@ -196,10 +197,11 @@ defmodule Antikythera.Conn do
   Returns a JSON response.
   """
   defun json(%__MODULE__{resp_headers: resp_headers} = conn, status :: v[Http.Status.t], body :: v[%{(atom | String.t) => any} | [any]]) :: t do
+    {:ok, json} = FastJasonEncoder.encode(body)
     %__MODULE__{conn |
       status:       Http.Status.code(status),
       resp_headers: Map.put(resp_headers, "content-type", "application/json"),
-      resp_body:    Poison.encode!(body),
+      resp_body:    json,
     }
   end
 
