@@ -42,8 +42,7 @@ defmodule AntikytheraCore.Handler.GearAction do
     log_message_base = "#{CoreConn.request_info(conn)} from=#{sender_info}"
     headers =
       @http_headers_to_log
-      |> Enum.map(fn(key) -> key <> "=" <> (Conn.get_req_header(conn, key) || "(none)") end)
-      |> Enum.join(" ")
+      |> Enum.map_join(fn(key) -> " #{key}=#{Conn.get_req_header(conn, key) || "(none)"}" end)
     Writer.info(logger, t_start, context_id, "#{log_message_base} START #{headers}")
     %Conn{status: status} = conn2 = f.()
     t_end = Time.now()
