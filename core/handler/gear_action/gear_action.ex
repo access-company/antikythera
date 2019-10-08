@@ -43,7 +43,7 @@ defmodule AntikytheraCore.Handler.GearAction do
     headers =
       @http_headers_to_log
       |> Enum.map_join(fn(key) -> " #{key}=#{Conn.get_req_header(conn, key) || "(none)"}" end)
-    Writer.info(logger, t_start, context_id, "#{log_message_base} START #{headers}")
+    Writer.info(logger, t_start, context_id, "#{log_message_base} START#{headers}")
     %Conn{status: status} = conn2 = f.()
     t_end = Time.now()
     processing_time = Time.diff_milliseconds(t_end, t_start)
