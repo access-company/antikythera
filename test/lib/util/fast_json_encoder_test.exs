@@ -4,28 +4,29 @@ defmodule Antikythera.FastJasonEncoderTest do
   use Croma.TestCase
   use ExUnitProperties
 
-  def validate(value) do
-    validate(value, value)
+  defp assert_compatible_with_poison(value) do
+    assert_compatible_with_poison(value, value)
   end
-  def validate(source, expected) do
+
+  defp assert_compatible_with_poison(source, expected) do
     {:ok, json} = FastJasonEncoder.encode(source)
     assert json == Poison.encode!(source)
-    assert expected == Poison.decode!(json)
+    assert Poison.decode!(json) == expected
   end
 
   test "primitives" do
     values = [0, 1, 1.5, true, false, nil]
-    Enum.each(values, &validate(&1))
-    validate(:ok, "ok") # Atom is encoded as a string
+    Enum.each(values, &assert_compatible_with_poison/1)
+    assert_compatible_with_poison(:ok, "ok") # Atom is encoded as a string
   end
 
   test "complext types" do
     values = [[], [1.5], [1, "foo"], %{}, %{"key" => "value"}]
-    Enum.each(values, &validate(&1))
+    Enum.each(values, &assert_compatible_with_poison/1)
 
     # Atom is encoded as a string
-    validate(%{key: "value"}, %{"key" => "value"})
-    validate(%{key: :ok    }, %{"key" => "ok"   })
+    assert_compatible_with_poison(%{key: "value"}, %{"key" => "value"})
+    assert_compatible_with_poison(%{key: :ok    }, %{"key" => "ok"   })
 
     # Skip `FastJasonEncoder.encode/1` vs `Poison.encode/1` because the order of the field may change.
     obj = %{"k1" => "v1", "k2" => "v2"}
@@ -44,7 +45,7 @@ defmodule Antikythera.FastJasonEncoderTest do
 
   test "string compatibility" do
     values = ["\\500", "\"", "foo\nbar", "</script>", "日本語"]
-    Enum.each(values, &validate(&1))
+    Enum.each(values, &assert_compatible_with_poison/1)
   end
 
   defmodule MyStruct do
