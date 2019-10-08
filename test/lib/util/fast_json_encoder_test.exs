@@ -27,7 +27,7 @@ defmodule Antikythera.FastJasonEncoderTest do
     validate(%{key: "value"}, %{"key" => "value"})
     validate(%{key: :ok    }, %{"key" => "ok"   })
 
-    # Skip FastJasonEncoder.encode vs Poison.encode because the order of the field may change
+    # Skip `FastJasonEncoder.encode/1` vs `Poison.encode/1` because the order of the field may change.
     obj = %{"k1" => "v1", "k2" => "v2"}
     {:ok, json} = FastJasonEncoder.encode(obj)
     assert obj == Poison.decode!(json)
