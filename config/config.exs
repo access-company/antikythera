@@ -33,6 +33,11 @@ config :antikythera, [
     prod: "antikythera.example.com"   ,
   ],
 
+  # HTTP header to write to gear log. The header must be specified in lower case.
+  http_headers_to_log: [
+    "accept-encoding", # To see whether client accepts gzip/deflate compression or not
+  ],
+
   # URL of Content Delivery Network for static assets (such as CSS, JS, etc.).
   asset_cdn_endpoint: nil,
 

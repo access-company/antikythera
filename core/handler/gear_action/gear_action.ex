@@ -8,6 +8,8 @@ defmodule AntikytheraCore.Handler.GearAction do
   alias AntikytheraCore.Conn, as: CoreConn
   alias AntikytheraCore.{MetricsUploader, Handler.HelperModules, GearLog.Writer}
 
+  @http_headers_to_log Application.fetch_env!(:antikythera, :http_headers_to_log)
+
   defun split_path_to_segments(path :: v[String.t]) :: PathInfo.t do
     String.split(path, "/")
     |> tl() # neglect leading '/' but DO include the last "" due to trailing '/'
@@ -38,9 +40,11 @@ defmodule AntikytheraCore.Handler.GearAction do
                       f           :: (() -> Conn.t)) :: {Conn.t, Time.t, non_neg_integer} do
     %Conn{context: %Context{start_time: t_start, context_id: context_id}} = conn
     log_message_base = "#{CoreConn.request_info(conn)} from=#{sender_info}"
-    encoding = Conn.get_req_header(conn, "accept-encoding") || "(none)" # To see whether client accepts gzip/deflate compression or not
-    amzn_id = Conn.get_req_header(conn, "x-amzn-trace-id") || "(none)"
-    Writer.info(logger, t_start, context_id, "#{log_message_base} START encoding=#{encoding} amzn_trace_id=#{amzn_id}")
+    headers =
+      @http_headers_to_log
+      |> Enum.map(fn(key) -> key <> "=" <> (Conn.get_req_header(conn, key) || "(none)") end)
+      |> Enum.join(" ")
+    Writer.info(logger, t_start, context_id, "#{log_message_base} START #{headers}")
     %Conn{status: status} = conn2 = f.()
     t_end = Time.now()
     processing_time = Time.diff_milliseconds(t_end, t_start)
