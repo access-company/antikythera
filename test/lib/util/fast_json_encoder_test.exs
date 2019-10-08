@@ -48,11 +48,16 @@ defmodule Antikythera.FastJasonEncoderTest do
     Enum.each(values, &assert_compatible_with_poison/1)
   end
 
-  defmodule MyStruct do
-    defstruct name: nil
+  defmodule MyContainer do
+    defstruct content: nil
   end
+
   test "module" do
-    values = [%MyStruct{name: nil}, %MyStruct{name: "Taro"}]
+    values = [
+      %MyContainer{content: nil},
+      %MyContainer{content: "item"},
+      %MyContainer{content: %MyContainer{content: %MyContainer{content: "item"}}}
+    ]
     Enum.each(values, fn(value) ->
       {:ok, json} = FastJasonEncoder.encode(value)
       assert json == Poison.encode!(value)
