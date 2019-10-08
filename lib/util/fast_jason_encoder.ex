@@ -6,6 +6,8 @@ defmodule Antikythera.FastJasonEncoder do
   @moduledoc """
   This module converts structures to JSON at low load by avoiding protocol calls. Internally Jason is used.
   """
+
+  alias Croma.Result, as: R
   alias Antikythera.Time
 
   defmodule Wrapper do
@@ -18,7 +20,7 @@ defmodule Antikythera.FastJasonEncoder do
     end
   end
 
-  def encode(value) do
+  defun encode(value :: any) :: R.t(String.t, Jason.EncodeError.t | Exception.t) do
     Jason.encode(%Wrapper{item: value})
   end
 
