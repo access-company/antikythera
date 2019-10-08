@@ -2,7 +2,7 @@
 
 defmodule Antikythera.FastJasonEncoder do
   @moduledoc """
-  This module converts structures to JSON at low load by avoiding protocol calls. Internally jason is used.
+  This module converts structures to JSON at low load by avoiding protocol calls. Internally Jason is used.
   """
   alias Antikythera.Time
 
