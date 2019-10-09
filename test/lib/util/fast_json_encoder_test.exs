@@ -20,7 +20,7 @@ defmodule Antikythera.FastJasonEncoderTest do
     assert_compatible_with_poison(:ok, "ok") # Atom is encoded as a string
   end
 
-  test "complext types" do
+  test "complex types" do
     values = [[], [1.5], [1, "foo"], %{}, %{"key" => "value"}]
     Enum.each(values, &assert_compatible_with_poison/1)
 
