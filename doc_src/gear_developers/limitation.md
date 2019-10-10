@@ -1,6 +1,6 @@
 # Limitation
 
-There are certain limitations in Antiktyera.
+There are certain limitations in Antikythera.
 We introduce some main limitations. But all limitations are not described here. Please also read other parts of the document when you implement gear.
 
 * There is an upper limit of the execution time of web/g2g request
