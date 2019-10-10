@@ -9,4 +9,4 @@ We introduce some major limitations here. But this does not cover all the limita
   * `AsyncJob` has other limitations too. Please refer [here](https://hexdocs.pm/antikythera/Antikythera.AsyncJob.html#module-registering-jobs).
 * Heap size which a process can use
   * Please refer [here](https://hexdocs.pm/antikythera/development_environment.html#environment-variables-to-tweak-behavior-of-antikythera).
-  * If the size of the heap used by process exceeds the upper limitation, an error log is written.(e.g. `xxx killed`)
+  * When a process uses more memory than the limit, Antikythera kills the process and outputs error log(e.g. `xxx killed`).
