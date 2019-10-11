@@ -16,6 +16,13 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
     :rpc.call(NodeName.get(), mod, fun, args)
   end
 
+  defp rpc!(mod, fun, args) do
+    case rpc(mod, fun, args) do
+      {:badrpc, reason} -> raise "Failed to communicate with the running node! reason: #{reason}"
+      value             -> value
+    end
+  end
+
   def run([testgear_dir]) do
     start_antikythera_local(testgear_dir)
 
@@ -45,7 +52,9 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
       ] |> invoke_functions()
     after
       {_, 0} = System.cmd("git", ["checkout", "mix.exs"])
+      {_, 0} = System.cmd("git", ["checkout", "lib/#{@instance_name}.ex"])
       {_, 0} = System.cmd("git", ["checkout", "mix.exs"], [cd: testgear_dir])
+      {_, 0} = System.cmd("git", ["checkout", "lib/testgear.ex"], [cd: testgear_dir])
       Mix.Task.run("antikythera_local.stop")
     end
   end
@@ -68,10 +77,12 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
   end
 
   defp version(app_name) do
-    case rpc(AntikytheraCore.Version, :current_version, [app_name]) do
-      {:badrpc, reason} -> raise "Failed to communicate with the running node! reason: #{reason}"
-      value             -> value
-    end
+    rpc!(AntikytheraCore.Version, :current_version, [app_name])
+  end
+
+  defp module_md5(app_name) do
+    {mod, _} = rpc!(Application, :spec, [app_name, :mod])
+    rpc!(mod, :module_info, [:md5])
   end
 
   def check_version(app_name, expected_version) do
@@ -94,10 +105,14 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
   end
 
   def check_new_version_is_applied(app_name, new_semver, original_version, mixfile_path) do
+    current_md5 = module_md5(app_name)
     current_version = version(app_name)
+    modify_module(app_name, mixfile_path)
     override_version_in_mix_file(app_name, new_semver, mixfile_path)
     {_, 0} = run_mix_prepare(app_name, true, Path.dirname(mixfile_path))
     assert wait_until_version_changed(app_name, new_version(new_semver, original_version), current_version, 20) == :ok
+    new_md5 = module_md5(app_name)
+    assert current_md5 != new_md5
   end
 
   def check_new_version_with_noupgrade_is_not_applied(app_name, new_semver, original_version, mixfile_path) do
@@ -119,6 +134,11 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
       @instance_name -> override_file(mixfile_path, ~R/(version\:[^\(]+\()([^\)]+)(\),\n)/   , replacement)
       :testgear      -> override_file(mixfile_path, ~R/(defp\sversion[^\:]+\:\s)([^\n]+)(\n)/, replacement)
     end
+  end
+
+  defunp modify_module(app_name :: g[atom], mixfile_path :: Path.t) :: :ok do
+    module_file_path = Path.expand("../lib/#{app_name}.ex", mixfile_path)
+    override_file(module_file_path, ~r/^end/m, "  def f#{System.system_time(:millisecond)}(), do: :ok\nend")
   end
 
   defunp override_file(file_path :: g[String.t], regex :: Regex.t, replacement :: g[String.t]) :: :ok do
