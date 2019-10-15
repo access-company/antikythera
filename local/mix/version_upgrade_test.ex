@@ -81,7 +81,10 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
   end
 
   defp module_md5(app_name) do
-    {mod, _} = rpc!(Application, :spec, [app_name, :mod])
+    mod_name = app_name
+      |> Atom.to_string
+      |> Macro.camelize()
+    mod = Module.concat([Elixir, mod_name])
     rpc!(mod, :module_info, [:md5])
   end
 
