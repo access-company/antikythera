@@ -43,6 +43,14 @@ defmodule Antikythera.FastJasonEncoderTest do
     end)
   end
 
+  test "MapSet" do
+    values = [MapSet.new(), MapSet.new([1, "foo", %{}])]
+    Enum.each(values, fn(value) ->
+      {:ok, json} = FastJasonEncoder.encode(value)
+      assert json == Poison.encode!(value)
+    end)
+  end
+
   test "string compatibility" do
     values = ["\\500", "\"", "foo\nbar", "</script>", "日本語"]
     Enum.each(values, &assert_compatible_with_poison/1)
