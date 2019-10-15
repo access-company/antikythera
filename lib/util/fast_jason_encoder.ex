@@ -25,11 +25,12 @@ defmodule Antikythera.FastJasonEncoder do
   end
 
   defun encode(value :: any, opts :: Jason.Encode.opts) :: iodata do
-    ([]       , _   )                       -> "[]"
-    (list     , opts) when is_list(list)    -> [?[ | encode_list(list, opts, false)]
-    (empty_map, _   ) when empty_map == %{} -> "{}"
-    (map      , opts) when is_map(map)      -> [?{ | encode_map(Map.to_list(map), opts, false)]
-    (value    , opts)                       ->
+    ([]               , _   )                       -> "[]"
+    (list             , opts) when is_list(list)    -> [?[ | encode_list(list, opts, false)]
+    (empty_map        , _   ) when empty_map == %{} -> "{}"
+    (%MapSet{map: map}, opts)                       -> encode(Map.keys(map), opts)
+    (map              , opts) when is_map(map)      -> [?{ | encode_map(Map.to_list(map), opts, false)]
+    (value            , opts)                       ->
       if Time.valid?(value) do
         [?", Time.to_iso_timestamp(value), ?"]
       else
