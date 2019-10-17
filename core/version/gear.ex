@@ -31,9 +31,10 @@ defmodule AntikytheraCore.Version.Gear do
         Enum.each(Application.spec(gear_name, :modules), fn(mod) ->
           case :code.load_file(mod) do
             {:module, _}      -> :ok
-            {:error , reason} -> raise "Failed to load '#{mod}': #{inspect(reason)}"
+            {:error , reason} -> raise "Failed to load '#{mod}': #{reason}"
           end
         end)
+        L.info("successfully loaded all modules in '#{gear_name}'")
       end
       case Application.start(gear_name) do
         :ok ->
