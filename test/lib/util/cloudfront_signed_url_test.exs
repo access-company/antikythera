@@ -60,6 +60,7 @@ defmodule Antikythera.CloudfrontSignedUrlTest do
   setup do
     lifetime = 60
     :meck.expect(System, :system_time, fn :second -> @expires_in_seconds - lifetime end)
+    on_exit(fn -> :meck.unload() end)
     %{lifetime: lifetime}
   end
 
