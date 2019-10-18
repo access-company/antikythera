@@ -40,12 +40,12 @@ defmodule Antikythera.CloudfrontSignedUrlTest do
   @signature_without_query "DE1GkSlp4UtQkIBBATpBnzyyr7hGLzwV39CrN~VHRgWCA9pnlrW5KW8qkARdK7ZvuQ21L5dLJ39hYzfFguY-3jVVXEnhD9Vi~ilVXypM84E7K3HZvOev0ZFJexSDXLFUGqrh8WcU~CTvX-RNywY3SLLQEIXjufPQbhNqIvRs-jFnQfEw1dn2KMYpFQ1xMFYUygMxT0yccE0OHnjBA94LOmpyDs42ZS3LVmeD~dPlnCMfJL14mV9awgNqN5rlfdhG2I~STDNA4qNadG~-BpWiTq6L3DnM2ZmqdDq-fE4QbBY7MyUJILnUyRVzojpaHJ1T-6ibXRvwdFAxJucefCkbZA__"
   @signature_with_query    "AFkIdETPTReVQFNRO4jJkEn942YktXEtQmEpAc8r02~ttCXpHuMomuzZzHanDkG-NBpqc86iohNQ25vICobDqtl3-VWFn~ZjESBFl2oUxLERryCAWh--Ffi7Q7p2~~dFgQ64~Vt9H8JmEuHx9otBFVroF97FfK9JbyGyId965T1RwC0FG-0OMHM1YsJSO9hY0iI5iTbzY-HyPIcLiYzYUPaD2~RVGPLQclnKP0oHprWfsde5zdfl5hIRG6HH3qmWPN5tr61PNQ~vdNqlfvs14B1oLZvcSqz17BZCLzpyKxwz8jv4qGpGH9JfsA599js6pUj2BI2xkcfle1XXAj2K-Q__"
 
-  defp assert_queries(query_list, expected_signature) do
+  defp assert_query_params(query_params, expected_signature) do
     [
       {"Expires"    , expires    },
       {"Signature"  , signature  },
       {"Key-Pair-Id", key_pair_id},
-    ] = query_list
+    ] = query_params
     assert expires     == Integer.to_string(@expires_in_seconds)
     assert signature   == expected_signature
     assert key_pair_id == @key_pair_id
@@ -67,13 +67,13 @@ defmodule Antikythera.CloudfrontSignedUrlTest do
   test "should generate a signed URL for URL without query", %{lifetime: lifetime} do
     signed_url = CloudfrontSignedUrl.get_signed_url(@resource_url, lifetime, @key_pair_id, @private_key)
     query_params = assert_base_url_and_get_query_params(signed_url)
-    assert_queries(query_params, @signature_without_query)
+    assert_query_params(query_params, @signature_without_query)
   end
 
   test "should generate a signed URL for URL with query", %{lifetime: lifetime} do
     signed_url = CloudfrontSignedUrl.get_signed_url(@resource_url <> "?hello=world", lifetime, @key_pair_id, @private_key)
     query_params = assert_base_url_and_get_query_params(signed_url)
     [{"hello", "world"} | tail] = query_params
-    assert_queries(tail, @signature_with_query)
+    assert_query_params(tail, @signature_with_query)
   end
 end
