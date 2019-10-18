@@ -31,11 +31,10 @@ defmodule Antikythera.CloudfrontSignedUrl do
     |> URI.parse()
     |> Map.update!(:query, fn query ->
       case query do
-        nil   -> []
-        query -> URI.query_decoder(query)
+        nil   -> ""
+        query -> query <> "&"
       end
-      |> Stream.concat(make_query_params(resource_url, expires_in_seconds, key_pair_id, private_key))
-      |> URI.encode_query()
+      <> URI.encode_query(make_query_params(resource_url, expires_in_seconds, key_pair_id, private_key))
     end)
     |> URI.to_string()
   end
