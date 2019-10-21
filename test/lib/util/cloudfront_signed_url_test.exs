@@ -37,8 +37,8 @@ defmodule Antikythera.CloudfrontSignedUrlTest do
                       -----END RSA PRIVATE KEY-----
                       """
 
-  @signature_without_query "DE1GkSlp4UtQkIBBATpBnzyyr7hGLzwV39CrN~VHRgWCA9pnlrW5KW8qkARdK7ZvuQ21L5dLJ39hYzfFguY-3jVVXEnhD9Vi~ilVXypM84E7K3HZvOev0ZFJexSDXLFUGqrh8WcU~CTvX-RNywY3SLLQEIXjufPQbhNqIvRs-jFnQfEw1dn2KMYpFQ1xMFYUygMxT0yccE0OHnjBA94LOmpyDs42ZS3LVmeD~dPlnCMfJL14mV9awgNqN5rlfdhG2I~STDNA4qNadG~-BpWiTq6L3DnM2ZmqdDq-fE4QbBY7MyUJILnUyRVzojpaHJ1T-6ibXRvwdFAxJucefCkbZA__"
-  @signature_with_query    "AFkIdETPTReVQFNRO4jJkEn942YktXEtQmEpAc8r02~ttCXpHuMomuzZzHanDkG-NBpqc86iohNQ25vICobDqtl3-VWFn~ZjESBFl2oUxLERryCAWh--Ffi7Q7p2~~dFgQ64~Vt9H8JmEuHx9otBFVroF97FfK9JbyGyId965T1RwC0FG-0OMHM1YsJSO9hY0iI5iTbzY-HyPIcLiYzYUPaD2~RVGPLQclnKP0oHprWfsde5zdfl5hIRG6HH3qmWPN5tr61PNQ~vdNqlfvs14B1oLZvcSqz17BZCLzpyKxwz8jv4qGpGH9JfsA599js6pUj2BI2xkcfle1XXAj2K-Q__"
+  @signature_without_query "WN~hWyAYH2FAL1C-4-zPkqFvsjiuo80BfAR9yE4t3qLRln62B9TQ1Ck~VZFcGvtPcFz9Gqw8dcy1BOAcRKdMs5JqWCYQiijHRurXnok3TZmxOAMEHOKv0HjTcnRD9kcR7YikW7BE9I03VASHE0wx8GieB2VQEg3uhbbdzVVQoDw27O9NUwbmKlw5dHqJW6m3jrFxEG1ALH50XENAtMeP96-EtdPOOQenlWzlBio1fOOGideNb4VQdPOG-QjLuzaGN8aGgDeeiXvEwVG-WstwgJdXwqA2ucdXY5SVty5356e9GWQ9KhsSpoznYdhnFdRjVXDayNzkYMNuxXVdtFMvNQ__"
+  @signature_with_query    "TTfoKwPF7xn-ZRilOXwuidh1tAtJFJm8BPs6dBc4zLNGlgV~V7XN1YvDy5xNgZInUf1CvpvRMW0NFUqxJqNZd3FOk6QpySVoHbWYQWYoEH2eWV5cftYtJi2GUaol~yDLEN36zuOHmDSfYpSPktYIePiagz9e3R3ZzNEQUCpIZTO8XfJiISCoHkREeJxA4slMQhhuofFwSCfr2yW2ZMVk75JxPtNmAde-sj4C09PORyNWTuWOoYYghb5DfF4yDlk5WeQKCwGmjhsQ7mM7UMU3xk-fOKWdZcyxUIjqxlQSQEVVwP4QlHdFo4y2uNhER8e0HvhQk-Pbpfj~JFePmeNoPA__"
 
   defp assert_query_params(query_params, expected_signature) do
     [

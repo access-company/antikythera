@@ -43,30 +43,14 @@ defmodule Antikythera.CloudfrontSignedUrl do
                            expires_in_seconds :: v[pos_integer],
                            key_pair_id        :: v[String.t],
                            private_key        :: v[String.t]) :: [{String.t, String.t}] do
-    statement = create_policy_statement(resource_url, expires_in_seconds)
-    signature = create_signature(statement, private_key)
+    policy_statement =
+      ~s|{\"Statement\":[{\"Resource\":\"#{resource_url}\",\"Condition\":{\"DateLessThan\":{\"AWS:EpochTime\":#{expires_in_seconds}}}}]}|
+    signature = create_signature(policy_statement, private_key)
     [
       {"Expires",     expires_in_seconds},
       {"Signature",   signature         },
       {"Key-Pair-Id", key_pair_id       },
     ]
-  end
-
-  defunp create_policy_statement(resource_url :: v[String.t], expires_in_seconds :: v[pos_integer]) :: String.t do
-    %{
-      "Statement" => [
-        %{
-          "Resource" => resource_url,
-          "Condition" => %{
-            "DateLessThan" => %{
-              "AWS:EpochTime" => expires_in_seconds,
-            },
-          },
-        },
-      ],
-    }
-    |> Antikythera.FastJasonEncoder.encode()
-    |> Croma.Result.get!()
   end
 
   defunp create_signature(policy_statement :: v[String.t], private_key :: v[String.t]) :: String.t do
