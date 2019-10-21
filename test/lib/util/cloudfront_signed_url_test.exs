@@ -67,7 +67,7 @@ defmodule Antikythera.CloudfrontSignedUrlTest do
   end
 
   test "should generate a signed URL for URL without query", %{lifetime: lifetime} do
-    signed_url = CloudfrontSignedUrl.get_signed_url(@resource_url, lifetime, @key_pair_id, @private_key)
+    signed_url = CloudfrontSignedUrl.generate_signed_url(@resource_url, lifetime, @key_pair_id, @private_key)
     query_params = assert_base_url_and_get_query_params(signed_url)
     assert_query_params(query_params, @signature_without_query)
   end
@@ -76,7 +76,7 @@ defmodule Antikythera.CloudfrontSignedUrlTest do
     [{"?", @signature_with_query1}, {"?hello=world", @signature_with_query2}, {~s/?hello="日本"&/, @signature_with_query3}]
     |> Enum.each(fn {query, signature} ->
       resource_url = @resource_url <> query
-      signed_url = CloudfrontSignedUrl.get_signed_url(resource_url, lifetime, @key_pair_id, @private_key)
+      signed_url = CloudfrontSignedUrl.generate_signed_url(resource_url, lifetime, @key_pair_id, @private_key)
       assert String.starts_with?(signed_url, URI.encode(resource_url) <> "&Expires=")
       query_params = assert_base_url_and_get_query_params(signed_url)
       query_params |> Enum.reverse() |> Enum.take(3) |> Enum.reverse() |> assert_query_params(signature)
@@ -87,7 +87,7 @@ defmodule Antikythera.CloudfrontSignedUrlTest do
     [{"?", @signature_with_query1}, {"?hello=world", @signature_with_query2}, {~s/?hello="日本"&/, @signature_with_query3}]
     |> Enum.each(fn {query, signature} ->
       resource_url = URI.encode(@resource_url <> query)
-      signed_url = CloudfrontSignedUrl.get_signed_url(resource_url, lifetime, @key_pair_id, @private_key, true)
+      signed_url = CloudfrontSignedUrl.generate_signed_url(resource_url, lifetime, @key_pair_id, @private_key, true)
       assert String.starts_with?(signed_url, resource_url <> "&Expires=")
       query_params = assert_base_url_and_get_query_params(signed_url)
       query_params |> Enum.reverse() |> Enum.take(3) |> Enum.reverse() |> assert_query_params(signature)

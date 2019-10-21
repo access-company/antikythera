@@ -4,7 +4,7 @@ use Croma
 
 defmodule Antikythera.CloudfrontSignedUrl do
   @moduledoc """
-  This module provides `get_signed_url/4` to generate [a signed URL for CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-signed-urls.html)
+  This module provides `generate_signed_url/5` to generate [a signed URL for CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-signed-urls.html)
   Note that currently we support only a signed URL using a *canned policy*.
   """
 
@@ -23,11 +23,11 @@ defmodule Antikythera.CloudfrontSignedUrl do
 
   A generated signed URL (string).
   """
-  defun get_signed_url(resource_url        :: v[String.t],
-                       lifetime_in_seconds :: v[pos_integer],
-                       key_pair_id         :: v[String.t],
-                       private_key         :: v[String.t],
-                       url_encoded?        :: v[boolean] \\ false) :: String.t do
+  defun generate_signed_url(resource_url        :: v[String.t],
+                            lifetime_in_seconds :: v[pos_integer],
+                            key_pair_id         :: v[String.t],
+                            private_key         :: v[String.t],
+                            url_encoded?        :: v[boolean] \\ false) :: String.t do
     encoded_url = if url_encoded?, do: resource_url, else: URI.encode(resource_url)
     expires_in_seconds = System.system_time(:second) + lifetime_in_seconds
     joiner = if URI.parse(encoded_url) |> Map.get(:query) |> is_nil(), do: "?", else: "&"
