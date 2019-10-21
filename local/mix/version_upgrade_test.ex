@@ -81,7 +81,8 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
   end
 
   defp module_md5(app_name) do
-    mod_name = app_name
+    mod_name =
+      app_name
       |> Atom.to_string()
       |> Macro.camelize()
     mod = Module.safe_concat(Elixir, mod_name)
