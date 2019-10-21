@@ -26,6 +26,16 @@ defmodule AntikytheraCore.Version.Gear do
         {:error, {:already_loaded, ^gear_name}} -> :ok
       end
       L.info("successfully loaded '#{gear_name}' (#{latest_version})")
+      if :code.get_mode() != :interactive do
+        # Load module manually
+        Enum.each(Application.spec(gear_name, :modules), fn(mod) ->
+          case :code.load_file(mod) do
+            {:module, _}      -> :ok
+            {:error , reason} -> raise "Failed to load '#{mod}': #{reason}"
+          end
+        end)
+        L.info("successfully loaded all modules in '#{gear_name}'")
+      end
       case Application.start(gear_name) do
         :ok ->
           L.info("successfully installed '#{gear_name}' (#{latest_version})")

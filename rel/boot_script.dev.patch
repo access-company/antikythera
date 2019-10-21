@@ -1,0 +1,24 @@
+37c37
+< CODE_LOADING_MODE="${CODE_LOADING_MODE:-embedded}"
+---
+> CODE_LOADING_MODE=embedded
+157,160c157,164
+<     # Setup remote shell command to control node
+<     exec "$BINDIR/erl" "$NAME_TYPE" "$id" -remsh "$NAME" -boot start_clean \
+<          -boot_var ERTS_LIB_DIR "$ERTS_LIB_DIR" \
+<          -setcookie "$COOKIE" -hidden -kernel net_ticktime $TICKTIME
+---
+>     # Setup Elixir remote shell command to control node
+>     exec "$BINDIR/erl" \
+>         -pa "$ROOTDIR"/lib/*/ebin "$ROOTDIR"/lib/consolidated \
+>         -hidden -noshell \
+>         -boot start_clean -boot_var ERTS_LIB_DIR "$ERTS_LIB_DIR" \
+>         -kernel net_ticktime "$TICKTIME" \
+>         -user Elixir.IEx.CLI "$NAME_TYPE" "$id" -setcookie "$COOKIE" \
+>         -extra --no-halt +iex --remsh "$NAME"
+547c551,553
+<             -pa ${__code_paths}
+---
+>             -env ERL_LIBS "$REL_DIR/lib" \
+>             -pa "$REL_DIR/lib/consolidated" \
+>             -user Elixir.IEx.CLI -extra --no-halt +iex
