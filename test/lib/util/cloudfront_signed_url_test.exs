@@ -40,7 +40,7 @@ defmodule Antikythera.CloudfrontSignedUrlTest do
   @signature_without_query "WN~hWyAYH2FAL1C-4-zPkqFvsjiuo80BfAR9yE4t3qLRln62B9TQ1Ck~VZFcGvtPcFz9Gqw8dcy1BOAcRKdMs5JqWCYQiijHRurXnok3TZmxOAMEHOKv0HjTcnRD9kcR7YikW7BE9I03VASHE0wx8GieB2VQEg3uhbbdzVVQoDw27O9NUwbmKlw5dHqJW6m3jrFxEG1ALH50XENAtMeP96-EtdPOOQenlWzlBio1fOOGideNb4VQdPOG-QjLuzaGN8aGgDeeiXvEwVG-WstwgJdXwqA2ucdXY5SVty5356e9GWQ9KhsSpoznYdhnFdRjVXDayNzkYMNuxXVdtFMvNQ__"
   @signature_with_query1    "TzC4VcV7T1RRoiE32iSIzPxkD9X4-hHKrBWgLgDUuCay~Sqt3E1fb~z4eShZUw6-wGZIC3rFaYUJ9SswQZpaGe6mRUCscqBJQ0uilpMsxq2bZl6HU5sGAagD6tD9~MAlWs8Q74BUVs8CbUmsX2buKHvRdnvnmkhjM4KocFaOsIBeHWxb3M0L~lYokjRaSHs3NUcACne6vo0~AB6fwwfkJ1bvxBD2KHDzbMHY2NrKau0zBkgRHcofr9tRNa7fPT-rwrdNVDcViFwnf1i3D2PSInWeVJuD9s9w7gU4Wigv5Y0OkYION-ZZkEswPUVEgttJSOKrP8DHgL6LQ1b~Vbgg9g__"
   @signature_with_query2    "TTfoKwPF7xn-ZRilOXwuidh1tAtJFJm8BPs6dBc4zLNGlgV~V7XN1YvDy5xNgZInUf1CvpvRMW0NFUqxJqNZd3FOk6QpySVoHbWYQWYoEH2eWV5cftYtJi2GUaol~yDLEN36zuOHmDSfYpSPktYIePiagz9e3R3ZzNEQUCpIZTO8XfJiISCoHkREeJxA4slMQhhuofFwSCfr2yW2ZMVk75JxPtNmAde-sj4C09PORyNWTuWOoYYghb5DfF4yDlk5WeQKCwGmjhsQ7mM7UMU3xk-fOKWdZcyxUIjqxlQSQEVVwP4QlHdFo4y2uNhER8e0HvhQk-Pbpfj~JFePmeNoPA__"
-  @signature_with_query3    "RiufEnXNTm80NcViZW5nhujizuUShS9lmDLElcEsjYfOVugqEpeKYy7JJOZ5xCMx1NpV60tbQFWNDNawZHDrkTunHBeL9K-aEOpOk8jdiCdpzWtwMXYZjnfSBCgRhIcaqL1ZYxHruJ~Q-vsguDEC7zZ-b-zCemgArNAlVvfraEQvWkKXDBgNJK~Q-IP~4wRrVcr0SxIYYONPVkKwlOeIH~JGGFvHEAZnzhVZtNaCQgN83~kaMzs8g~PGFjBKxsEMtIxIaYjm0OLkEi~gP2HkLlkysRTWmwQ-34irffJDe7rC~uXTtVryUGSEkwpldpm0k8LtzClBTyHQOY123zHTRA__"
+  @signature_with_query3    "BzTb7kOa1P2sp2lO~sO4j17b7UZpxgDXIvR4ET5FFa0rwu9Z5u9ubC09EGjHn9r-k~pxWu-KJyvr--f0MDNtUGWR5fgOb74iobt4GP9-NsS9WRu3JdhFZXHqAGkPF9TtSXrP8qMtcsBJ~F0SWeWevdhU19FMPH4hIe9ff0m2J29BIFZUe9~fyWh3daMQ9aC7Zf84G3V00FW~v21ggcRhDgkLdN6eUCm-cayzs6kZhr0V6PABjw0Ve9hJbAHC-B2PbTwfFVkiLn0B4dQtgwYC9NHhvWzil7xGBhJvAX7CPJJNImi~A1x8FdigTgMUXg4fwAapj0tk4FmkFu-NHI-AQg__"
 
   defp assert_query_params(query_params, expected_signature) do
     [
@@ -55,7 +55,7 @@ defmodule Antikythera.CloudfrontSignedUrlTest do
 
   defp assert_base_url_and_get_query_params(url) do
     %URI{host: host, path: path, query: query, scheme: scheme} = URI.parse(url)
-    assert "#{scheme}://#{host}#{path}" == @resource_url
+    assert "#{scheme}://#{host}#{path}" == URI.encode(@resource_url)
     URI.query_decoder(query) |> Enum.to_list()
   end
 
@@ -73,11 +73,22 @@ defmodule Antikythera.CloudfrontSignedUrlTest do
   end
 
   test "should generate a signed URL for URL with query", %{lifetime: lifetime} do
-    [{"?", @signature_with_query1}, {"?hello=world", @signature_with_query2}, {"?hello=world&", @signature_with_query3}]
+    [{"?", @signature_with_query1}, {"?hello=world", @signature_with_query2}, {~s/?hello="日本"&/, @signature_with_query3}]
     |> Enum.each(fn {query, signature} ->
       resource_url = @resource_url <> query
       signed_url = CloudfrontSignedUrl.get_signed_url(resource_url, lifetime, @key_pair_id, @private_key)
-      assert String.starts_with?(signed_url, resource_url <> "&Expires=") # check that the original URL is unchanged
+      assert String.starts_with?(signed_url, URI.encode(resource_url) <> "&Expires=")
+      query_params = assert_base_url_and_get_query_params(signed_url)
+      query_params |> Enum.reverse() |> Enum.take(3) |> Enum.reverse() |> assert_query_params(signature)
+    end)
+  end
+
+  test "should generate a signed URL for encoded URL", %{lifetime: lifetime} do
+    [{"?", @signature_with_query1}, {"?hello=world", @signature_with_query2}, {~s/?hello="日本"&/, @signature_with_query3}]
+    |> Enum.each(fn {query, signature} ->
+      resource_url = URI.encode(@resource_url <> query)
+      signed_url = CloudfrontSignedUrl.get_signed_url(resource_url, lifetime, @key_pair_id, @private_key, true)
+      assert String.starts_with?(signed_url, resource_url <> "&Expires=")
       query_params = assert_base_url_and_get_query_params(signed_url)
       query_params |> Enum.reverse() |> Enum.take(3) |> Enum.reverse() |> assert_query_params(signature)
     end)
