@@ -27,16 +27,8 @@ defmodule Antikythera.CloudfrontSignedUrl do
                        key_pair_id         :: v[String.t],
                        private_key         :: v[String.t]) :: String.t do
     expires_in_seconds = System.system_time(:second) + lifetime_in_seconds
-    resource_url
-    |> URI.parse()
-    |> Map.update!(:query, fn query ->
-      case query do
-        nil   -> ""
-        query -> query <> "&"
-      end
-      <> URI.encode_query(make_query_params(resource_url, expires_in_seconds, key_pair_id, private_key))
-    end)
-    |> URI.to_string()
+    joiner = if resource_url |> URI.parse() |> Map.get(:query) |> is_nil(), do: "?", else: "&"
+    resource_url <> joiner <> URI.encode_query(make_query_params(resource_url, expires_in_seconds, key_pair_id, private_key))
   end
 
   defunp make_query_params(resource_url       :: v[String.t],
