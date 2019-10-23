@@ -2,7 +2,6 @@
 
 defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
   use Croma.TestCase
-  alias Antikythera.Aws.CloudfrontSignedUrl
 
   @resource_url       "http://123456abcdefg.cloudfront.net/index.html"
   @expires_in_seconds 2_147_483_646
