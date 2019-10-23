@@ -77,8 +77,9 @@ defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
       resource_url = @resource_url <> query
       signed_url = CloudfrontSignedUrl.generate_signed_url(resource_url, lifetime, @key_pair_id, @private_key)
       assert String.starts_with?(signed_url, URI.encode(resource_url) <> "&Expires=")
-      query_params = assert_base_url_and_get_query_params(signed_url)
-      query_params |> Enum.reverse() |> Enum.take(3) |> Enum.reverse() |> assert_query_params(signature)
+      assert_base_url_and_get_query_params(signed_url)
+      |> Enum.take(-3)
+      |> assert_query_params(signature)
     end)
   end
 
@@ -88,8 +89,9 @@ defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
       resource_url = URI.encode(@resource_url <> query)
       signed_url = CloudfrontSignedUrl.generate_signed_url(resource_url, lifetime, @key_pair_id, @private_key, true)
       assert String.starts_with?(signed_url, resource_url <> "&Expires=")
-      query_params = assert_base_url_and_get_query_params(signed_url)
-      query_params |> Enum.reverse() |> Enum.take(3) |> Enum.reverse() |> assert_query_params(signature)
+      assert_base_url_and_get_query_params(signed_url)
+      |> Enum.take(-3)
+      |> assert_query_params(signature)
     end)
   end
 end
