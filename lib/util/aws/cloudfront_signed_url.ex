@@ -5,7 +5,7 @@ use Croma
 defmodule Antikythera.Aws.CloudfrontSignedUrl do
   @moduledoc """
   This module provides `generate_signed_url/5` to generate [a signed URL for CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-signed-urls.html)
-  Note that currently we support only a signed URL using a *canned policy*.
+  Note that currently, we support only a signed URL using a *canned policy*.
   """
 
   @doc """
