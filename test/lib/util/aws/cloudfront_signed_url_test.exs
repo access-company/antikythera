@@ -47,51 +47,56 @@ defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
       {"Signature"  , signature  },
       {"Key-Pair-Id", key_pair_id},
     ] = query_params
-    assert expires     == Integer.to_string(@expires_in_seconds)
+    assert expires     == @expires_in_seconds
     assert signature   == expected_signature
     assert key_pair_id == @key_pair_id
   end
 
-  defp assert_base_url_and_get_query_params(url) do
+  defp assert_base_url_and_key_pair_id(url) do
     %URI{host: host, path: path, query: query, scheme: scheme} = URI.parse(url)
     assert "#{scheme}://#{host}#{path}" == URI.encode(@resource_url)
-    URI.query_decoder(query) |> Enum.to_list()
+    query_params = URI.query_decoder(query) |> Enum.to_list() |> Enum.take(-3)
+    [
+      {"Expires"    , _          },
+      {"Signature"  , _          },
+      {"Key-Pair-Id", key_pair_id},
+    ] = query_params
+    assert key_pair_id == @key_pair_id
   end
 
-  setup do
-    lifetime = 60
-    :meck.expect(System, :system_time, fn :second -> @expires_in_seconds - lifetime end)
-    on_exit(fn -> :meck.unload() end)
-    %{lifetime: lifetime}
+  test "should generate a signature for URL without query" do
+    CloudfrontSignedUrl.make_query_params(@resource_url, @expires_in_seconds, @key_pair_id, @private_key)
+    |> assert_query_params(@signature_without_query)
   end
 
-  test "should generate a signed URL for URL without query", %{lifetime: lifetime} do
-    signed_url = CloudfrontSignedUrl.generate_signed_url(@resource_url, lifetime, @key_pair_id, @private_key)
-    query_params = assert_base_url_and_get_query_params(signed_url)
-    assert_query_params(query_params, @signature_without_query)
-  end
-
-  test "should generate a signed URL for URL with query", %{lifetime: lifetime} do
+  test "should generate a signature for URL with query" do
     [{"?", @signature_with_query1}, {"?hello=world", @signature_with_query2}, {~s/?hello="日本"&/, @signature_with_query3}]
-    |> Enum.each(fn {query, signature} ->
-      resource_url = @resource_url <> query
-      signed_url = CloudfrontSignedUrl.generate_signed_url(resource_url, lifetime, @key_pair_id, @private_key)
-      assert String.starts_with?(signed_url, URI.encode(resource_url) <> "&Expires=")
-      assert_base_url_and_get_query_params(signed_url)
-      |> Enum.take(-3)
-      |> assert_query_params(signature)
+    |> Enum.each(fn {query, expected_signature} ->
+      resource_url = URI.encode(@resource_url <> query)
+      CloudfrontSignedUrl.make_query_params(resource_url, @expires_in_seconds, @key_pair_id, @private_key)
+      |> assert_query_params(expected_signature)
     end)
   end
 
-  test "should generate a signed URL for encoded URL", %{lifetime: lifetime} do
-    [{"?", @signature_with_query1}, {"?hello=world", @signature_with_query2}, {~s/?hello="日本"&/, @signature_with_query3}]
-    |> Enum.each(fn {query, signature} ->
+  test "should return encoded URL" do
+    ["", "?", "?hello=world", ~s/?hello="日本"&/]
+    |> Enum.each(fn query ->
+      resource_url = @resource_url <> query
+      signed_url = CloudfrontSignedUrl.generate_signed_url(resource_url, 60, @key_pair_id, @private_key)
+      joiner = if query == "", do: "?", else: "&"
+      assert String.starts_with?(signed_url, URI.encode(resource_url) <> joiner <> "Expires=")
+      assert_base_url_and_key_pair_id(signed_url)
+    end)
+  end
+
+  test "should preserve the original URL if it is encoded" do
+    ["", "?", "?hello=world", ~s/?hello="日本"&/]
+    |> Enum.each(fn query ->
       resource_url = URI.encode(@resource_url <> query)
-      signed_url = CloudfrontSignedUrl.generate_signed_url(resource_url, lifetime, @key_pair_id, @private_key, true)
-      assert String.starts_with?(signed_url, resource_url <> "&Expires=")
-      assert_base_url_and_get_query_params(signed_url)
-      |> Enum.take(-3)
-      |> assert_query_params(signature)
+      signed_url = CloudfrontSignedUrl.generate_signed_url(resource_url, 60, @key_pair_id, @private_key, true)
+      joiner = if query == "", do: "?", else: "&"
+      assert String.starts_with?(signed_url, resource_url <> joiner <> "Expires=")
+      assert_base_url_and_key_pair_id(signed_url)
     end)
   end
 end

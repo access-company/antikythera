@@ -34,7 +34,7 @@ defmodule Antikythera.Aws.CloudfrontSignedUrl do
     encoded_url <> joiner <> URI.encode_query(make_query_params(encoded_url, expires_in_seconds, key_pair_id, private_key))
   end
 
-  defunp make_query_params(encoded_url        :: v[String.t],
+  defunpt make_query_params(encoded_url        :: v[String.t],
                            expires_in_seconds :: v[pos_integer],
                            key_pair_id        :: v[String.t],
                            private_key        :: v[String.t]) :: [{String.t, String.t}] do
