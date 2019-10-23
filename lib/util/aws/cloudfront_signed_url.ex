@@ -35,9 +35,9 @@ defmodule Antikythera.Aws.CloudfrontSignedUrl do
   end
 
   defunpt make_query_params(encoded_url        :: v[String.t],
-                           expires_in_seconds :: v[pos_integer],
-                           key_pair_id        :: v[String.t],
-                           private_key        :: v[String.t]) :: [{String.t, String.t}] do
+                            expires_in_seconds :: v[pos_integer],
+                            key_pair_id        :: v[String.t],
+                            private_key        :: v[String.t]) :: [{String.t, String.t}] do
     policy_statement =
       ~s/{"Statement":[{"Resource":"#{encoded_url}","Condition":{"DateLessThan":{"AWS:EpochTime":#{expires_in_seconds}}}}]}/
     signature = create_signature(policy_statement, private_key)
