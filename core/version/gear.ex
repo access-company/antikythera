@@ -29,9 +29,14 @@ defmodule AntikytheraCore.Version.Gear do
       if :code.get_mode() != :interactive do
         # Load module manually
         Enum.each(Application.spec(gear_name, :modules), fn(mod) ->
-          case :code.load_file(mod) do
-            {:module, _}      -> :ok
-            {:error , reason} -> raise "Failed to load '#{mod}': #{reason}"
+          # Croma generate a module (e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Email`) under the gear,
+          # we have to avoid loading these module twice.
+          skip_load? = Atom.to_string(mod).starts_with?("Croma.TypeGen.") && :code.is_loaded(mod)
+          if not skip_load? do
+            case :code.load_file(mod) do
+              {:module, _}      -> :ok
+              {:error , reason} -> raise "Failed to load '#{mod}': #{reason}"
+            end
           end
         end)
         L.info("successfully loaded all modules in '#{gear_name}'")
