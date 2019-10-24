@@ -31,7 +31,7 @@ defmodule AntikytheraCore.Version.Gear do
         Enum.each(Application.spec(gear_name, :modules), fn(mod) ->
           # Croma generate a module (e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Email`) under the gear,
           # we have to avoid loading these module twice.
-          skip_load? = Atom.to_string(mod).starts_with?("Croma.TypeGen.") && :code.is_loaded(mod)
+          skip_load? = Atom.to_string(mod).starts_with?("Elixir.Croma.TypeGen.") && :code.is_loaded(mod)
           if not skip_load? do
             case :code.load_file(mod) do
               {:module, _}      -> :ok
