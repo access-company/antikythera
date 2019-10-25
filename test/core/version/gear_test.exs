@@ -34,16 +34,8 @@ defmodule AntikytheraCore.Version.GearTest do
     end)
   end
 
-  test "load_module" do
-    normal_mod     = Antikythera.Time
-    ignoreable_mod = Croma.TypeGen.Nilable.Antikythera.Time
-
-    _ = Gear.load_module(normal_mod)
-    _ = Gear.load_module(normal_mod)
-    assert Gear.load_module(normal_mod) == {:error, :not_purged}
-
-    _ = Gear.load_module(ignoreable_mod)
-    _ = Gear.load_module(ignoreable_mod)
-    assert Gear.load_module(ignoreable_mod) == :ok
+  test "can_skip_to_load?" do
+    refute Gear.can_skip_to_load?(Antikythera.Time)
+    assert Gear.can_skip_to_load?(Croma.TypeGen.Nilable.Antikythera.Time)
   end
 end
