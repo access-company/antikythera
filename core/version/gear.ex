@@ -29,14 +29,8 @@ defmodule AntikytheraCore.Version.Gear do
       if :code.get_mode() != :interactive do
         # Load module manually
         Enum.each(Application.spec(gear_name, :modules), fn(mod) ->
-          # Croma generate a module (e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Email`) under the gear,
-          # we have to avoid loading these module twice.
-          skip_load? = Atom.to_string(mod).starts_with?("Elixir.Croma.TypeGen.") && :code.is_loaded(mod)
-          if not skip_load? do
-            case :code.load_file(mod) do
-              {:module, _}      -> :ok
-              {:error , reason} -> raise "Failed to load '#{mod}': #{reason}"
-            end
+          with {:error , reason} <- load_module(mod) do
+            raise "Failed to load '#{mod}': #{reason}"
           end
         end)
         L.info("successfully loaded all modules in '#{gear_name}'")
@@ -49,6 +43,20 @@ defmodule AntikytheraCore.Version.Gear do
           raise "Failed to install '#{gear_name}': #{inspect(reason)}"
       end
     end)
+  end
+
+  defunpt load_module(mod :: atom) :: :ok | {:err, atom} do
+    # Croma generate a module (e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Email`) under the gear,
+    # we have to avoid loading these module twice.
+    skip_load? = (Atom.to_string(mod) |> String.starts_with?("Elixir.Croma.TypeGen.")) && :code.is_loaded(mod)
+    if skip_load? do
+      :ok
+    else
+      case :code.load_file(mod) do
+        {:module, _}      -> :ok
+        {:error , reason} -> {:error , reason}
+      end
+    end
   end
 
   defunp add_code_path(ebin_dir :: Path.t, f :: (() -> any)) :: any do

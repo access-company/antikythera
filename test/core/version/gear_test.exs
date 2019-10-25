@@ -2,6 +2,8 @@
 
 defmodule AntikytheraCore.Version.GearTest do
   use Croma.TestCase, alias_as: V
+  # I don't know why but this alias statement is required.
+  alias AntikytheraCore.Version.Gear
 
   defp all_messages_in_mailbox(acc \\ []) do
     receive do
@@ -30,5 +32,18 @@ defmodule AntikytheraCore.Version.GearTest do
       assert set(ret)                       == set(pairs_to_be_rejected)
       assert set(all_messages_in_mailbox()) == set(Keyword.keys(pairs) -- gears_to_be_rejected)
     end)
+  end
+
+  test "load_module" do
+    normal_mod     = Antikythera.Time
+    ignoreable_mod = Croma.TypeGen.Nilable.Antikythera.Time
+
+    _ = Gear.load_module(normal_mod)
+    _ = Gear.load_module(normal_mod)
+    assert Gear.load_module(normal_mod) == {:error, :not_purged}
+
+    _ = Gear.load_module(ignoreable_mod)
+    _ = Gear.load_module(ignoreable_mod)
+    assert Gear.load_module(ignoreable_mod) == :ok
   end
 end
