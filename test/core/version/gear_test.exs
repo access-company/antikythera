@@ -2,8 +2,6 @@
 
 defmodule AntikytheraCore.Version.GearTest do
   use Croma.TestCase, alias_as: V
-  # I don't know why but this alias statement is required.
-  alias AntikytheraCore.Version.Gear
 
   defp all_messages_in_mailbox(acc \\ []) do
     receive do
@@ -35,7 +33,7 @@ defmodule AntikytheraCore.Version.GearTest do
   end
 
   test "can_skip_to_load?" do
-    refute Gear.can_skip_to_load?(Antikythera.Time)
-    assert Gear.can_skip_to_load?(Croma.TypeGen.Nilable.Antikythera.Time)
+    refute V.can_skip_to_load?(Antikythera.Time)
+    assert V.can_skip_to_load?(Croma.TypeGen.Nilable.Antikythera.Time)
   end
 end
