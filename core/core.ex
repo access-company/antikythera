@@ -15,6 +15,7 @@ defmodule AntikytheraCore do
   """
   @impl true
   def start(_type, _args) do
+    L.info("starting AntikytheraCore")
     add_gears_dir_to_erl_libs()
     AntikytheraCore.FileSetup.setup_files_and_ets_tables()
     AntikytheraCore.Config.Core.load()
@@ -22,12 +23,14 @@ defmodule AntikytheraCore do
       establish_connections_to_other_nodes()
       :syn.init()
     end
+    L.info("activating RaftFleet")
     activate_raft_fleet(fn ->
       if not Antikythera.Env.no_listen?() do
         start_cowboy_http()
       end
       {:ok, pid} = start_sup()
       AntikytheraCore.Config.Gear.load_all(0) # `GearManager` and `StartupManager` must be up and running here
+      L.info("started AntikytheraCore")
       {:ok, pid}
     end)
   end
