@@ -29,17 +29,19 @@ defmodule AntikytheraCore.Version.Gear do
       if :code.get_mode() != :interactive do
         # Load module manually
         Enum.each(Application.spec(gear_name, :modules), fn(mod) ->
-          case :code.load_file(mod) do
-            {:module, _}      -> :ok
-            {:error , reason} ->
-              # Croma defines modules (e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Email`) automatically in the gear.
-              # As a result, some modules which have the same name are defined in two or more gears, and loading these modules causes an error.
-              # We just ignore the error instead of checking before load because each gear is loaded concurrently.
-              if reason == :not_purged && can_skip_to_load?(mod) do
-                :ok
-              else
-                raise "Failed to load '#{mod}': #{reason}"
+          # Croma defines modules (e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Email`) automatically in the gear.
+          # As a result, some modules which have the same name are defined in two or more gears.
+          # We have to load the module only once.
+          if can_skip_to_load?(mod) do
+            if !:erlang.module_loaded(mod) do
+              case :code.load_file(mod) do
+                {:module, _}           -> :ok
+                {:error , :not_purged} -> :ok # Ignore error. Each gear is loaded concurrently.
+                {:error , reason}      -> raise "Failed to load '#{mod}': #{reason}"
               end
+            end
+          else
+            {:module, _} = :code.load_file(mod)
           end
         end)
         L.info("successfully loaded all modules in '#{gear_name}'")
