@@ -29,9 +29,15 @@ defmodule AntikytheraCore.Version.Gear do
       if :code.get_mode() != :interactive do
         # Load module manually
         Enum.each(Application.spec(gear_name, :modules), fn(mod) ->
-          case :code.load_file(mod) do
-            {:module, _}      -> :ok
-            {:error , reason} -> raise "Failed to load '#{mod}': #{reason}"
+          # Croma defines modules (e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Email`) automatically in the gear.
+          # As a result, some modules which have the same name are defined in two or more gears.
+          # We have to avoid loading these modules twice.
+          skip_to_load? = can_skip_to_load?(mod) && :code.is_loaded(mod)
+          if not skip_to_load? do
+            case :code.load_file(mod) do
+              {:module, _}      -> :ok
+              {:error , reason} -> raise "Failed to load '#{mod}': #{reason}"
+            end
           end
         end)
         L.info("successfully loaded all modules in '#{gear_name}'")
@@ -44,6 +50,10 @@ defmodule AntikytheraCore.Version.Gear do
           raise "Failed to install '#{gear_name}': #{inspect(reason)}"
       end
     end)
+  end
+
+  defunpt can_skip_to_load?(mod :: atom) :: boolean do
+    Atom.to_string(mod) |> String.starts_with?("Elixir.Croma.TypeGen.")
   end
 
   defunp add_code_path(ebin_dir :: Path.t, f :: (() -> any)) :: any do

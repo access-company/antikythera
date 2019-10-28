@@ -36,8 +36,9 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
 
   @release_output_dir_basename (if Antikythera.Env.compile_env() == :local, do: "rel_local", else: "rel") <> "_erlang-#{System.otp_release()}"
   antikythera_repo_rel_dir = Path.expand(Path.join([__DIR__, "..", "..", "rel"]))
+  boot_script_patch_name   = if Antikythera.Env.compile_env() != :dev, do: "boot_script.patch", else: "boot_script.dev.patch"
   @vm_args_path              Path.join(antikythera_repo_rel_dir, "vm.args")
-  @boot_script_patch_path    Path.join(antikythera_repo_rel_dir, "boot_script.patch")
+  @boot_script_patch_path    Path.join(antikythera_repo_rel_dir, boot_script_patch_name)
   @relx_config_template_path Path.join(antikythera_repo_rel_dir, "relx.config.eex")
 
   def run(_args) do

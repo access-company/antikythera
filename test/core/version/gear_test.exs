@@ -31,4 +31,9 @@ defmodule AntikytheraCore.Version.GearTest do
       assert set(all_messages_in_mailbox()) == set(Keyword.keys(pairs) -- gears_to_be_rejected)
     end)
   end
+
+  test "can_skip_to_load?" do
+    refute V.can_skip_to_load?(Antikythera.Time)
+    assert V.can_skip_to_load?(Croma.TypeGen.Nilable.Antikythera.Time)
+  end
 end
