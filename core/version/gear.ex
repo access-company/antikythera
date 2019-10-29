@@ -31,7 +31,7 @@ defmodule AntikytheraCore.Version.Gear do
         Enum.each(Application.spec(gear_name, :modules), fn(mod) ->
           # Croma defines modules (e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Email`) automatically in the gear.
           # As a result, some modules which have the same name are defined in two or more gears.
-          # We have to avoid loading these modules twice.
+          # We should avoid loading these modules twice.
           if !auto_generated_module?(mod) do
             {:module, _} = :code.load_file(mod)
           else
