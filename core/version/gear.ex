@@ -31,12 +31,14 @@ defmodule AntikytheraCore.Version.Gear do
         Enum.each(Application.spec(gear_name, :modules), fn(mod) ->
           # Croma defines modules (e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Email`) automatically in the gear.
           # As a result, some modules which have the same name are defined in two or more gears.
-          # We have to load the module only once.
-          if can_skip_to_load?(mod) do
+          # We have to avoid loading these modules twice.
+          if auto_generated_module?(mod) do
             if !:erlang.module_loaded(mod) do
               case :code.load_file(mod) do
                 {:module, _}           -> :ok
-                {:error , :not_purged} -> :ok # Ignore error. Each gear is loaded concurrently.
+                # When three or more same-name modules are loaded at the same time,
+                # `:code.load_file(mod)` returns `:not_purged`. We can safely ignore the error in that case.
+                {:error , :not_purged} -> :ok
                 {:error , reason}      -> raise "Failed to load '#{mod}': #{reason}"
               end
             end
@@ -56,7 +58,7 @@ defmodule AntikytheraCore.Version.Gear do
     end)
   end
 
-  defunpt can_skip_to_load?(mod :: atom) :: boolean do
+  defunpt auto_generated_module?(mod :: atom) :: boolean do
     Atom.to_string(mod) |> String.starts_with?("Elixir.Croma.TypeGen.")
   end
 
