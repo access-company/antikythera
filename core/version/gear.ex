@@ -32,7 +32,9 @@ defmodule AntikytheraCore.Version.Gear do
           # Croma defines modules (e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Email`) automatically in the gear.
           # As a result, some modules which have the same name are defined in two or more gears.
           # We have to avoid loading these modules twice.
-          if auto_generated_module?(mod) do
+          if !auto_generated_module?(mod) do
+            {:module, _} = :code.load_file(mod)
+          else
             if !:erlang.module_loaded(mod) do
               case :code.load_file(mod) do
                 {:module, _}           -> :ok
@@ -42,8 +44,6 @@ defmodule AntikytheraCore.Version.Gear do
                 {:error , reason}      -> raise "Failed to load '#{mod}': #{reason}"
               end
             end
-          else
-            {:module, _} = :code.load_file(mod)
           end
         end)
         L.info("successfully loaded all modules in '#{gear_name}'")
