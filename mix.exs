@@ -73,7 +73,7 @@ defmodule Antikythera.Mixfile do
       {:hackney     , "1.14.3", [antikythera_internal: true]},
       {:calliope    , "0.4.1" , [antikythera_internal: true]}, # 0.4.2 is broken!
       {:pool_sup    , "0.6.1" , [antikythera_internal: true]},
-      {:raft_fleet  , "0.10.0", [antikythera_internal: true]},
+      {:raft_fleet  , "0.10.1", [antikythera_internal: true]},
       {:rafted_value, "0.11.1", [antikythera_internal: true]},
       {:syn         , "1.6.3" , [antikythera_internal: true]},
       {:fast_xml    , "1.1.34", [antikythera_internal: true]},
@@ -84,7 +84,7 @@ defmodule Antikythera.Mixfile do
       # The following libraries are used by both antikythera itself and gears.
       {:poison , "2.2.0" },
       {:jason  , "1.1.2" },
-      {:gettext, "0.17.0"},
+      {:gettext, "0.17.1"},
       {:croma  , "0.10.2"},
       {:pbkdf2 , "2.0.0" },
 
