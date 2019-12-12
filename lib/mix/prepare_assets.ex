@@ -74,7 +74,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   defp run_impl(env) do
     if npm_script_available?() do
       install_packages!(env)
-      audit_vulnerability!(env)
+      audit_vulnerability(env)
       build_assets!(env)
       dump_asset_file_paths()
     else
@@ -116,7 +116,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
     end
   end
 
-  defp audit_vulnerability!(env) do
+  defp audit_vulnerability(env) do
     if File.exists?("yarn.lock") do
       # > The exit code will be a mask of the severities.
       # > 16 for CRITICAL
