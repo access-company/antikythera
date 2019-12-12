@@ -127,8 +127,16 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
       end
     else
       {output, status, _} = run_command("npm", ["audit", "--parseable"], env)
-      if Regex.match?(~r/\tcritical\t/, output) do
-        IO.puts("One or more critical packages are found: #{status}") # TODO: replace to `raise`
+      if status != 0 do
+        if File.exists?("package-lock.json") || File.exists?("npm-shrinkwrap.json") do
+          # Some vulnerabilities were found. So we check the audit level.
+          if Regex.match?(~r/\tcritical\t/, output) do
+            IO.puts("One or more critical packages are found: #{status}") # TODO: replace to `raise`
+          end
+        else
+          # Failure due to missing lock file.
+          IO.puts("No lock file is found.") # TODO: replace to `raise`
+        end
       end
     end
   end
