@@ -74,6 +74,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   defp run_impl(env) do
     if npm_script_available?() do
       install_packages!(env)
+      audit_vulnerability(env)
       build_assets!(env)
       dump_asset_file_paths()
     else
@@ -115,6 +116,31 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
     end
   end
 
+  defp audit_vulnerability(env) do
+    if File.exists?("yarn.lock") do
+      # > The exit code will be a mask of the severities.
+      # > 16 for CRITICAL
+      # https://yarnpkg.com/lang/en/docs/cli/audit/
+      {_, status, _} = run_command("yarn", ["audit", "--level", "critical"], env)
+      if status >= 16 do
+        IO.puts("One or more critical packages are found: #{status}") # TODO: replace to `raise`
+      end
+    else
+      {output, status, _} = run_command("npm", ["audit", "--parseable"], env)
+      if status != 0 do
+        if File.exists?("package-lock.json") || File.exists?("npm-shrinkwrap.json") do
+          # Some vulnerabilities were found. So we check the audit level.
+          if Regex.match?(~r/\tcritical\t/, output) do
+            IO.puts("One or more critical packages are found: #{status}") # TODO: replace to `raise`
+          end
+        else
+          # Failure due to missing lock file.
+          IO.puts("No lock file is found.") # TODO: replace to `raise`
+        end
+      end
+    end
+  end
+
   defp build_assets!(env) do
     run_command!("npm", ["run", "antikythera_prepare_assets"], env)
   end
@@ -128,14 +154,19 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   end
 
   defun run_command!(cmd :: v[String.t], args :: v[[String.t]], env :: v[String.t]) :: String.t do
-    invocation = Enum.join([cmd | args], " ")
-    IO.puts("$ #{invocation}")
-    {output, status} = System.cmd(cmd, args, [stderr_to_stdout: true, env: %{"ANTIKYTHERA_COMPILE_ENV" => env}])
-    IO.puts(output)
+    {output, status, invocation} = run_command(cmd, args, env)
     if status == 0 do
       output
     else
       raise("`#{invocation}` resulted in non-zero exit code: #{status}")
     end
+  end
+
+  defun run_command(cmd :: v[String.t], args :: v[[String.t]], env :: v[String.t]) :: {String.t, non_neg_integer, String.t} do
+    invocation = Enum.join([cmd | args], " ")
+    IO.puts("$ #{invocation}")
+    {output, status} = System.cmd(cmd, args, [stderr_to_stdout: true, env: %{"ANTIKYTHERA_COMPILE_ENV" => env}])
+    IO.puts(output)
+    {output, status, invocation}
   end
 end
