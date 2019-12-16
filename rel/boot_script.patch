@@ -1,7 +1,3 @@
-37c37
-< CODE_LOADING_MODE="${CODE_LOADING_MODE:-embedded}"
----
-> CODE_LOADING_MODE=interactive
 157,160c157,164
 <     # Setup remote shell command to control node
 <     exec "$BINDIR/erl" "$NAME_TYPE" "$id" -remsh "$NAME" -boot start_clean \
