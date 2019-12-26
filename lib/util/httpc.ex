@@ -19,7 +19,7 @@ defmodule Antikythera.Httpc do
   - gzip-compression is tranparently handled
   - headers are represented by maps instead of lists
   - header names are always lower case
-  - TCP connections are automatically re-established when closed by server due to keepalive timeout (see #86169)
+  - TCP connections are automatically re-established when closed by server due to keepalive timeout
 
   ## Body format
 
