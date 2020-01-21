@@ -1,4 +1,4 @@
-# Copyright(c) 2015-2019 ACCESS CO., LTD. All rights reserved.
+# Copyright(c) 2015-2020 ACCESS CO., LTD. All rights reserved.
 
 defmodule Mix.Tasks.Antikythera.PrintVersion do
   @shortdoc "Prints the current version of an OTP app (defaults to current mix project)"
