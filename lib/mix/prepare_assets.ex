@@ -123,7 +123,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
       # https://yarnpkg.com/lang/en/docs/cli/audit/
       {_, status, _} = run_command("yarn", ["audit", "--level", "critical"], env)
       if status >= 16 do
-        IO.puts("One or more critical packages are found: #{status}") # TODO: replace to `raise`
+        raise "One or more critical packages are found: #{status}"
       end
     else
       {output, status, _} = run_command("npm", ["audit", "--parseable"], env)
@@ -131,11 +131,11 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
         if File.exists?("package-lock.json") || File.exists?("npm-shrinkwrap.json") do
           # Some vulnerabilities were found. So we check the audit level.
           if Regex.match?(~r/\tcritical\t/, output) do
-            IO.puts("One or more critical packages are found: #{status}") # TODO: replace to `raise`
+            raise "One or more critical packages are found: #{status}"
           end
         else
           # Failure due to missing lock file.
-          IO.puts("No lock file is found.") # TODO: replace to `raise`
+          raise "No lock file is found."
         end
       end
     end
