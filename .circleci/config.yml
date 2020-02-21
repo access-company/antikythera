@@ -94,7 +94,7 @@ jobs:
           name: Make sure a previous version of elixir installed if this commit updates elixir
           command: |
             if ! git diff --quiet HEAD~ HEAD .tool-versions; then
-              previous_elixir_version="$(git diff HEAD~ HEAD .tool-versions | grep -e '^-elixir' | sed 's/^-//')"
+              previous_elixir_version="$(git diff HEAD~ HEAD .tool-versions | grep -e '^-elixir' | sed 's/^-//' || true)"
               if [ -n "${previous_elixir_version}" ]; then
                 asdf install ${previous_elixir_version}
                 asdf global ${previous_elixir_version}
