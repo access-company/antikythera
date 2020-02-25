@@ -98,8 +98,8 @@ jobs:
             else
               DIFF_TARGET="origin/master"
             fi
-            if ! git diff --quiet $DIFF_TARGET .tool-versions; then
-              previous_elixir_version="$(git diff $DIFF_TARGET .tool-versions | grep -e '^-elixir' | sed 's/^-//' || true)"
+            if ! git diff --quiet ${DIFF_TARGET} .tool-versions; then
+              previous_elixir_version="$(git diff ${DIFF_TARGET} .tool-versions | grep -e '^-elixir' | sed 's/^-//' || true)"
               if [ -n "${previous_elixir_version}" ]; then
                 asdf install ${previous_elixir_version}
                 asdf global ${previous_elixir_version}
