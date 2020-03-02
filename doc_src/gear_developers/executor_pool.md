@@ -92,8 +92,14 @@ thus simultaneous task executions are capped by the number of processes in each 
 
 ## Managing capacity of executor pools
 
-- As of this writing, capacities of executor pools are centrally controlled by the antikythera team.
-  Please contact the antikythera team to request a limit increase.
+- Capacities of executor pools are determined by [AntikytheraCore.ExecutorPool.Setting](https://github.com/access-company/antikythera/blob/master/core/executor_pool/setting.ex).
+- Each field of `AntikytheraCore.ExecutorPool.Setting` means following.
+    - The product of `n_pools_a` and `pool_size_a`
+        - The number of processes for web request processing.
+    - `ws_max_connections`
+        - The number of processes for websocket connections.
+    - `pool_size_j`
+        - The number of processes for [async job](https://hexdocs.pm/antikythera/async_job.html) execution.
 
 ## Limits for gear processes
 
