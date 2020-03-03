@@ -92,7 +92,7 @@ thus simultaneous task executions are capped by the number of processes in each 
 
 ## Managing capacity of executor pools
 
-- Capacities of executor pools are determined by [AntikytheraCore.ExecutorPool.Setting](https://github.com/access-company/antikythera/blob/master/core/executor_pool/setting.ex).
+- Capacities of executor pools are determined by `AntikytheraCore.ExecutorPool.Setting`.
 - Each field of `AntikytheraCore.ExecutorPool.Setting` means following.
     - The product of `n_pools_a` and `pool_size_a`
         - The number of processes for web request processing.
