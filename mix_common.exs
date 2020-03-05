@@ -305,7 +305,7 @@ defmodule Antikythera.GearProject do
         # We must declare the same set of tool deps in gear projects in order
         # not only to make tool deps available but also to use the exact version specified by the antikythera instance.
         tool_deps = Antikythera.MixCommon.filter_tool_deps(@antikythera_instance_deps)
-        [@antikythera_instance_dep] ++ tool_deps ++ gear_deps()
+        tool_deps ++ [@antikythera_instance_dep] ++ gear_deps()
       end
     end
   end
