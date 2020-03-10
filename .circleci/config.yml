@@ -32,6 +32,8 @@ references:
         source $BASH_ENV
         elixir_version="$(grep elixir /usr/local/asdf/tool-versions-copy)"
         asdf global ${elixir_version}
+        asdf current
+        elixir -v
   add_github_hostkey: &add_github_hostkey
     run:
       name: Add GitHub's server host key to known_hosts
@@ -185,6 +187,7 @@ jobs:
           command: |
             sed -E -i -e "s/(^antikythera_dep .+ ref: )\".+\"/\1\"${CIRCLE_SHA1}\"/" mix.exs
             cp -f /usr/local/asdf/tool-versions-copy .tool-versions
+            cat .tool-versions
             asdf current
             mix deps.get || mix deps.get
             mix deps.get
