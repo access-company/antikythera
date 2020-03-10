@@ -185,6 +185,7 @@ jobs:
           command: |
             sed -E -i -e "s/(^antikythera_dep .+ ref: )\".+\"/\1\"${CIRCLE_SHA1}\"/" mix.exs
             cp -f /usr/local/asdf/tool-versions-copy .tool-versions
+            asdf current
             mix deps.get || mix deps.get
             mix deps.get
             if ! git diff --quiet; then
