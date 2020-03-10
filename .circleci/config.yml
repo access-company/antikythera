@@ -101,14 +101,11 @@ jobs:
             if ! git diff --quiet ${DIFF_TARGET} .tool-versions; then
               previous_elixir_version="$(git diff ${DIFF_TARGET} .tool-versions | grep -e '^-elixir' | sed 's/^-//' || true)"
               if [ -n "${previous_elixir_version}" ]; then
-                echo asdf install ${previous_elixir_version}
-                     asdf install ${previous_elixir_version}
-                echo asdf global ${previous_elixir_version}
-                     asdf global ${previous_elixir_version}
-                echo mix local.hex --force
-                     mix local.hex --force
-                echo mix local.rebar --force
-                     mix local.rebar --force
+                asdf install ${previous_elixir_version}
+                asdf local ${previous_elixir_version}
+                mix local.hex --force
+                mix local.rebar --force
+                git checkout -- .tool-versions
               fi
             fi
       - run:
