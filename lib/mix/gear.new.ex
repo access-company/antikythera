@@ -117,7 +117,7 @@ defmodule Mix.Tasks.Antikythera.Gear.New do
         dest_rel_path = template_path |> Path.relative_to(template_dir) |> String.replace("gear_name", gear_name)
         dest_path = Path.join(dest_dir, dest_rel_path)
         content = EEx.eval_file(template_path, binding)
-        Mix.Generator.create_file(dest_path, content)
+        Mix.Generator.create_file(dest_path, content, [force: true])
       end)
     end)
   end
