@@ -135,7 +135,7 @@ defmodule Mix.Tasks.Antikythera.Gear.New do
       link_from = Path.join(dest_dir, name)
       link_to = Path.join(["deps", instance_name_str, name])
       File.ln_s!(link_to, link_from)
-      IO.puts("* symbolic link from #{link_from} to #{Path.join(dest_dir, link_to)}")
+      Mix.shell().info([:green, "* symbolic link ", :reset, link_from, " -> ", link_to])
     end)
   end
 
