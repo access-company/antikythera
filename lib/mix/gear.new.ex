@@ -103,13 +103,22 @@ defmodule Mix.Tasks.Antikythera.Gear.New do
 
   defp gen_files(gear_name, dest_dir, instance_dep) do
     Mix.Generator.create_directory(dest_dir)
-    template_dir = Path.join(:code.priv_dir(:antikythera), "gear_template")
     binding = [gear_name: gear_name, gear_name_camel: Macro.camelize(gear_name), instance_dep: inspect(instance_dep)]
-    Enum.each(template_files(template_dir), fn template_path ->
-      dest_rel_path = template_path |> Path.relative_to(template_dir) |> String.replace("gear_name", gear_name)
-      dest_path = Path.join(dest_dir, dest_rel_path)
-      content = EEx.eval_file(template_path, binding)
-      Mix.Generator.create_file(dest_path, content)
+    instance_name = elem(instance_dep, 0)
+    dir1 = :code.priv_dir(:antikythera)
+    dirs = :code.priv_dir(instance_name)
+           |> case do
+             {:error, _} -> [dir1]
+             dir2        -> [dir1, dir2]
+           end
+    Enum.each(dirs, fn dir ->
+      template_dir = Path.join(dir, "gear_template")
+      Enum.each(template_files(template_dir), fn template_path ->
+        dest_rel_path = template_path |> Path.relative_to(template_dir) |> String.replace("gear_name", gear_name)
+        dest_path = Path.join(dest_dir, dest_rel_path)
+        content = EEx.eval_file(template_path, binding)
+        Mix.Generator.create_file(dest_path, content, [force: true])
+      end)
     end)
   end
 
@@ -126,7 +135,7 @@ defmodule Mix.Tasks.Antikythera.Gear.New do
       link_from = Path.join(dest_dir, name)
       link_to = Path.join(["deps", instance_name_str, name])
       File.ln_s!(link_to, link_from)
-      IO.puts("* symbolic link from #{link_from} to #{Path.join(dest_dir, link_to)}")
+      Mix.shell().info([:green, "* symbolic link ", :reset, link_from, " -> ", link_to])
     end)
   end
 
