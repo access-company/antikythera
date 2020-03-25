@@ -38,7 +38,7 @@ defmodule AntikytheraCore.TerminationManager do
     end
 
     @threshold_count 3
-    # cleanup finishes within 3 minutes. 30 minutes have passed since cleanup finished
+    # Ensure 30 minutes have passed since the async job brokers stopped in `cleanup/1`
     @flush_log_threshold_count @threshold_count + 11
 
     defun next(%__MODULE__{in_service?: in_service?, log_flushed?: log_flushed?, not_in_service_count: count, brokers: brokers} = state,
