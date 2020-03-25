@@ -44,18 +44,18 @@ defmodule AntikytheraCore.TerminationManager do
     defun next(%__MODULE__{in_service?: in_service?, log_flushed?: log_flushed?, not_in_service_count: count, brokers: brokers} = state,
                now_in_service? :: v[boolean]) :: t do
       new_count = if now_in_service?, do: 0, else: count + 1
-      if in_service? and new_count >= @threshold_count do
-        L.info("confirmed that this host is to be terminated; start cleanup...")
-        VersionUpgradeTaskQueue.disable()
-        cleanup(brokers)
-        %State{state | in_service?: false, not_in_service_count: new_count}
-      else
-        if !log_flushed? && new_count >= @flush_log_threshold_count do
+      cond do
+        in_service? and new_count >= @threshold_count ->
+          L.info("confirmed that this host is to be terminated; start cleanup...")
+          VersionUpgradeTaskQueue.disable()
+          cleanup(brokers)
+          %State{state | not_in_service_count: new_count, in_service?: false}
+        !log_flushed? and new_count >= @flush_log_threshold_count ->
+          L.info("start flushing gear logs...")
           flush_gear_logs()
           %State{state | not_in_service_count: new_count, log_flushed?: true}
-        else
+        true ->
           %State{state | not_in_service_count: new_count}
-        end
       end
     end
 
