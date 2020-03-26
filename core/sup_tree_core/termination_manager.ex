@@ -33,7 +33,7 @@ defmodule AntikytheraCore.TerminationManager do
       brokers:              Croma.TypeGen.list_of(Croma.Pid),
     ]
 
-    def new() do
+    defun new() :: t do
       %__MODULE__{in_service?: true, log_flushed?: false, not_in_service_count: 0, brokers: []}
     end
 
