@@ -18,7 +18,7 @@ Suppose you are implementing a gear controller action that acts as a simple prox
 i.e., returns a g2g response returned by another gear's action as it is.
 You would implement the action as follows (assuming JSON encoded body):
 
-```ex
+```elixir
 # Bad: don't do this
 def action_xyz(conn) do
   g2g_res = AnotherGear.G2g.send(conn)
@@ -33,7 +33,7 @@ This implementation involves unnecessary decoding/encoding of `g2g_res.body` bec
 
 Instead you should bypass the decoding and re-encoding using `G2g.send_without_decoding/{1,2}`.
 
-```ex
+```elixir
 # Good
 def some_action(conn) do
   g2g_res = AnotherGear.G2g.send_without_decoding(conn)

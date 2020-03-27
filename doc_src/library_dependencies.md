@@ -30,7 +30,7 @@
 
 - In antikythera instances, you can declare some dependencies as `:indirect` ones like so:
 
-  ```ex
+  ```elixir
   {:ranch, "1.4.0" , [indirect: true]},
   ```
 
@@ -45,7 +45,7 @@
 - For this purpose you can specify the names of gears that your gear depends on by `gear_deps/0` in gears' `mix.exs`.
     - For example, the following `gear_deps/0` declares dependency to `gear_a` and `gear_b`
 
-      ```ex
+      ```elixir
       defp gear_deps() do
         [
           {:gear_a, [git: "git@github.com:your-organization/gear_a.git"]},

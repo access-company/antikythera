@@ -26,7 +26,7 @@ Antikythera's async job processing comes with the following features:
 
 To use async job, gear implementation must define a module that `use`s `Antikythera.AsyncJob`.
 
-```ex
+```elixir
 defmodule YourGear.SomeAsyncJob do
   use Antikythera.AsyncJob
 
@@ -42,7 +42,7 @@ Then invoke `YourGear.SomeAsyncJob.register/3`.
 You can register new jobs from within both controller actions and async jobs.
 In your local development environment you can try within `$ iex -S mix`.
 
-```ex
+```elixir
 YourGear.SomeAsyncJob.register(%{"arbitrary" => "map"}, {:gear, :your_gear})
 ```
 
@@ -51,7 +51,7 @@ the job queue notifies a broker process of the newly registered job,
 the broker spawns a worker to run the job,
 and then the following call to `YourGear.SomeAsyncJob.run/3` is evaluated within the worker:
 
-```ex
+```elixir
 YourGear.SomeAsyncJob.run(%{"arbitrary" => "map"}, job_metadata, context_for_this_job_execution)
 ```
 
