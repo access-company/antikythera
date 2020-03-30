@@ -1,4 +1,4 @@
-# "Executor Pool" for Resource Management
+# “Executor Pool” for Resource Management
 
 **Note:** This page is being updated for OSS release. Please be patient.
 
@@ -59,7 +59,7 @@ thus simultaneous task executions are capped by the number of processes in each 
 1. A gear that does not support multi-tenant use cases:
   uses its gear executor pool for all requests
 
-    ```ex
+    ```elixir
     def executor_pool_for_web_request(_conn) do
       {:gear, :your_gear}
     end
@@ -68,7 +68,7 @@ thus simultaneous task executions are capped by the number of processes in each 
 2. A gear that serves to multiple tenants:
   specifies tenant ID included in the request path
 
-    ```ex
+    ```elixir
     def executor_pool_for_web_request(%Conn{request: req}) do
       {:tenant, req.path_matches[:tenant_id]}
     end
