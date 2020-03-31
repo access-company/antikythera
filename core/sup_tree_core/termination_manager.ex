@@ -22,40 +22,26 @@ defmodule AntikytheraCore.TerminationManager do
   defmodule State do
     alias AntikytheraCore.ExecutorPool.AsyncJobBroker
     alias AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter
-    alias AntikytheraCore.GearLog.Writer
-    alias AntikytheraCore.GearManager
     alias AntikytheraCore.VersionUpgradeTaskQueue
 
     use Croma.Struct, recursive_new?: true, fields: [
       in_service?:          Croma.Boolean,
-      log_flushed?:         Croma.Boolean,
       not_in_service_count: Croma.NonNegInteger,
       brokers:              Croma.TypeGen.list_of(Croma.Pid),
     ]
 
-    defun new() :: t do
-      %__MODULE__{in_service?: true, log_flushed?: false, not_in_service_count: 0, brokers: []}
-    end
-
     @threshold_count 3
-    # Ensure 30 minutes have passed since the async job brokers stopped in `cleanup/1`
-    @flush_log_threshold_count @threshold_count + 11
 
-    defun next(%__MODULE__{in_service?: in_service?, log_flushed?: log_flushed?, not_in_service_count: count, brokers: brokers} = state,
+    defun next(%__MODULE__{in_service?: in_service?, not_in_service_count: count, brokers: brokers} = state,
                now_in_service? :: v[boolean]) :: t do
       new_count = if now_in_service?, do: 0, else: count + 1
-      cond do
-        in_service? and new_count >= @threshold_count ->
-          L.info("confirmed that this host is to be terminated; start cleanup...")
-          VersionUpgradeTaskQueue.disable()
-          cleanup(brokers)
-          %State{state | not_in_service_count: new_count, in_service?: false}
-        !log_flushed? and new_count >= @flush_log_threshold_count ->
-          L.info("start flushing gear logs...")
-          flush_gear_logs()
-          %State{state | not_in_service_count: new_count, log_flushed?: true}
-        true ->
-          %State{state | not_in_service_count: new_count}
+      if in_service? and new_count >= @threshold_count do
+        L.info("confirmed that this host is to be terminated; start cleanup...")
+        VersionUpgradeTaskQueue.disable()
+        cleanup(brokers)
+        %State{state | in_service?: false, not_in_service_count: new_count}
+      else
+        %State{state | not_in_service_count: new_count}
       end
     end
 
@@ -63,10 +49,6 @@ defmodule AntikytheraCore.TerminationManager do
       RaftFleet.deactivate()
       Enum.each(brokers, &AsyncJobBroker.deactivate/1)
       WebsocketConnectionsCounter.start_terminating_all_ws_connections()
-    end
-
-    defp flush_gear_logs() do
-      Enum.each(GearManager.running_gear_names(), &Writer.rotate/1)
     end
   end
 
@@ -79,7 +61,7 @@ defmodule AntikytheraCore.TerminationManager do
   @impl true
   def init(:ok) do
     set_timer()
-    {:ok, State.new()}
+    {:ok, %State{in_service?: true, not_in_service_count: 0, brokers: []}}
   end
 
   @impl true

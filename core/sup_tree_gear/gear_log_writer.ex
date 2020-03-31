@@ -109,13 +109,6 @@ defmodule AntikytheraCore.GearLog.Writer do
     end
   end
 
-  defun rotate(gear_name :: v[GearName.t]) :: :ok do
-    case logger_name(gear_name) do
-      nil  -> :ok
-      name -> send(name, :rotate); :ok
-    end
-  end
-
   defun set_min_level(gear_name :: v[GearName.t], level :: v[Level.t]) :: :ok do
     case logger_name(gear_name) do
       nil  -> :ok
