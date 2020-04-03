@@ -55,11 +55,18 @@ defmodule Antikythera.Test.Config do
     defp test_mode_for_deployment(unquote("blackbox_#{env}")), do: :"blackbox_#{unquote(env)}"
   end)
 
-  def blackbox_test_secret() do
-    env_var_name = "BLACKBOX_TEST_SECRET_JSON"
+  defp test_secret(env_var_name) do
     case System.get_env(env_var_name) do
       nil -> raise "Environment variable `#{env_var_name}` not found!"
       s   -> Poison.decode!(s)
     end
+  end
+
+  def whitebox_test_secret() do
+    test_secret("WHITEBOX_TEST_SECRET_JSON")
+  end
+
+  def blackbox_test_secret() do
+    test_secret("BLACKBOX_TEST_SECRET_JSON")
   end
 end
