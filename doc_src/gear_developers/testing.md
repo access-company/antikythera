@@ -54,10 +54,10 @@
 
 - Reference: See also `Antikythera.Test.Config`
 
-## Secret in blackbox testing
+## Secret in testing
 
-- Sometimes blackbox tests require certain kind of secret that should not be hardcoded in tests.
+- Sometimes tests require certain kind of secret that should not be hardcoded in tests.
     - e.g. API key for an external service
-- To pass such information to blackbox test runner process, antikythera defines `BLACKBOX_TEST_SECRET_JSON` environment variable.
-- In your blackbox test cases you can obtain contents of the environment variable via
-  `Antikythera.Test.Config.blackbox_test_secret/0` which returns JSON-parsed variable.
+- To pass such information to test runner process, antikythera defines `WHITEBOX_TEST_SECRET_JSON` and `BLACKBOX_TEST_SECRET_JSON` environment variable.
+- In your test cases you can obtain contents of the environment variable via
+  `Antikythera.Test.Config.whitebox_test_secret/0` or `Antikythera.Test.Config.blackbox_test_secret/0` which returns JSON-parsed variable.
