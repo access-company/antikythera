@@ -133,6 +133,11 @@ defmodule Antikythera.CronTest do
           {2017, 3,  1, 0, 0},
           {2017, 3,  2, 0, 0},
         ]},
+      {"* * * 12 *", {2017, 1, 1, 0, 0}, [
+          {2017, 12, 1, 0, 0},
+          {2017, 12, 1, 0, 1},
+          {2017, 12, 1, 0, 2},
+        ]},
     ] |> Enum.each(fn {pattern, time, next_times} ->
       {:ok, cron} = Cron.parse(pattern)
       Enum.reduce(next_times, time, fn(next_time, prev_time) ->
