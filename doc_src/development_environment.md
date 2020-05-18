@@ -80,3 +80,19 @@
             - Milliseconds to wait until gear action finishes. Defaults to `10000`. See also [controller](https://hexdocs.pm/antikythera/controller.html).
         - `GEAR_PROCESS_MAX_HEAP_SIZE`:
             - Maximum size of per-process heap memory in words. Defaults to `50000000` (400MB in 64-bit architecture).
+
+- If you develop mix task, you can use the following environment variables:
+    - Runtime environment variables:
+        - `ANTIKYTHERA_MIX_TASK_MODE`:
+            - A boolean flag whether Antikythera runs for mix task. Defaults to `false`
+            - You must set `true` even if your command is mix task.
+            - If you set a value other than `local` to `ANTIKYTHERA_RUNTIME_ENV`, Antikythera thinks it was built for a release package and is deployed to a cloud.
+              Then, the path to the config files will be broken, and Antikythera will try to use cloud services even if your mix task running enrivonment doesn't allow them.
+              If this variable is `true`, Antikythera won't do them.
+    - Compile-time environment variables: (to change the followings you need to recompile antikythera)
+        - `ANTIKYTHERA_MIX_TASK_MODE`:
+            - A boolean flag whether Antikythera is compiled for mix task. Defaults to `false`
+            - You must set `true` even if your command is mix task and automatically compile Antikythera.
+            - If you set a value other than `local` to `ANTIKYTHERA_COMPILE_ENV`, Antikythera thinks it is built for a release package and will be deployed to a cloud.
+              Then, the path to the config files will be broken, and Antikythera will try to use cloud services even if your mix task running enrivonment doesn't allow them.
+              If this variable is `true`, Antikythera won't do them.
