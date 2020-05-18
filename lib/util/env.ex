@@ -69,21 +69,20 @@ defmodule Antikythera.Env do
     end
   end
 
-  @mix_task_mode System.get_env("ANTIKYTHERA_MIX_TASK_MODE") == "true"
-
-  defun mix_task_mode?() :: boolean, do: @mix_task_mode
-
   defun runtime_env()           :: t      , do: System.get_env("ANTIKYTHERA_RUNTIME_ENV") |> Mapping.env_var_to_atom()
-  defun running_with_release?() :: boolean, do: !mix_task_mode?() && runtime_env() != :undefined
-  defun running_in_cloud?()     :: boolean, do: !mix_task_mode?() && Mapping.cloud?(runtime_env())
+  defun running_on_mix_task?()  :: boolean, do: System.get_env("ANTIKYTHERA_MIX_TASK_MODE") == "true"
+  defun running_with_release?() :: boolean, do: !running_on_mix_task?() && runtime_env() != :undefined
+  defun running_in_cloud?()     :: boolean, do: !running_on_mix_task?() && Mapping.cloud?(runtime_env())
 
-  @compile_env            System.get_env("ANTIKYTHERA_COMPILE_ENV") |> Mapping.env_var_to_atom()
-  @compiling_for_release? @compile_env != :undefined
-  @compiling_for_cloud?   Mapping.cloud?(@compile_env)
+  @compile_env             System.get_env("ANTIKYTHERA_COMPILE_ENV") |> Mapping.env_var_to_atom()
+  @compiling_for_mix_task? System.get_env("ANTIKYTHERA_MIX_TASK_MODE") == "true"
+  @compiling_for_release?  @compile_env != :undefined
+  @compiling_for_cloud?    Mapping.cloud?(@compile_env)
 
-  defun compile_env()            :: t      , do: @compile_env
-  defun compiling_for_release?() :: boolean, do: !mix_task_mode?() && @compiling_for_release?
-  defun compiling_for_cloud?()   :: boolean, do: !mix_task_mode?() && @compiling_for_cloud?
+  defun compile_env()             :: t      , do: @compile_env
+  defun compiling_for_mix_task?() :: boolean, do: @compiling_for_mix_task?
+  defun compiling_for_release?()  :: boolean, do: !compiling_for_mix_task?() && @compiling_for_release?
+  defun compiling_for_cloud?()    :: boolean, do: !compiling_for_mix_task?() && @compiling_for_cloud?
 
   @antikythera_instance_name Application.fetch_env!(:antikythera, :antikythera_instance_name)
   defun antikythera_instance_name() :: atom, do: @antikythera_instance_name
