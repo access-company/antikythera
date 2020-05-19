@@ -91,7 +91,7 @@
               If this variable is `true`, Antikythera won't do them.
     - Compile-time environment variables: (to change the followings you need to recompile antikythera)
         - `ANTIKYTHERA_MIX_TASK_MODE`:
-            - A boolean flag whether Antikythera is compiled for mix task. Defaults to `false`
+            - A boolean flag whether Antikythera is compiled for mix task. Defaults to `false`.
             - You must set `true` even if your command is mix task and automatically compile Antikythera.
             - If you set a value other than `local` to `ANTIKYTHERA_COMPILE_ENV`, Antikythera thinks it is built for a release package and will be deployed to a cloud.
               Then, the path to the config files will be broken, and Antikythera will try to use cloud services even if your mix task running enrivonment doesn't allow them.
