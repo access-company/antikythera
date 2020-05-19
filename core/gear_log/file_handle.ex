@@ -7,7 +7,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
   alias AntikytheraCore.GearLog.{Level, Message}
 
   defmodule SizeCheck do
-    @interval (if Antikythera.Env.compiling_for_release?(), do: 60_000, else: 100)
+    @interval (if Antikythera.Env.compiling_for_release?() || Antikythera.Env.compiling_for_mix_task?(), do: 60_000, else: 100)
     @max_size (if Mix.env() == :test, do: 4_096, else: 104_857_600) # 100MB
 
     defun check_now?(now :: v[Time.t], last_checked_at :: v[Time.t]) :: boolean do
