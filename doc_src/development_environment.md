@@ -84,7 +84,7 @@
 - If you develop mix task, you can use the following environment variables:
     - Runtime environment variables:
         - `ANTIKYTHERA_MIX_TASK_MODE`:
-            - A boolean flag whether Antikythera runs for mix task. Defaults to `false`
+            - A boolean flag whether Antikythera runs for mix task. Defaults to `false`.
             - You must set `true` even if your command is mix task.
             - If you set a value other than `local` to `ANTIKYTHERA_RUNTIME_ENV`, Antikythera thinks it was built for a release package and is deployed to a cloud.
               Then, the path to the config files will be broken, and Antikythera will try to use cloud services even if your mix task running enrivonment doesn't allow them.
