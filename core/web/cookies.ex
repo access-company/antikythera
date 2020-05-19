@@ -4,10 +4,21 @@ use Croma
 
 defmodule AntikytheraCore.Cookies do
   alias Antikythera.Http.SetCookie
+  require AntikytheraCore.Logger, as: L
 
   def make_from_cowboy_req(req) do
-    :cowboy_req.parse_cookies(req)
-    |> Map.new(fn {k, v} -> {URI.decode_www_form(k), URI.decode_www_form(v)} end)
+    case Map.get(req.headers, "cookie") do
+      nil -> %{}
+      value ->
+        try do
+          :cow_cookie.parse_cookie(value)
+          |> Map.new(fn {k, v} -> {URI.decode_www_form(k), URI.decode_www_form(v)} end)
+        rescue
+          e in ArgumentError ->
+            L.error(~s(Fail to parse cookie: "#{value}" from "#{req.method} #{req.scheme}://#{req.host}#{req.path}"))
+            raise e
+        end
+    end
   end
 
   def merge_cookies_to_cowboy_req(cookies, req0) do
