@@ -9,7 +9,7 @@ defmodule Antikythera.Mix.Task do
   **Functions in this module can only be used in mix tasks.**
   """
 
-  alias Antikythera.{ContextId, Time}
+  alias Antikythera.Time
   alias AntikytheraCore.Context
   alias AntikytheraCore.GearLog.ContextHelper
 
@@ -35,7 +35,6 @@ defmodule Antikythera.Mix.Task do
   """
   defun set_node_id_to_gear_log_context(node_id :: v[String.t]) :: :ok do
     context_id = Context.make_context_id(Time.now(), node_id)
-    true = ContextId.valid?(context_id)
     ContextHelper.set(context_id)
   end
 end

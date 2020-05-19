@@ -23,11 +23,11 @@ defmodule AntikytheraCore.Context do
     }
   end
 
-  defun make_context_id(t :: v[Time.t]) :: String.t do
+  defun make_context_id(t :: v[Time.t]) :: ContextId.t do
     make_context_id(t, NodeId.get())
   end
 
-  defun make_context_id(t :: v[Time.t], node_id :: v[String.t]) :: String.t do
+  defun make_context_id(t :: v[Time.t], node_id :: v[String.t]) :: v[ContextId.t] do
     [
       timestamp(t),
       node_id,
