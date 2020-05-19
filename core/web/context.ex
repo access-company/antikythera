@@ -24,9 +24,13 @@ defmodule AntikytheraCore.Context do
   end
 
   defun make_context_id(t :: v[Time.t]) :: String.t do
+    make_context_id(t, NodeId.get())
+  end
+
+  defun make_context_id(t :: v[Time.t], node_id :: String.t) :: String.t do
     [
       timestamp(t),
-      NodeId.get(),
+      node_id,
       :erlang.pid_to_list(self()) |> tl() |> List.to_string() |> String.trim_trailing(">"),
     ] |> Enum.join("_")
   end
