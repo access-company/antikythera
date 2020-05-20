@@ -9,6 +9,10 @@ defmodule Antikythera.Mix.Task do
   **Functions in this module can only be used in mix tasks.**
   """
 
+  alias Antikythera.{NodeId, Time}
+  alias AntikytheraCore.Context
+  alias AntikytheraCore.GearLog.ContextHelper
+
   @doc """
   Starts the current antikythera instance and its dependency applications without web server functionality.
 
@@ -19,5 +23,18 @@ defmodule Antikythera.Mix.Task do
     System.put_env("NO_LISTEN", "true")
     {:ok, _} = Application.ensure_all_started(Antikythera.Env.antikythera_instance_name())
     :ok
+  end
+
+  @doc """
+  Set the specified `node_id` to the `Antikythera.ContextId` in GearLog.
+
+  If you want to use GearLog in mix task, you must set `node_id` before you call GearLog functions.
+
+  The `Antikythera.ContextId` in GearLog will become `{timestamp}_{node_id}_{PID}`.
+  The `timestamp` and `PID` are automatically got from system.
+  """
+  defun set_node_id_to_gear_log_context(node_id :: v[NodeId.t]) :: :ok do
+    context_id = Context.make_context_id(Time.now(), node_id)
+    ContextHelper.set(context_id)
   end
 end

@@ -3,10 +3,10 @@
 use Croma
 
 defmodule AntikytheraEal.MetricsStorage do
-  alias Antikythera.Time
+  alias Antikythera.{NodeId, Time}
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.Metrics.{Buffer, Results}
-  alias AntikytheraCore.Cluster.NodeId
+  alias AntikytheraCore.Cluster.NodeId, as: CoreNodeId
   alias __MODULE__, as: S
 
   @type metrics_per_unit :: {Buffer.metrics_unit, Results.per_unit_results_map}
@@ -115,7 +115,7 @@ defmodule AntikytheraEal.MetricsStorage do
   # wrapper of `upload/3` for MetricsUploader
   #
   defun save(otp_app_name :: v[atom], results :: Results.t) :: Results.t do
-    upload(otp_app_name, NodeId.get(), results)
+    upload(otp_app_name, CoreNodeId.get(), results)
     |> Map.new()
   end
 
