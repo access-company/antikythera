@@ -9,7 +9,7 @@ defmodule Antikythera.Mix.Task do
   **Functions in this module can only be used in mix tasks.**
   """
 
-  alias Antikythera.Time
+  alias Antikythera.{NodeId, Time}
   alias AntikytheraCore.Context
   alias AntikytheraCore.GearLog.ContextHelper
 
@@ -33,7 +33,7 @@ defmodule Antikythera.Mix.Task do
   The `Antikythera.ContextId` in GearLog will become `{timestamp}_{node_id}_{PID}`.
   The `timestamp` and `PID` are automatically got from system.
   """
-  defun set_node_id_to_gear_log_context(node_id :: v[String.t]) :: :ok do
+  defun set_node_id_to_gear_log_context(node_id :: v[NodeId.t]) :: :ok do
     context_id = Context.make_context_id(Time.now(), node_id)
     ContextHelper.set(context_id)
   end

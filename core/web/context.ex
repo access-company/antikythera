@@ -3,11 +3,11 @@
 use Croma
 
 defmodule AntikytheraCore.Context do
-  alias Antikythera.{Time, GearName, ContextId}
+  alias Antikythera.{Time, GearName, ContextId, NodeId}
   alias Antikythera.Context, as: LContext
   alias Antikythera.Context.GearEntryPoint
   alias Antikythera.ExecutorPool.Id, as: EPoolId
-  alias AntikytheraCore.Cluster.NodeId
+  alias AntikytheraCore.Cluster.NodeId, as: CoreNodeId
 
   defun make(gear_name   :: v[GearName.t],
              entry_point :: v[nil | GearEntryPoint.t],
@@ -24,10 +24,10 @@ defmodule AntikytheraCore.Context do
   end
 
   defun make_context_id(t :: v[Time.t]) :: ContextId.t do
-    make_context_id(t, NodeId.get())
+    make_context_id(t, CoreNodeId.get())
   end
 
-  defun make_context_id(t :: v[Time.t], node_id :: v[String.t]) :: v[ContextId.t] do
+  defun make_context_id(t :: v[Time.t], node_id :: v[NodeId.t]) :: v[ContextId.t] do
     [
       timestamp(t),
       node_id,

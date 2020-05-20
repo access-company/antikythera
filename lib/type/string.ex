@@ -120,11 +120,18 @@ defmodule Antikythera.Email do
   use Croma.SubtypeOfString, pattern: ~r"\A[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]{1,64}@#{Antikythera.Domain.pattern_body()}\z"
 end
 
+defmodule Antikythera.NodeId do
+  @pattern_string "[0-9A-Za-z.-]+"
+  def pattern_string(), do: @pattern_string
+
+  use Croma.SubtypeOfString, pattern: ~r/\A#{@pattern_string}\z/
+end
+
 defmodule Antikythera.ContextId do
   @system_context "antikythera_system"
   def system_context(), do: @system_context
 
-  use Croma.SubtypeOfString, pattern: ~r/\A(\d{8}-\d{6}\.\d{3}_[0-9A-Za-z.-]+_\d+\.\d+\.\d+|#{@system_context})\z/
+  use Croma.SubtypeOfString, pattern: ~r/\A(\d{8}-\d{6}\.\d{3}_#{Antikythera.NodeId.pattern_string()}_\d+\.\d+\.\d+|#{@system_context})\z/
 end
 
 defmodule Antikythera.ImfFixdate do
