@@ -43,6 +43,15 @@ defmodule Antikythera.FastJasonEncoderTest do
     end)
   end
 
+  test "DateTime" do
+    datetime = ~U[2017-01-01 00:00:00.000000Z]
+    values = [datetime, [datetime], %{datetime: datetime}]
+    Enum.each(values, fn(value) ->
+      {:ok, json} = FastJasonEncoder.encode(value)
+      assert json == Poison.encode!(value)
+    end)
+  end
+
   test "MapSet" do
     values = [MapSet.new(), MapSet.new([1, "foo", %{}])]
     Enum.each(values, fn(value) ->
