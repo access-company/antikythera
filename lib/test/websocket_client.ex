@@ -26,13 +26,16 @@ defmodule Antikythera.Test.WebsocketClient do
     quote do
       @behaviour :websocket_client
 
-      @default_base_url Antikythera.Test.Config.base_url() |> String.replace_prefix("http://" , "ws://" ) |> String.replace_prefix("https://", "wss://")
+      @default_base_url Antikythera.Test.Config.base_url()
+                        |> String.replace_prefix("http://", "ws://")
+                        |> String.replace_prefix("https://", "wss://")
 
       def spawn_link(path, timeout \\ 5_000) do
         url = String.to_charlist(base_url() <> path)
         {:ok, pid} = :websocket_client.start_link(url, __MODULE__, [self()])
+
         receive do
-          :connected    -> pid
+          :connected -> pid
           :disconnected -> raise "failed to establish websocket connection: disconnected"
         after
           timeout -> raise "failed to establish websocket connection: timeout"
@@ -90,7 +93,7 @@ defmodule Antikythera.Test.WebsocketClient do
 
       def handle_received_frame(frame, caller_pid), do: send(caller_pid, {frame, self()})
 
-      defoverridable [base_url: 0, handle_received_frame: 2]
+      defoverridable base_url: 0, handle_received_frame: 2
     end
   end
 end

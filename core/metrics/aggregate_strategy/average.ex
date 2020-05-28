@@ -13,11 +13,13 @@ defmodule Strategy.Average do
   @typep data_t :: {pos_integer, number}
 
   @impl true
-  defun init(value :: v[number]) :: data_t, do: {1, value}
+  defun(init(value :: v[number]) :: data_t, do: {1, value})
 
   @impl true
-  defun merge({count, total} :: data_t, value :: v[number]) :: data_t, do: {count + 1, total + value}
+  defun(merge({count, total} :: data_t, value :: v[number]) :: data_t,
+    do: {count + 1, total + value}
+  )
 
   @impl true
-  defun results({count, total} :: data_t) :: Strategy.results_t, do: [avg: total / count]
+  defun(results({count, total} :: data_t) :: Strategy.results_t(), do: [avg: total / count])
 end

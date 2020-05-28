@@ -7,7 +7,18 @@ defmodule Antikythera.AsyncJob do
   alias Antikythera.{Time, Context, GearName}
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias Antikythera.ExecutorPool.BadIdReason
-  alias Antikythera.AsyncJob.{Id, Schedule, MaxDuration, Attempts, RetryInterval, Metadata, Status, StateLabel}
+
+  alias Antikythera.AsyncJob.{
+    Id,
+    Schedule,
+    MaxDuration,
+    Attempts,
+    RetryInterval,
+    Metadata,
+    Status,
+    StateLabel
+  }
+
   alias AntikytheraCore.AsyncJob.{Queue, RateLimit}
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.ExecutorPool.Id, as: CoreEPoolId
@@ -53,7 +64,9 @@ defmodule Antikythera.AsyncJob do
 
   `abandon/3` optional callback is called when a job is abandoned after all attempts failed.
   You can put your cleanup logic in this callback when e.g. you use external storage system to store job information.
-  Note that `abandon/3` must finish within `#{div(AsyncJobRunner.abandon_callback_max_duration(), 1_000)}` seconds;
+  Note that `abandon/3` must finish within `#{
+    div(AsyncJobRunner.abandon_callback_max_duration(), 1_000)
+  }` seconds;
   when it takes longer, antikythera stops the execution of `abandon/3` in the middle.
 
   `inspect_payload/1` optional callback is solely for logging purpose.
@@ -93,7 +106,9 @@ defmodule Antikythera.AsyncJob do
       - `{:once, Antikythera.Time.t}`
           - The job is executed at the given time.
             After the job is either successfully completed or abandoned by failure(s), the job is removed from the job queue.
-            The time must be a future time and within #{div(AntikytheraCore.AsyncJob.max_start_time_from_now(), 24 * 60 * 60_000)} days from now.
+            The time must be a future time and within #{
+    div(AntikytheraCore.AsyncJob.max_start_time_from_now(), 24 * 60 * 60_000)
+  } days from now.
       - `{:cron, Antikythera.Cron.t}`
           - The job is repeatedly executed at the given cron schedule.
             After the job is either successfully completed or abandoned by failure(s),
@@ -108,7 +123,9 @@ defmodule Antikythera.AsyncJob do
     A job which has been running for more than `max_duration` is brutally killed and
     if it has remaining attempts it will be retried.
     Defaults to `#{MaxDuration.default()}` (`#{div(MaxDuration.default(), 60_000)}` minutes).
-    If explicitly given it cannot exceed `#{MaxDuration.max()}` (`#{div(MaxDuration.max(), 60_000)}` minutes).
+    If explicitly given it cannot exceed `#{MaxDuration.max()}` (`#{
+    div(MaxDuration.max(), 60_000)
+  }` minutes).
   - `attempts`: A positive integer within `#{Attempts.min()}..#{Attempts.max()}`), up to which antikythera tries to run the job.
     Defaults to `#{Attempts.default()}`.
   - `retry_interval`: A 2-tuple of integer and float to calculate time interval between retries.
@@ -183,42 +200,54 @@ defmodule Antikythera.AsyncJob do
   and fetch the whole data in run/3.
   """
 
-  @callback run(map, Metadata.t, Context.t) :: any
-  @callback abandon(map, Metadata.t, Context.t) :: any
-  @callback inspect_payload(map) :: String.t
+  @callback run(map, Metadata.t(), Context.t()) :: any
+  @callback abandon(map, Metadata.t(), Context.t()) :: any
+  @callback inspect_payload(map) :: String.t()
 
-  @type option :: {:id              , Id.t           }
-                | {:schedule        , Schedule.t     }
-                | {:max_duration    , MaxDuration.t  }
-                | {:attempts        , Attempts.t     }
-                | {:retry_interval  , RetryInterval.t}
-                | {:bypass_job_queue, boolean        }
+  @type option ::
+          {:id, Id.t()}
+          | {:schedule, Schedule.t()}
+          | {:max_duration, MaxDuration.t()}
+          | {:attempts, Attempts.t()}
+          | {:retry_interval, RetryInterval.t()}
+          | {:bypass_job_queue, boolean}
 
   defmacro __using__(_) do
     gear_name = Mix.Project.config()[:app]
+
     quote bind_quoted: [gear_name: gear_name] do
       @gear_name gear_name
 
       @behaviour Antikythera.AsyncJob
 
       @impl true
-      defun abandon(_payload  :: map,
-                    _metadata :: Antikythera.AsyncJob.Metadata.t,
-                    _context  :: Antikythera.Context.t) :: any do
+      defun abandon(
+              _payload :: map,
+              _metadata :: Antikythera.AsyncJob.Metadata.t(),
+              _context :: Antikythera.Context.t()
+            ) :: any do
         :ok
       end
 
       @impl true
-      defun inspect_payload(_payload :: map) :: String.t do
+      defun inspect_payload(_payload :: map) :: String.t() do
         ""
       end
 
-      defoverridable [abandon: 3, inspect_payload: 1]
+      defoverridable abandon: 3, inspect_payload: 1
 
-      defun register(payload             :: v[map],
-                     context_or_epool_id :: v[Antikythera.Context.t | Antikythera.ExecutorPool.Id.t],
-                     options             :: v[[Antikythera.AsyncJob.option]] \\ []) :: R.t(Id.t) do
-        AntikytheraCore.AsyncJob.register(@gear_name, __MODULE__, payload, context_or_epool_id, options)
+      defun register(
+              payload :: v[map],
+              context_or_epool_id :: v[Antikythera.Context.t() | Antikythera.ExecutorPool.Id.t()],
+              options :: v[[Antikythera.AsyncJob.option()]] \\ []
+            ) :: R.t(Id.t()) do
+        AntikytheraCore.AsyncJob.register(
+          @gear_name,
+          __MODULE__,
+          payload,
+          context_or_epool_id,
+          options
+        )
       end
     end
   end
@@ -229,20 +258,24 @@ defmodule Antikythera.AsyncJob do
   Note that currently-running job executions cannot be cancelled.
   However, calling `cancel/2` with currently running job's `job_id` prevents retries of the job when it fails.
   """
-  defun cancel(gear_name           :: v[GearName.t],
-               context_or_epool_id :: v[Context.t | EPoolId.t],
-               job_id              :: v[Id.t]) :: :ok | {:error, :not_found | BadIdReason.t | {:rate_limit_reached, pos_integer}} do
+  defun cancel(
+          gear_name :: v[GearName.t()],
+          context_or_epool_id :: v[Context.t() | EPoolId.t()],
+          job_id :: v[Id.t()]
+        ) :: :ok | {:error, :not_found | BadIdReason.t() | {:rate_limit_reached, pos_integer}} do
     epool_id1 = exec_pool_id(context_or_epool_id)
+
     case CoreEPoolId.validate_association(epool_id1, gear_name) do
       {:ok, epool_id2} -> Queue.cancel(RegName.async_job_queue(epool_id2), job_id)
-      error            -> error
+      error -> error
     end
   end
 
   @doc """
   Retrieves detailed information of an async job registered with the job queue specified by `context_or_epool_id`.
   """
-  defun status(context_or_epool_id :: v[Context.t | EPoolId.t], job_id :: v[Id.t]) :: R.t(Status.t) do
+  defun status(context_or_epool_id :: v[Context.t() | EPoolId.t()], job_id :: v[Id.t()]) ::
+          R.t(Status.t()) do
     Queue.status(queue_name(context_or_epool_id), job_id)
   end
 
@@ -252,18 +285,20 @@ defmodule Antikythera.AsyncJob do
   Each element of returned list is a 3-tuple: scheduled execution time, job ID and current status.
   The returned list is already sorted.
   """
-  defun list(context_or_epool_id :: v[Context.t | EPoolId.t]) :: [{Time.t, Id.t, StateLabel.t}] do
+  defun list(context_or_epool_id :: v[Context.t() | EPoolId.t()]) :: [
+          {Time.t(), Id.t(), StateLabel.t()}
+        ] do
     Queue.list(queue_name(context_or_epool_id))
   end
 
-  defunp exec_pool_id(context_or_epool_id :: v[Context.t | EPoolId.t]) :: EPoolId.t do
+  defunp exec_pool_id(context_or_epool_id :: v[Context.t() | EPoolId.t()]) :: EPoolId.t() do
     case context_or_epool_id do
       %Context{executor_pool_id: id} -> id
-      epool_id                       -> epool_id
+      epool_id -> epool_id
     end
   end
 
-  defunp queue_name(context_or_epool_id :: v[Context.t | EPoolId.t]) :: atom do
+  defunp queue_name(context_or_epool_id :: v[Context.t() | EPoolId.t()]) :: atom do
     exec_pool_id(context_or_epool_id) |> RegName.async_job_queue()
   end
 end

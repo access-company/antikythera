@@ -4,12 +4,14 @@ use Croma
 
 defmodule AntikytheraEal.AlertMailer do
   defmodule Mail do
-    use Croma.Struct, recursive_new?: true, fields: [
-      from:    Croma.String,
-      to:      Croma.TypeGen.list_of(Croma.String),
-      subject: Croma.String,
-      body:    Croma.String,
-    ]
+    use Croma.Struct,
+      recursive_new?: true,
+      fields: [
+        from: Croma.String,
+        to: Croma.TypeGen.list_of(Croma.String),
+        subject: Croma.String,
+        body: Croma.String
+      ]
   end
 
   defmodule Behaviour do
@@ -27,7 +29,7 @@ defmodule AntikytheraEal.AlertMailer do
     This callback is called in `AntikytheraCore.Alert.Handler.Email`, that is,
     when an alert email about error(s) in either antikythera core or gear is sent.
     """
-    @callback deliver(mail :: Mail.t) :: :ok | {:error, term}
+    @callback deliver(mail :: Mail.t()) :: :ok | {:error, term}
   end
 
   defmodule MemoryInbox do
@@ -45,7 +47,7 @@ defmodule AntikytheraEal.AlertMailer do
 
     defp ensure_memory_inbox_started() do
       case Agent.start_link(fn -> [] end, name: __MODULE__) do
-        {:ok   , pid                    } -> pid
+        {:ok, pid} -> pid
         {:error, {:already_started, pid}} -> pid
       end
     end
@@ -55,7 +57,7 @@ defmodule AntikytheraEal.AlertMailer do
     #
     def get() do
       ensure_memory_inbox_started()
-      |> Agent.get(&(&1))
+      |> Agent.get(& &1)
     end
 
     def clean() do

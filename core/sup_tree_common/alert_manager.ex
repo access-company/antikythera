@@ -20,8 +20,8 @@ defmodule AntikytheraCore.Alert.Manager do
 
   def child_spec(args) do
     %{
-      id:    __MODULE__,
-      start: {__MODULE__, :start_link, [args]},
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [args]}
     }
   end
 
@@ -39,51 +39,73 @@ defmodule AntikytheraCore.Alert.Manager do
 
   Any errors will be logged but this function always returns `:ok`.
   """
-  defun update_handler_installations(otp_app_name :: v[:antikythera | GearName.t], configs_map :: v[HandlerConfigsMap.t]) :: :ok do
+  defun update_handler_installations(
+          otp_app_name :: v[:antikythera | GearName.t()],
+          configs_map :: v[HandlerConfigsMap.t()]
+        ) :: :ok do
     case manager(otp_app_name) do
-      nil -> L.info("Alert manager process for '#{otp_app_name}' is not running!") # log as info since this will always happen on initial loading of gear configs (before gear installations)
+      # log as info since this will always happen on initial loading of gear configs (before gear installations)
+      nil -> L.info("Alert manager process for '#{otp_app_name}' is not running!")
       pid -> update_handler_installations_impl(pid, otp_app_name, configs_map)
     end
   end
 
   defp update_handler_installations_impl(manager, otp_app_name, configs_map) do
-    installed_handlers  = :gen_event.which_handlers(manager)
+    installed_handlers = :gen_event.which_handlers(manager)
     handlers_to_install = handlers_to_install(configs_map)
-    to_remove = installed_handlers  -- handlers_to_install
-    to_add    = handlers_to_install -- installed_handlers
-    remove_results = Enum.map(to_remove, fn handler -> :gen_event.delete_handler(manager, handler, :remove_handler) end)
-    add_results    = Enum.map(to_add   , fn handler -> :gen_event.add_handler(manager, handler, handler_init_arg(otp_app_name, handler)) end)
+    to_remove = installed_handlers -- handlers_to_install
+    to_add = handlers_to_install -- installed_handlers
+
+    remove_results =
+      Enum.map(to_remove, fn handler ->
+        :gen_event.delete_handler(manager, handler, :remove_handler)
+      end)
+
+    add_results =
+      Enum.map(to_add, fn handler ->
+        :gen_event.add_handler(manager, handler, handler_init_arg(otp_app_name, handler))
+      end)
+
     case Enum.reject(remove_results ++ add_results, &(&1 == :ok)) do
-      []     -> :ok
+      [] ->
+        :ok
+
       errors ->
         reasons = Enum.map(errors, fn {:error, reason} -> reason end)
-        L.error("Failed to install some alert handler(s) for '#{otp_app_name}':\n#{inspect(reasons)}")
+
+        L.error(
+          "Failed to install some alert handler(s) for '#{otp_app_name}':\n#{inspect(reasons)}"
+        )
+
         :ok
     end
   end
 
-  defunp handlers_to_install(configs_map :: v[HandlerConfigsMap.t]) :: [:gen_event.handler] do
+  defunp handlers_to_install(configs_map :: v[HandlerConfigsMap.t()]) :: [:gen_event.handler()] do
     handler_pairs =
       configs_map
       |> Enum.map(fn {k, conf} -> {key_to_handler(k), conf} end)
       |> Enum.filter(fn {h, conf} -> h.validate_config(conf) end)
       |> Enum.map(fn {h, _} -> {AHandler, h} end)
+
     [ErrorCountReporter | handler_pairs]
   end
 
-  defp handler_init_arg(otp_app_name, ErrorCountReporter ), do: otp_app_name
+  defp handler_init_arg(otp_app_name, ErrorCountReporter), do: otp_app_name
   defp handler_init_arg(otp_app_name, {AHandler, handler}), do: {otp_app_name, handler}
 
   defp key_to_handler(key) do
     temporary_module_name_str = @handler_module_prefix <> Macro.camelize(key)
-    Module.safe_concat([temporary_module_name_str]) # handlers must be chosen from list of existing handlers (in console UI), so this should never raise
+
+    # handlers must be chosen from list of existing handlers (in console UI), so this should never raise
+    Module.safe_concat([temporary_module_name_str])
   end
 
-  defunp manager(otp_app_name :: v[:antikythera | GearName.t]) :: nil | pid do
+  defunp manager(otp_app_name :: v[:antikythera | GearName.t()]) :: nil | pid do
     try do
       case otp_app_name do
         :antikythera -> AntikytheraCore.Alert.Manager
-        gear_name    -> GearModule.alert_manager(gear_name)
+        gear_name -> GearModule.alert_manager(gear_name)
       end
       |> Process.whereis()
     rescue
@@ -110,9 +132,11 @@ defmodule AntikytheraCore.Alert.Manager do
   @doc """
   Notify a `manager` process of a message `body` with optional `time`.
   """
-  defun notify(manager :: v[atom],
-               body    :: v[String.t],
-               time    :: v[Time.t] \\ Time.now()) :: :ok do
+  defun notify(
+          manager :: v[atom],
+          body :: v[String.t()],
+          time :: v[Time.t()] \\ Time.now()
+        ) :: :ok do
     :gen_event.notify(manager, {time, body})
   end
 end

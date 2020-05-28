@@ -74,7 +74,9 @@ defmodule Antikythera.Asset do
   (the file has been either modified, removed or renamed).
 
   Antikythera keeps track of whether each asset file is obsolete or not.
-  Then, antikythera periodically removes asset files that have been obsolete for more than #{@retention_days} days.
+  Then, antikythera periodically removes asset files that have been obsolete for more than #{
+    @retention_days
+  } days.
   The retention period (chosen such that each period includes several deployments of each gear)
   should be long enough for clients to switch from older assets to newer ones.
   """
@@ -86,8 +88,11 @@ defmodule Antikythera.Asset do
   defmacro __using__(opts) do
     gear_name = Mix.Project.config()[:app]
     check_caller_module(gear_name, __CALLER__.module)
+
     case list_asset_file_paths() do
-      []    -> :ok
+      [] ->
+        :ok
+
       paths ->
         mapping = make_mapping(gear_name, paths, opts)
         make_module_body_ast(mapping)
@@ -96,9 +101,10 @@ defmodule Antikythera.Asset do
 
   defp check_caller_module(gear_name, mod) do
     gear_name_camel = gear_name |> Atom.to_string() |> Macro.camelize()
+
     case Module.split(mod) do
       [^gear_name_camel, "Asset"] -> :ok
-      _                           -> raise "`use #{inspect(__MODULE__)}` is usable only in `#{gear_name_camel}.Asset`"
+      _ -> raise "`use #{inspect(__MODULE__)}` is usable only in `#{gear_name_camel}.Asset`"
     end
   end
 
@@ -122,11 +128,14 @@ defmodule Antikythera.Asset do
       case Keyword.get(opts, :base_url_during_development) do
         nil ->
           case static_prefix(gear_name) do
-            nil    -> raise "neither Router's `static_prefix` nor `:base_url_during_development` are given, cannot make asset download URL"
+            nil ->
+              raise "neither Router's `static_prefix` nor `:base_url_during_development` are given, cannot make asset download URL"
+
             prefix ->
               # serve assets using :cowboy_static (make path-only URL)
               fn path -> "#{prefix}/#{path}" end
           end
+
         base_url0 ->
           # serve assets using something like webpack-dev-server
           base_url = String.replace_suffix(base_url0, "/", "")
@@ -136,16 +145,20 @@ defmodule Antikythera.Asset do
   end
 
   defp url_cloud(path, gear_name) do
-    base_url      = Application.fetch_env!(:antikythera, :asset_cdn_endpoint)
-    md5           = :erlang.md5(File.read!(Path.join(@priv_static_dir, path))) |> Base.encode16(case: :lower)
-    extension     = Path.extname(path)
+    base_url = Application.fetch_env!(:antikythera, :asset_cdn_endpoint)
+
+    md5 =
+      :erlang.md5(File.read!(Path.join(@priv_static_dir, path))) |> Base.encode16(case: :lower)
+
+    extension = Path.extname(path)
     path_with_md5 = String.replace_suffix(path, extension, "_#{md5}#{extension}")
     "#{base_url}/#{gear_name}/#{path_with_md5}"
   end
 
   defp static_prefix(gear_name) do
     try do
-      mod = GearModule.router_unsafe(gear_name) # during compilation, safe to generate a new atom
+      # during compilation, safe to generate a new atom
+      mod = GearModule.router_unsafe(gear_name)
       mod.static_prefix()
     rescue
       UndefinedFunctionError -> nil
@@ -158,6 +171,7 @@ defmodule Antikythera.Asset do
       Enum.each(mapping, fn {path, url} ->
         def url(unquote(path)), do: unquote(url)
       end)
+
       def all(), do: unquote(Macro.escape(mapping))
     end
   end

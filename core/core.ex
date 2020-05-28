@@ -19,17 +19,22 @@ defmodule AntikytheraCore do
     add_gears_dir_to_erl_libs()
     AntikytheraCore.FileSetup.setup_files_and_ets_tables()
     AntikytheraCore.Config.Core.load()
-    if not Antikythera.Env.no_listen?() do # Just to suppress log messages by :syn.init()
+    # Just to suppress log messages by :syn.init()
+    if not Antikythera.Env.no_listen?() do
       establish_connections_to_other_nodes()
       :syn.init()
     end
+
     L.info("activating RaftFleet")
+
     activate_raft_fleet(fn ->
       if not Antikythera.Env.no_listen?() do
         start_cowboy_http()
       end
+
       {:ok, pid} = start_sup()
-      AntikytheraCore.Config.Gear.load_all(0) # `GearManager` and `StartupManager` must be up and running here
+      # `GearManager` and `StartupManager` must be up and running here
+      AntikytheraCore.Config.Gear.load_all(0)
       L.info("started AntikytheraCore")
       {:ok, pid}
     end)
@@ -48,8 +53,10 @@ defmodule AntikytheraCore do
       raise "cannot establish connections to other nodes!"
     else
       case AntikytheraCore.Cluster.connect_to_other_nodes_on_start() do
-        {:ok, true} -> :ok
-        _otherwise  ->
+        {:ok, true} ->
+          :ok
+
+        _otherwise ->
           L.info("failed to establish connections to other nodes; retry afterward")
           :timer.sleep(5_000)
           establish_connections_to_other_nodes(tries_remaining - 1)
@@ -59,6 +66,7 @@ defmodule AntikytheraCore do
 
   defp activate_raft_fleet(f) do
     :ok = RaftFleet.activate(AntikytheraEal.ClusterConfiguration.zone_of_this_host())
+
     try do
       f.()
     catch
@@ -66,61 +74,80 @@ defmodule AntikytheraCore do
         # When an error occurred in the core part of `start/2`, try to cleanup this node so that
         # existing consensus groups (especially `RaftFleet.Cluster`) are not disturbed by the failing node.
         RaftFleet.deactivate()
-        :timer.sleep(10_000) # wait for a moment in the hope that deactivation succeeds...
+        # wait for a moment in the hope that deactivation succeeds...
+        :timer.sleep(10_000)
         {:error, {type, reason}}
     end
   end
 
   defp start_cowboy_http() do
     dispatch_rules = AntikytheraCore.Handler.CowboyRouting.compiled_routes([], false)
+
     ranch_transport_opts = %{
-      max_connections: :infinity, # limit is imposed on a per-executor pool basis
-      socket_opts:     [port: Antikythera.Env.port_to_listen()],
+      # limit is imposed on a per-executor pool basis
+      max_connections: :infinity,
+      socket_opts: [port: Antikythera.Env.port_to_listen()]
     }
+
     cowboy_proto_opts = %{
       # (a) timeout of a request with no data transfer; must be sufficiently longer than the gear action timeout (10_000)
       # (b) timeout of a connection with no requests; this should be longer than LB's idle timeout
-      idle_timeout:    30_000,  # (a)
-      request_timeout: 120_000, # (b)
-      env:             %{dispatch: dispatch_rules},
-      stream_handlers: [:cowboy_compress_h, :cowboy_stream_h],
+      # (a)
+      idle_timeout: 30_000,
+      # (b)
+      request_timeout: 120_000,
+      env: %{dispatch: dispatch_rules},
+      stream_handlers: [:cowboy_compress_h, :cowboy_stream_h]
     }
-    {:ok, _} = :cowboy.start_clear(:antikythera_http_listener, ranch_transport_opts, cowboy_proto_opts)
+
+    {:ok, _} =
+      :cowboy.start_clear(:antikythera_http_listener, ranch_transport_opts, cowboy_proto_opts)
   end
 
   defp start_sup() do
     children = [
-      AntikytheraCore.ErrorCountsAccumulator         ,
-      {AntikytheraCore.Alert.Manager                 , [:antikythera, AntikytheraCore.Alert.Manager]},
-      AntikytheraCore.GearManager                    ,
-      AntikytheraCore.ClusterHostsPoller             ,
-      AntikytheraCore.ClusterNodesConnector          ,
-      AntikytheraCore.MnesiaNodesCleaner             ,
-      AntikytheraCore.StartupManager                 ,
-      AntikytheraCore.TerminationManager             ,
-      AntikytheraCore.CoreConfigPoller               ,
-      AntikytheraCore.GearConfigPoller               ,
-      AntikytheraCore.VersionUpgradeTaskQueue        ,
-      AntikytheraCore.VersionSynchronizer            ,
-      AntikytheraCore.StaleGearArtifactCleaner       ,
-      {AntikytheraCore.MetricsUploader               , [:antikythera, AntikytheraCore.MetricsUploader]},
-      {AntikytheraCore.SystemMetricsReporter         , [AntikytheraCore.MetricsUploader]},
-      AntikytheraCore.ExecutorPool.Sup               ,
-      AntikytheraCore.GearExecutorPoolsManager       ,
-      AntikytheraCore.TenantExecutorPoolsManager     ,
-      AntikytheraCore.TmpdirTracker                  ,
-      AntikytheraCore.ExecutorPool.AsyncJobLog.Writer,
+      AntikytheraCore.ErrorCountsAccumulator,
+      {AntikytheraCore.Alert.Manager, [:antikythera, AntikytheraCore.Alert.Manager]},
+      AntikytheraCore.GearManager,
+      AntikytheraCore.ClusterHostsPoller,
+      AntikytheraCore.ClusterNodesConnector,
+      AntikytheraCore.MnesiaNodesCleaner,
+      AntikytheraCore.StartupManager,
+      AntikytheraCore.TerminationManager,
+      AntikytheraCore.CoreConfigPoller,
+      AntikytheraCore.GearConfigPoller,
+      AntikytheraCore.VersionUpgradeTaskQueue,
+      AntikytheraCore.VersionSynchronizer,
+      AntikytheraCore.StaleGearArtifactCleaner,
+      {AntikytheraCore.MetricsUploader, [:antikythera, AntikytheraCore.MetricsUploader]},
+      {AntikytheraCore.SystemMetricsReporter, [AntikytheraCore.MetricsUploader]},
+      AntikytheraCore.ExecutorPool.Sup,
+      AntikytheraCore.GearExecutorPoolsManager,
+      AntikytheraCore.TenantExecutorPoolsManager,
+      AntikytheraCore.TmpdirTracker,
+      AntikytheraCore.ExecutorPool.AsyncJobLog.Writer
     ]
-    children_for_dev = if Antikythera.Env.runtime_env() == :prod, do: [], else: [
-      Supervisor.child_spec({
-        AntikytheraCore.PeriodicLog.Writer,
-        [AntikytheraCore.PeriodicLog.ReductionBuilder, "reduction"],
-      }, id: :periodic_log_writer_1),
-      Supervisor.child_spec({
-        AntikytheraCore.PeriodicLog.Writer,
-        [AntikytheraCore.PeriodicLog.MessageBuilder, "message"],
-      }, id: :periodic_log_writer_2),
-    ]
+
+    children_for_dev =
+      if Antikythera.Env.runtime_env() == :prod,
+        do: [],
+        else: [
+          Supervisor.child_spec(
+            {
+              AntikytheraCore.PeriodicLog.Writer,
+              [AntikytheraCore.PeriodicLog.ReductionBuilder, "reduction"]
+            },
+            id: :periodic_log_writer_1
+          ),
+          Supervisor.child_spec(
+            {
+              AntikytheraCore.PeriodicLog.Writer,
+              [AntikytheraCore.PeriodicLog.MessageBuilder, "message"]
+            },
+            id: :periodic_log_writer_2
+          )
+        ]
+
     opts = [strategy: :one_for_one, name: AntikytheraCore.Supervisor]
     Supervisor.start_link(children ++ children_for_dev, opts)
   end

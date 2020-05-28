@@ -5,34 +5,46 @@ alias Antikythera.Http
 
 defmodule Antikythera.G2gRequest do
   alias Antikythera.EncodedPath
-  use Croma.Struct, recursive_new?: true, fields: [
-    method:       Http.Method,
-    path:         EncodedPath,
-    query_params: Http.QueryParams,
-    headers:      Http.Headers,
-    cookies:      Http.ReqCookiesMap,
-    body:         Http.Body,
-  ]
 
-  defun from_web_request(%Antikythera.Request{method: m, path_info: pi, query_params: q, headers: hs, cookies: cookies, body: b}) :: t do
+  use Croma.Struct,
+    recursive_new?: true,
+    fields: [
+      method: Http.Method,
+      path: EncodedPath,
+      query_params: Http.QueryParams,
+      headers: Http.Headers,
+      cookies: Http.ReqCookiesMap,
+      body: Http.Body
+    ]
+
+  defun from_web_request(%Antikythera.Request{
+          method: m,
+          path_info: pi,
+          query_params: q,
+          headers: hs,
+          cookies: cookies,
+          body: b
+        }) :: t do
     %__MODULE__{
-      method:       m,
-      path:         "/" <> Enum.join(pi, "/"),
+      method: m,
+      path: "/" <> Enum.join(pi, "/"),
       query_params: q,
-      headers:      hs,
-      cookies:      cookies,
-      body:         b,
+      headers: hs,
+      cookies: cookies,
+      body: b
     }
   end
 end
 
 defmodule Antikythera.G2gResponse do
-  use Croma.Struct, recursive_new?: true, fields: [
-    status:  Http.Status.Int,
-    headers: Http.Headers,
-    cookies: Http.SetCookiesMap,
-    body:    Http.Body,
-  ]
+  use Croma.Struct,
+    recursive_new?: true,
+    fields: [
+      status: Http.Status.Int,
+      headers: Http.Headers,
+      cookies: Http.SetCookiesMap,
+      body: Http.Body
+    ]
 
   @doc """
   Creates a new version of `Antikythera.G2gResponse` struct by body decompression and decoding.
@@ -53,15 +65,19 @@ defmodule Antikythera.G2gResponse do
     if is_map(body) or is_list(body) do
       res
     else
-      {uncompressed, headers2} = case headers["content-encoding"] do
-        "gzip"    -> {:zlib.gunzip(body), Map.delete(headers, "content-encoding")}
-        "deflate" -> {:zlib.unzip(body) , Map.delete(headers, "content-encoding")}
-        _         -> {body              , headers                                }
-      end
-      decoded = case headers2["content-type"] do
-        "application/json" <> _charset -> Poison.decode!(uncompressed)
-        _                              -> uncompressed
-      end
+      {uncompressed, headers2} =
+        case headers["content-encoding"] do
+          "gzip" -> {:zlib.gunzip(body), Map.delete(headers, "content-encoding")}
+          "deflate" -> {:zlib.unzip(body), Map.delete(headers, "content-encoding")}
+          _ -> {body, headers}
+        end
+
+      decoded =
+        case headers2["content-type"] do
+          "application/json" <> _charset -> Poison.decode!(uncompressed)
+          _ -> uncompressed
+        end
+
       %__MODULE__{res | headers: headers2, body: decoded}
     end
   end

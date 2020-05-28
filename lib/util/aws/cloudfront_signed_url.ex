@@ -23,32 +23,46 @@ defmodule Antikythera.Aws.CloudfrontSignedUrl do
 
   A generated signed URL (string).
   """
-  defun generate_signed_url(resource_url        :: v[String.t],
-                            lifetime_in_seconds :: v[pos_integer],
-                            key_pair_id         :: v[String.t],
-                            private_key         :: v[String.t],
-                            url_encoded?        :: v[boolean] \\ false) :: String.t do
+  defun generate_signed_url(
+          resource_url :: v[String.t()],
+          lifetime_in_seconds :: v[pos_integer],
+          key_pair_id :: v[String.t()],
+          private_key :: v[String.t()],
+          url_encoded? :: v[boolean] \\ false
+        ) :: String.t() do
     encoded_url = if url_encoded?, do: resource_url, else: URI.encode(resource_url)
     expires_in_seconds = System.system_time(:second) + lifetime_in_seconds
     joiner = if URI.parse(encoded_url) |> Map.get(:query) |> is_nil(), do: "?", else: "&"
-    encoded_url <> joiner <> URI.encode_query(make_query_params(encoded_url, expires_in_seconds, key_pair_id, private_key))
+
+    encoded_url <>
+      joiner <>
+      URI.encode_query(
+        make_query_params(encoded_url, expires_in_seconds, key_pair_id, private_key)
+      )
   end
 
-  defunpt make_query_params(encoded_url        :: v[String.t],
-                            expires_in_seconds :: v[pos_integer],
-                            key_pair_id        :: v[String.t],
-                            private_key        :: v[String.t]) :: [{String.t, String.t}] do
+  defunpt make_query_params(
+            encoded_url :: v[String.t()],
+            expires_in_seconds :: v[pos_integer],
+            key_pair_id :: v[String.t()],
+            private_key :: v[String.t()]
+          ) :: [{String.t(), String.t()}] do
     policy_statement =
-      ~s/{"Statement":[{"Resource":"#{encoded_url}","Condition":{"DateLessThan":{"AWS:EpochTime":#{expires_in_seconds}}}}]}/
+      ~s/{"Statement":[{"Resource":"#{encoded_url}","Condition":{"DateLessThan":{"AWS:EpochTime":#{
+        expires_in_seconds
+      }}}}]}/
+
     signature = create_signature(policy_statement, private_key)
+
     [
-      {"Expires",     expires_in_seconds},
-      {"Signature",   signature         },
-      {"Key-Pair-Id", key_pair_id       },
+      {"Expires", expires_in_seconds},
+      {"Signature", signature},
+      {"Key-Pair-Id", key_pair_id}
     ]
   end
 
-  defunp create_signature(policy_statement :: v[String.t], private_key :: v[String.t]) :: String.t do
+  defunp create_signature(policy_statement :: v[String.t()], private_key :: v[String.t()]) ::
+           String.t() do
     :public_key.sign(policy_statement, :sha, decode_rsa_key(private_key))
     |> Base.encode64()
     # Replace characters that are invalid in a URL query string with characters that are valid.

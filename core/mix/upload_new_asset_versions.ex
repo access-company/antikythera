@@ -16,15 +16,18 @@ defmodule Mix.Tasks.AntikytheraCore.UploadNewAssetVersions do
   def run(_) do
     Mix.Task.run("loadpaths")
     gear_name = Mix.Project.config()[:app]
+
     case all_assets(gear_name) do
-      nil     -> :ok
+      nil -> :ok
       mapping -> do_run(gear_name, mapping)
     end
   end
 
   defp all_assets(gear_name) do
     gear_name_camel = gear_name |> Atom.to_string() |> Macro.camelize()
-    mod = Module.concat(gear_name_camel, "Asset") # the module is not yet loaded, it's inevitable to make a new atom here
+    # the module is not yet loaded, it's inevitable to make a new atom here
+    mod = Module.concat(gear_name_camel, "Asset")
+
     try do
       {:module, ^mod} = Code.ensure_loaded(mod)
       mod.all()
@@ -37,9 +40,11 @@ defmodule Mix.Tasks.AntikytheraCore.UploadNewAssetVersions do
     try do
       existing_assets = AssetStorage.list(gear_name) |> MapSet.new()
       pairs = Enum.map(mapping, fn {path, url} -> {path, url_to_key(url)} end)
+
       for {path, key} <- pairs, key not in existing_assets do
         do_upload(path, key)
       end
+
       keys = Enum.map(pairs, fn {_path, key} -> key end)
       AssetList.write!(gear_name, keys)
     after
@@ -110,5 +115,6 @@ defmodule Mix.Tasks.AntikytheraCore.UploadNewAssetVersions do
   Enum.each(mime_types_to_compress, fn mime ->
     defp gzip?(unquote(mime)), do: true
   end)
+
   defp gzip?(_), do: false
 end

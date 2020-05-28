@@ -17,17 +17,22 @@ defmodule AntikytheraCore.Version.GearTest do
 
   test "install_gears_whose_deps_met/3 should appropriately reorder gear installations according to their gear dependencies" do
     %{
-      []                                                                         => [],
-      [gear_a: set([]), gear_b: set([])]                                         => [],
-      [gear_a: set([:gear_b]), gear_b: set([])]                                  => [],
+      [] => [],
+      [gear_a: set([]), gear_b: set([])] => [],
+      [gear_a: set([:gear_b]), gear_b: set([])] => [],
       [gear_a: set([:gear_b, :gear_c]), gear_b: set([:gear_c]), gear_c: set([])] => [],
-      [gear_a: set([:gear_b])]                                                   => [:gear_a],
-      [gear_a: set([:gear_c]), gear_b: set([])]                                  => [:gear_a],
-      [gear_a: set([:gear_b]), gear_b: set([:gear_c]), gear_c: set([:gear_a])]   => [:gear_a, :gear_b, :gear_c],
-    } |> Enum.each(fn {pairs, gears_to_be_rejected} ->
+      [gear_a: set([:gear_b])] => [:gear_a],
+      [gear_a: set([:gear_c]), gear_b: set([])] => [:gear_a],
+      [gear_a: set([:gear_b]), gear_b: set([:gear_c]), gear_c: set([:gear_a])] => [
+        :gear_a,
+        :gear_b,
+        :gear_c
+      ]
+    }
+    |> Enum.each(fn {pairs, gears_to_be_rejected} ->
       pairs_to_be_rejected = Enum.filter(pairs, fn {g, _} -> g in gears_to_be_rejected end)
-      ret = V.install_gears_whose_deps_met(pairs, MapSet.new, fn g -> send(self(), g) end)
-      assert set(ret)                       == set(pairs_to_be_rejected)
+      ret = V.install_gears_whose_deps_met(pairs, MapSet.new(), fn g -> send(self(), g) end)
+      assert set(ret) == set(pairs_to_be_rejected)
       assert set(all_messages_in_mailbox()) == set(Keyword.keys(pairs) -- gears_to_be_rejected)
     end)
   end

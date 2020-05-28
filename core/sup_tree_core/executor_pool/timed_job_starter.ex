@@ -32,7 +32,11 @@ defmodule AntikytheraCore.ExecutorPool.TimedJobStarter do
     start_link(queue_name, uploader_name, epool_id)
   end
 
-  defunp start_link(queue_name :: v[atom], uploader_name :: v[atom | pid], epool_id :: v[EPoolId.t]) :: GenServer.on_start do
+  defunp start_link(
+           queue_name :: v[atom],
+           uploader_name :: v[atom | pid],
+           epool_id :: v[EPoolId.t()]
+         ) :: GenServer.on_start() do
     GenServer.start_link(__MODULE__, {queue_name, uploader_name, epool_id})
   end
 
@@ -46,6 +50,7 @@ defmodule AntikytheraCore.ExecutorPool.TimedJobStarter do
     send_command(state)
     {:noreply, state, @interval}
   end
+
   def handle_info(_, state) do
     # neglect other message (possibly a delayed reply from the queue)
     {:noreply, state, @interval}
@@ -53,16 +58,19 @@ defmodule AntikytheraCore.ExecutorPool.TimedJobStarter do
 
   defunp send_command(%{queue_name: queue_name} = state) :: :ok do
     case Process.whereis(queue_name) do
-      nil -> :ok
+      nil ->
+        :ok
+
       pid ->
         case Queue.start_jobs_and_get_metrics(pid) do
-          nil     -> :ok
+          nil -> :ok
           metrics -> report_metrics(state, metrics)
         end
     end
   end
 
-  defunp report_metrics(%{uploader_name: uploader_name, epool_id: epool_id}, metrics :: v[tuple]) :: :ok do
+  defunp report_metrics(%{uploader_name: uploader_name, epool_id: epool_id}, metrics :: v[tuple]) ::
+           :ok do
     # We are sending the metrics data multiple times a minute.
     # Within each minute, based on the `:gauge` strategy, only the last-received numbers are used
     # and the others are discarded by `MetricsUploader`.
@@ -70,12 +78,14 @@ defmodule AntikytheraCore.ExecutorPool.TimedJobStarter do
     MetricsUploader.submit(uploader_name, construct_metrics_data_list(metrics), epool_id)
   end
 
-  defunp construct_metrics_data_list({n_jobs_waiting, n_jobs_runnable, n_jobs_running, n_brokers_waiting}) :: DataList.t do
+  defunp construct_metrics_data_list(
+           {n_jobs_waiting, n_jobs_runnable, n_jobs_running, n_brokers_waiting}
+         ) :: DataList.t() do
     [
-      {"epool_waiting_job_count"   , :gauge, n_jobs_waiting   },
-      {"epool_runnable_job_count"  , :gauge, n_jobs_runnable  },
-      {"epool_running_job_count"   , :gauge, n_jobs_running   },
-      {"epool_waiting_broker_count", :gauge, n_brokers_waiting},
+      {"epool_waiting_job_count", :gauge, n_jobs_waiting},
+      {"epool_runnable_job_count", :gauge, n_jobs_runnable},
+      {"epool_running_job_count", :gauge, n_jobs_running},
+      {"epool_waiting_broker_count", :gauge, n_brokers_waiting}
     ]
   end
 end

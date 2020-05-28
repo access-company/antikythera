@@ -25,7 +25,7 @@ defmodule AntikytheraCore.ErlangLogTranslator do
   def translate(min_level, :error, :report, {:supervisor_report, kw} = message) do
     case Keyword.get(kw, :supervisor) do
       {_pid, PoolSup.Callback} -> :skip
-      _otherwise               -> Logger.Translator.translate(min_level, :error, :report, message)
+      _otherwise -> Logger.Translator.translate(min_level, :error, :report, message)
     end
   end
 

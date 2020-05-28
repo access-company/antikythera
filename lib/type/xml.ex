@@ -4,6 +4,7 @@ use Croma
 
 defmodule Antikythera.Xml do
   el = inspect(__MODULE__.Element)
+
   @moduledoc """
   Convenient XML parser module wrapping [fast_xml](https://github.com/processone/fast_xml).
 
@@ -82,7 +83,7 @@ defmodule Antikythera.Xml do
   defmodule Content do
     alias Antikythera.Xml.Element
 
-    @type t :: String.t | Element.t
+    @type t :: String.t() | Element.t()
 
     defun valid?(v :: term) :: boolean do
       is_binary(v) or Element.valid?(v)
@@ -90,30 +91,35 @@ defmodule Antikythera.Xml do
 
     defun new(v :: term) :: R.t(t) do
       s when is_binary(s) -> {:ok, s}
-      m when is_map(m)    -> Element.new(m)
-      _                   -> {:error, {:invalid_value, [__MODULE__]}}
+      m when is_map(m) -> Element.new(m)
+      _ -> {:error, {:invalid_value, [__MODULE__]}}
     end
   end
 
   defmodule Element do
-    use Croma.Struct, recursive_new?: true, fields: [
-      name:       Croma.String,
-      attributes: Croma.Map,
-      children:   Croma.TypeGen.list_of(Content),
-    ]
+    use Croma.Struct,
+      recursive_new?: true,
+      fields: [
+        name: Croma.String,
+        attributes: Croma.Map,
+        children: Croma.TypeGen.list_of(Content)
+      ]
 
     @behaviour Access
 
     # Access behaviour implementations
 
     @impl true
-    def fetch(%__MODULE__{name: n}      , :name           )                    , do: {:ok, n}
-    def fetch(%__MODULE__{attributes: a}, :attributes     )                    , do: {:ok, a}
-    def fetch(%__MODULE__{children: c}  , :children       )                    , do: {:ok, c}
-    def fetch(%__MODULE__{attributes: a}, "@" <> attribute)                    , do: Map.fetch(a, attribute)
-    def fetch(%__MODULE__{children: c}  , :texts          )                    , do: {:ok, Enum.filter(c, &is_binary/1)}
-    def fetch(%__MODULE__{children: c}  , key             ) when is_binary(key), do: {:ok, Enum.filter(c, &has_name?(&1, key))}
-    def fetch(%__MODULE__{}             , _               )                    , do: :error
+    def fetch(%__MODULE__{name: n}, :name), do: {:ok, n}
+    def fetch(%__MODULE__{attributes: a}, :attributes), do: {:ok, a}
+    def fetch(%__MODULE__{children: c}, :children), do: {:ok, c}
+    def fetch(%__MODULE__{attributes: a}, "@" <> attribute), do: Map.fetch(a, attribute)
+    def fetch(%__MODULE__{children: c}, :texts), do: {:ok, Enum.filter(c, &is_binary/1)}
+
+    def fetch(%__MODULE__{children: c}, key) when is_binary(key),
+      do: {:ok, Enum.filter(c, &has_name?(&1, key))}
+
+    def fetch(%__MODULE__{}, _), do: :error
 
     defp has_name?(%__MODULE__{name: n}, n), do: true
     defp has_name?(_, _), do: false
@@ -122,23 +128,37 @@ defmodule Antikythera.Xml do
     def get_and_update(%__MODULE__{} = e, key, f) when key in [:name, :attributes, :children] do
       case e |> Map.fetch!(key) |> f.() do
         {get_value, new_value} -> {get_value, update_struct_field(e, key, new_value)}
-        :pop                   -> raise "Cannot pop struct field!"
+        :pop -> raise "Cannot pop struct field!"
       end
-    end
-    def get_and_update(%__MODULE__{attributes: as} = e, "@" <> attribute, f) do
-      current_value = Map.get(as, attribute)
-      case f.(current_value) do
-        {get_value, new_attr} when is_binary(new_attr) -> {get_value    , %__MODULE__{e | attributes: Map.put(as, attribute, new_attr)}}
-        :pop                                           -> {current_value, %__MODULE__{e | attributes: Map.delete(as, attribute)}}
-      end
-    end
-    def get_and_update(_e, key, _f) do
-      raise ~s[#{inspect(__MODULE__)}.get_and_update/3 only accepts :name, :attributes, :children or "@attribute" as key for updating, got: #{inspect(key)}]
     end
 
-    defp update_struct_field(%__MODULE__{} = e, :name      , new_name    ) when is_binary(new_name)  , do: %__MODULE__{e | name: new_name}
-    defp update_struct_field(%__MODULE__{} = e, :attributes, new_attrs   ) when is_map(new_attrs)    , do: %__MODULE__{e | attributes: new_attrs}
-    defp update_struct_field(%__MODULE__{} = e, :children  , new_children) when is_list(new_children), do: %__MODULE__{e | children: new_children}
+    def get_and_update(%__MODULE__{attributes: as} = e, "@" <> attribute, f) do
+      current_value = Map.get(as, attribute)
+
+      case f.(current_value) do
+        {get_value, new_attr} when is_binary(new_attr) ->
+          {get_value, %__MODULE__{e | attributes: Map.put(as, attribute, new_attr)}}
+
+        :pop ->
+          {current_value, %__MODULE__{e | attributes: Map.delete(as, attribute)}}
+      end
+    end
+
+    def get_and_update(_e, key, _f) do
+      raise ~s[#{inspect(__MODULE__)}.get_and_update/3 only accepts :name, :attributes, :children or "@attribute" as key for updating, got: #{
+              inspect(key)
+            }]
+    end
+
+    defp update_struct_field(%__MODULE__{} = e, :name, new_name) when is_binary(new_name),
+      do: %__MODULE__{e | name: new_name}
+
+    defp update_struct_field(%__MODULE__{} = e, :attributes, new_attrs) when is_map(new_attrs),
+      do: %__MODULE__{e | attributes: new_attrs}
+
+    defp update_struct_field(%__MODULE__{} = e, :children, new_children)
+         when is_list(new_children),
+         do: %__MODULE__{e | children: new_children}
 
     @impl true
     def pop(element, key) do
@@ -167,30 +187,38 @@ defmodule Antikythera.Xml do
       - In [W3C recommendation](https://www.w3.org/TR/REC-xml/#sec-white-space),
         it is stated that whitespace texts (character data) are basically significant and must be preserved.
   """
-  defun decode(xml_string :: v[String.t], opts :: v[[decode_option]] \\ []) :: R.t(Element.t) do
+  defun decode(xml_string :: v[String.t()], opts :: v[[decode_option]] \\ []) :: R.t(Element.t()) do
     case :fxml_stream.parse_element(xml_string) do
       {:error, _} = e -> e
-      record          -> from_record(record, Keyword.get(opts, :trim, false)) |> R.wrap_if_valid(Element)
+      record -> from_record(record, Keyword.get(opts, :trim, false)) |> R.wrap_if_valid(Element)
     end
   end
 
-  defunp from_record({:xmlel, name, attrs, children} :: :fxml.xmlel, trim :: v[boolean]) :: Element.t do
+  defunp from_record({:xmlel, name, attrs, children} :: :fxml.xmlel(), trim :: v[boolean]) ::
+           Element.t() do
     %Element{
-      name:       name,
+      name: name,
       attributes: Map.new(attrs),
-      children:   children(children, trim, []),
+      children: children(children, trim, [])
     }
   end
 
-  defp children([]                             , _   , acc), do: Enum.reverse(acc)
-  defp children([{:xmlcdata, text} | tail]     , true, acc), do: children(tail, true , cons_trimmed(text, acc))
-  defp children([{:xmlcdata, text} | tail]     , _   , acc), do: children(tail, false, [text | acc])
-  defp children([{:xmlel, _, _, _} = el | tail], trim, acc), do: children(tail, trim , [from_record(el, trim) | acc])
+  defp children([], _, acc), do: Enum.reverse(acc)
+
+  defp children([{:xmlcdata, text} | tail], true, acc),
+    do: children(tail, true, cons_trimmed(text, acc))
+
+  defp children([{:xmlcdata, text} | tail], _, acc), do: children(tail, false, [text | acc])
+
+  defp children([{:xmlel, _, _, _} = el | tail], trim, acc),
+    do: children(tail, trim, [from_record(el, trim) | acc])
 
   defp cons_trimmed(text, acc) do
     case String.trim(text) do
-      "" -> acc          # Nothing other than whitespaces; must be indents
-      _  -> [text | acc] # Otherwise, keep leading/trailing whitespaces since they may have meanings
+      # Nothing other than whitespaces; must be indents
+      "" -> acc
+      # Otherwise, keep leading/trailing whitespaces since they may have meanings
+      _ -> [text | acc]
     end
   end
 
@@ -218,23 +246,34 @@ defmodule Antikythera.Xml do
         and their descendants, in order to reduce probability to alter the meaning of original document.
   - `:with_header` - Prepend `#{@xml_header}\\n`. Default `false`.
   """
-  defun encode(xml_element :: v[Element.t], opts :: v[[encode_option]] \\ []) :: String.t do
-    body = xml_element |> to_record(Keyword.get(opts, :pretty, false), 0) |> :fxml.element_to_binary()
+  defun encode(xml_element :: v[Element.t()], opts :: v[[encode_option]] \\ []) :: String.t() do
+    body =
+      xml_element |> to_record(Keyword.get(opts, :pretty, false), 0) |> :fxml.element_to_binary()
+
     case opts[:with_header] do
       true -> "#{@xml_header}\n" <> body
-      _    -> body
+      _ -> body
     end
   end
 
-  defunp to_record(content :: Content.t, pretty? :: boolean, level :: non_neg_integer) :: :fxml.xmlel do
-    (%Element{name: n, attributes: a, children: c}, true, level) -> {:xmlel, n, Map.to_list(a), prettified_children(c, level)}
-    (%Element{name: n, attributes: a, children: c}, _   , _    ) -> {:xmlel, n, Map.to_list(a), Enum.map(c, &to_record(&1, false, 0))}
-    (text, _, _) when is_binary(text)                            -> {:xmlcdata, text}
+  defunp to_record(content :: Content.t(), pretty? :: boolean, level :: non_neg_integer) ::
+           :fxml.xmlel() do
+    %Element{name: n, attributes: a, children: c}, true, level ->
+      {:xmlel, n, Map.to_list(a), prettified_children(c, level)}
+
+    %Element{name: n, attributes: a, children: c}, _, _ ->
+      {:xmlel, n, Map.to_list(a), Enum.map(c, &to_record(&1, false, 0))}
+
+    text, _, _ when is_binary(text) ->
+      {:xmlcdata, text}
   end
 
-  defp prettified_children([]      , _level),                      do: []
-  defp prettified_children([text]  , _level) when is_binary(text), do: [{:xmlcdata, text}] # If there is only a single text child, directly produce non-prettified record
-  defp prettified_children(children,  level),                      do: map_to_record_and_interleave_whitespaces(children, level)
+  defp prettified_children([], _level), do: []
+  # If there is only a single text child, directly produce non-prettified record
+  defp prettified_children([text], _level) when is_binary(text), do: [{:xmlcdata, text}]
+
+  defp prettified_children(children, level),
+    do: map_to_record_and_interleave_whitespaces(children, level)
 
   @indent_unit "  "
 
@@ -245,17 +284,18 @@ defmodule Antikythera.Xml do
 
   defp map_to_record(children, level) do
     Enum.map_reduce(children, false, fn
-      (text, _mixed?) when is_binary(text) -> {{:xmlcdata, text}               , true  }
-      (%Element{} = e, mixed?)             -> {to_record(e, !mixed?, level + 1), mixed?}
+      text, _mixed? when is_binary(text) -> {{:xmlcdata, text}, true}
+      %Element{} = e, mixed? -> {to_record(e, !mixed?, level + 1), mixed?}
     end)
   end
 
-  defp interleave_whitespaces(children, _level, true ), do: children
-  defp interleave_whitespaces(children,  level, false) do
-    child_indent     = {:xmlcdata, "\n" <> String.duplicate(@indent_unit, level + 1)}
+  defp interleave_whitespaces(children, _level, true), do: children
+
+  defp interleave_whitespaces(children, level, false) do
+    child_indent = {:xmlcdata, "\n" <> String.duplicate(@indent_unit, level + 1)}
     close_tag_indent = {:xmlcdata, "\n" <> String.duplicate(@indent_unit, level)}
     Enum.flat_map(children, &[child_indent, &1]) ++ [close_tag_indent]
   end
 
-  R.define_bang_version_of([decode: 1, decode: 2])
+  R.define_bang_version_of(decode: 1, decode: 2)
 end

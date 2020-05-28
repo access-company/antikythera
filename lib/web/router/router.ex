@@ -130,7 +130,7 @@ defmodule Antikythera.Router do
   defmacro __using__(_) do
     quote do
       import Antikythera.Router
-      Module.register_attribute(__MODULE__, :antikythera_web_routes , accumulate: true)
+      Module.register_attribute(__MODULE__, :antikythera_web_routes, accumulate: true)
       Module.register_attribute(__MODULE__, :antikythera_gear_routes, accumulate: true)
       Module.put_attribute(__MODULE__, :from_option, nil)
       @before_compile Antikythera.Router
@@ -138,27 +138,34 @@ defmodule Antikythera.Router do
   end
 
   defmacro __before_compile__(%Macro.Env{module: module}) do
-    web_routing_source  = Module.get_attribute(module, :antikythera_web_routes ) |> Enum.reverse()
+    web_routing_source = Module.get_attribute(module, :antikythera_web_routes) |> Enum.reverse()
     gear_routing_source = Module.get_attribute(module, :antikythera_gear_routes) |> Enum.reverse()
-    routing_quotes(module, web_routing_source, gear_routing_source) ++ reverse_routing_quotes(web_routing_source, gear_routing_source)
+
+    routing_quotes(module, web_routing_source, gear_routing_source) ++
+      reverse_routing_quotes(web_routing_source, gear_routing_source)
   end
 
   defp routing_quotes(module, web_source, gear_source) do
-    Impl.generate_route_function_clauses(module, :web, web_source) ++ Impl.generate_route_function_clauses(module, :gear, gear_source)
+    Impl.generate_route_function_clauses(module, :web, web_source) ++
+      Impl.generate_route_function_clauses(module, :gear, gear_source)
   end
 
   defp reverse_routing_quotes(web_source, gear_source) do
     alias Antikythera.Router.Reverse
+
     Enum.uniq(web_source ++ gear_source)
     |> Enum.reject(fn {_verb, _path, _controller, _action, opts} -> is_nil(opts[:as]) end)
-    |> Enum.map(fn {_verb, path, _controller, _action, opts} -> Reverse.define_path_helper(opts[:as], path) end)
+    |> Enum.map(fn {_verb, path, _controller, _action, opts} ->
+      Reverse.define_path_helper(opts[:as], path)
+    end)
   end
 
   for from <- [:web, :gear] do
     defmacro unquote(:"only_from_#{from}")(do: block) do
       current_from = unquote(from)
+
       quote do
-        if @from_option, do: raise "nested invocation of `only_from_*` is not allowed"
+        if @from_option, do: raise("nested invocation of `only_from_*` is not allowed")
         @from_option unquote(current_from)
         unquote(block)
         @from_option nil
@@ -174,19 +181,33 @@ defmodule Antikythera.Router do
   end
 
   defp add_route(router_module, verb, path, controller_given, action, opts) do
-    quote bind_quoted: [r_m: router_module, verb: verb, path: path, c_g: controller_given, action: action, opts: opts] do
-      controller     = Antikythera.Router.fully_qualified_controller_module(r_m, c_g, opts)
-      from_grouped   = Module.get_attribute(__MODULE__, :from_option)
+    quote bind_quoted: [
+            r_m: router_module,
+            verb: verb,
+            path: path,
+            c_g: controller_given,
+            action: action,
+            opts: opts
+          ] do
+      controller = Antikythera.Router.fully_qualified_controller_module(r_m, c_g, opts)
+      from_grouped = Module.get_attribute(__MODULE__, :from_option)
       from_per_route = opts[:from]
-      if from_grouped && from_per_route, do: raise "using :from option within `only_from_*` block is not allowed"
+
+      if from_grouped && from_per_route,
+        do: raise("using :from option within `only_from_*` block is not allowed")
 
       opts_without_from_option = Keyword.delete(opts, :from)
       routing_info = {verb, path, controller, action, opts_without_from_option}
+
       case from_grouped || from_per_route do
-        :web  -> @antikythera_web_routes  routing_info
-        :gear -> @antikythera_gear_routes routing_info
-        nil   ->
-          @antikythera_web_routes  routing_info
+        :web ->
+          @antikythera_web_routes routing_info
+
+        :gear ->
+          @antikythera_gear_routes routing_info
+
+        nil ->
+          @antikythera_web_routes routing_info
           @antikythera_gear_routes routing_info
       end
     end
@@ -199,16 +220,26 @@ defmodule Antikythera.Router do
       [
         Module.split(router_module) |> hd(),
         "Controller",
-        Macro.expand(controller, __ENV__), # `{:__aliases__, meta, atoms}` must be expanded
-      ] |> Module.concat() # Executed during compilation; `Module.concat/1` causes no problem
+        # `{:__aliases__, meta, atoms}` must be expanded
+        Macro.expand(controller, __ENV__)
+      ]
+      # Executed during compilation; `Module.concat/1` causes no problem
+      |> Module.concat()
     end
   end
 
   defmacro websocket(path, opts \\ []) do
     %Macro.Env{module: router_module} = __CALLER__
-    ws_module = Module.split(router_module) |> hd() |> Module.concat("Websocket") # during compilation, it's safe to call `Module.concat/2`
+    # during compilation, it's safe to call `Module.concat/2`
+    ws_module = Module.split(router_module) |> hd() |> Module.concat("Websocket")
+
     quote do
-      get unquote(path), unquote(ws_module), :connect, [only_from: :web, websocket?: true] ++ unquote(opts)
+      get(
+        unquote(path),
+        unquote(ws_module),
+        :connect,
+        [only_from: :web, websocket?: true] ++ unquote(opts)
+      )
     end
   end
 

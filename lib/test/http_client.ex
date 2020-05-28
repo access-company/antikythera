@@ -37,7 +37,7 @@ defmodule Antikythera.Test.HttpClient do
 
       def base_url(), do: @default_base_url
 
-      defoverridable [base_url: 0]
+      defoverridable base_url: 0
     end
   end
 end

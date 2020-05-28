@@ -9,7 +9,7 @@ defmodule Antikythera.Controller do
 
   defmacro __using__(_) do
     quote do
-      use   Antikythera.Controller.Plug
+      use Antikythera.Controller.Plug
       alias Antikythera.Conn
     end
   end

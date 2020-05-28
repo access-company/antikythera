@@ -9,11 +9,11 @@ defmodule Antikythera.IsoTimestamp do
   A strict subset of ISO8601 format of timestamp.
   """
 
-  @type t :: String.t
+  @type t :: String.t()
 
   defun valid?(v :: term) :: boolean do
     t when is_binary(t) -> Time.from_iso_timestamp(t) |> R.ok?()
-    _                   -> false
+    _ -> false
   end
 end
 
@@ -22,10 +22,10 @@ defmodule Antikythera.IsoTimestamp.Basic do
   ISO8601 basic format.
   """
 
-  @type t :: String.t
+  @type t :: String.t()
 
   defun valid?(v :: term) :: boolean do
     t when is_binary(t) -> Time.from_iso_basic(t) |> R.ok?()
-    _                   -> false
+    _ -> false
   end
 end

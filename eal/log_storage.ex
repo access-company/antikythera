@@ -31,41 +31,48 @@ defmodule AntikytheraEal.LogStorage do
     - key which identifies the log file
     - size of the log file
     """
-    @callback list(gear_name :: GearName.t, date_str :: String.t) :: [{String.t, non_neg_integer}]
+    @callback list(gear_name :: GearName.t(), date_str :: String.t()) :: [
+                {String.t(), non_neg_integer}
+              ]
 
     @doc """
     Generates download URLs of multiple log files specified by list of keys.
 
     Keys can be obtained by `list/2`.
     """
-    @callback download_urls(keys :: [String.t]) :: [String.t]
+    @callback download_urls(keys :: [String.t()]) :: [String.t()]
 
     @doc """
     Upload all log files which have already been rotated but not yet uploaded.
     """
-    @callback upload_rotated_logs(GearName.t) :: :ok
+    @callback upload_rotated_logs(GearName.t()) :: :ok
   end
 
   defmodule FileSystem do
     @behaviour Behaviour
 
     @impl true
-    defun list(gear_name :: v[GearName.t], date_str :: v[String.t]) :: [{String.t, non_neg_integer}] do
+    defun list(gear_name :: v[GearName.t()], date_str :: v[String.t()]) :: [
+            {String.t(), non_neg_integer}
+          ] do
       dir = CorePath.gear_log_file_path(gear_name) |> Path.dirname()
-      Path.wildcard(Path.join(dir, "#{gear_name}.log.#{date_str}??????.gz")) # match timestamp such as "20150825120000", exclude .uploaded.gz
+      # match timestamp such as "20150825120000", exclude .uploaded.gz
+      Path.wildcard(Path.join(dir, "#{gear_name}.log.#{date_str}??????.gz"))
       |> Enum.map(fn path -> {path, File.stat!(path).size} end)
     end
 
     @impl true
-    defun download_urls(paths :: v[[String.t]]) :: [String.t] do
+    defun download_urls(paths :: v[[String.t()]]) :: [String.t()] do
       Enum.map(paths, fn path -> "file://#{path}" end)
     end
 
     @impl true
-    defun upload_rotated_logs(gear_name :: v[GearName.t]) :: :ok do
-      :timer.sleep(100) # to test that Writer process prevents multiple processes from running simultaneously
+    defun upload_rotated_logs(gear_name :: v[GearName.t()]) :: :ok do
+      # to test that Writer process prevents multiple processes from running simultaneously
+      :timer.sleep(100)
       gear_log_dir = CorePath.gear_log_file_path(gear_name) |> Path.dirname()
-      Path.wildcard(Path.join(gear_log_dir, "#{gear_name}.log.??????????????.gz")) # match timestamp such as "20150825120000", exclude .uploaded.gz
+      # match timestamp such as "20150825120000", exclude .uploaded.gz
+      Path.wildcard(Path.join(gear_log_dir, "#{gear_name}.log.??????????????.gz"))
       |> Enum.each(fn path ->
         File.rename(path, String.replace_suffix(path, ".gz", ".uploaded.gz"))
       end)

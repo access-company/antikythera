@@ -13,11 +13,11 @@ defmodule Strategy.Gauge do
   @typep data_t :: number
 
   @impl true
-  defun init(value :: v[number]) :: data_t, do: value
+  defun(init(value :: v[number]) :: data_t, do: value)
 
   @impl true
-  defun merge(_old_value :: data_t, value :: v[number]) :: data_t, do: value
+  defun(merge(_old_value :: data_t, value :: v[number]) :: data_t, do: value)
 
   @impl true
-  defun results(value :: data_t) :: Strategy.results_t, do: [value: value]
+  defun(results(value :: data_t) :: Strategy.results_t(), do: [value: value])
 end

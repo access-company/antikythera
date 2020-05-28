@@ -39,6 +39,7 @@ defmodule AntikytheraCore.Release.Appup do
 
   defp validate_version_in_app_file(name, v, dir) do
     version_in_app_file = AntikytheraCore.Version.read_from_app_file(dir, name)
+
     if version_in_app_file != v do
       raise "Incorrect version #{version_in_app_file} in .app file under '#{dir}', expecting #{v}"
     end
@@ -51,6 +52,7 @@ defmodule AntikytheraCore.Release.Appup do
     v2_ebin_dir = Path.join(v2_dir, "ebin") |> String.to_charlist()
     {only_v1, only_v2, diff_pairs} = :beam_lib.cmp_dirs(v1_ebin_dir, v2_ebin_dir)
     diff = reject_unchanged_modules(diff_pairs) |> Enum.map(fn {_f1, f2} -> f2 end)
+
     file_content = {
       v2_charlist,
       [
@@ -58,8 +60,9 @@ defmodule AntikytheraCore.Release.Appup do
       ],
       [
         {v1_charlist, generate_instructions(only_v1, diff, only_v2)}
-      ],
+      ]
     }
+
     v2_appup_path = Path.join([v2_dir, "ebin", "#{name}.appup"])
     file_content_string = :io_lib.fwrite('~p.\n', [file_content]) |> List.to_string()
     File.write!(v2_appup_path, file_content_string)
@@ -75,7 +78,8 @@ defmodule AntikytheraCore.Release.Appup do
     # `:beam_lib.cmp_dirs/2` can't ignore trivial changes such as debug-info-only changes.
     # In order not to waste CPU, we shouldn't include these modules in .appup file.
     {:ok, module_name, old_chunks} = :beam_lib.all_chunks(old_path)
-    {:ok, _          , new_chunks} = :beam_lib.all_chunks(new_path)
+    {:ok, _, new_chunks} = :beam_lib.all_chunks(new_path)
+
     if length(old_chunks) != length(new_chunks) do
       true
     else
@@ -83,8 +87,12 @@ defmodule AntikytheraCore.Release.Appup do
         Enum.zip(Enum.sort(old_chunks), Enum.sort(new_chunks))
         |> Enum.filter(fn {{_, ov}, {_, nv}} -> ov != nv end)
         |> Enum.map(fn {{k, _}, _} -> k end)
+
       if changed_chunk_names == ['Dbgi'] do
-        IO.puts("#{inspect(module_name)} is excluded from .appup file, because only Dbgi chunk is changed.")
+        IO.puts(
+          "#{inspect(module_name)} is excluded from .appup file, because only Dbgi chunk is changed."
+        )
+
         false
       else
         true
@@ -97,7 +105,7 @@ defmodule AntikytheraCore.Release.Appup do
     List.flatten([
       Enum.map(added, fn f -> {:add_module, read_module_name(f)} end),
       generate_instructions_for_changed_modules(diff),
-      Enum.map(deleted, fn f -> {:delete_module, read_module_name(f)} end),
+      Enum.map(deleted, fn f -> {:delete_module, read_module_name(f)} end)
     ])
   end
 

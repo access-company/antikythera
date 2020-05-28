@@ -23,11 +23,14 @@ defmodule Antikythera.Time do
   alias Antikythera.MilliSecondsInGregorian
 
   @typep milliseconds :: 0..999
-  @type t :: {__MODULE__, :calendar.date, :calendar.time, milliseconds}
+  @type t :: {__MODULE__, :calendar.date(), :calendar.time(), milliseconds}
 
   defun valid?(v :: term) :: boolean do
-    {__MODULE__, date, {h, m, s}, ms} -> :calendar.valid_date(date) and h in 0..23 and m in 0..59 and s in 0..59 and ms in 0..999
-    _                                 -> false
+    {__MODULE__, date, {h, m, s}, ms} ->
+      :calendar.valid_date(date) and h in 0..23 and m in 0..59 and s in 0..59 and ms in 0..999
+
+    _ ->
+      false
   end
 
   @doc """
@@ -35,102 +38,105 @@ defmodule Antikythera.Time do
 
   Only `Antikythera.IsoTimestamp.t` can be converted.
   """
-  defun new(s :: v[IsoTimestamp.t]) :: R.t(t), do: from_iso_timestamp(s)
+  defun(new(s :: v[IsoTimestamp.t()]) :: R.t(t), do: from_iso_timestamp(s))
 
-  defun truncate_to_day(   {__MODULE__, date, {_   , _     , _     }, _} :: t) :: t, do: {__MODULE__, date, {0   , 0     , 0     }, 0}
-  defun truncate_to_hour(  {__MODULE__, date, {hour, _     , _     }, _} :: t) :: t, do: {__MODULE__, date, {hour, 0     , 0     }, 0}
-  defun truncate_to_minute({__MODULE__, date, {hour, minute, _     }, _} :: t) :: t, do: {__MODULE__, date, {hour, minute, 0     }, 0}
-  defun truncate_to_second({__MODULE__, date, {hour, minute, second}, _} :: t) :: t, do: {__MODULE__, date, {hour, minute, second}, 0}
+  defun(truncate_to_day({__MODULE__, date, {_, _, _}, _} :: t) :: t,
+    do: {__MODULE__, date, {0, 0, 0}, 0}
+  )
+
+  defun(truncate_to_hour({__MODULE__, date, {hour, _, _}, _} :: t) :: t,
+    do: {__MODULE__, date, {hour, 0, 0}, 0}
+  )
+
+  defun(truncate_to_minute({__MODULE__, date, {hour, minute, _}, _} :: t) :: t,
+    do: {__MODULE__, date, {hour, minute, 0}, 0}
+  )
+
+  defun(truncate_to_second({__MODULE__, date, {hour, minute, second}, _} :: t) :: t,
+    do: {__MODULE__, date, {hour, minute, second}, 0}
+  )
 
   defun now() :: t do
     from_epoch_milliseconds(System.system_time(:millisecond))
   end
 
-  defun to_iso_timestamp({__MODULE__, {y, mon, d}, {h, min, s}, millis} :: t) :: IsoTimestamp.t do
+  defun to_iso_timestamp({__MODULE__, {y, mon, d}, {h, min, s}, millis} :: t) :: IsoTimestamp.t() do
     import Antikythera.StringFormat
-    <<Integer.to_string(y) :: binary-size(4), "-",
-      pad2(mon)            :: binary-size(2), "-",
-      pad2(d)              :: binary-size(2), "T",
-      pad2(h)              :: binary-size(2), ":",
-      pad2(min)            :: binary-size(2), ":",
-      pad2(s)              :: binary-size(2), ".",
-      pad3(millis)         :: binary-size(3), "+00:00">>
+
+    <<Integer.to_string(y)::binary-size(4), "-", pad2(mon)::binary-size(2), "-",
+      pad2(d)::binary-size(2), "T", pad2(h)::binary-size(2), ":", pad2(min)::binary-size(2), ":",
+      pad2(s)::binary-size(2), ".", pad3(millis)::binary-size(3), "+00:00">>
   end
 
-  defun to_iso_basic({__MODULE__, {y, mon, d}, {h, min, s}, _} :: t) :: IsoBasic.t do
+  defun to_iso_basic({__MODULE__, {y, mon, d}, {h, min, s}, _} :: t) :: IsoBasic.t() do
     import Antikythera.StringFormat
-    <<Integer.to_string(y) :: binary-size(4),
-      pad2(mon)            :: binary-size(2),
-      pad2(d)              :: binary-size(2), "T",
-      pad2(h)              :: binary-size(2),
-      pad2(min)            :: binary-size(2),
-      pad2(s)              :: binary-size(2), "Z">>
+
+    <<Integer.to_string(y)::binary-size(4), pad2(mon)::binary-size(2), pad2(d)::binary-size(2),
+      "T", pad2(h)::binary-size(2), pad2(min)::binary-size(2), pad2(s)::binary-size(2), "Z">>
   end
 
-  defun from_iso_timestamp(s :: v[String.t]) :: R.t(t) do
+  defun from_iso_timestamp(s :: v[String.t()]) :: R.t(t) do
     R.try(fn ->
-      <<year   :: binary-size(4), "-",
-        month  :: binary-size(2), "-",
-        day    :: binary-size(2), "T",
-        hour   :: binary-size(2), ":",
-        minute :: binary-size(2), ":",
-        second :: binary-size(2),
-        rest1  :: binary>> = s
+      <<year::binary-size(4), "-", month::binary-size(2), "-", day::binary-size(2), "T",
+        hour::binary-size(2), ":", minute::binary-size(2), ":", second::binary-size(2),
+        rest1::binary>> = s
+
       {millis, rest2} = extract_millis(rest1)
+
       time = {
         __MODULE__,
-        {String.to_integer(year), String.to_integer(month ), String.to_integer(day   )},
+        {String.to_integer(year), String.to_integer(month), String.to_integer(day)},
         {String.to_integer(hour), String.to_integer(minute), String.to_integer(second)},
-        millis,
+        millis
       }
+
       adjust_by_timezone_offset(time, rest2)
     end)
     |> R.bind(&R.wrap_if_valid(&1, __MODULE__))
   end
+
   R.define_bang_version_of(from_iso_timestamp: 1)
 
-  defun from_iso_basic(s :: v[String.t]) :: R.t(t) do
+  defun from_iso_basic(s :: v[String.t()]) :: R.t(t) do
     R.try(fn ->
-      <<year   :: binary-size(4),
-        month  :: binary-size(2),
-        day    :: binary-size(2), "T",
-        hour   :: binary-size(2),
-        minute :: binary-size(2),
-        second :: binary-size(2),
-        rest   :: binary>> = s
+      <<year::binary-size(4), month::binary-size(2), day::binary-size(2), "T",
+        hour::binary-size(2), minute::binary-size(2), second::binary-size(2), rest::binary>> = s
+
       time = {
         __MODULE__,
-        {String.to_integer(year), String.to_integer(month ), String.to_integer(day   )},
+        {String.to_integer(year), String.to_integer(month), String.to_integer(day)},
         {String.to_integer(hour), String.to_integer(minute), String.to_integer(second)},
-        0,
+        0
       }
+
       adjust_by_timezone_offset(time, rest)
     end)
     |> R.bind(&R.wrap_if_valid(&1, __MODULE__))
   end
+
   R.define_bang_version_of(from_iso_basic: 1)
 
   defp extract_millis(str) do
     case str do
-      <<".", millis :: binary-size(3), rest :: binary>> -> {String.to_integer(millis), rest}
-      _                                                 -> {0, str}
+      <<".", millis::binary-size(3), rest::binary>> -> {String.to_integer(millis), rest}
+      _ -> {0, str}
     end
   end
 
   defp adjust_by_timezone_offset(t, str) do
     case extract_timezone_offset_minutes(str) do
-      0              -> t
+      0 -> t
       offset_minutes -> shift_minutes(t, -offset_minutes)
     end
   end
 
   defp extract_timezone_offset_minutes(str) do
     case str do
-      <<"+", h :: binary-size(2), ":", m :: binary-size(2)>> ->  convert_to_minutes(h, m)
-      <<"+", h :: binary-size(2),      m :: binary-size(2)>> ->  convert_to_minutes(h, m)
-      <<"-", h :: binary-size(2), ":", m :: binary-size(2)>> -> -convert_to_minutes(h, m)
-      <<"-", h :: binary-size(2),      m :: binary-size(2)>> -> -convert_to_minutes(h, m)
-      "Z"                                                    ->   0
+      <<"+", h::binary-size(2), ":", m::binary-size(2)>> -> convert_to_minutes(h, m)
+      <<"+", h::binary-size(2), m::binary-size(2)>> -> convert_to_minutes(h, m)
+      <<"-", h::binary-size(2), ":", m::binary-size(2)>> -> -convert_to_minutes(h, m)
+      <<"-", h::binary-size(2), m::binary-size(2)>> -> -convert_to_minutes(h, m)
+      "Z" -> 0
     end
   end
 
@@ -142,10 +148,21 @@ defmodule Antikythera.Time do
     from_gregorian_milliseconds(to_gregorian_milliseconds(t) + milliseconds)
   end
 
-  defun shift_seconds(t :: v[t], seconds :: v[integer]) :: t, do: shift_milliseconds(t, seconds             * 1_000)
-  defun shift_minutes(t :: v[t], minutes :: v[integer]) :: t, do: shift_milliseconds(t, minutes        * 60 * 1_000)
-  defun shift_hours(  t :: v[t], hours   :: v[integer]) :: t, do: shift_milliseconds(t, hours     * 60 * 60 * 1_000)
-  defun shift_days(   t :: v[t], days    :: v[integer]) :: t, do: shift_milliseconds(t, days * 24 * 60 * 60 * 1_000)
+  defun(shift_seconds(t :: v[t], seconds :: v[integer]) :: t,
+    do: shift_milliseconds(t, seconds * 1_000)
+  )
+
+  defun(shift_minutes(t :: v[t], minutes :: v[integer]) :: t,
+    do: shift_milliseconds(t, minutes * 60 * 1_000)
+  )
+
+  defun(shift_hours(t :: v[t], hours :: v[integer]) :: t,
+    do: shift_milliseconds(t, hours * 60 * 60 * 1_000)
+  )
+
+  defun(shift_days(t :: v[t], days :: v[integer]) :: t,
+    do: shift_milliseconds(t, days * 24 * 60 * 60 * 1_000)
+  )
 
   defun diff_milliseconds(t1 :: v[t], t2 :: v[t]) :: integer do
     to_gregorian_milliseconds(t1) - to_gregorian_milliseconds(t2)
@@ -167,8 +184,10 @@ defmodule Antikythera.Time do
     to_gregorian_milliseconds(t) - MilliSecondsInGregorian.time_epoch_offset_milliseconds()
   end
 
-  defun from_epoch_milliseconds(milliseconds :: v[MilliSecondsInGregorian.t]) :: t do
-    from_gregorian_milliseconds(milliseconds + MilliSecondsInGregorian.time_epoch_offset_milliseconds())
+  defun from_epoch_milliseconds(milliseconds :: v[MilliSecondsInGregorian.t()]) :: t do
+    from_gregorian_milliseconds(
+      milliseconds + MilliSecondsInGregorian.time_epoch_offset_milliseconds()
+    )
   end
 
   @doc """
@@ -179,7 +198,7 @@ defmodule Antikythera.Time do
 
   https://tools.ietf.org/html/rfc7231#section-7.1.1.1
   """
-  defun to_http_date({__MODULE__, {y, mon, d} = date, {h, min, s}, _} :: t) :: ImfFixdate.t do
+  defun to_http_date({__MODULE__, {y, mon, d} = date, {h, min, s}, _} :: t) :: ImfFixdate.t() do
     # Not using `:httpd_util.rfc1123_date/2` since it reads inputs as localtime and forcibly perform UTC conversion
     import Antikythera.StringFormat
     day_str = :httpd_util.day(:calendar.day_of_the_week(date))
@@ -197,11 +216,13 @@ defmodule Antikythera.Time do
 
   https://tools.ietf.org/html/rfc7231#section-7.1.1.1
   """
-  defun from_http_date(s :: v[String.t]) :: R.t(t) do
-    case :httpd_util.convert_request_date(String.to_charlist(s)) do # safe to use since it always read input as UTC
+  defun from_http_date(s :: v[String.t()]) :: R.t(t) do
+    # safe to use since it always read input as UTC
+    case :httpd_util.convert_request_date(String.to_charlist(s)) do
       {date, time} -> R.wrap_if_valid({__MODULE__, date, time, 0}, __MODULE__)
-      :bad_date    -> {:error, {:bad_date, s}}
+      :bad_date -> {:error, {:bad_date, s}}
     end
   end
+
   R.define_bang_version_of(from_http_date: 1)
 end

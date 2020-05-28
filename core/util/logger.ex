@@ -8,7 +8,8 @@ defmodule AntikytheraCore.Logger do
       emit_log(__CALLER__.module, message, :info)
     else
       quote bind_quoted: [message: message] do
-        _ = message # suppress unused variable warnings
+        # suppress unused variable warnings
+        _ = message
         :ok
       end
     end
@@ -20,7 +21,7 @@ defmodule AntikytheraCore.Logger do
 
   defp emit_log(module, message, level) do
     quote bind_quoted: [module: module, message: message, level: level] do
-      :ok = Logger.bare_log(level, message, [module: module])
+      :ok = Logger.bare_log(level, message, module: module)
     end
   end
 end

@@ -43,7 +43,7 @@ defmodule Antikythera.Env do
   """
 
   deployment_envs = Application.fetch_env!(:antikythera, :deployments) |> Keyword.keys()
-  use Croma.SubtypeOfAtom, values: (deployment_envs ++ [:local, :undefined])
+  use Croma.SubtypeOfAtom, values: deployment_envs ++ [:local, :undefined]
   alias Antikythera.{GearName, GearNameStr, Url}
   alias AntikytheraCore.Handler.CowboyRouting, as: Routing
 
@@ -52,52 +52,72 @@ defmodule Antikythera.Env do
       env_str = Atom.to_string(env)
       def env_var_to_atom(unquote(env_str)), do: unquote(env)
     end)
+
     def env_var_to_atom("local"), do: :local
-    def env_var_to_atom(_      ), do: :undefined
+    def env_var_to_atom(_), do: :undefined
 
     Enum.each(deployment_envs, fn env ->
       def cloud?(unquote(env)), do: true
     end)
+
     def cloud?(_), do: false
   end
 
   defun no_listen?() :: boolean do
     case System.get_env() do
-      %{"NO_LISTEN" => "true"}           -> true
+      %{"NO_LISTEN" => "true"} -> true
       %{"TEST_MODE" => "blackbox_" <> _} -> true
-      _otherwise                         -> false
+      _otherwise -> false
     end
   end
 
-  defun runtime_env()           :: t      , do: System.get_env("ANTIKYTHERA_RUNTIME_ENV") |> Mapping.env_var_to_atom()
-  defun running_on_mix_task?()  :: boolean, do: System.get_env("ANTIKYTHERA_MIX_TASK_MODE") == "true"
-  defun running_with_release?() :: boolean, do: !running_on_mix_task?() && runtime_env() != :undefined
-  defun running_in_cloud?()     :: boolean, do: !running_on_mix_task?() && Mapping.cloud?(runtime_env())
+  defun(runtime_env() :: t,
+    do: System.get_env("ANTIKYTHERA_RUNTIME_ENV") |> Mapping.env_var_to_atom()
+  )
 
-  @compile_env             System.get_env("ANTIKYTHERA_COMPILE_ENV") |> Mapping.env_var_to_atom()
+  defun(running_on_mix_task?() :: boolean,
+    do: System.get_env("ANTIKYTHERA_MIX_TASK_MODE") == "true"
+  )
+
+  defun(running_with_release?() :: boolean,
+    do: !running_on_mix_task?() && runtime_env() != :undefined
+  )
+
+  defun(running_in_cloud?() :: boolean,
+    do: !running_on_mix_task?() && Mapping.cloud?(runtime_env())
+  )
+
+  @compile_env System.get_env("ANTIKYTHERA_COMPILE_ENV") |> Mapping.env_var_to_atom()
   @compiling_for_mix_task? System.get_env("ANTIKYTHERA_MIX_TASK_MODE") == "true"
-  @compiling_for_release?  @compile_env != :undefined
-  @compiling_for_cloud?    Mapping.cloud?(@compile_env)
+  @compiling_for_release? @compile_env != :undefined
+  @compiling_for_cloud? Mapping.cloud?(@compile_env)
 
-  defun compile_env()             :: t      , do: @compile_env
-  defun compiling_for_mix_task?() :: boolean, do: @compiling_for_mix_task?
-  defun compiling_for_release?()  :: boolean, do: !compiling_for_mix_task?() && @compiling_for_release?
-  defun compiling_for_cloud?()    :: boolean, do: !compiling_for_mix_task?() && @compiling_for_cloud?
+  defun(compile_env() :: t, do: @compile_env)
+  defun(compiling_for_mix_task?() :: boolean, do: @compiling_for_mix_task?)
+
+  defun(compiling_for_release?() :: boolean,
+    do: !compiling_for_mix_task?() && @compiling_for_release?
+  )
+
+  defun(compiling_for_cloud?() :: boolean, do: !compiling_for_mix_task?() && @compiling_for_cloud?)
 
   @antikythera_instance_name Application.fetch_env!(:antikythera, :antikythera_instance_name)
-  defun antikythera_instance_name() :: atom, do: @antikythera_instance_name
+  defun(antikythera_instance_name() :: atom, do: @antikythera_instance_name)
 
   @gear_action_timeout_default 10_000
-  @gear_action_timeout         String.to_integer(System.get_env("GEAR_ACTION_TIMEOUT") || "#{@gear_action_timeout_default}")
+  @gear_action_timeout String.to_integer(
+                         System.get_env("GEAR_ACTION_TIMEOUT") ||
+                           "#{@gear_action_timeout_default}"
+                       )
   @doc """
   Timeout (in milli-seconds) for gear actions.
 
   This can be configurable by specifying `"GEAR_ACTION_TIMEOUT"` environment variable when compiling antikythera.
   Defaults to `#{@gear_action_timeout_default}`.
   """
-  defun gear_action_timeout() :: pos_integer, do: @gear_action_timeout
+  defun(gear_action_timeout() :: pos_integer, do: @gear_action_timeout)
 
-  @default_port             8080
+  @default_port 8080
   @default_port_during_test 8081
 
   # To see which port number to use, we have to get the current mix environment at runtime,
@@ -108,7 +128,8 @@ defmodule Antikythera.Env do
   if @compiling_for_release? do
     defp default_port_at_runtime(), do: @default_port
   else
-    defp default_port_at_runtime(), do: (if Mix.env() == :test, do: @default_port_during_test, else: @default_port)
+    defp default_port_at_runtime(),
+      do: if(Mix.env() == :test, do: @default_port_during_test, else: @default_port)
   end
 
   @doc """
@@ -120,12 +141,15 @@ defmodule Antikythera.Env do
   """
   defun port_to_listen() :: non_neg_integer do
     case System.get_env("PORT") do
-      nil      -> default_port_at_runtime()
+      nil -> default_port_at_runtime()
       port_str -> String.to_integer(port_str)
     end
   end
 
-  defun default_base_url(gear_name :: v[GearName.t | GearNameStr.t], env :: v[t] \\ @compile_env) :: Url.t do
+  defun default_base_url(
+          gear_name :: v[GearName.t() | GearNameStr.t()],
+          env :: v[t] \\ @compile_env
+        ) :: Url.t() do
     if Mapping.cloud?(env) do
       "https://" <> Routing.default_domain(gear_name, env)
     else
@@ -133,9 +157,9 @@ defmodule Antikythera.Env do
     end
   end
 
-  defun asset_base_url(gear_name :: v[GearName.t | GearNameStr.t]) :: Url.t do
+  defun asset_base_url(gear_name :: v[GearName.t() | GearNameStr.t()]) :: Url.t() do
     case Application.fetch_env!(:antikythera, :asset_cdn_endpoint) do
-      nil      -> default_base_url(gear_name)
+      nil -> default_base_url(gear_name)
       base_url -> base_url
     end
   end

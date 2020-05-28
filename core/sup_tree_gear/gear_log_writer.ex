@@ -21,14 +21,16 @@ defmodule AntikytheraCore.GearLog.Writer do
   require AntikytheraCore.Logger, as: L
   alias AntikytheraEal.LogStorage
 
-  @rotate_interval (if Mix.env() == :test, do: 500, else: 2 * 60 * 60 * 1000)
+  @rotate_interval if Mix.env() == :test, do: 500, else: 2 * 60 * 60 * 1000
 
   defmodule State do
-    use Croma.Struct, recursive_new?: true, fields: [
-      log_state: LogRotation.State,
-      min_level: Level,
-      uploader:  Croma.TypeGen.nilable(Croma.Pid),
-    ]
+    use Croma.Struct,
+      recursive_new?: true,
+      fields: [
+        log_state: LogRotation.State,
+        min_level: Level,
+        uploader: Croma.TypeGen.nilable(Croma.Pid)
+      ]
   end
 
   def start_link([gear_name, logger_name]) do
@@ -48,7 +50,10 @@ defmodule AntikytheraCore.GearLog.Writer do
   end
 
   @impl true
-  def handle_cast({_, level, _, _} = gear_log, %State{log_state: log_state, min_level: min_level} = state) do
+  def handle_cast(
+        {_, level, _, _} = gear_log,
+        %State{log_state: log_state, min_level: min_level} = state
+      ) do
     if Level.write_to_log?(min_level, level) do
       next_log_state = LogRotation.write_log(log_state, gear_log)
       {:noreply, %State{state | log_state: next_log_state}}
@@ -61,8 +66,13 @@ defmodule AntikytheraCore.GearLog.Writer do
   def handle_cast({:set_min_level, level}, state) do
     {:noreply, %State{state | min_level: level}}
   end
-  def handle_cast({:rotate_and_start_upload, gear_name}, %State{log_state: log_state, uploader: uploader} = state) do
+
+  def handle_cast(
+        {:rotate_and_start_upload, gear_name},
+        %State{log_state: log_state, uploader: uploader} = state
+      ) do
     next_log_state = LogRotation.rotate(log_state)
+
     if uploader do
       # Currently an uploader is working and recent log files will be uploaded => do nothing
       {:noreply, %State{state | log_state: next_log_state}}
@@ -77,6 +87,7 @@ defmodule AntikytheraCore.GearLog.Writer do
     next_log_state = LogRotation.rotate(log_state)
     {:noreply, %State{state | log_state: next_log_state}}
   end
+
   def handle_info({:DOWN, _ref, :process, _pid, _reason}, state) do
     {:noreply, %State{state | uploader: nil}}
   end
@@ -90,47 +101,61 @@ defmodule AntikytheraCore.GearLog.Writer do
   # Public API
   #
   for level <- [:debug, :info, :error] do
-    defun unquote(level)(logger_name :: v[atom], msg :: v[String.t]) :: :ok do
+    defun unquote(level)(logger_name :: v[atom], msg :: v[String.t()]) :: :ok do
       unquote(level)(logger_name, Time.now(), ContextHelper.get!(), msg)
     end
 
     if level == :error do
       # Restrict `logger_name` to `atom` instead of `GenServer.server` for alert manager name resolution
-      defun unquote(level)(logger_name :: v[atom], t :: v[Time.t], context_id :: v[ContextId.t], msg :: v[String.t]) :: :ok do
+      defun unquote(level)(
+              logger_name :: v[atom],
+              t :: v[Time.t()],
+              context_id :: v[ContextId.t()],
+              msg :: v[String.t()]
+            ) :: :ok do
         # The caller process is responsible for sending an error message to the gear's `AlertManager`,
         # in order to keep `GearLog.Writer` decoupled from the alerting functionality.
         CoreAlertManager.notify(resolve_alert_manager_name(logger_name), body(msg, context_id), t)
         GenServer.cast(logger_name, {t, unquote(level), context_id, msg})
       end
     else
-      defun unquote(level)(logger_name :: v[atom], t :: v[Time.t], context_id :: v[ContextId.t], msg :: v[String.t]) :: :ok do
+      defun unquote(level)(
+              logger_name :: v[atom],
+              t :: v[Time.t()],
+              context_id :: v[ContextId.t()],
+              msg :: v[String.t()]
+            ) :: :ok do
         GenServer.cast(logger_name, {t, unquote(level), context_id, msg})
       end
     end
   end
 
-  defun rotate(gear_name :: v[GearName.t]) :: :ok do
+  defun rotate(gear_name :: v[GearName.t()]) :: :ok do
     case logger_name(gear_name) do
-      nil  -> :ok
-      name -> send(name, :rotate); :ok
+      nil ->
+        :ok
+
+      name ->
+        send(name, :rotate)
+        :ok
     end
   end
 
-  defun set_min_level(gear_name :: v[GearName.t], level :: v[Level.t]) :: :ok do
+  defun set_min_level(gear_name :: v[GearName.t()], level :: v[Level.t()]) :: :ok do
     case logger_name(gear_name) do
-      nil  -> :ok
+      nil -> :ok
       name -> GenServer.cast(name, {:set_min_level, level})
     end
   end
 
-  defun rotate_and_start_upload_in_all_nodes(gear_name :: v[GearName.t]) :: :abcast do
+  defun rotate_and_start_upload_in_all_nodes(gear_name :: v[GearName.t()]) :: :abcast do
     case logger_name(gear_name) do
-      nil  -> :ok
+      nil -> :ok
       name -> GenServer.abcast(name, {:rotate_and_start_upload, gear_name})
     end
   end
 
-  defunp logger_name(gear_name :: v[GearName.t]) :: nil | atom do
+  defunp logger_name(gear_name :: v[GearName.t()]) :: nil | atom do
     try do
       AntikytheraCore.GearModule.logger(gear_name)
     rescue

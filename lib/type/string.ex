@@ -56,7 +56,8 @@ defmodule Antikythera.PathSegment do
 end
 
 defmodule Antikythera.PathInfo do
-  use Croma.SubtypeOfList, elem_module: Croma.String # percent-decoded, any string is allowed in each segment
+  # percent-decoded, any string is allowed in each segment
+  use Croma.SubtypeOfList, elem_module: Croma.String
 end
 
 defmodule Antikythera.UnencodedPath do
@@ -68,7 +69,9 @@ end
 
 defmodule Antikythera.EncodedPath do
   alias Antikythera.PathSegment, as: Segment
-  use Croma.SubtypeOfString, pattern: ~r"\A/(#{Segment.charclass()}+/)*(#{Segment.charclass()}+)?\z"
+
+  use Croma.SubtypeOfString,
+    pattern: ~r"\A/(#{Segment.charclass()}+/)*(#{Segment.charclass()}+)?\z"
 end
 
 defmodule Antikythera.Url do
@@ -86,22 +89,25 @@ defmodule Antikythera.Url do
   alias Antikythera.Domain
   alias Antikythera.IpAddress.V4, as: IpV4
 
-  @type t :: String.t
+  @type t :: String.t()
 
   captured_ip_pattern = "(?<ip_str>(\\d{1,3}\\.){3}\\d{1,3})"
-  host_pattern        = "(#{captured_ip_pattern}|#{Domain.pattern_body()})"
-  path_pattern        = "((/[^/\\s?#]+)*/?)?"
-  @pattern              ~r"\Ahttps?://([^\s:]+(:[^\s:]+)?@)?#{host_pattern}(:\d{1,5})?#{path_pattern}(\?([^\s#]*))?(#[^\s]*)?\z"
+  host_pattern = "(#{captured_ip_pattern}|#{Domain.pattern_body()})"
+  path_pattern = "((/[^/\\s?#]+)*/?)?"
+
+  @pattern ~r"\Ahttps?://([^\s:]+(:[^\s:]+)?@)?#{host_pattern}(:\d{1,5})?#{path_pattern}(\?([^\s#]*))?(#[^\s]*)?\z"
   def pattern(), do: @pattern
 
   defun valid?(v :: term) :: boolean do
     s when is_binary(s) ->
       case Regex.named_captures(@pattern, s) do
-        %{"ip_str" => ""    } -> true
+        %{"ip_str" => ""} -> true
         %{"ip_str" => ip_str} -> IpV4.parse(ip_str) |> R.ok?()
-        nil                   -> false
+        nil -> false
       end
-    _ -> false
+
+    _ ->
+      false
   end
 end
 
@@ -117,7 +123,8 @@ defmodule Antikythera.Email do
   - Total length of domain parts are not limited to 255.
   """
 
-  use Croma.SubtypeOfString, pattern: ~r"\A[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]{1,64}@#{Antikythera.Domain.pattern_body()}\z"
+  use Croma.SubtypeOfString,
+    pattern: ~r"\A[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]{1,64}@#{Antikythera.Domain.pattern_body()}\z"
 end
 
 defmodule Antikythera.NodeId do
@@ -131,7 +138,11 @@ defmodule Antikythera.ContextId do
   @system_context "antikythera_system"
   def system_context(), do: @system_context
 
-  use Croma.SubtypeOfString, pattern: ~r/\A(\d{8}-\d{6}\.\d{3}_#{Antikythera.NodeId.pattern_string()}_\d+\.\d+\.\d+|#{@system_context})\z/
+  use Croma.SubtypeOfString,
+    pattern:
+      ~r/\A(\d{8}-\d{6}\.\d{3}_#{Antikythera.NodeId.pattern_string()}_\d+\.\d+\.\d+|#{
+        @system_context
+      })\z/
 end
 
 defmodule Antikythera.ImfFixdate do
@@ -142,7 +153,9 @@ defmodule Antikythera.ImfFixdate do
 
   days_of_week = "(Mon|Tue|Wed|Thu|Fri|Sat|Sun)"
   months_of_year = "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-  use Croma.SubtypeOfString, pattern: ~r/\A#{days_of_week}, \d\d #{months_of_year} \d\d\d\d \d\d:\d\d:\d\d GMT\z/
+
+  use Croma.SubtypeOfString,
+    pattern: ~r/\A#{days_of_week}, \d\d #{months_of_year} \d\d\d\d \d\d:\d\d:\d\d GMT\z/
 end
 
 defmodule Antikythera.GearName do
@@ -156,7 +169,7 @@ defmodule Antikythera.GearName do
 
   defun valid?(v :: term) :: boolean do
     a when is_atom(a) -> GearNameStr.valid?(Atom.to_string(a))
-    _                 -> false
+    _ -> false
   end
 end
 
@@ -166,7 +179,7 @@ end
 
 defmodule Antikythera.TenantId do
   @notenant "notenant"
-  defun notenant() :: String.t, do: @notenant
+  defun(notenant() :: String.t(), do: @notenant)
 
   use Croma.SubtypeOfString, pattern: ~r/\A(?!^#{@notenant}$)[0-9A-Za-z_]{3,32}\z/
 end

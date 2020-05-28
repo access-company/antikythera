@@ -12,6 +12,7 @@ defmodule AntikytheraCore.ExecutorPool.SettingTest do
     orig = CoreConfigCache.read()
     CoreConfig.write(conf)
     GenServerHelper.send_message_and_wait(CoreConfigPoller, :timeout)
+
     try do
       f.()
     after
@@ -23,6 +24,7 @@ defmodule AntikytheraCore.ExecutorPool.SettingTest do
   test "should cap ws_max_connections based on available memory" do
     limit = WsConnectionsCapping.upper_limit()
     conf = %{gears: %{testgear: %{executor_pool: %{ws_max_connections: limit + 1}}}}
+
     with_modified_core_config(conf, fn ->
       s = Setting.of_gear(:testgear)
       assert s.ws_max_connections == limit

@@ -17,7 +17,9 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
 
   def start_link(arg) do
     # `GenServer.start_link/3` would be warned by dialyzer as `:max_heap_size` is currently not included in its typespec
-    :gen_server.start_link(__MODULE__, arg, [spawn_opt: [max_heap_size: GearProcess.max_heap_size()]])
+    :gen_server.start_link(__MODULE__, arg,
+      spawn_opt: [max_heap_size: GearProcess.max_heap_size()]
+    )
   end
 
   @impl true
@@ -34,9 +36,9 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
     try do
       {:ok, controller.__action__(conn, action)}
     catch
-      :error, e      -> {:error, {:error, e     }, System.stacktrace()}
-      :throw, value  -> {:error, {:throw, value }, System.stacktrace()}
-      :exit , reason -> {:error, {:exit , reason}, System.stacktrace()}
+      :error, e -> {:error, {:error, e}, System.stacktrace()}
+      :throw, value -> {:error, {:throw, value}, System.stacktrace()}
+      :exit, reason -> {:error, {:exit, reason}, System.stacktrace()}
     after
       Antikythera.GearApplication.ConfigGetter.cleanup_configs_in_process_dictionary()
     end
@@ -52,11 +54,12 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
   #
   # Public API
   #
-  defun run(pid :: v[pid], conn :: v[Conn.t], entry_point :: v[GearEntryPoint.t]) :: Conn.t do
+  defun run(pid :: v[pid], conn :: v[Conn.t()], entry_point :: v[GearEntryPoint.t()]) :: Conn.t() do
     false = Process.flag(:trap_exit, true)
+
     try do
       case GenServer.call(pid, {:run, conn, entry_point}, Env.gear_action_timeout()) do
-        {:ok, conn2}                 -> CoreConn.run_before_send(conn2, conn)
+        {:ok, conn2} -> CoreConn.run_before_send(conn2, conn)
         {:error, reason, stacktrace} -> GearError.error(conn, reason, stacktrace)
       end
     catch
@@ -66,6 +69,7 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
         Process.unlink(pid)
         Process.exit(pid, :kill)
         GearError.error(conn, :timeout, [])
+
       :exit, {:killed, {GenServer, :call, [^pid | _]}} ->
         # `pid` has been brutally killed by someone, probably due to heap limit violation.
         # We additionally consume the EXIT message in mailbox, just to be sure that it won't result in memory leak.
@@ -74,6 +78,7 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
         after
           0 -> :ok
         end
+
         GearError.error(conn, :killed, [])
     after
       Process.flag(:trap_exit, false)

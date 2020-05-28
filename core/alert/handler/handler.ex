@@ -9,20 +9,23 @@ end
 defmodule AntikytheraCore.Alert.HandlerState do
   alias AntikytheraCore.Alert.Message
 
-  use Croma.Struct, recursive_new?: true, fields: [
-    handler_module: Croma.Atom,
-    otp_app_name:   Croma.Atom,
-    message_buffer: Croma.TypeGen.list_of(Message), # Newest first
-    busy?:          Croma.Boolean,
-  ]
+  use Croma.Struct,
+    recursive_new?: true,
+    fields: [
+      handler_module: Croma.Atom,
+      otp_app_name: Croma.Atom,
+      # Newest first
+      message_buffer: Croma.TypeGen.list_of(Message),
+      busy?: Croma.Boolean
+    ]
 end
 
 defmodule AntikytheraCore.Alert.Handler do
-  @default_fast_interval    60
+  @default_fast_interval 60
   @default_delayed_interval 1_800
-  @fast_interval_key        "fast_interval"
-  @delayed_interval_key     "delayed_interval"
-  @ignore_patterns_key      "ignore_patterns"
+  @fast_interval_key "fast_interval"
+  @delayed_interval_key "delayed_interval"
+  @ignore_patterns_key "ignore_patterns"
 
   @moduledoc """
   Behaviour module for alert handlers.
@@ -36,7 +39,9 @@ defmodule AntikytheraCore.Alert.Handler do
   - Messages received by handlers will be sent out in "fast-then-delayed" pattern:
       - Occasional messages will be flushed from the buffer and sent out in `fast_interval`.
       - Messages arriving too frequently will be buffered for `delayed_interval` until they are sent out.
-  - By default, `fast_interval` is #{@default_fast_interval} seconds and `delayed_interval` is #{@default_delayed_interval} seconds.
+  - By default, `fast_interval` is #{@default_fast_interval} seconds and `delayed_interval` is #{
+    @default_delayed_interval
+  } seconds.
       - They can be customized via core/gear configs.
         Specify #{@fast_interval_key} or #{@delayed_interval_key} for the handler.
 
@@ -63,56 +68,92 @@ defmodule AntikytheraCore.Alert.Handler do
   consider dispatching them to a temporary process.
   In that case though, results of alerts cannot be received (`[]` should always be returned).
   """
-  @callback send_alerts(messages :: [Message.t], handler_config :: HandlerConfig.t, otp_app_name :: :antikythera | GearName.t) :: [Message.t]
+  @callback send_alerts(
+              messages :: [Message.t()],
+              handler_config :: HandlerConfig.t(),
+              otp_app_name :: :antikythera | GearName.t()
+            ) :: [Message.t()]
 
   @doc """
   Validate `handler_config` whether it includes sufficient configurations for the handler.
   Return `true` when it is valid.
   """
-  @callback validate_config(handler_config :: HandlerConfig.t) :: boolean
+  @callback validate_config(handler_config :: HandlerConfig.t()) :: boolean
 
   @impl true
   def init({otp_app_name, handler}) do
-    {:ok, %HandlerState{handler_module: handler, otp_app_name: otp_app_name, message_buffer: [], busy?: false}}
+    {:ok,
+     %HandlerState{
+       handler_module: handler,
+       otp_app_name: otp_app_name,
+       message_buffer: [],
+       busy?: false
+     }}
   end
 
   @impl true
-  def handle_event(message, %HandlerState{busy?: busy?, message_buffer: buffer, otp_app_name: otp_app_name, handler_module: handler} = handler_state) do
-    handler_config  = HandlerConfig.get(handler, otp_app_name)
+  def handle_event(
+        message,
+        %HandlerState{
+          busy?: busy?,
+          message_buffer: buffer,
+          otp_app_name: otp_app_name,
+          handler_module: handler
+        } = handler_state
+      ) do
+    handler_config = HandlerConfig.get(handler, otp_app_name)
     ignore_patterns = ignore_patterns(handler_config)
     ignore_message? = ignore_message?(message, ignore_patterns)
-    new_buffer      = if ignore_message?, do: buffer, else: [message | buffer]
+    new_buffer = if ignore_message?, do: buffer, else: [message | buffer]
+
     if busy? or ignore_message? do
       {:ok, %HandlerState{handler_state | message_buffer: new_buffer}}
     else
-      schedule_handler_timeout(handler, handler_config, %{handler_state | message_buffer: new_buffer})
+      schedule_handler_timeout(handler, handler_config, %{
+        handler_state
+        | message_buffer: new_buffer
+      })
     end
   end
 
   @impl true
-  def handle_info({:handler_timeout, handler},
-                  %HandlerState{handler_module: handler,
-                                otp_app_name:   otp_app_name,
-                                message_buffer: buffer0} = handler_state) do
+  def handle_info(
+        {:handler_timeout, handler},
+        %HandlerState{
+          handler_module: handler,
+          otp_app_name: otp_app_name,
+          message_buffer: buffer0
+        } = handler_state
+      ) do
     case buffer0 do
-      []       -> {:ok, %{handler_state | busy?: false}}
+      [] ->
+        {:ok, %{handler_state | busy?: false}}
+
       messages ->
         handler_config = HandlerConfig.get(handler, otp_app_name)
+
         buffer1 =
           messages
           |> Enum.reverse()
           |> handler.send_alerts(handler_config, otp_app_name)
           |> Enum.reverse()
-        schedule_handler_timeout(handler, handler_config, %{handler_state | message_buffer: buffer1})
+
+        schedule_handler_timeout(handler, handler_config, %{
+          handler_state
+          | message_buffer: buffer1
+        })
     end
   end
+
   def handle_info(_msg, handler_state) do
     {:ok, handler_state}
   end
 
-  defunp schedule_handler_timeout(handler        :: v[atom],
-                                  handler_config :: v[map],
-                                  %HandlerState{busy?: busy?} = handler_state) :: {:ok, HandlerState.t} do
+  defunp schedule_handler_timeout(
+           handler :: v[atom],
+           handler_config :: v[map],
+           %HandlerState{busy?: busy?} = handler_state
+         ) :: {:ok, HandlerState.t()} do
     if busy? do
       Manager.schedule_handler_timeout(handler, delayed_interval(handler_config))
       {:ok, handler_state}
@@ -124,27 +165,27 @@ defmodule AntikytheraCore.Alert.Handler do
 
   defp ignore_message?({_time, body}, ignore_patterns) do
     Enum.map(ignore_patterns, &Regex.compile!/1)
-    |> Enum.any?(&(Regex.match?(&1, body)))
+    |> Enum.any?(&Regex.match?(&1, body))
   end
 
   defp fast_interval(handler_config) do
     case Map.get(handler_config, @fast_interval_key) do
       num when is_integer(num) and num > 0 -> num
-      _                                    -> @default_fast_interval
+      _ -> @default_fast_interval
     end
   end
 
   defp delayed_interval(handler_config) do
     case Map.get(handler_config, @delayed_interval_key) do
       num when is_integer(num) and num > 0 -> num
-      _                                    -> @default_delayed_interval
+      _ -> @default_delayed_interval
     end
   end
 
   defp ignore_patterns(handler_config) do
     case Map.get(handler_config, @ignore_patterns_key) do
       patterns when is_list(patterns) -> patterns
-      _                               -> []
+      _ -> []
     end
   end
 

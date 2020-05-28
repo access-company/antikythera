@@ -3,8 +3,9 @@
 use Croma
 
 defmodule AntikytheraCore.GearProcess do
-  @max_heap_size String.to_integer(System.get_env("GEAR_PROCESS_MAX_HEAP_SIZE") || "50000000") # 400MB in 64bit architecture
-  defun max_heap_size() :: non_neg_integer, do: @max_heap_size
+  # 400MB in 64bit architecture
+  @max_heap_size String.to_integer(System.get_env("GEAR_PROCESS_MAX_HEAP_SIZE") || "50000000")
+  defun(max_heap_size() :: non_neg_integer, do: @max_heap_size)
 
   defun set_max_heap_size() :: :ok do
     # Avoid using `Process.flag/2` as it would be warned by dialyzer

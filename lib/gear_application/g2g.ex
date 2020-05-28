@@ -14,20 +14,21 @@ defmodule Antikythera.GearApplication.G2g do
       defmodule G2g do
         @gear_name Mix.Project.config()[:app]
 
-        defun send_without_decoding(req :: v[G2gRequest.t], context :: v[Context.t]) :: G2gResponse.t do
+        defun send_without_decoding(req :: v[G2gRequest.t()], context :: v[Context.t()]) ::
+                G2gResponse.t() do
           AntikytheraCore.Handler.GearAction.G2g.handle(req, context, @gear_name)
         end
 
-        defun send_without_decoding(%Conn{request: web_req, context: context}) :: G2gResponse.t do
+        defun send_without_decoding(%Conn{request: web_req, context: context}) :: G2gResponse.t() do
           g2g_req = G2gRequest.from_web_request(web_req)
           __MODULE__.send_without_decoding(g2g_req, context)
         end
 
-        defun send(req :: v[G2gRequest.t], context :: v[Context.t]) :: G2gResponse.t do
+        defun send(req :: v[G2gRequest.t()], context :: v[Context.t()]) :: G2gResponse.t() do
           __MODULE__.send_without_decoding(req, context) |> G2gResponse.decode_body()
         end
 
-        defun send(%Conn{request: web_req, context: context}) :: G2gResponse.t do
+        defun send(%Conn{request: web_req, context: context}) :: G2gResponse.t() do
           g2g_req = G2gRequest.from_web_request(web_req)
           __MODULE__.send(g2g_req, context)
         end

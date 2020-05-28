@@ -32,9 +32,11 @@ defmodule Antikythera.Tmpdir do
         upload_to_object_storage_service("object_key", path)
       end)
   """
-  defun make(context_or_epool_id :: v[EPoolId.t | Context.t], f :: (Path.t -> a)) :: a when a: any do
+  defun make(context_or_epool_id :: v[EPoolId.t() | Context.t()], f :: (Path.t() -> a)) :: a
+        when a: any do
     epool_id = extract_epool_id(context_or_epool_id)
     {:ok, tmpdir} = TmpdirTracker.request(epool_id)
+
     try do
       f.(tmpdir)
     after

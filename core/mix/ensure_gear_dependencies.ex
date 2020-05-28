@@ -16,23 +16,27 @@ defmodule Mix.Tasks.Compile.EnsureGearDependencies do
     |> Enum.each(fn dep -> ensure_gear_dependency!(elem(dep, 0), extract_opts_from_dep(dep)) end)
   end
 
-  defp extract_opts_from_dep({_app, _req, opts})             , do: opts
+  defp extract_opts_from_dep({_app, _req, opts}), do: opts
   defp extract_opts_from_dep({_app, opts}) when is_list(opts), do: opts
-  defp extract_opts_from_dep({_app, _req})                   , do: []
+  defp extract_opts_from_dep({_app, _req}), do: []
 
   defp ensure_gear_dependency!(gear_name, opts) do
-    gear_mixfile_module = Mix.Project.in_project(gear_name, gear_dir(gear_name, opts), fn mod -> mod end)
+    gear_mixfile_module =
+      Mix.Project.in_project(gear_name, gear_dir(gear_name, opts), fn mod -> mod end)
+
     if gear_mixfile_module.project() |> Keyword.has_key?(:antikythera_gear) do
       :ok
     else
-      Mix.raise("#{gear_name} is not a gear application! `gear_deps/0` may only contain gear dependencies.")
+      Mix.raise(
+        "#{gear_name} is not a gear application! `gear_deps/0` may only contain gear dependencies."
+      )
     end
   end
 
   defp gear_dir(gear_name, opts) do
     case Keyword.fetch(opts, :path) do
       {:ok, path} -> gear_dir_as_path_dep(path)
-      :error      -> gear_dir_as_non_path_dep(gear_name)
+      :error -> gear_dir_as_non_path_dep(gear_name)
     end
   end
 
@@ -45,12 +49,15 @@ defmodule Mix.Tasks.Compile.EnsureGearDependencies do
   end
 
   defp gear_dir_as_non_path_dep(gear_name) do
-    cwd               = File.cwd!()
+    cwd = File.cwd!()
     parent_dir_of_cwd = Path.expand("..", cwd)
-    gear_name_str     = Atom.to_string(gear_name)
+    gear_name_str = Atom.to_string(gear_name)
+
     case Path.basename(parent_dir_of_cwd) do
-      "deps" -> Path.join(parent_dir_of_cwd, gear_name_str) # this gear project itself is being compiled as a gear dependency; its gear dependencies are located at sibling directories
-      _      -> Path.join([cwd, "deps", gear_name_str])     # this gear project is the toplevel mix project
+      # this gear project itself is being compiled as a gear dependency; its gear dependencies are located at sibling directories
+      "deps" -> Path.join(parent_dir_of_cwd, gear_name_str)
+      # this gear project is the toplevel mix project
+      _ -> Path.join([cwd, "deps", gear_name_str])
     end
   end
 end

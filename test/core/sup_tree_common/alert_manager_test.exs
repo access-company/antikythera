@@ -17,8 +17,10 @@ defmodule AntikytheraCore.Alert.ManagerTest do
 
   setup do
     :meck.new(ConfigCache.Core, [:passthrough])
+
     on_exit(fn ->
-      CoreAlertManager.update_handler_installations(:antikythera, %{}) # reset
+      # reset
+      CoreAlertManager.update_handler_installations(:antikythera, %{})
       MemoryInbox.clean()
       :meck.unload()
     end)
@@ -53,7 +55,15 @@ defmodule AntikytheraCore.Alert.ManagerTest do
   end
 
   test "should buffer a message and start fast-then-delayed alert chain when notified" do
-    valid_config = %{"email" => %{"to" => ["test@example.com"], "fast_interval" => 1, "delayed_interval" => 2, "errors_per_body" => 1}}
+    valid_config = %{
+      "email" => %{
+        "to" => ["test@example.com"],
+        "fast_interval" => 1,
+        "delayed_interval" => 2,
+        "errors_per_body" => 1
+      }
+    }
+
     update_handler_installations_and_mock_core_config_cache(valid_config)
     assert which_handlers() == [{AHandler, EmailHandler}, ErrorCountReporter]
     assert %{message_buffer: [], busy?: false} = get_handler_state(EmailHandler)
@@ -70,13 +80,14 @@ defmodule AntikytheraCore.Alert.ManagerTest do
     assert %{message_buffer: [], busy?: true} = get_handler_state(EmailHandler)
     assert [%Mail{to: ["test@example.com"], subject: subject1, body: body1}] = MemoryInbox.get()
     assert String.ends_with?(subject1, "test_body1")
+
     assert body1 ==
-      """
-      [#{Time.to_iso_timestamp(time1)}] test_body1
-      second line1
+             """
+             [#{Time.to_iso_timestamp(time1)}] test_body1
+             second line1
 
 
-      """
+             """
 
     # After another `fast_interval` -> throttled; messages buffered
     assert CoreAlertManager.notify(CoreAlertManager, "test_body2\nsecond line2") == :ok
@@ -84,30 +95,35 @@ defmodule AntikytheraCore.Alert.ManagerTest do
     assert CoreAlertManager.notify(CoreAlertManager, "test_body4\nsecond line4") == :ok
     :timer.sleep(1_000)
     assert %{message_buffer: buffer2, busy?: true} = get_handler_state(EmailHandler)
+
     assert [
-      {time4, "test_body4\nsecond line4"},
-      {time3, "test_body3\nsecond line3"},
-      {time2, "test_body2\nsecond line2"},
-    ] = buffer2
+             {time4, "test_body4\nsecond line4"},
+             {time3, "test_body3\nsecond line3"},
+             {time2, "test_body2\nsecond line2"}
+           ] = buffer2
+
     assert [%Mail{to: ["test@example.com"], subject: ^subject1, body: ^body1}] = MemoryInbox.get()
 
     # After `delayed_interval` -> alert sent (with summarized message), and still "busy"
     :timer.sleep(1_000)
     assert %{message_buffer: [], busy?: true} = get_handler_state(EmailHandler)
+
     assert [
-      %Mail{to: ["test@example.com"], subject:  subject2, body:  body2},
-      %Mail{to: ["test@example.com"], subject: ^subject1, body: ^body1},
-    ] = MemoryInbox.get()
+             %Mail{to: ["test@example.com"], subject: subject2, body: body2},
+             %Mail{to: ["test@example.com"], subject: ^subject1, body: ^body1}
+           ] = MemoryInbox.get()
+
     assert String.ends_with?(subject2, "test_body2 [and other 2 error(s)]")
+
     assert body2 ==
-      """
-      [#{Time.to_iso_timestamp(time2)}] test_body2
-      second line2
+             """
+             [#{Time.to_iso_timestamp(time2)}] test_body2
+             second line2
 
 
-      [#{Time.to_iso_timestamp(time3)}] test_body3
-      [#{Time.to_iso_timestamp(time4)}] test_body4
-      """
+             [#{Time.to_iso_timestamp(time3)}] test_body3
+             [#{Time.to_iso_timestamp(time4)}] test_body4
+             """
 
     # After another `delayed_interval` without messages -> back to "not busy"
     :timer.sleep(2_000)
@@ -117,55 +133,93 @@ defmodule AntikytheraCore.Alert.ManagerTest do
   test "should ignore alerts if the message pattern matches any of the specified patterns" do
     ignore_patterns = [
       "\\(MatchError\\) no match of right hand side value:",
-      "(*CRLF)\\A\\*\\* \\(ArithmeticError\\) bad argument in arithmetic expression:.*second line3",
+      "(*CRLF)\\A\\*\\* \\(ArithmeticError\\) bad argument in arithmetic expression:.*second line3"
     ]
-    valid_config = %{"email" => %{"to" => ["test@example.com"], "fast_interval" => 1, "ignore_patterns" => ignore_patterns}}
+
+    valid_config = %{
+      "email" => %{
+        "to" => ["test@example.com"],
+        "fast_interval" => 1,
+        "ignore_patterns" => ignore_patterns
+      }
+    }
+
     update_handler_installations_and_mock_core_config_cache(valid_config)
     assert which_handlers() == [{AHandler, EmailHandler}, ErrorCountReporter]
     assert %{message_buffer: [], busy?: false} = get_handler_state(EmailHandler)
     assert MemoryInbox.get() == []
 
     # to be ignored
-    assert CoreAlertManager.notify(CoreAlertManager, "** (MatchError) no match of right hand side value: 1\nsecond line1") == :ok
+    assert CoreAlertManager.notify(
+             CoreAlertManager,
+             "** (MatchError) no match of right hand side value: 1\nsecond line1"
+           ) == :ok
+
     assert %{message_buffer: [], busy?: false} = get_handler_state(EmailHandler)
     assert MemoryInbox.get() == []
 
     # not to be ignored
-    assert CoreAlertManager.notify(CoreAlertManager, "** (UndefinedFunctionError) function Hoge.foo/0 is undefined (module Hoge is not available)\nsecond line2") == :ok
+    assert CoreAlertManager.notify(
+             CoreAlertManager,
+             "** (UndefinedFunctionError) function Hoge.foo/0 is undefined (module Hoge is not available)\nsecond line2"
+           ) == :ok
+
     assert %{message_buffer: buffer1, busy?: true} = get_handler_state(EmailHandler)
-    assert [{time1, "** (UndefinedFunctionError) function Hoge.foo/0 is undefined (module Hoge is not available)\nsecond line2"}] = buffer1
+
+    assert [
+             {time1,
+              "** (UndefinedFunctionError) function Hoge.foo/0 is undefined (module Hoge is not available)\nsecond line2"}
+           ] = buffer1
+
     assert MemoryInbox.get() == []
 
     # to be ignored
-    assert CoreAlertManager.notify(CoreAlertManager, "** (ArithmeticError) bad argument in arithmetic expression: 1 / 0\nsecond line3") == :ok
+    assert CoreAlertManager.notify(
+             CoreAlertManager,
+             "** (ArithmeticError) bad argument in arithmetic expression: 1 / 0\nsecond line3"
+           ) == :ok
+
     assert %{message_buffer: buffer1, busy?: true} = get_handler_state(EmailHandler)
     assert MemoryInbox.get() == []
 
     # not to be ignored
-    assert CoreAlertManager.notify(CoreAlertManager, "** (ArithmeticError) bad argument in arithmetic expression: 1 / 0\nsecond line4") == :ok
+    assert CoreAlertManager.notify(
+             CoreAlertManager,
+             "** (ArithmeticError) bad argument in arithmetic expression: 1 / 0\nsecond line4"
+           ) == :ok
+
     assert %{message_buffer: buffer2, busy?: true} = get_handler_state(EmailHandler)
+
     assert [
-      {time2, "** (ArithmeticError) bad argument in arithmetic expression: 1 / 0\nsecond line4"},
-      {time1, "** (UndefinedFunctionError) function Hoge.foo/0 is undefined (module Hoge is not available)\nsecond line2"},
-    ] = buffer2
+             {time2,
+              "** (ArithmeticError) bad argument in arithmetic expression: 1 / 0\nsecond line4"},
+             {time1,
+              "** (UndefinedFunctionError) function Hoge.foo/0 is undefined (module Hoge is not available)\nsecond line2"}
+           ] = buffer2
+
     assert MemoryInbox.get() == []
 
     # After `fast_interval`, an alert that is not ignored is sent
     :timer.sleep(1_100)
     assert %{message_buffer: [], busy?: true} = get_handler_state(EmailHandler)
     assert [%Mail{to: ["test@example.com"], subject: subject1, body: body1}] = MemoryInbox.get()
-    assert String.ends_with?(subject1, "** (UndefinedFunctionError) function Hoge.foo/0 is... [and other 1 error(s)]")
+
+    assert String.ends_with?(
+             subject1,
+             "** (UndefinedFunctionError) function Hoge.foo/0 is... [and other 1 error(s)]"
+           )
+
     assert body1 ==
-      """
-      [#{Time.to_iso_timestamp(time1)}] ** (UndefinedFunctionError) function Hoge.foo/0 is undefined (module Hoge is not available)
-      second line2
+             """
+             [#{Time.to_iso_timestamp(time1)}] ** (UndefinedFunctionError) function Hoge.foo/0 is undefined (module Hoge is not available)
+             second line2
 
 
-      [#{Time.to_iso_timestamp(time2)}] ** (ArithmeticError) bad argument in arithmetic expression: 1 / 0
-      second line4
+             [#{Time.to_iso_timestamp(time2)}] ** (ArithmeticError) bad argument in arithmetic expression: 1 / 0
+             second line4
 
 
-      """
+             """
   end
 
   defp update_handler_installations_and_mock_core_config_cache(alert_config) do

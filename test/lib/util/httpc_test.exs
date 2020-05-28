@@ -16,7 +16,13 @@ defmodule Antikythera.HttpcTest do
   test "validate ReqBody" do
     assert Httpc.ReqBody.valid?("hoge")
     assert Httpc.ReqBody.valid?("*")
-    assert Httpc.ReqBody.valid?([:crypto.strong_rand_bytes(1), :crypto.strong_rand_bytes(5), :crypto.strong_rand_bytes(10)])
+
+    assert Httpc.ReqBody.valid?([
+             :crypto.strong_rand_bytes(1),
+             :crypto.strong_rand_bytes(5),
+             :crypto.strong_rand_bytes(10)
+           ])
+
     assert Httpc.ReqBody.valid?({:form, [foo: "bar", hoge: "fuga"]})
     assert Httpc.ReqBody.valid?({:json, %{"str" => "foo", :atom => %{"bar" => "baz"}}})
     assert Httpc.ReqBody.valid?({:file, "/path/to/file"})
@@ -27,13 +33,13 @@ defmodule Antikythera.HttpcTest do
   end
 
   property "encod_path/1 should percent-encode chars as in URI.encode/1" do
-    check all s <- string(:printable) do
+    check all(s <- string(:printable)) do
       assert Httpc.encode_path(s) == URI.encode(s)
     end
   end
 
   property "encod_path/1 should be idempotent so that it keeps already encoded chars" do
-    check all s <- string(:printable) do
+    check all(s <- string(:printable)) do
       encoded = Httpc.encode_path(s)
       assert Httpc.encode_path(encoded) == encoded
     end

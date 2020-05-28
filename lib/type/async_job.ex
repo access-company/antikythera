@@ -11,11 +11,16 @@ defmodule Antikythera.AsyncJob.Id do
 
   defunp gen_base64url_char() :: char do
     case :rand.uniform(64) do
-      i when i <= 10 -> i + 47 # 0-9
-      i when i <= 36 -> i + 54 # A-Z
-      i when i <= 62 -> i + 60 # a-z
-      63             -> 45     # -
-      64             -> 95     # _
+      # 0-9
+      i when i <= 10 -> i + 47
+      # A-Z
+      i when i <= 36 -> i + 54
+      # a-z
+      i when i <= 62 -> i + 60
+      # -
+      63 -> 45
+      # _
+      64 -> 95
     end
   end
 end
@@ -23,7 +28,7 @@ end
 defmodule Antikythera.AsyncJob.Schedule do
   alias Antikythera.{Time, Cron}
 
-  @type t :: {:once, Time.t} | {:cron, Cron.t}
+  @type t :: {:once, Time.t()} | {:cron, Cron.t()}
 
   defun valid?(t :: term) :: boolean do
     {:once, t} -> Time.valid?(t)
@@ -49,7 +54,9 @@ defmodule Antikythera.AsyncJob.RetryInterval do
     use Croma.SubtypeOfFloat, min: 1.0, max: 5.0, default: 2.0
   end
 
-  use Croma.SubtypeOfTuple, elem_modules: [Factor, Base], default: {Factor.default(), Base.default()}
+  use Croma.SubtypeOfTuple,
+    elem_modules: [Factor, Base],
+    default: {Factor.default(), Base.default()}
 
   defun interval(t :: v[t], n_retries_done_so_far :: v[non_neg_integer]) :: non_neg_integer do
     {factor, base} = t
@@ -61,14 +68,16 @@ defmodule Antikythera.AsyncJob.Metadata do
   alias Antikythera.Time
   alias Antikythera.AsyncJob.{Id, Attempts, MaxDuration, RetryInterval}
 
-  use Croma.Struct, recursive_new?: true, fields: [
-    id:                 Id,
-    run_at:             Time,
-    max_duration:       MaxDuration,
-    attempts:           Attempts,
-    remaining_attempts: Attempts,
-    retry_interval:     RetryInterval,
-  ]
+  use Croma.Struct,
+    recursive_new?: true,
+    fields: [
+      id: Id,
+      run_at: Time,
+      max_duration: MaxDuration,
+      attempts: Attempts,
+      remaining_attempts: Attempts,
+      retry_interval: RetryInterval
+    ]
 end
 
 defmodule Antikythera.AsyncJob.StateLabel do
@@ -79,17 +88,19 @@ defmodule Antikythera.AsyncJob.Status do
   alias Antikythera.{Time, GearName}
   alias Antikythera.AsyncJob.{Id, Schedule, Attempts, MaxDuration, RetryInterval, StateLabel}
 
-  use Croma.Struct, recursive_new?: true, fields: [
-    id:                 Id,
-    gear_name:          GearName,
-    module:             Croma.Atom,
-    payload:            Croma.Map,
-    schedule:           Schedule,
-    start_time:         Time,
-    state:              StateLabel,
-    max_duration:       MaxDuration,
-    attempts:           Attempts,
-    remaining_attempts: Attempts,
-    retry_interval:     RetryInterval,
-  ]
+  use Croma.Struct,
+    recursive_new?: true,
+    fields: [
+      id: Id,
+      gear_name: GearName,
+      module: Croma.Atom,
+      payload: Croma.Map,
+      schedule: Schedule,
+      start_time: Time,
+      state: StateLabel,
+      max_duration: MaxDuration,
+      attempts: Attempts,
+      remaining_attempts: Attempts,
+      retry_interval: RetryInterval
+    ]
 end

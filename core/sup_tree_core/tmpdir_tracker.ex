@@ -24,14 +24,16 @@ defmodule AntikytheraCore.TmpdirTracker do
       use Croma.SubtypeOfMap, key_module: Croma.Pid, value_module: Croma.String
     end
 
-    use Croma.Struct, recursive_new?: true, fields: [
-      gear_tmp_dir: Croma.String,
-      map:          Map,
-    ]
+    use Croma.Struct,
+      recursive_new?: true,
+      fields: [
+        gear_tmp_dir: Croma.String,
+        map: Map
+      ]
   end
 
   def start_link([]) do
-    GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   @impl true
@@ -55,7 +57,7 @@ defmodule AntikytheraCore.TmpdirTracker do
   def handle_call({:get, pid, epool_id}, _from, %State{map: map} = state) do
     case Map.get(map, pid) do
       nil -> {:reply, {:error, :not_found}, state}
-      _   -> {:reply, {:ok, tmpdir_path(state, pid, epool_id)}, state}
+      _ -> {:reply, {:ok, tmpdir_path(state, pid, epool_id)}, state}
     end
   end
 
@@ -72,13 +74,16 @@ defmodule AntikytheraCore.TmpdirTracker do
   def handle_info({:DOWN, _mon, :process, pid, _reason}, state) do
     {:noreply, remove_dir(state, pid)}
   end
+
   def handle_info(_msg, state) do
     {:noreply, state}
   end
 
-  defunp remove_dir(%State{map: map1} = state, pid :: v[pid]) :: State.t do
+  defunp remove_dir(%State{map: map1} = state, pid :: v[pid]) :: State.t() do
     case Map.pop(map1, pid) do
-      {nil   , _   } -> state
+      {nil, _} ->
+        state
+
       {tmpdir, map2} ->
         File.rm_rf!(tmpdir)
         %State{state | map: map2}
@@ -88,7 +93,7 @@ defmodule AntikytheraCore.TmpdirTracker do
   #
   # Public API
   #
-  defun request(epool_id :: v[EPoolId.t]) :: R.t(Path.t) do
+  defun request(epool_id :: v[EPoolId.t()]) :: R.t(Path.t()) do
     GenServer.call(__MODULE__, {:request, self(), epool_id})
     |> R.map(fn tmpdir ->
       File.mkdir_p!(tmpdir)
@@ -96,7 +101,7 @@ defmodule AntikytheraCore.TmpdirTracker do
     end)
   end
 
-  defun get(epool_id :: v[EPoolId.t]) :: R.t(Path.t) do
+  defun get(epool_id :: v[EPoolId.t()]) :: R.t(Path.t()) do
     GenServer.call(__MODULE__, {:get, self(), epool_id})
   end
 
