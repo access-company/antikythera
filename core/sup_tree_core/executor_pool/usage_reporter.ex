@@ -20,7 +20,7 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporter do
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter
 
-  @interval 300_000
+  @interval 60_000
 
   @typep usage_rational :: {non_neg_integer, non_neg_integer}
 
