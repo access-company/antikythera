@@ -16,6 +16,8 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
   @total_error_count_route         {"/error_count/_total"       , SystemInfoExporter.ErrorCount, :total}
   @per_app_error_count_route       {"/error_count/:otp_app_name", SystemInfoExporter.ErrorCount, :per_otp_app}
 
+  @typep route_path :: {String.t, module, any}
+
   defun compiled_routes(gear_names :: [GearName.t], initialized? :: v[boolean]) :: :cowboy_router.dispatch_rules do
     gear_routes = Enum.flat_map(gear_names, &per_gear_domain_pathroutes_pairs/1)
     :cowboy_router.compile(gear_routes ++ wildcard_domain_routes(initialized?))
@@ -28,7 +30,24 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
       @total_error_count_route,
       @per_app_error_count_route,
     ]
-    [{:_, path_rules}]
+    [{:_, default_gear_routes() ++ path_rules}]
+  end
+
+  defunp default_gear_routes() :: [route_path] do
+    if :code.is_loaded(Mix.Project) do
+      conf = Mix.Project.config()
+      if Keyword.get(conf, :antikythera_gear) != nil do
+        gear_name = Keyword.get(conf, :app)
+        [
+          static_file_serving_route(gear_name),
+          normal_routes(gear_name),
+        ] |> Enum.reject(&is_nil/1)
+      else
+        []
+      end
+    else
+      []
+    end
   end
 
   defunp per_gear_domain_pathroutes_pairs(gear_name :: v[GearName.t]) :: :cowboy_router.routes do
@@ -38,8 +57,6 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
     ] |> Enum.reject(&is_nil/1)
     domains_of(gear_name) |> Enum.map(fn domain -> {domain, routes} end)
   end
-
-  @typep route_path :: {String.t, module, any}
 
   defunp static_file_serving_route(gear_name :: v[GearName.t]) :: nil | route_path do
     router_module = GearModule.router(gear_name)
