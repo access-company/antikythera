@@ -31,21 +31,21 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
       @per_app_error_count_route,
     ]
     case default_routing_gear() do
-      nil  -> [{:_, path_rules}]
-      gear -> [{:_, gear_routes(gear) ++ path_rules}]
+      :error      -> [{:_, path_rules}]
+      {:ok, gear} -> [{:_, gear_routes(gear) ++ path_rules}]
     end
   end
 
-  defunp default_routing_gear() :: GearName.t | nil do
+  defunp default_routing_gear() :: {:ok, GearName.t} | :error do
     if :code.is_loaded(Mix.Project) do
       conf = Mix.Project.config()
       if conf[:antikythera_gear] != nil do
-        conf[:app]
+        {:ok, conf[:app]}
       else
-        nil
+        :error
       end
     else
-      nil
+      :error
     end
   end
 
@@ -115,8 +115,8 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
 
   defun localhost_or_default_domain(gear_name :: v[GearName.t | GearNameStr.t], env :: v[Env.t]) :: Domain.t do
     case default_routing_gear() do
-      nil -> default_domain(gear_name, env)
-      gear ->
+      :error -> default_domain(gear_name, env)
+      {:ok, gear} ->
         if gear == gear_name || (is_binary(gear_name) && Atom.to_string(gear) == gear_name) do
           "localhost"
         else
