@@ -30,32 +30,35 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
       @total_error_count_route,
       @per_app_error_count_route,
     ]
-    [{:_, default_gear_routes() ++ path_rules}]
+    case default_routing_gear() do
+      nil  -> [{:_, path_rules}]
+      gear -> [{:_, gear_routes(gear) ++ path_rules}]
+    end
   end
 
-  defunp default_gear_routes() :: [route_path] do
+  defunp default_routing_gear() :: GearName.t | nil do
     if :code.is_loaded(Mix.Project) do
       conf = Mix.Project.config()
-      if Keyword.get(conf, :antikythera_gear) != nil do
-        gear_name = Keyword.get(conf, :app)
-        [
-          static_file_serving_route(gear_name),
-          normal_routes(gear_name),
-        ] |> Enum.reject(&is_nil/1)
+      if conf[:antikythera_gear] != nil do
+        conf[:app]
       else
-        []
+        nil
       end
     else
-      []
+      nil
     end
   end
 
   defunp per_gear_domain_pathroutes_pairs(gear_name :: v[GearName.t]) :: :cowboy_router.routes do
-    routes = [
+    routes = gear_routes(gear_name)
+    domains_of(gear_name) |> Enum.map(fn domain -> {domain, routes} end)
+  end
+
+  defunp gear_routes(gear_name :: v[GearName.t]) :: [route_path] do
+    [
       static_file_serving_route(gear_name),
       normal_routes(gear_name),
     ] |> Enum.reject(&is_nil/1)
-    domains_of(gear_name) |> Enum.map(fn domain -> {domain, routes} end)
   end
 
   defunp static_file_serving_route(gear_name :: v[GearName.t]) :: nil | route_path do
@@ -108,5 +111,17 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
         domain -> domain
       end
     "#{gear_name_replaced}.#{base_domain}"
+  end
+
+  defun localhost_or_default_domain(gear_name :: v[GearName.t | GearNameStr.t], env :: v[Env.t]) :: Domain.t do
+    case default_routing_gear() do
+      nil -> default_domain(gear_name, env)
+      gear ->
+        if gear == gear_name || (is_binary(gear_name) && Atom.to_string(gear) == gear_name) do
+          "localhost"
+        else
+          default_domain(gear_name, env)
+        end
+    end
   end
 end
