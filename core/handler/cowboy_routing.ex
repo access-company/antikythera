@@ -16,11 +16,9 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
   @total_error_count_route         {"/error_count/_total"       , SystemInfoExporter.ErrorCount, :total}
   @per_app_error_count_route       {"/error_count/:otp_app_name", SystemInfoExporter.ErrorCount, :per_otp_app}
 
-  @typep route_path :: {String.t, module, any}
-
   defun compiled_routes(gear_names :: [GearName.t], initialized? :: v[boolean]) :: :cowboy_router.dispatch_rules do
     gear_routes = Enum.flat_map(gear_names, &per_gear_domain_pathroutes_pairs/1)
-    :cowboy_router.compile(gear_routes ++ wildcard_domain_routes(initialized?))
+    :cowboy_router.compile(gear_routes ++ default_gear_routes() ++ wildcard_domain_routes(initialized?))
   end
 
   defunp wildcard_domain_routes(initialized? :: v[boolean]) :: :cowboy_router.routes do
@@ -30,9 +28,13 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
       @total_error_count_route,
       @per_app_error_count_route,
     ]
+    [{:_, path_rules}]
+  end
+
+  defunp default_gear_routes() :: :cowboy_router.routes do
     case default_routing_gear() do
-      :error      -> [{:_, path_rules}]
-      {:ok, gear} -> [{:_, gear_routes(gear) ++ path_rules}]
+      :error      -> []
+      {:ok, gear} -> [{base_domain(), gear_routes(gear)}]
     end
   end
 
@@ -60,6 +62,8 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
       normal_routes(gear_name),
     ] |> Enum.reject(&is_nil/1)
   end
+
+  @typep route_path :: {String.t, module, any}
 
   defunp static_file_serving_route(gear_name :: v[GearName.t]) :: nil | route_path do
     router_module = GearModule.router(gear_name)
@@ -102,12 +106,14 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
   @deployments         Application.fetch_env!(:antikythera, :deployments)
   @current_compile_env Env.compile_env()
 
+  defp base_domain(), do: System.get_env("BASE_DOMAIN") || "localhost"
+
   # This can also used by administrative gears
   defun default_domain(gear_name :: v[GearName.t | GearNameStr.t], env :: v[Env.t] \\ @current_compile_env) :: Domain.t do
     gear_name_replaced = to_string(gear_name) |> String.replace("_", "-")
     base_domain =
       case Keyword.get(@deployments, env) do
-        nil    -> System.get_env("BASE_DOMAIN") || "localhost"
+        nil    -> base_domain()
         domain -> domain
       end
     "#{gear_name_replaced}.#{base_domain}"
@@ -118,7 +124,7 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
       :error -> default_domain(gear_name, env)
       {:ok, gear} ->
         if gear == gear_name || (is_binary(gear_name) && Atom.to_string(gear) == gear_name) do
-          "localhost"
+          base_domain()
         else
           default_domain(gear_name, env)
         end
