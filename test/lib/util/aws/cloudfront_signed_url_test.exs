@@ -41,7 +41,7 @@ defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
   @signature_with_query2   "TTfoKwPF7xn-ZRilOXwuidh1tAtJFJm8BPs6dBc4zLNGlgV~V7XN1YvDy5xNgZInUf1CvpvRMW0NFUqxJqNZd3FOk6QpySVoHbWYQWYoEH2eWV5cftYtJi2GUaol~yDLEN36zuOHmDSfYpSPktYIePiagz9e3R3ZzNEQUCpIZTO8XfJiISCoHkREeJxA4slMQhhuofFwSCfr2yW2ZMVk75JxPtNmAde-sj4C09PORyNWTuWOoYYghb5DfF4yDlk5WeQKCwGmjhsQ7mM7UMU3xk-fOKWdZcyxUIjqxlQSQEVVwP4QlHdFo4y2uNhER8e0HvhQk-Pbpfj~JFePmeNoPA__"
   @signature_with_query3   "BzTb7kOa1P2sp2lO~sO4j17b7UZpxgDXIvR4ET5FFa0rwu9Z5u9ubC09EGjHn9r-k~pxWu-KJyvr--f0MDNtUGWR5fgOb74iobt4GP9-NsS9WRu3JdhFZXHqAGkPF9TtSXrP8qMtcsBJ~F0SWeWevdhU19FMPH4hIe9ff0m2J29BIFZUe9~fyWh3daMQ9aC7Zf84G3V00FW~v21ggcRhDgkLdN6eUCm-cayzs6kZhr0V6PABjw0Ve9hJbAHC-B2PbTwfFVkiLn0B4dQtgwYC9NHhvWzil7xGBhJvAX7CPJJNImi~A1x8FdigTgMUXg4fwAapj0tk4FmkFu-NHI-AQg__"
 
-  defp assert_query_params(query_params, expected_signature) do
+  defp assert_query_params_for_canned_policy(query_params, expected_signature) do
     [
       {"Expires"    , expires    },
       {"Signature"  , signature  },
@@ -52,7 +52,7 @@ defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
     assert key_pair_id == @key_pair_id
   end
 
-  defp assert_base_url_and_key_pair_id(url) do
+  defp assert_base_url_and_key_pair_id_for_canned_policy(url) do
     %URI{host: host, path: path, query: query, scheme: scheme} = URI.parse(url)
     assert "#{scheme}://#{host}#{path}" == URI.encode(@resource_url)
     query_params = URI.query_decoder(query) |> Enum.to_list() |> Enum.take(-3)
@@ -65,16 +65,16 @@ defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
   end
 
   test "should generate a signature for URL without query" do
-    CloudfrontSignedUrl.make_query_params(@resource_url, @expires_in_seconds, @key_pair_id, @private_key)
-    |> assert_query_params(@signature_without_query)
+    CloudfrontSignedUrl.make_query_params_for_canned_policy(@resource_url, @expires_in_seconds, @key_pair_id, @private_key)
+    |> assert_query_params_for_canned_policy(@signature_without_query)
   end
 
   test "should generate a signature for URL with query" do
     [{"?", @signature_with_query1}, {"?hello=world", @signature_with_query2}, {~s/?hello="日本"&/, @signature_with_query3}]
     |> Enum.each(fn {query, expected_signature} ->
       resource_url = URI.encode(@resource_url <> query)
-      CloudfrontSignedUrl.make_query_params(resource_url, @expires_in_seconds, @key_pair_id, @private_key)
-      |> assert_query_params(expected_signature)
+      CloudfrontSignedUrl.make_query_params_for_canned_policy(resource_url, @expires_in_seconds, @key_pair_id, @private_key)
+      |> assert_query_params_for_canned_policy(expected_signature)
     end)
   end
 
@@ -85,7 +85,7 @@ defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
       signed_url = CloudfrontSignedUrl.generate_signed_url(resource_url, 60, @key_pair_id, @private_key)
       joiner = if query == "", do: "?", else: "&"
       assert String.starts_with?(signed_url, URI.encode(resource_url) <> joiner <> "Expires=")
-      assert_base_url_and_key_pair_id(signed_url)
+      assert_base_url_and_key_pair_id_for_canned_policy(signed_url)
     end)
   end
 
@@ -96,7 +96,7 @@ defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
       signed_url = CloudfrontSignedUrl.generate_signed_url(resource_url, 60, @key_pair_id, @private_key, true)
       joiner = if query == "", do: "?", else: "&"
       assert String.starts_with?(signed_url, resource_url <> joiner <> "Expires=")
-      assert_base_url_and_key_pair_id(signed_url)
+      assert_base_url_and_key_pair_id_for_canned_policy(signed_url)
     end)
   end
 end
