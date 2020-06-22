@@ -52,12 +52,35 @@ defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
     assert key_pair_id == @key_pair_id
   end
 
+  defp assert_query_params_for_custom_policy(query_params, expected_policy, expected_signature) do
+    [
+      {"Policy"     , policy     },
+      {"Signature"  , signature  },
+      {"Key-Pair-Id", key_pair_id},
+    ] = query_params
+    assert policy      == expected_policy
+    assert signature   == expected_signature
+    assert key_pair_id == @key_pair_id
+  end
+
   defp assert_base_url_and_key_pair_id_for_canned_policy(url) do
     %URI{host: host, path: path, query: query, scheme: scheme} = URI.parse(url)
     assert "#{scheme}://#{host}#{path}" == URI.encode(@resource_url)
     query_params = URI.query_decoder(query) |> Enum.to_list() |> Enum.take(-3)
     [
       {"Expires"    , _          },
+      {"Signature"  , _          },
+      {"Key-Pair-Id", key_pair_id},
+    ] = query_params
+    assert key_pair_id == @key_pair_id
+  end
+
+  defp assert_base_url_and_key_pair_id_for_custom_policy(url) do
+    %URI{host: host, path: path, query: query, scheme: scheme} = URI.parse(url)
+    assert "#{scheme}://#{host}#{path}" == URI.encode(@resource_url)
+    query_params = URI.query_decoder(query) |> Enum.to_list() |> Enum.take(-3)
+    [
+      {"Policy"     , _          },
       {"Signature"  , _          },
       {"Key-Pair-Id", key_pair_id},
     ] = query_params
@@ -98,5 +121,91 @@ defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
       assert String.starts_with?(signed_url, resource_url <> joiner <> "Expires=")
       assert_base_url_and_key_pair_id_for_canned_policy(signed_url)
     end)
+  end
+
+  describe "generate_custom_policy" do
+    test "should generate a policy without option" do
+      expected_policy = ~s({"Statement":[{"Resource":"http://123456abcdefg.cloudfront.net/index.html","Condition":{"DateLessThan":{"AWS:EpochTime":2147483646}}}]})
+      assert CloudfrontSignedUrl.generate_custom_policy(@resource_url, @expires_in_seconds, []) == expected_policy
+    end
+
+    test "should generate a policy with DateGreaterThan option" do
+      expected_policy = ~s({"Statement":[{"Resource":"http://123456abcdefg.cloudfront.net/index.html","Condition":{"DateLessThan":{"AWS:EpochTime":2147483646},"DateGreaterThan":{"AWS:EpochTime":0}}}]})
+      assert CloudfrontSignedUrl.generate_custom_policy(@resource_url, @expires_in_seconds, [date_greater_than: 0]) == expected_policy
+    end
+
+    test "should generate a policy without option if :date_greater_than < 0" do
+      expected_policy = ~s({"Statement":[{"Resource":"http://123456abcdefg.cloudfront.net/index.html","Condition":{"DateLessThan":{"AWS:EpochTime":2147483646}}}]})
+      assert CloudfrontSignedUrl.generate_custom_policy(@resource_url, @expires_in_seconds, [date_greater_than: -1]) == expected_policy
+    end
+
+    test "should generate a policy with IpAddress option" do
+      expected_policy = ~s({"Statement":[{"Resource":"http://123456abcdefg.cloudfront.net/index.html","Condition":{"DateLessThan":{"AWS:EpochTime":2147483646},"IpAddress":{"AWS:SourceIp":"1.1.1.1"}}}]})
+      assert CloudfrontSignedUrl.generate_custom_policy(@resource_url, @expires_in_seconds, [ip_address: ~s/"1.1.1.1"/]) == expected_policy
+    end
+
+    test "should generate a policy with array IpAddress option" do
+      expected_policy = ~s({"Statement":[{"Resource":"http://123456abcdefg.cloudfront.net/index.html","Condition":{"DateLessThan":{"AWS:EpochTime":2147483646},"IpAddress":{"AWS:SourceIp":["1.1.1.1","1.1.1.2"]}}}]})
+      assert CloudfrontSignedUrl.generate_custom_policy(@resource_url, @expires_in_seconds, [ip_address: ~s/["1.1.1.1","1.1.1.2"]/]) == expected_policy
+    end
+  end
+
+  describe "make_query_params_for_custom_policy" do
+    test "should generate a signature for URL without query" do
+      expected_policy = "eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cDovLzEyMzQ1NmFiY2RlZmcuY2xvdWRmcm9udC5uZXQvaW5kZXguaHRtbCIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MjE0NzQ4MzY0Nn0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjowfX19XX0_"
+      expected_signeture = "JInqQkv7EFdhNeTNE-fr-ZYxWhxm1A9r73nk0qmKlq5tSQXVVcPEYu8HHGLyn8R8f3bZTHOe728rd-1T8n1wS61oPtZrA06C0Gb--vYEX2OP8SvHhWoXwsgiHGMbcu9uvA6Gkr5CUwEf7bI9~uAN76pV5GhnlBqsOKkGH9za~vF24KL6vN8XM7oyb8xNdb-4ir-UVaGYYKUJ9LQeON27h1yFwRwuBo74O4CaNVyI9CkFUhkL8NG0ExoL2EHxSSF8a6nr-gEU8BeeUe86iVf9nVAogvOY0LAmJiiAq7~KHdYJFfHO7sF7Ggf4A1l951lW5fEI933MOwGPgZA-llzR7Q__"
+
+      CloudfrontSignedUrl.make_query_params_for_custom_policy(@resource_url, @expires_in_seconds, @key_pair_id, @private_key, [date_greater_than: 0])
+      |> assert_query_params_for_custom_policy(expected_policy, expected_signeture)
+    end
+
+    test "should generate a signature for URL with query" do
+      [
+        {
+          "?",
+          "eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cDovLzEyMzQ1NmFiY2RlZmcuY2xvdWRmcm9udC5uZXQvaW5kZXguaHRtbD8iLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjIxNDc0ODM2NDZ9LCJEYXRlR3JlYXRlclRoYW4iOnsiQVdTOkVwb2NoVGltZSI6MH19fV19",
+          "IAwOsibcJz4JBICW0XE~-iqReKqnP8crz6lNltvocK9Ltrvsm1OiCTIcCpUQCV4CUM6GFsGgdJSUUbNCDa~TH9vlFpgG-45~OsNzaA-FvhynVAoE20FSsslnAB~Uur56OGejm8T-jVMinJxXBDThiTk9wqHPsIn8mgK-SIir7YdL1zqLOCvfJApW0fRkVONaTMA6MDfDLVYuDrPWpeJ1H2UnhtqoOECvFp7LY2jOYdOlM4BHzBn1zb0Yj19kjdnAzrI2EHrtWhwKEQ~QovHFHRfqM191FSAIedICdpbG05SvV~I0FqJxHuxwXj0AmiJAHwzIP0NjZPdLYkhn0LH51w__"
+        },
+        {
+          "?hello=world",
+          "eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cDovLzEyMzQ1NmFiY2RlZmcuY2xvdWRmcm9udC5uZXQvaW5kZXguaHRtbD9oZWxsbz13b3JsZCIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MjE0NzQ4MzY0Nn0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjowfX19XX0_",
+          "aNJGFi~0sIzhsdOK8kcaUbzBR3emhmW6fyoVA2WzBg-x3Sv8UXlWjQPns-K5GrzklxDdpmpmIhpapcdDDpO9-iPUMUU4id0OdUTWImItf0Spk0jb1oMJeyAjM4wFdummE1hvZMMbNBS8CmUleuVWEcT7gW5CZePQwpKHYAVT9OeWuOJjl5RrXo419YEWK4~ZUlYCqa~I-uIHTFtJLDsmEOZq1DS3ZiMQd-ZJEcGsCUfLxBcMBnNjbLsHGMfhLTeuYw1jrVW3kRVa5tUsLSWMG70gpDwp26y8E~eHryHc9vlxSev7kRvxDaMjH7S9RAHWsg4isTM80RrXwacVzomDHw__"
+        },
+        {
+          ~s/?hello="日本"&/,
+          "eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cDovLzEyMzQ1NmFiY2RlZmcuY2xvdWRmcm9udC5uZXQvaW5kZXguaHRtbD9oZWxsbz0lMjIlRTYlOTclQTUlRTYlOUMlQUMlMjImIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoyMTQ3NDgzNjQ2fSwiRGF0ZUdyZWF0ZXJUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjB9fX1dfQ__",
+          "V3FSkIV1xuvM3oOFmCvMAzPoy0xMiMhPFo1z~3rcjxJ-Xxw34GDe~wa4IwbpRPnfcyYtwzvXRsk15fWbFNbDdLGFXBmUb0nigpJnbBYrKpS~GrciW6d08~seiUYkIidIg4dFwxEMucuePHYxTX520YzC2GAbLCO8IaEw2pAf-z116oOclPbMznDg-ibguVY6SMprwfAt7n6ex1CWbQBb5bhP-CguWTmmR4TyysOMyYTRaif9s2XSQxj4l85jtf~ZKVDOJ~tlAJj2ZBfgnunEb4jULuIDQCNxF5iyK8~lBOofPPJNPr5TixsmeKRFXEcEj1qdduURu-uDD9uUncDsEw__"
+        }
+      ]
+      |> Enum.each(fn {query, expected_policy, expected_signature} ->
+        resource_url = URI.encode(@resource_url <> query)
+        CloudfrontSignedUrl.make_query_params_for_custom_policy(resource_url, @expires_in_seconds, @key_pair_id, @private_key, [date_greater_than: 0])
+        |> assert_query_params_for_custom_policy(expected_policy, expected_signature)
+      end)
+    end
+  end
+
+  describe "generate_signed_url_using_custom_policy" do
+    test "should return encoded URL" do
+      ["", "?", "?hello=world", ~s/?hello="日本"&/]
+      |> Enum.each(fn query ->
+        resource_url = @resource_url <> query
+        signed_url = CloudfrontSignedUrl.generate_signed_url_using_custom_policy(resource_url, 60, @key_pair_id, @private_key)
+        joiner = if query == "", do: "?", else: "&"
+        assert String.starts_with?(signed_url, URI.encode(resource_url) <> joiner <> "Policy=")
+        assert_base_url_and_key_pair_id_for_custom_policy(signed_url)
+      end)
+    end
+
+    test "should preserve the original URL if it is encoded" do
+      ["", "?", "?hello=world", ~s/?hello="日本"&/]
+      |> Enum.each(fn query ->
+        resource_url = URI.encode(@resource_url <> query)
+        signed_url = CloudfrontSignedUrl.generate_signed_url_using_custom_policy(resource_url, 60, @key_pair_id, @private_key, true)
+        joiner = if query == "", do: "?", else: "&"
+        assert String.starts_with?(signed_url, resource_url <> joiner <> "Policy=")
+        assert_base_url_and_key_pair_id_for_custom_policy(signed_url)
+      end)
+    end
   end
 end
