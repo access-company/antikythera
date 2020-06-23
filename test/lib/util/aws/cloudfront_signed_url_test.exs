@@ -167,8 +167,8 @@ defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
       assert CloudfrontSignedUrl.generate_custom_policy(@resource_url, @expires_in_seconds, [ip_address: ["1.1.1.1", "1.1.1.2"]]) == expected_policy
     end
 
-    test "should raise MatchError if :ip_address isn't a list" do
-      assert_raise MatchError, fn -> CloudfrontSignedUrl.generate_custom_policy(@resource_url, @expires_in_seconds, [ip_address: "1.1.1.1"]) end
+    test "should raise RuntimeError if :ip_address isn't a list" do
+      assert_raise RuntimeError, fn -> CloudfrontSignedUrl.generate_custom_policy(@resource_url, @expires_in_seconds, [ip_address: "1.1.1.1"]) end
     end
   end
 

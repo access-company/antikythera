@@ -92,12 +92,11 @@ defmodule Antikythera.Aws.CloudfrontSignedUrl do
       end
     ip_address =
       case Keyword.fetch(optional_policy, :ip_address) do
-        {:ok, []}        -> ""
-        {:ok, addresses} ->
-          # It is important to restrict a connection using IpAddress, so this raises a MatchError instead of just ignoring :ip_address.
-          true = is_list(addresses)
-          ~s/,"IpAddress":{"AWS:SourceIp":#{generate_ip_address_string(addresses)}}/
-        _ -> ""
+        {:ok, []}                                -> ""
+        {:ok, addresses} when is_list(addresses) -> ~s/,"IpAddress":{"AWS:SourceIp":#{generate_ip_address_string(addresses)}}/
+        # It is important to restrict a connection using IpAddress, so this raises a RuntimeError instead of just ignoring :ip_address.
+        {:ok, _}                                 -> raise "Type of :ip_address is not list"
+        _                                        -> ""
       end
     ~s/{"Statement":[{"Resource":"#{encoded_url}","Condition":{"DateLessThan":{"AWS:EpochTime":#{expires_in_seconds}}#{date_greater_than}#{ip_address}}}]}/
   end
