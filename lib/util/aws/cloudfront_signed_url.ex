@@ -44,7 +44,7 @@ defmodule Antikythera.Aws.CloudfrontSignedUrl do
   - `private_key` (string): RSA private key for the key pair specified by `key_pair_id`.
   - `url_encoded?` (boolean): Whether `resource_url` is encoded or not (optional, default is `false`).
   - `optional_policy` (Keyword): Optional policy conditions to be added to a custom policy (default is `[]`). Currently, supports only the following keywords:
-    - `:date_greater_than`(integer >= 0): Seconds from `AWS:EpockTime`. Specified to `DateGreaterThan`
+    - `:date_greater_than`(integer >= 0): Seconds in `AWS:EpochTime`. Specified to `DateGreaterThan`
     - `:ip_address` (string): Specified to `IpAddress`. This must not contain any white spaces. This should be wrapped by `""`, e.g. `"1.1.1.1"`, and allows an array format e.g. `["1.1.1.1","1.1.1.2"]`.
 
   ## Return value
