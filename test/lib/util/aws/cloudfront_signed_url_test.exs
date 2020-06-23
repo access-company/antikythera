@@ -123,6 +123,24 @@ defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
     end)
   end
 
+  describe "generate_ip_address_string" do
+    test "should generate a string type IP address string" do
+      assert CloudfrontSignedUrl.generate_ip_address_string(["1.1.1.1"]) == ~s/"1.1.1.1"/
+    end
+
+    test "should generate an array type IP address string" do
+      assert CloudfrontSignedUrl.generate_ip_address_string(["1.1.1.1", "1.1.1.2"]) == ~s/["1.1.1.1","1.1.1.2"]/
+    end
+
+    test "should trim white spaces for a string type IP address string" do
+      assert CloudfrontSignedUrl.generate_ip_address_string([" 1.1.1.1   "]) == ~s/"1.1.1.1"/
+    end
+
+    test "should trim white spaces for an array type IP address string" do
+      assert CloudfrontSignedUrl.generate_ip_address_string([" 1.1.1.1 ", "   1.1.1.2    "]) == ~s/["1.1.1.1","1.1.1.2"]/
+    end
+  end
+
   describe "generate_custom_policy" do
     test "should generate a policy without option" do
       expected_policy = ~s({"Statement":[{"Resource":"http://123456abcdefg.cloudfront.net/index.html","Condition":{"DateLessThan":{"AWS:EpochTime":2147483646}}}]})
@@ -141,12 +159,16 @@ defmodule Antikythera.Aws.CloudfrontSignedUrlTest do
 
     test "should generate a policy with IpAddress option" do
       expected_policy = ~s({"Statement":[{"Resource":"http://123456abcdefg.cloudfront.net/index.html","Condition":{"DateLessThan":{"AWS:EpochTime":2147483646},"IpAddress":{"AWS:SourceIp":"1.1.1.1"}}}]})
-      assert CloudfrontSignedUrl.generate_custom_policy(@resource_url, @expires_in_seconds, [ip_address: ~s/"1.1.1.1"/]) == expected_policy
+      assert CloudfrontSignedUrl.generate_custom_policy(@resource_url, @expires_in_seconds, [ip_address: ["1.1.1.1"]]) == expected_policy
     end
 
     test "should generate a policy with array IpAddress option" do
       expected_policy = ~s({"Statement":[{"Resource":"http://123456abcdefg.cloudfront.net/index.html","Condition":{"DateLessThan":{"AWS:EpochTime":2147483646},"IpAddress":{"AWS:SourceIp":["1.1.1.1","1.1.1.2"]}}}]})
-      assert CloudfrontSignedUrl.generate_custom_policy(@resource_url, @expires_in_seconds, [ip_address: ~s/["1.1.1.1","1.1.1.2"]/]) == expected_policy
+      assert CloudfrontSignedUrl.generate_custom_policy(@resource_url, @expires_in_seconds, [ip_address: ["1.1.1.1", "1.1.1.2"]]) == expected_policy
+    end
+
+    test "should raise MatchError if :ip_address isn't a list" do
+      assert_raise MatchError, fn -> CloudfrontSignedUrl.generate_custom_policy(@resource_url, @expires_in_seconds, [ip_address: "1.1.1.1"]) end
     end
   end
 

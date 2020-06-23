@@ -45,7 +45,7 @@ defmodule Antikythera.Aws.CloudfrontSignedUrl do
   - `url_encoded?` (boolean): Whether `resource_url` is encoded or not (optional, default is `false`).
   - `optional_policy` (Keyword): Optional policy conditions to be added to a custom policy (default is `[]`). Currently, supports only the following keywords:
     - `:date_greater_than`(integer >= 0): Seconds in `AWS:EpochTime`. Specified to `DateGreaterThan`
-    - `:ip_address` (string): Specified to `IpAddress`. This must not contain any white spaces. This should be wrapped by `""`, e.g. `"1.1.1.1"`, and allows an array format e.g. `["1.1.1.1","1.1.1.2"]`.
+    - `:ip_address` (list of strings): Specified to `IpAddress`.
 
   ## Return value
 
@@ -77,6 +77,13 @@ defmodule Antikythera.Aws.CloudfrontSignedUrl do
     ]
   end
 
+  defunpt generate_ip_address_string(addresses :: v[[String.t]]) :: v[String.t] do
+    case addresses do
+      [address]     -> ~s/"#{String.trim(address)}"/
+      [address | t] -> Enum.reduce(t, ~s/["#{String.trim(address)}"/, fn (address, result) -> result <> ~s/,"#{String.trim(address)}"/ end) <> "]"
+    end
+  end
+
   defunpt generate_custom_policy(encoded_url :: v[String.t], expires_in_seconds :: v[pos_integer], optional_policy :: Keyword.t) :: v[String.t] do
     date_greater_than =
       case Keyword.fetch(optional_policy, :date_greater_than) do
@@ -85,8 +92,12 @@ defmodule Antikythera.Aws.CloudfrontSignedUrl do
       end
     ip_address =
       case Keyword.fetch(optional_policy, :ip_address) do
-        {:ok, ip} -> ~s/,"IpAddress":{"AWS:SourceIp":#{ip}}/
-        _         -> ""
+        {:ok, []}        -> ""
+        {:ok, addresses} ->
+          # It is important to restrict a connection using IpAddress, so this raises a MatchError instead of just ignoring :ip_address.
+          true = is_list(addresses)
+          ~s/,"IpAddress":{"AWS:SourceIp":#{generate_ip_address_string(addresses)}}/
+        _ -> ""
       end
     ~s/{"Statement":[{"Resource":"#{encoded_url}","Condition":{"DateLessThan":{"AWS:EpochTime":#{expires_in_seconds}}#{date_greater_than}#{ip_address}}}]}/
   end
