@@ -79,8 +79,8 @@ defmodule Antikythera.Aws.CloudfrontSignedUrl do
 
   defunpt generate_ip_address_string(addresses :: v[[String.t]]) :: v[String.t] do
     case addresses do
-      [address]     -> ~s/"#{String.trim(address)}"/
-      [address | t] -> Enum.reduce(t, ~s/["#{String.trim(address)}"/, fn (address, result) -> result <> ~s/,"#{String.trim(address)}"/ end) <> "]"
+      [address] -> ~s/"#{String.trim(address)}"/
+      addresses -> "[" <> Enum.map_join(addresses, ",", fn address -> ~s/"#{String.trim(address)}"/ end) <> "]"
     end
   end
 
