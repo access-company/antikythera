@@ -14,7 +14,9 @@
 - Antikythera hosts multiple running gears and incoming web requests are routed based on the domain part of the URL.
 - When a gear is started, antikythera's routing layer registers the domains of the gear and subsequent requests to the domains will be routed to the gear.
 - Each gear's domain is configurable and defaults to the following subdomain (note that `_`s in gear name are replaced by `-`s):
-    - local environment: `<gear-name>.localhost:8080` (when you run `$ iex -S mix` in your gear project)
+    - local environment (when you run `$ iex -S mix` in your gear project):
+        - `localhost:8080` (The gear of your project)
+        - `<gear-name>.localhost:8080` (All gears, including your project gear and its dependent gears)
     - dev   environment: `<gear-name>.development.example.com`
     - prod  environment: `<gear-name>.production.example.com`
 
