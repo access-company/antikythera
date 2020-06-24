@@ -129,7 +129,7 @@ defmodule Antikythera.Env do
     if Mapping.cloud?(env) do
       "https://" <> Routing.default_domain(gear_name, env)
     else
-      "http://" <> Routing.localhost_or_default_domain(gear_name, env) <> ":#{port_to_listen()}"
+      "http://" <> Routing.default_domain(gear_name, env) <> ":#{port_to_listen()}"
     end
   end
 
