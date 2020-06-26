@@ -29,8 +29,8 @@ defmodule Antikythera.Test.Config do
   def base_url() do
     gear_name = Mix.Project.config()[:app]
     case test_mode() do
-      :whitebox       -> "http://#{CowboyRouting.default_domain(gear_name, :local)}:#{Antikythera.Env.port_to_listen()}"
-      :blackbox_local -> "http://#{CowboyRouting.default_domain(gear_name, :local)}:#{System.get_env("TEST_PORT") || 8080}"
+      :whitebox       -> "http://#{CowboyRouting.localhost_or_default_domain(gear_name, :local)}:#{Antikythera.Env.port_to_listen()}"
+      :blackbox_local -> "http://#{CowboyRouting.localhost_or_default_domain(gear_name, :local)}:#{System.get_env("TEST_PORT") || 8080}"
       other_env       -> base_url_for_deployment(gear_name, other_env)
     end
   end
