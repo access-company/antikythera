@@ -30,7 +30,7 @@
       $ iex -S mix
       ```
 
-    - Open `http://localhost:8080/hello` in web browser, see if it is working.
+    - Open `http://my-gear.localhost:8080/hello` in web browser, see if it is working.
 - Congratulations! Now your first gear is up and running.
     - Take a look around and play around with it.
     - Check out documentations and see what you can do with antikythera and gears.
