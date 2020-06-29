@@ -18,7 +18,7 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
 
   defun compiled_routes(gear_names :: [GearName.t], initialized? :: v[boolean]) :: :cowboy_router.dispatch_rules do
     gear_routes = Enum.flat_map(gear_names, &per_gear_domain_pathroutes_pairs/1)
-    :cowboy_router.compile(gear_routes ++ default_gear_routes() ++ wildcard_domain_routes(initialized?))
+    :cowboy_router.compile(gear_routes ++ wildcard_domain_routes(initialized?))
   end
 
   defunp wildcard_domain_routes(initialized? :: v[boolean]) :: :cowboy_router.routes do
@@ -31,36 +31,12 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
     [{:_, path_rules}]
   end
 
-  defunp default_gear_routes() :: :cowboy_router.routes do
-    case default_routing_gear() do
-      :error      -> []
-      {:ok, gear} -> [{base_domain(), gear_routes(gear)}]
-    end
-  end
-
-  defunp default_routing_gear() :: {:ok, GearName.t} | :error do
-    if :code.is_loaded(Mix.Project) do
-      conf = Mix.Project.config()
-      if conf[:antikythera_gear] != nil do
-        {:ok, conf[:app]}
-      else
-        :error
-      end
-    else
-      :error
-    end
-  end
-
   defunp per_gear_domain_pathroutes_pairs(gear_name :: v[GearName.t]) :: :cowboy_router.routes do
-    routes = gear_routes(gear_name)
-    domains_of(gear_name) |> Enum.map(fn domain -> {domain, routes} end)
-  end
-
-  defunp gear_routes(gear_name :: v[GearName.t]) :: [route_path] do
-    [
+    routes = [
       static_file_serving_route(gear_name),
       normal_routes(gear_name),
     ] |> Enum.reject(&is_nil/1)
+    domains_of(gear_name) |> Enum.map(fn domain -> {domain, routes} end)
   end
 
   @typep route_path :: {String.t, module, any}
@@ -106,28 +82,14 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
   @deployments         Application.fetch_env!(:antikythera, :deployments)
   @current_compile_env Env.compile_env()
 
-  defp base_domain(), do: System.get_env("BASE_DOMAIN") || "localhost"
-
   # This can also used by administrative gears
   defun default_domain(gear_name :: v[GearName.t | GearNameStr.t], env :: v[Env.t] \\ @current_compile_env) :: Domain.t do
     gear_name_replaced = to_string(gear_name) |> String.replace("_", "-")
     base_domain =
       case Keyword.get(@deployments, env) do
-        nil    -> base_domain()
+        nil    -> System.get_env("BASE_DOMAIN") || "localhost"
         domain -> domain
       end
     "#{gear_name_replaced}.#{base_domain}"
-  end
-
-  defun localhost_or_default_domain(gear_name :: v[GearName.t | GearNameStr.t], env :: v[Env.t]) :: Domain.t do
-    case default_routing_gear() do
-      :error -> default_domain(gear_name, env)
-      {:ok, gear} ->
-        if gear == gear_name || (is_binary(gear_name) && Atom.to_string(gear) == gear_name) do
-          base_domain()
-        else
-          default_domain(gear_name, env)
-        end
-    end
   end
 end

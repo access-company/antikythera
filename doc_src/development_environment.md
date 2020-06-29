@@ -46,6 +46,13 @@
 - It is highly recommended to set the following environment variable during development:
     - `export ERL_AFLAGS="-kernel shell_history enabled"` (for bash family)
 
+## Prepare for Domain-based Routing
+
+- Antikythera routes web requests by subdomains and paths. See [routing](https://hexdocs.pm/antikythera/routing.html).
+- In local development, you must be able to resolve subdomain of localhost (e.g. `your-gear.localhost`) into loopback address (`127.0.0.1`).
+    - The easiest way is to add a line like `127.0.0.1 your-gear.localhost` to your `/etc/hosts`.
+    - Alternatively, you can setup a local DNS server (such as [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html)) to resolve all subdomains of localhost.
+
 ## Environment variables to tweak behavior of antikythera
 
 - In your local environment you can customize some of antikythera's default settings using the following environment variables:
