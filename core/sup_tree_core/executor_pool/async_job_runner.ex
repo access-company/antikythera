@@ -148,10 +148,9 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     job_failed(state, :timeout, [])
     {:stop, :normal, state}
   end
-  def handle_info(:timeout, %{executor_pool_id: epool_id} = state) do
+  def handle_info(:timeout, state) do
     # `@idle_timeout` elapsed after `init/1` with no incoming message => probably the broker has somehow died.
     # Stop this process to prevent from process leak.
-    JobLogWriter.info("epool_id=#{inspect(epool_id)} #{@idle_timeout}ms elapsed after `init/1` with no incoming message")
     {:stop, :normal, state}
   end
 
