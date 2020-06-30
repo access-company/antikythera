@@ -23,6 +23,7 @@ defmodule Antikythera.FastJasonEncoder do
   defun encode(value :: any) :: R.t(String.t, Jason.EncodeError.t | Exception.t) do
     Jason.encode(%Wrapper{item: value})
   end
+  R.define_bang_version_of(encode: 1)
 
   defun encode(value :: any, opts :: Jason.Encode.opts) :: iodata do
     ([]                 , _   )                       -> "[]"
