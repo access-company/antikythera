@@ -83,8 +83,8 @@ defmodule AntikytheraCore.Handler.WebsocketState do
   defun terminate(%__MODULE__{conn: conn, ws_module: ws_module, gear_impl_state: gear_impl_state} = state,
                   cowboy_terminate_reason :: cowboy_ws_terminate_reason) :: any do
     now = Time.now()
-    log_info(state, now, build_disconnected_log_message(state))
     reason = terminate_reason(state, cowboy_terminate_reason)
+    log_info(state, now, build_disconnected_log_message(state, reason))
     try do
       ws_module.terminate(gear_impl_state, conn, reason)
     catch
@@ -108,8 +108,9 @@ defmodule AntikytheraCore.Handler.WebsocketState do
 
   defunp build_disconnected_log_message(%__MODULE__{conn:            %Conn{context: %Context{start_time: start_time}},
                                                     frames_received: frames_received,
-                                                    frames_sent:     frames_sent}) :: String.t do
-    "DISCONNECTED connected_at=#{Time.to_iso_timestamp(start_time)} frames_received=#{frames_received} frames_sent=#{frames_sent}"
+                                                    frames_sent:     frames_sent},
+                                        reason :: Websocket.terminate_reason) :: String.t do
+    "DISCONNECTED connected_at=#{Time.to_iso_timestamp(start_time)} frames_received=#{frames_received} frames_sent=#{frames_sent} reason=#{inspect reason}"
   end
 
   for level <- [:info, :error] do
