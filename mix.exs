@@ -90,14 +90,14 @@ defmodule Antikythera.Mixfile do
 
       # tools
       {:exsync          , "0.2.4" , [only: :dev ]},
-      {:ex_doc          , "0.21.2", [only: :dev , runtime: false]},
-      {:dialyxir        , "0.5.1" , [only: :dev , runtime: false]},
-      {:credo           , "1.1.5" , [only: :dev , runtime: false]},
+      {:ex_doc          , "0.22.2", [only: :dev , runtime: false]},
+      {:dialyxir        , "1.0.0" , [only: :dev , runtime: false]},
+      {:credo           , "1.4.0" , [only: :dev , runtime: false]},
       {:mix_test_watch  , "1.0.2" , [only: :dev , runtime: false]},
-      {:meck            , "0.8.13", [only: :test]},
-      {:mox             , "0.5.1" , [only: :test]},
-      {:excoveralls     , "0.12.0", [only: :test]},
-      {:stream_data     , "0.4.3" , [only: :test]},
+      {:meck            , "0.9.0" , [only: :test]},
+      {:mox             , "0.5.2" , [only: :test]},
+      {:excoveralls     , "0.12.0", [only: :test]}, # 0.13.0 requires hackney ~> 1.16
+      {:stream_data     , "0.5.0" , [only: :test]},
       {:websocket_client, "1.3.0" , [only: :test]}, # as a websocket client implementation to use during test (including upgrade_compatibility_test)
 
       # indirect deps
@@ -118,11 +118,11 @@ defmodule Antikythera.Mixfile do
 
       # indirect tool deps
       {:bunt         , "0.2.0" , [indirect: true, only: :dev]}, # credo
-      {:earmark      , "1.4.2" , [indirect: true, only: :dev]}, # ex_doc
-      {:makeup_elixir, "0.14.0", [indirect: true, only: :dev]}, # ex_doc
-      {:makeup       , "1.0.0" , [indirect: true, only: :dev]}, # makeup_elixir
-      {:nimble_parsec, "0.5.2" , [indirect: true, only: :dev]}, # makeup
-      {:file_system  , "0.2.7" , [indirect: true, only: :dev]}, # exsync and mix_test_watch
+      {:earmark      , "1.4.10", [indirect: true, only: :dev]}, # ex_doc
+      {:makeup_elixir, "0.14.1", [indirect: true, only: :dev]}, # ex_doc
+      {:makeup       , "1.0.3" , [indirect: true, only: :dev]}, # makeup_elixir
+      {:nimble_parsec, "0.6.0" , [indirect: true, only: :dev]}, # makeup
+      {:file_system  , "0.2.8" , [indirect: true, only: :dev]}, # exsync and mix_test_watch
     ]
   end
 
