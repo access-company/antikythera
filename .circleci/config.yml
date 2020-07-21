@@ -5,7 +5,7 @@ version: 2
 references:
   container_config: &container_config
     docker:
-      - image: erlang:20.3.8.26 # Using pre-built official image since erlang installation takes long time
+      - image: erlang:20.3.8.25 # Using pre-built official image since erlang installation takes long time
         environment:
           ANTIKYTHERA_INSTANCE_DEP: '{:antikythera_instance_example, [git: "git@github.com:access-company/antikythera_instance_example.git"]}'
   install_prerequisites: &install_prerequisites
