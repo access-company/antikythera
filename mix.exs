@@ -148,7 +148,7 @@ defmodule Antikythera.Mixfile do
         "doc_src/getting_started.md",
         "doc_src/development_environment.md",
         "doc_src/library_dependencies.md",
-        {"doc_src/gear_developers/README.md", [filename: "gear_developers"]},
+        {:"doc_src/gear_developers/README.md", [filename: "gear_developers"]},
         "doc_src/gear_developers/deployment.md",
         "doc_src/gear_developers/routing.md",
         "doc_src/gear_developers/g2g.md",
