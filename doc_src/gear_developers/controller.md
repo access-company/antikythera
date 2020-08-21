@@ -10,6 +10,7 @@
 - For this purpose many utility functions are defined in `Antikythera.Controller`.
   Those functions are auto-imported when you `use Antikythera.Controller` in your controller module.
 - Controller action must return a response within 10 seconds.
+    - Set the client timeout value to 15 seconds or more. This is because the [executor pool](https://hexdocs.pm/antikythera/executor_pool.html) waits up to 5 seconds and the controller takes up to 10 seconds.
 - Gzip compression of responses is done transparently when a request contains `accept-encoding: gzip` header.
 
 ## Handling errors
