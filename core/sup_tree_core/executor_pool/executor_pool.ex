@@ -7,8 +7,13 @@ defmodule AntikytheraCore.ExecutorPool do
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
-  alias AntikytheraCore.ExecutorPool.{ActionRunner, AsyncJobRunner, TimedJobStarter, WebsocketConnectionsCounter, UsageReporter, MemcacheWriter}
   alias AntikytheraCore.ExecutorPool.AsyncJobBroker, as: JobBroker
+  alias AntikytheraCore.ExecutorPool.ActionRunner
+  alias AntikytheraCore.ExecutorPool.AsyncJobRunner
+  alias AntikytheraCore.ExecutorPool.TimedJobStarter
+  alias AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter
+  alias AntikytheraCore.ExecutorPool.UsageReporter
+  alias AntikytheraCore.ExecutorPool.MemcacheWriter
   alias AntikytheraCore.MetricsUploader
   alias AntikytheraCore.Ets.GearActionRunnerPools
   alias AntikytheraCore.TenantExecutorPoolsManager

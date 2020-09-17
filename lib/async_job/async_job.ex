@@ -7,7 +7,14 @@ defmodule Antikythera.AsyncJob do
   alias Antikythera.{Time, Context, GearName}
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias Antikythera.ExecutorPool.BadIdReason
-  alias Antikythera.AsyncJob.{Id, Schedule, MaxDuration, Attempts, RetryInterval, Metadata, Status, StateLabel}
+  alias Antikythera.AsyncJob.Id
+  alias Antikythera.AsyncJob.Schedule
+  alias Antikythera.AsyncJob.MaxDuration
+  alias Antikythera.AsyncJob.Attempts
+  alias Antikythera.AsyncJob.RetryInterval
+  alias Antikythera.AsyncJob.Metadata
+  alias Antikythera.AsyncJob.Status
+  alias Antikythera.AsyncJob.StateLabel
   alias AntikytheraCore.AsyncJob.{Queue, RateLimit}
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.ExecutorPool.Id, as: CoreEPoolId

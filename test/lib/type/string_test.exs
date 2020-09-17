@@ -2,7 +2,14 @@
 
 defmodule Antikythera.StringTypesTest do
   use ExUnit.Case
-  alias Antikythera.{VersionStr, Domain, EncodedPath, UnencodedPath, Email, Url, ContextId, TenantId}
+  alias Antikythera.VersionStr
+  alias Antikythera.Domain
+  alias Antikythera.EncodedPath
+  alias Antikythera.UnencodedPath
+  alias Antikythera.Email
+  alias Antikythera.Url
+  alias Antikythera.ContextId
+  alias Antikythera.TenantId
 
   test "validate VersionStr" do
     valid_version_str = "0.0.1-20180501235959+0123456789abcdef0123456789abcdef01234567"

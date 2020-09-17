@@ -8,7 +8,12 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
   alias Antikythera.Http.{Method, QueryParams, Body}
   alias Antikythera.Request.PathMatches
   alias Antikythera.Context.GearEntryPoint
-  alias AntikytheraCore.Handler.{GearAction, GearError, HelperModules, CowboyReq, ExecutorPoolHelper, WebsocketState}
+  alias AntikytheraCore.Handler.GearAction
+  alias AntikytheraCore.Handler.GearError
+  alias AntikytheraCore.Handler.HelperModules
+  alias AntikytheraCore.Handler.CowboyReq
+  alias AntikytheraCore.Handler.ExecutorPoolHelper
+  alias AntikytheraCore.Handler.WebsocketState
   alias AntikytheraCore.Conn, as: CoreConn
   alias AntikytheraCore.GearModule
   alias AntikytheraCore.ExecutorPool.ActionRunner
