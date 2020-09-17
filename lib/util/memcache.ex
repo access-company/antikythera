@@ -21,7 +21,8 @@ defmodule Antikythera.Memcache do
 
   The number of records and the size of keys and values are limited.
 
-  - The maximum number of records for each executor pool is #{AntikytheraCore.ExecutorPool.MemcacheWriter.max_records()}.
+  - The maximum number of records for each executor pool
+    is #{AntikytheraCore.ExecutorPool.MemcacheWriter.max_records()}.
       - If exceeds the limit, a record nearest to expiration is evicted so that a new record can be inserted.
   - The maximum size of keys and values is defined in `Antikythera.Memcache.Key` and `Antikythera.Memcache.Value`.
       - To know how the size of keys and values is calculated, see `Antikythera.TermUtil`.
@@ -74,10 +75,13 @@ defmodule Antikythera.Memcache do
   end
 
   @doc """
-  Try to read a value associated with the `key` from #{inspect(__MODULE__)} and if that fails, write a value returned by `fun` to #{inspect(__MODULE__)}.
+  Try to read a value associated with the `key` from #{inspect(__MODULE__)} and if that fails,
+  write a value returned by `fun` to #{inspect(__MODULE__)}.
 
-  `fun` is evaluated only if a value is not found, and the new value returned by `fun` is stored in #{inspect(__MODULE__)}.
-  If a value is found in #{inspect(__MODULE__)} or writing the new value to #{inspect(__MODULE__)} succeeds, the value is returned as `{:ok, value}`, but if writing the new value fails, an error is returned in the same manner as `write/5`.
+  `fun` is evaluated only if a value is not found,
+  and the new value returned by `fun` is stored in #{inspect(__MODULE__)}.
+  If a value is found in #{inspect(__MODULE__)} or writing the new value to #{inspect(__MODULE__)} succeeds,
+  the value is returned as `{:ok, value}`, but if writing the new value fails, an error is returned in the same manner as `write/5`.
 
   Parameters `lifetime_in_sec` and `prob_lifetime_ratio` are used to call `write/5` and the details are described above.
   """

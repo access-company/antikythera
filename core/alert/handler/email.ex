@@ -15,7 +15,8 @@ defmodule AntikytheraCore.Alert.Handler.Email do
 
   - `to` - Required. List of email addresses to be sent. Must not be an empty list.
   - `errors_per_body` - Optional. Integer number of errors printed in body of an alert mail.
-    Details of errors beyond this threshold will be omitted. Defaults to #{@default_errors_per_body}.
+    Details of errors beyond this threshold will be omitted.
+    Defaults to #{@default_errors_per_body}.
   """
 
   alias Antikythera.{Email, Time, Env}

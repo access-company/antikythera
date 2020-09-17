@@ -36,7 +36,8 @@ defmodule AntikytheraCore.Alert.Handler do
   - Messages received by handlers will be sent out in "fast-then-delayed" pattern:
       - Occasional messages will be flushed from the buffer and sent out in `fast_interval`.
       - Messages arriving too frequently will be buffered for `delayed_interval` until they are sent out.
-  - By default, `fast_interval` is #{@default_fast_interval} seconds and `delayed_interval` is #{@default_delayed_interval} seconds.
+  - By default, `fast_interval` is #{@default_fast_interval} seconds
+    and `delayed_interval` is #{@default_delayed_interval} seconds.
       - They can be customized via core/gear configs.
         Specify #{@fast_interval_key} or #{@delayed_interval_key} for the handler.
 

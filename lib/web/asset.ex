@@ -74,7 +74,8 @@ defmodule Antikythera.Asset do
   (the file has been either modified, removed or renamed).
 
   Antikythera keeps track of whether each asset file is obsolete or not.
-  Then, antikythera periodically removes asset files that have been obsolete for more than #{@retention_days} days.
+  Then, antikythera periodically removes asset files
+  that have been obsolete for more than #{@retention_days} days.
   The retention period (chosen such that each period includes several deployments of each gear)
   should be long enough for clients to switch from older assets to newer ones.
   """

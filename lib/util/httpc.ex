@@ -44,7 +44,8 @@ defmodule Antikythera.Httpc do
   - `:skip_ssl_verification` - Whether to verify server's SSL certificate or not. Defaults to `false`.
     Specify `skip_ssl_verification: true` when accessing insecure server with HTTPS.
   - `:max_body` - Maximum content-length of the response body (compressed size if it's compressed).
-    Defaults to `#{@default_max_body}` (#{div(@default_max_body, 1024 * 1024)}MB) and must not exceed #{div(@maximum_max_body, 1024 * 1024)}MB.
+    Defaults to `#{@default_max_body}` (#{div(@default_max_body, 1024 * 1024)}MB)
+    and must not exceed #{div(@maximum_max_body, 1024 * 1024)}MB.
     Responses having body larger than the specified size will be rejected with `{:error, :response_too_large}`.
   - `:follow_redirect` - A boolean that causes redirects to be followed. Defaults to `false`.
   - `:max_redirect` - An integer denoting the maximum number of redirects to follow if `follow_redirect: true` is given.
