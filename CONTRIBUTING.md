@@ -142,7 +142,7 @@ All of them are helpful! Follow the guidelines provided here.
         - Make sure your code fit in existing antikythera code.
     - Provide sufficient `@moduledoc`, `@doc` and `@typedoc`, especially if it is publicly available.
     - If your code contains workaround or hacky solution, put an explanation comments.
-    - Check typo, mis-indentations, mis-alignments, trailing white spaces or extra blank lines. Utilize your editor functionalities.
+    - Check typo and format the code.(`$ mix format`)
     - Run the Dialyzer (`$ mix dialyzer`) and fix any errors reported.
     - If reviewers deemed the Pull Request is not self-reviewed well, it CAN be rejected.
 - When you are confident on your branch, push it to your fork repository, then open Pull Request.

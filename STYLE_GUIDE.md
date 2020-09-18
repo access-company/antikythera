@@ -22,31 +22,6 @@ We are not compliant with all of it, but it provides good advices.
 Note: Although we are mostly following its style guide,
 we are not completely relying on [Credo](https://github.com/rrrene/credo) static analysis.
 
-## Alignment
-
-Align parts of multiline code with similar patterns.
-This is really important for human eyes in terms of readability.
-
-Example:
-
-```elixir
-case nested_tuple do
-  {:ok   , {:matched_value, bound_var}} -> do_something(bound_var)
-  {:ok   , {not_matched   , _        }} -> do_something_else(not_matched)
-  {:error, reason                     } -> handle_error(reason)
-end
-
-def multi_clause_fun({:ok   , "short"           }, :normal), do: :ok
-def multi_clause_fun({:ok   , "relatively_long" }, _      ), do: {:error, :too_long}
-def multi_clause_fun({:error, {:invalid, String}}, _      ), do: {:error, :invalid}
-```
-
-Without alignments, code chunks become less readable.
-As a guideline, 3 or more lines of similar statements could use alignments.
-But this is not a strict rule.
-
-Aligning code does not have significant drawbacks, so always try to align and beautify your code.
-
 ## Typespec
 
 Typespecs are useful for both documentation purpose and success typing analysis ([dialyzer](http://erlang.org/doc/man/dialyzer.html)).
