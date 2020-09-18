@@ -78,10 +78,10 @@ defmodule AntikytheraCore do
       socket_opts:     [port: Antikythera.Env.port_to_listen()],
     }
     cowboy_proto_opts = %{
-      # (a) timeout of a request with no data transfer; must be sufficiently longer than the gear action timeout (10_000)
-      # (b) timeout of a connection with no requests; this should be longer than LB's idle timeout
-      idle_timeout:    30_000,  # (a)
-      request_timeout: 120_000, # (b)
+      # timeout of a request with no data transfer; must be sufficiently longer than the gear action timeout (10_000)
+      idle_timeout:    30_000,
+      # timeout of a connection with no requests; this should be longer than LB's idle timeout
+      request_timeout: 120_000,
       env:             %{dispatch: dispatch_rules},
       stream_handlers: [:cowboy_compress_h, :cowboy_stream_h],
     }
