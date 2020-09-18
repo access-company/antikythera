@@ -16,17 +16,21 @@ defmodule AntikytheraCore.GearTask do
 
   @type mod_fun_args :: {module, atom, [any]}
 
-  defun exec_wait(mfa         :: mod_fun_args,
-                  timeout     :: v[non_neg_integer],
-                  success_fun :: (a -> r),
-                  failure_fun :: ((ErrorReason.t, ErrorReason.stacktrace) -> r)) :: r when a: any, r: any do
+  defun exec_wait(
+          mfa :: mod_fun_args,
+          timeout :: v[non_neg_integer],
+          success_fun :: (a -> r),
+          failure_fun :: (ErrorReason.t(), ErrorReason.stacktrace() -> r)
+        ) :: r
+        when a: any, r: any do
     {pid, monitor_ref} = GearProcess.spawn_monitor(__MODULE__, :worker_run, [mfa])
+
     receive do
       {:DOWN, ^monitor_ref, :process, ^pid, reason} ->
         case reason do
-          {:shutdown, {:ok, a}}                -> success_fun.(a)
+          {:shutdown, {:ok, a}} -> success_fun.(a)
           {:shutdown, {:error, e, stacktrace}} -> failure_fun.(e, stacktrace)
-          _otherwise                           -> failure_fun.({:exit, reason}, [])
+          _otherwise -> failure_fun.({:exit, reason}, [])
         end
     after
       timeout ->
@@ -42,10 +46,11 @@ defmodule AntikytheraCore.GearTask do
       try do
         {:ok, apply(m, f, as)}
       catch
-        :error, e      -> {:error, {:error, e     }, System.stacktrace()}
-        :throw, value  -> {:error, {:throw, value }, System.stacktrace()}
-        :exit , reason -> {:error, {:exit , reason}, System.stacktrace()}
+        :error, e -> {:error, {:error, e}, System.stacktrace()}
+        :throw, value -> {:error, {:throw, value}, System.stacktrace()}
+        :exit, reason -> {:error, {:exit, reason}, System.stacktrace()}
       end
+
     exit({:shutdown, result})
   end
 end

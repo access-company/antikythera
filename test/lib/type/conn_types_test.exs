@@ -44,40 +44,104 @@ defmodule Antikythera.ConnTypesTest do
   end
 
   test "Request: new/1" do
-    base_req = %Req{method: :get, path_info: ["hoge"], path_matches: %{foo: "bar"}, query_params: %{}, headers: %{}, cookies: %{}, raw_body: "", body: "", sender: {:web, "127.0.0.1"}}
-
-    assert Req.new([method: :get, path_info: ["hoge"], path_matches: %{foo: "bar"}, sender: {:web, "127.0.0.1"}]) == {:ok, base_req}
-    assert Req.new([
-      method:       :get,
-      path_info:    ["hoge"],
+    base_req = %Req{
+      method: :get,
+      path_info: ["hoge"],
       path_matches: %{foo: "bar"},
-      query_params: %{"foo" => "bar"},
-      headers:      %{"foo" => "bar"},
-      cookies:      %{"foo" => "bar"},
-      body:         "hoge",
-      sender:       {:gear, :testgear},
-    ]) == {:ok, %Req{base_req | query_params: %{"foo" => "bar"}, headers: %{"foo" => "bar"}, cookies: %{"foo" => "bar"}, body: "hoge", sender: {:gear, :testgear}}}
+      query_params: %{},
+      headers: %{},
+      cookies: %{},
+      raw_body: "",
+      body: "",
+      sender: {:web, "127.0.0.1"}
+    }
 
-    assert Req.new([path_info: ["hoge"], path_matches: %{foo: "bar"}, sender: {:web, "127.0.0.1"}]) == {:error, {:value_missing, [Req, {Antikythera.Http.Method, :method}]}}
-    assert Req.new([method: :get, path_matches: %{foo: "bar"}, sender: {:web, "127.0.0.1"}])        == {:error, {:value_missing, [Req, {Antikythera.PathInfo, :path_info}]}}
-    assert Req.new([method: :get, path_info: ["hoge"], sender: {:web, "127.0.0.1"}])                == {:error, {:value_missing, [Req, {Req.PathMatches, :path_matches}]}}
-    assert Req.new([])                                                                              == {:error, {:value_missing, [Req, {Antikythera.Http.Method, :method}]}}
-    assert Req.new([method: :get, path_info: ["hoge"], path_matches: %{foo: "bar"}])                == {:error, {:value_missing, [Req, {Req.Sender, :sender}]}}
+    assert Req.new(
+             method: :get,
+             path_info: ["hoge"],
+             path_matches: %{foo: "bar"},
+             sender: {:web, "127.0.0.1"}
+           ) == {:ok, base_req}
+
+    assert Req.new(
+             method: :get,
+             path_info: ["hoge"],
+             path_matches: %{foo: "bar"},
+             query_params: %{"foo" => "bar"},
+             headers: %{"foo" => "bar"},
+             cookies: %{"foo" => "bar"},
+             body: "hoge",
+             sender: {:gear, :testgear}
+           ) ==
+             {:ok,
+              %Req{
+                base_req
+                | query_params: %{"foo" => "bar"},
+                  headers: %{"foo" => "bar"},
+                  cookies: %{"foo" => "bar"},
+                  body: "hoge",
+                  sender: {:gear, :testgear}
+              }}
+
+    assert Req.new(path_info: ["hoge"], path_matches: %{foo: "bar"}, sender: {:web, "127.0.0.1"}) ==
+             {:error, {:value_missing, [Req, {Antikythera.Http.Method, :method}]}}
+
+    assert Req.new(method: :get, path_matches: %{foo: "bar"}, sender: {:web, "127.0.0.1"}) ==
+             {:error, {:value_missing, [Req, {Antikythera.PathInfo, :path_info}]}}
+
+    assert Req.new(method: :get, path_info: ["hoge"], sender: {:web, "127.0.0.1"}) ==
+             {:error, {:value_missing, [Req, {Req.PathMatches, :path_matches}]}}
+
+    assert Req.new([]) == {:error, {:value_missing, [Req, {Antikythera.Http.Method, :method}]}}
+
+    assert Req.new(method: :get, path_info: ["hoge"], path_matches: %{foo: "bar"}) ==
+             {:error, {:value_missing, [Req, {Req.Sender, :sender}]}}
   end
 
   test "Conn: new/1" do
-    {:ok, req} = Req.new([method: :get, path_info: ["hoge"], path_matches: %{}, sender: {:web, "127.0.0.1"}])
-    context    = AntikytheraCore.Context.make(:testgear, {Testgear.Controller.Hello, :hello})
-    base_conn  = %Conn{request: req, context: context, status: nil, resp_headers: %{}, resp_cookies: %{}, resp_body: "", before_send: [], assigns: %{}}
+    {:ok, req} =
+      Req.new(method: :get, path_info: ["hoge"], path_matches: %{}, sender: {:web, "127.0.0.1"})
 
-    assert Conn.new([request: req, context: context, status: nil]) == {:ok, base_conn}
-    {:ok, conn1} = Conn.new([request: req, context: context, status: 200, resp_headers: %{"foo" => "bar"}, resp_body: "hoge", assigns: %{foo: "bar"}])
-    assert conn1 == %Conn{base_conn | status: 200, resp_headers: %{"foo" => "bar"}, resp_body: "hoge", assigns: %{foo: "bar"}}
+    context = AntikytheraCore.Context.make(:testgear, {Testgear.Controller.Hello, :hello})
 
-    assert Conn.new([request: req])     == {:error, {:value_missing, [Conn, {Context, :context}]}}
-    assert Conn.new([context: context]) == {:error, {:value_missing, [Conn, {Req, :request}]}}
-    assert Conn.new([])                 == {:error, {:value_missing, [Conn, {Req, :request}]}}
-    {:error, reason} = Conn.new([request: req, context: context, status: :ok])
-    assert reason == {:invalid_value, [Conn, {Croma.TypeGen.Nilable.Antikythera.Http.Status.Int, :status}]}
+    base_conn = %Conn{
+      request: req,
+      context: context,
+      status: nil,
+      resp_headers: %{},
+      resp_cookies: %{},
+      resp_body: "",
+      before_send: [],
+      assigns: %{}
+    }
+
+    assert Conn.new(request: req, context: context, status: nil) == {:ok, base_conn}
+
+    {:ok, conn1} =
+      Conn.new(
+        request: req,
+        context: context,
+        status: 200,
+        resp_headers: %{"foo" => "bar"},
+        resp_body: "hoge",
+        assigns: %{foo: "bar"}
+      )
+
+    assert conn1 == %Conn{
+             base_conn
+             | status: 200,
+               resp_headers: %{"foo" => "bar"},
+               resp_body: "hoge",
+               assigns: %{foo: "bar"}
+           }
+
+    assert Conn.new(request: req) == {:error, {:value_missing, [Conn, {Context, :context}]}}
+    assert Conn.new(context: context) == {:error, {:value_missing, [Conn, {Req, :request}]}}
+    assert Conn.new([]) == {:error, {:value_missing, [Conn, {Req, :request}]}}
+    {:error, reason} = Conn.new(request: req, context: context, status: :ok)
+
+    assert reason ==
+             {:invalid_value,
+              [Conn, {Croma.TypeGen.Nilable.Antikythera.Http.Status.Int, :status}]}
   end
 end

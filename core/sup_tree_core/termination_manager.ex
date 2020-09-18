@@ -26,12 +26,14 @@ defmodule AntikytheraCore.TerminationManager do
     alias AntikytheraCore.GearManager
     alias AntikytheraCore.VersionUpgradeTaskQueue
 
-    use Croma.Struct, recursive_new?: true, fields: [
-      in_service?:          Croma.Boolean,
-      log_flushed?:         Croma.Boolean,
-      not_in_service_count: Croma.NonNegInteger,
-      brokers:              Croma.TypeGen.list_of(Croma.Pid),
-    ]
+    use Croma.Struct,
+      recursive_new?: true,
+      fields: [
+        in_service?: Croma.Boolean,
+        log_flushed?: Croma.Boolean,
+        not_in_service_count: Croma.NonNegInteger,
+        brokers: Croma.TypeGen.list_of(Croma.Pid)
+      ]
 
     defun new() :: t do
       %__MODULE__{in_service?: true, log_flushed?: false, not_in_service_count: 0, brokers: []}
@@ -41,19 +43,29 @@ defmodule AntikytheraCore.TerminationManager do
     # Ensure 30 minutes have passed since the async job brokers stopped in `cleanup/1`
     @flush_log_threshold_count @threshold_count + 11
 
-    defun next(%__MODULE__{in_service?: in_service?, log_flushed?: log_flushed?, not_in_service_count: count, brokers: brokers} = state,
-               now_in_service? :: v[boolean]) :: t do
+    defun next(
+            %__MODULE__{
+              in_service?: in_service?,
+              log_flushed?: log_flushed?,
+              not_in_service_count: count,
+              brokers: brokers
+            } = state,
+            now_in_service? :: v[boolean]
+          ) :: t do
       new_count = if now_in_service?, do: 0, else: count + 1
+
       cond do
         in_service? and new_count >= @threshold_count ->
           L.info("confirmed that this host is to be terminated; start cleanup...")
           VersionUpgradeTaskQueue.disable()
           cleanup(brokers)
           %State{state | not_in_service_count: new_count, in_service?: false}
+
         !log_flushed? and new_count >= @flush_log_threshold_count ->
           L.info("start flushing gear logs...")
           flush_gear_logs()
           %State{state | not_in_service_count: new_count, log_flushed?: true}
+
         true ->
           %State{state | not_in_service_count: new_count}
       end
@@ -73,7 +85,7 @@ defmodule AntikytheraCore.TerminationManager do
   @interval 180_000
 
   def start_link([]) do
-    GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   @impl true
@@ -86,7 +98,7 @@ defmodule AntikytheraCore.TerminationManager do
   def handle_call({:register_broker, pid}, _from, state) do
     case state do
       %State{in_service?: true, brokers: bs} -> {:reply, :ok, %State{state | brokers: [pid | bs]}}
-      %State{in_service?: false}             -> {:reply, {:error, :not_in_service}, state}
+      %State{in_service?: false} -> {:reply, {:error, :not_in_service}, state}
     end
   end
 
@@ -94,9 +106,13 @@ defmodule AntikytheraCore.TerminationManager do
   def handle_info(:check_host_status, state) do
     new_state =
       case ClusterHostsPoller.current_hosts() do
-        {:ok, hosts}                   -> State.next(state, Map.get(hosts, Cluster.node_to_host(Node.self()), false))
-        {:error, :not_yet_initialized} -> state
+        {:ok, hosts} ->
+          State.next(state, Map.get(hosts, Cluster.node_to_host(Node.self()), false))
+
+        {:error, :not_yet_initialized} ->
+          state
       end
+
     set_timer()
     {:noreply, new_state}
   end

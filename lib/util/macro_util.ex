@@ -7,8 +7,8 @@ defmodule Antikythera.MacroUtil do
   Utilities to manipulate Elixir AST.
   """
 
-  defun prewalk_accumulate(q :: Macro.t, acc :: any, f :: (Macro.t, any -> any)) :: any do
-    Macro.prewalk(q, acc, fn(t, acc) -> {t, f.(t, acc)} end)
+  defun prewalk_accumulate(q :: Macro.t(), acc :: any, f :: (Macro.t(), any -> any)) :: any do
+    Macro.prewalk(q, acc, fn t, acc -> {t, f.(t, acc)} end)
     |> elem(1)
   end
 end

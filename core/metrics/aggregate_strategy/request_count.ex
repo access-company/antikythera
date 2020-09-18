@@ -23,7 +23,7 @@ defmodule Strategy.RequestCount do
   @typep data_t :: {pos_integer, non_neg_integer, non_neg_integer}
 
   @impl true
-  defun init(status :: v[Status.Int.t]) :: data_t do
+  defun init(status :: v[Status.Int.t()]) :: data_t do
     case div(status, 100) do
       4 -> {1, 1, 0}
       5 -> {1, 0, 1}
@@ -32,20 +32,21 @@ defmodule Strategy.RequestCount do
   end
 
   @impl true
-  defun merge({count_total, count_4xx, count_5xx} :: data_t, status :: v[Status.Int.t]) :: data_t do
+  defun merge({count_total, count_4xx, count_5xx} :: data_t, status :: v[Status.Int.t()]) ::
+          data_t do
     case div(status, 100) do
-      4 -> {count_total + 1, count_4xx + 1, count_5xx    }
-      5 -> {count_total + 1, count_4xx    , count_5xx + 1}
-      _ -> {count_total + 1, count_4xx    , count_5xx    }
+      4 -> {count_total + 1, count_4xx + 1, count_5xx}
+      5 -> {count_total + 1, count_4xx, count_5xx + 1}
+      _ -> {count_total + 1, count_4xx, count_5xx}
     end
   end
 
   @impl true
-  defun results({count_total, count_4xx, count_5xx} :: data_t) :: Strategy.results_t do
+  defun results({count_total, count_4xx, count_5xx} :: data_t) :: Strategy.results_t() do
     [
       total: count_total,
       "4XX": count_4xx,
-      "5XX": count_5xx,
+      "5XX": count_5xx
     ]
   end
 end

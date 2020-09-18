@@ -14,12 +14,12 @@ defmodule AntikytheraCore.Alert.HandlerConfig do
 
   use Croma.SubtypeOfMap, key_module: Croma.String, value_module: Croma.Any
 
-  defun get(handler :: v[module], otp_app_name :: v[:antikythera | GearName.t]) :: t do
+  defun get(handler :: v[module], otp_app_name :: v[:antikythera | GearName.t()]) :: t do
     HandlerConfigsMap.get(otp_app_name)
     |> Map.get(key(handler), %{})
   end
 
-  defunp key(handler :: v[module]) :: String.t do
+  defunp key(handler :: v[module]) :: String.t() do
     handler
     |> Module.split()
     |> List.last()
@@ -38,11 +38,13 @@ defmodule AntikytheraCore.Alert.HandlerConfigsMap do
   alias Antikythera.GearName
   alias AntikytheraCore.Ets.ConfigCache
 
-  use Croma.SubtypeOfMap, key_module: Croma.String, value_module: AntikytheraCore.Alert.HandlerConfig
+  use Croma.SubtypeOfMap,
+    key_module: Croma.String,
+    value_module: AntikytheraCore.Alert.HandlerConfig
 
-  defun get(otp_app_name :: v[:antikythera | GearName.t]) :: t do
+  defun get(otp_app_name :: v[:antikythera | GearName.t()]) :: t do
     case otp_app_name do
-      :antikythera  -> ConfigCache.Core.read() |> Map.get(:alerts, %{})
+      :antikythera -> ConfigCache.Core.read() |> Map.get(:alerts, %{})
       gear_name -> ConfigCache.Gear.read(gear_name).alerts
     end
   end

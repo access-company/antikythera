@@ -17,7 +17,7 @@ defmodule Antikythera.Test.AsyncJobHelper do
   You can accelerate your test execution by resetting the token bucket.
   See `Antikythera.AsyncJob` for more details about rate limiting.
   """
-  defun reset_rate_limit_status(epool_id :: v[EPoolId.t]) :: :ok do
+  defun reset_rate_limit_status(epool_id :: v[EPoolId.t()]) :: :ok do
     # This function inevitably depends on implementation details of `:foretoken` package.
     :ets.delete(:foretoken_buckets, RegName.async_job_queue(epool_id))
     :ok

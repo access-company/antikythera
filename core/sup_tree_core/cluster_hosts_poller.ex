@@ -22,7 +22,7 @@ defmodule AntikytheraCore.ClusterHostsPoller do
   end
 
   def start_link([]) do
-    GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   @impl true
@@ -41,40 +41,50 @@ defmodule AntikytheraCore.ClusterHostsPoller do
   def handle_info(:polling_timeout, state) do
     new_state =
       case state do
-        %{fetcher: nil}    -> %{state | fetcher: spawn_monitor(Fetcher, :run, [])}
-        _fetcher_is_filled -> state # don't spawn more than one temporary process
+        %{fetcher: nil} -> %{state | fetcher: spawn_monitor(Fetcher, :run, [])}
+        # don't spawn more than one temporary process
+        _fetcher_is_filled -> state
       end
+
     set_timer(new_state)
     {:noreply, new_state}
   end
+
   def handle_info({:DOWN, _monitor_ref, :process, _pid, reason}, state0) do
     state1 = %{state0 | fetcher: nil}
+
     new_state =
       case reason do
-        {:ok, new_hosts} -> %{state1 | hosts: new_hosts}
-        {:error, _}      -> state1
-        crash_reason     ->
+        {:ok, new_hosts} ->
+          %{state1 | hosts: new_hosts}
+
+        {:error, _} ->
+          state1
+
+        crash_reason ->
           L.error("One-off fetcher process died unexpectedly! reason: #{inspect(crash_reason)}")
           state1
       end
+
     {:noreply, new_state}
   end
 
   defp set_timer(%{hosts: hosts}) do
     interval =
       case hosts do
-        nil ->  10_000
-        _   -> 180_000
+        nil -> 10_000
+        _ -> 180_000
       end
+
     Process.send_after(self(), :polling_timeout, interval)
   end
 
   #
   # Public API
   #
-  defun current_hosts() :: R.t(%{String.t => boolean}) do
+  defun current_hosts() :: R.t(%{String.t() => boolean}) do
     case GenServer.call(__MODULE__, :get) do
-      nil   -> {:error, :not_yet_initialized}
+      nil -> {:error, :not_yet_initialized}
       hosts -> {:ok, hosts}
     end
   end

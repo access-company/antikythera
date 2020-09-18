@@ -29,22 +29,24 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
   require AntikytheraCore.Logger, as: L
 
   @readiness_check_interval_during_startup 500
-  @job_queue_polling_interval              10 * 60_000
+  @job_queue_polling_interval 10 * 60_000
 
   defmodule Phase do
     use Croma.SubtypeOfAtom, values: [:startup, :active, :inactive]
   end
 
   defmodule State do
-    use Croma.Struct, recursive_new?: true, fields: [
-      phase:      Phase,
-      pool_name:  Croma.Atom,
-      queue_name: Croma.Atom,
-    ]
+    use Croma.Struct,
+      recursive_new?: true,
+      fields: [
+        phase: Phase,
+        pool_name: Croma.Atom,
+        queue_name: Croma.Atom
+      ]
   end
 
   def start_link([pool_name, queue_name, broker_name]) do
-    GenServer.start_link(__MODULE__, {pool_name, queue_name}, [name: broker_name])
+    GenServer.start_link(__MODULE__, {pool_name, queue_name}, name: broker_name)
   end
 
   @impl true
@@ -58,6 +60,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
     Queue.remove_broker_from_waiting_list(queue_name)
     %State{state | phase: :inactive} |> noreply()
   end
+
   def handle_cast(:job_registered, state) do
     noreply_try_run_jobs_if_active(state)
   end
@@ -66,10 +69,12 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
   def handle_info({:DOWN, _ref, :process, _pid, _reason}, state) do
     noreply_try_run_jobs_if_active(state)
   end
+
   def handle_info(:polling_timeout, state) do
     make_job_polling_timer()
     noreply_try_run_jobs_if_active(state)
   end
+
   def handle_info(:readiness_check_timeout, %State{phase: phase} = state) do
     if phase == :startup do
       become_active_if_ready(state)
@@ -78,6 +83,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
     end
     |> noreply()
   end
+
   def handle_info(_, state) do
     # neglect other message (possibly a delayed reply from the queue)
     noreply(state)
@@ -97,11 +103,13 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
   defp become_active_if_ready(state) do
     if StartupManager.initialized?() and ensure_queue_added(state) do
       case TerminationManager.register_broker() do
-        :ok                       -> become_active(state)
-        {:error, :not_in_service} -> %State{state | phase: :inactive} # in this case go directly to `:inactive` phase
+        :ok -> become_active(state)
+        # in this case go directly to `:inactive` phase
+        {:error, :not_in_service} -> %State{state | phase: :inactive}
       end
     else
-      make_readiness_check_timer() # retry at the next time
+      # retry at the next time
+      make_readiness_check_timer()
       state
     end
   end
@@ -109,6 +117,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
   defp ensure_queue_added(%{queue_name: queue_name}) do
     try do
       groups = RaftFleet.consensus_groups()
+
       if Map.has_key?(groups, queue_name) do
         true
       else
@@ -128,9 +137,13 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
     # If `RaftFleet.add_consensus_group/1` times-out (due to recovery from large snapshot/logs),
     # the caller should retry afterward in the hope that the consensus group will become ready.
     case RaftFleet.add_consensus_group(queue_name) do
-      :ok                      -> true
-      {:error, :already_added} -> true
-      {:error, reason}         ->
+      :ok ->
+        true
+
+      {:error, :already_added} ->
+        true
+
+      {:error, reason} ->
         L.error("failed to add consensus group #{queue_name}: #{inspect(reason)}")
         false
     end
@@ -140,11 +153,18 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
   # where many newly-started AsyncJobBroker processes crashed due to timeout in `PoolSup.checkout_nonblocking/1`.
   # Although the issue is automatically resolved by supervisor restarts,
   # we try to prevent it by introducing random delay on startup of AsyncJobBroker processes.
-  @base_wait_time_before_accepting_jobs       (if Antikythera.Env.compiling_for_cloud?(), do:  5_000, else: 0)
-  @random_wait_time_max_before_accepting_jobs (if Antikythera.Env.compiling_for_cloud?(), do: 60_000, else: 1)
+  @base_wait_time_before_accepting_jobs if Antikythera.Env.compiling_for_cloud?(),
+                                          do: 5_000,
+                                          else: 0
+  @random_wait_time_max_before_accepting_jobs if Antikythera.Env.compiling_for_cloud?(),
+                                                do: 60_000,
+                                                else: 1
 
   defp become_active(state1) do
-    wait_time = @base_wait_time_before_accepting_jobs + :rand.uniform(@random_wait_time_max_before_accepting_jobs)
+    wait_time =
+      @base_wait_time_before_accepting_jobs +
+        :rand.uniform(@random_wait_time_max_before_accepting_jobs)
+
     make_job_polling_timer(wait_time)
     %State{state1 | phase: :active}
   end
@@ -160,27 +180,32 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
     if phase == :active do
       try_run_jobs(state)
     end
+
     noreply(state)
   end
 
   defp try_run_jobs(state) do
     case try_run_a_job(state) do
-      :ok                  -> try_run_jobs(state)
+      :ok -> try_run_jobs(state)
       _no_worker_or_no_job -> :ok
     end
   end
 
   defp try_run_a_job(%State{pool_name: pool_name, queue_name: queue_name}) do
     case PoolSup.checkout_nonblocking(pool_name) do
-      nil -> :no_worker
+      nil ->
+        :no_worker
+
       pid ->
         case Queue.fetch_job(queue_name) do
           nil ->
             PoolSup.checkin(pool_name, pid)
             :no_job
+
           {job_key, job} ->
             Process.monitor(pid)
-            AsyncJobRunner.run(pid, queue_name, job_key, job) # in this case the worker checks-in itself
+            # in this case the worker checks-in itself
+            AsyncJobRunner.run(pid, queue_name, job_key, job)
             :ok
         end
     end

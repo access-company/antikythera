@@ -28,11 +28,12 @@ defmodule Strategy.TimeDistribution do
   end
 
   @impl true
-  defun results({count, total, max, values} :: data_t) :: Strategy.results_t do
+  defun results({count, total, max, values} :: data_t) :: Strategy.results_t() do
     [
-      avg:   Float.round(total / count, 2), # truncate long floating number
-      max:   max,
-      "95%": find_95_percentile(count, values),
+      # truncate long floating number
+      avg: Float.round(total / count, 2),
+      max: max,
+      "95%": find_95_percentile(count, values)
     ]
   end
 
@@ -42,15 +43,16 @@ defmodule Strategy.TimeDistribution do
 
   defp find_nth_largest(index, [pivot | values]) do
     {larger, smaller, larger_count} = divide_by_pivot(values, pivot)
+
     cond do
-      index <  larger_count -> find_nth_largest(index, larger)
+      index < larger_count -> find_nth_largest(index, larger)
       index == larger_count -> pivot
-      true                  -> find_nth_largest(index - larger_count - 1, smaller)
+      true -> find_nth_largest(index - larger_count - 1, smaller)
     end
   end
 
   defp divide_by_pivot(values, pivot) do
-    Enum.reduce(values, {[], [], 0}, fn(v, {larger, smaller, count}) ->
+    Enum.reduce(values, {[], [], 0}, fn v, {larger, smaller, count} ->
       if v > pivot, do: {[v | larger], smaller, count + 1}, else: {larger, [v | smaller], count}
     end)
   end

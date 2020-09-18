@@ -7,15 +7,17 @@ defmodule Antikythera.Registry do
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias __MODULE__
 
-  @type name :: {:gear, GearName.t, String.t} | {:tenant, TenantId.t, String.t}
+  @type name :: {:gear, GearName.t(), String.t()} | {:tenant, TenantId.t(), String.t()}
 
   @doc false
-  defun make_name(epool_id_or_context :: v[EPoolId.t | Context.t], name :: v[String.t]) :: name do
+  defun make_name(epool_id_or_context :: v[EPoolId.t() | Context.t()], name :: v[String.t()]) ::
+          name do
     {gear_or_tenant, id} =
       case epool_id_or_context do
         %Context{executor_pool_id: epool_id} -> epool_id
-        epool_id                             -> epool_id
+        epool_id -> epool_id
       end
+
     {gear_or_tenant, id, name}
   end
 
@@ -35,14 +37,23 @@ defmodule Antikythera.Registry do
     it's recommended to use intrinsically unique IDs such as login IDs of clients.
     """
 
-    defun register(name :: v[String.t], epool_id_or_context :: v[EPoolId.t | Context.t]) :: :ok | {:error, :taken | :pid_already_registered} do
+    defun register(name :: v[String.t()], epool_id_or_context :: v[EPoolId.t() | Context.t()]) ::
+            :ok | {:error, :taken | :pid_already_registered} do
       :syn.register(Registry.make_name(epool_id_or_context, name), self())
     end
 
-    defun send_message(name :: v[String.t], epool_id_or_context :: v[EPoolId.t | Context.t], message :: any) :: boolean do
+    defun send_message(
+            name :: v[String.t()],
+            epool_id_or_context :: v[EPoolId.t() | Context.t()],
+            message :: any
+          ) :: boolean do
       case :syn.find_by_key(Registry.make_name(epool_id_or_context, name)) do
-        :undefined -> false
-        pid        -> send(pid, message); true
+        :undefined ->
+          false
+
+        pid ->
+          send(pid, message)
+          true
       end
     end
   end
@@ -58,15 +69,20 @@ defmodule Antikythera.Registry do
     When the registered process dies its pid will be automatically removed from all the groups that the process has joined.
     """
 
-    defun join(name :: v[String.t], epool_id_or_context :: v[EPoolId.t | Context.t]) :: :ok do
+    defun join(name :: v[String.t()], epool_id_or_context :: v[EPoolId.t() | Context.t()]) :: :ok do
       :syn.join(Registry.make_name(epool_id_or_context, name), self())
     end
 
-    defun leave(name :: v[String.t], epool_id_or_context :: v[EPoolId.t | Context.t]) :: :ok | {:error, :pid_not_in_group} do
+    defun leave(name :: v[String.t()], epool_id_or_context :: v[EPoolId.t() | Context.t()]) ::
+            :ok | {:error, :pid_not_in_group} do
       :syn.leave(Registry.make_name(epool_id_or_context, name), self())
     end
 
-    defun publish(name :: v[String.t], epool_id_or_context :: v[EPoolId.t | Context.t], message :: any) :: non_neg_integer do
+    defun publish(
+            name :: v[String.t()],
+            epool_id_or_context :: v[EPoolId.t() | Context.t()],
+            message :: any
+          ) :: non_neg_integer do
       {:ok, count} = :syn.publish(Registry.make_name(epool_id_or_context, name), message)
       count
     end

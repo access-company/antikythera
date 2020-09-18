@@ -14,7 +14,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobLog.Writer do
   @rotate_interval 24 * 60 * 60 * 1000
 
   def start_link([]) do
-    GenServer.start_link(__MODULE__, [], [name: __MODULE__])
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
   @impl true

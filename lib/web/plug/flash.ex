@@ -23,17 +23,19 @@ defmodule Antikythera.Plug.Flash do
 
   @session_key "antikythera_flash"
 
-  defun load(conn :: v[Conn.t], _opts :: any) :: Conn.t do
-    flash = case Conn.get_session(conn, @session_key) do
-      nil   -> %{}
-      value -> value
-    end
+  defun load(conn :: v[Conn.t()], _opts :: any) :: Conn.t() do
+    flash =
+      case Conn.get_session(conn, @session_key) do
+        nil -> %{}
+        value -> value
+      end
+
     conn
     |> Conn.assign(:flash, flash)
     |> Conn.register_before_send(&before_send/1)
   end
 
-  defunp before_send(%Conn{status: status, assigns: assigns} = conn) :: Conn.t do
+  defunp before_send(%Conn{status: status, assigns: assigns} = conn) :: Conn.t() do
     if !Enum.empty?(assigns.flash) and status in 300..308 do
       Conn.put_session(conn, @session_key, assigns.flash)
     else

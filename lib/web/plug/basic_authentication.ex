@@ -31,10 +31,11 @@ defmodule Antikythera.Plug.BasicAuthentication do
   alias AntikytheraCore.Ets.ConfigCache
   alias AntikytheraCore.Config.Gear, as: GearConfig
 
-  defun check_with_config(conn :: v[Conn.t], _opts :: any) :: Conn.t do
+  defun check_with_config(conn :: v[Conn.t()], _opts :: any) :: Conn.t() do
     %GearConfig{kv: %{"BASIC_AUTHENTICATION_ID" => id, "BASIC_AUTHENTICATION_PW" => pw}} =
       ConfigCache.Gear.read(conn.context.gear_name)
-    check_impl(conn, fn(input_id, input_pw) ->
+
+    check_impl(conn, fn input_id, input_pw ->
       if Crypto.secure_compare(input_id, id) and Crypto.secure_compare(input_pw, pw) do
         {:ok, conn}
       else
@@ -43,14 +44,14 @@ defmodule Antikythera.Plug.BasicAuthentication do
     end)
   end
 
-  defun check_with_fun(conn :: v[Conn.t], opts :: [{:mod | :fun, atom}]) :: Conn.t do
+  defun check_with_fun(conn :: v[Conn.t()], opts :: [{:mod | :fun, atom}]) :: Conn.t() do
     m = Keyword.fetch!(opts, :mod)
     f = Keyword.fetch!(opts, :fun)
-    check_impl(conn, fn(id, pw) -> apply(m, f, [conn, id, pw]) end)
+    check_impl(conn, fn id, pw -> apply(m, f, [conn, id, pw]) end)
   end
 
   defp check_impl(conn1, f) do
-    with {id, pw}     <- Conn.get_req_header(conn1, "authorization") |> decode_auth_header(),
+    with {id, pw} <- Conn.get_req_header(conn1, "authorization") |> decode_auth_header(),
          {:ok, conn2} <- f.(id, pw) do
       conn2
     else
@@ -63,15 +64,19 @@ defmodule Antikythera.Plug.BasicAuthentication do
       {:ok, name_and_pass} ->
         case :binary.split(name_and_pass, ":") do
           [n, p] -> {n, p}
-          _      -> nil
+          _ -> nil
         end
-      :error -> nil
+
+      :error ->
+        nil
     end
   end
+
   defp decode_auth_header(_), do: nil
 
   defp halt_with_401(conn) do
     gear_name = conn.context.gear_name
+
     Conn.put_resp_header(conn, "www-authenticate", "Basic realm=\"#{gear_name}\"")
     |> Conn.put_status(401)
     |> Conn.put_resp_body("Access denied.")

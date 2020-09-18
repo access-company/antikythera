@@ -13,15 +13,15 @@ defmodule Antikythera.GearApplication.ConfigGetter do
     quote do
       # Assuming that module attribute `@gear_name` is defined in the __CALLER__'s context
 
-      defun get_all_env() :: %{String.t => any} do
+      defun get_all_env() :: %{String.t() => any} do
         Antikythera.GearApplication.ConfigGetter.get_all_env(@gear_name)
       end
 
-      defun get_env(key :: v[String.t], default :: any \\ nil) :: any do
+      defun get_env(key :: v[String.t()], default :: any \\ nil) :: any do
         Antikythera.GearApplication.ConfigGetter.get_env(@gear_name, key, default)
       end
 
-      defun get_env!(key :: v[String.t]) :: any do
+      defun get_env!(key :: v[String.t()]) :: any do
         Antikythera.GearApplication.ConfigGetter.get_env!(@gear_name, key)
       end
     end
@@ -30,7 +30,9 @@ defmodule Antikythera.GearApplication.ConfigGetter do
   @doc false
   def get_all_env(gear_name) do
     case load_config_from_process_dictionary(gear_name) do
-      {:ok   , config      } -> config
+      {:ok, config} ->
+        config
+
       {:error, gear_configs} ->
         config = load_config_from_ets(gear_name)
         store_config_to_process_dictionary(gear_name, gear_configs, config)
@@ -40,11 +42,13 @@ defmodule Antikythera.GearApplication.ConfigGetter do
 
   defp load_config_from_process_dictionary(gear_name) do
     case Process.get(@key) do
-      nil          -> {:error, %{}}
+      nil ->
+        {:error, %{}}
+
       gear_configs ->
         case Map.get(gear_configs, gear_name) do
-          nil    -> {:error, gear_configs}
-          config -> {:ok   , config      }
+          nil -> {:error, gear_configs}
+          config -> {:ok, config}
         end
     end
   end
@@ -56,7 +60,7 @@ defmodule Antikythera.GearApplication.ConfigGetter do
 
   defp load_config_from_ets(gear_name) do
     case AntikytheraCore.Ets.ConfigCache.Gear.read(gear_name) do
-      nil                                  -> %{}
+      nil -> %{}
       %AntikytheraCore.Config.Gear{kv: kv} -> kv
     end
   end

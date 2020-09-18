@@ -13,10 +13,10 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateAppup do
   alias AntikytheraCore.Release.Appup
 
   def run([prev_dir]) do
-    config       = Mix.Project.config()
-    name         = config[:app]
-    new_version  = config[:version]
-    new_dir      = "#{build_path()}/#{Mix.env()}/lib/#{name}"
+    config = Mix.Project.config()
+    name = config[:app]
+    new_version = config[:version]
+    new_dir = "#{build_path()}/#{Mix.env()}/lib/#{name}"
     prev_version = AntikytheraCore.Version.read_from_app_file(prev_dir, name)
 
     Appup.make(name, prev_version, new_version, prev_dir, new_dir)

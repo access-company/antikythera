@@ -17,11 +17,11 @@ defmodule AntikytheraCore.GearExecutorPoolsManager do
 
   @interval 300_000
 
-  @typep settings :: %{GearName.t => EPoolSetting.t}
-  @typep state    :: %{gear_epool_settings: settings}
+  @typep settings :: %{GearName.t() => EPoolSetting.t()}
+  @typep state :: %{gear_epool_settings: settings}
 
   def start_link([]) do
-    GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   @impl true
@@ -47,12 +47,15 @@ defmodule AntikytheraCore.GearExecutorPoolsManager do
 
   defunp revert_to_default_settings(old_only :: settings) :: :ok do
     default_setting = EPoolSetting.default()
+
     Enum.each(old_only, fn {gear_name, _} ->
       ExecutorPool.apply_setting({:gear, gear_name}, default_setting)
     end)
   end
 
-  defunp update_existing_epool_settings(common_key_diff :: %{GearName.t => {EPoolSetting.t, EPoolSetting.t}}) :: :ok do
+  defunp update_existing_epool_settings(
+           common_key_diff :: %{GearName.t() => {EPoolSetting.t(), EPoolSetting.t()}}
+         ) :: :ok do
     Enum.each(common_key_diff, fn {gear_name, {_old_setting, new_setting}} ->
       ExecutorPool.apply_setting({:gear, gear_name}, new_setting)
     end)

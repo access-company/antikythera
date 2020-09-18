@@ -18,9 +18,10 @@ defmodule AntikytheraCore.TerminationManagerTest do
 
   defp wait_until_activated(count \\ 0) do
     if count >= 5 do
-      flunk "this node isn't included in `RaftFleet.active_nodes()`!"
+      flunk("this node isn't included in `RaftFleet.active_nodes()`!")
     else
       :timer.sleep(100)
+
       if RaftFleet.active_nodes() == %{@zone => [Node.self()]} do
         :ok
       else
@@ -39,6 +40,7 @@ defmodule AntikytheraCore.TerminationManagerTest do
           GenServerHelper.send_message_and_wait(TerminationManager, :check_host_status)
         end)
       end)
+
       ProcessHelper.monitor_wait(RaftFleet.Cluster)
       assert GenServerHelper.receive_cast_message() == :deactivate
     end)

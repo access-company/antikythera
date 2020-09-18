@@ -15,17 +15,21 @@ defmodule AntikytheraCore.GearLog.ContextHelper do
 
   @key :antikythera_context_id
 
-  defun set(conn_or_context_or_id :: Conn.t | Context.t | ContextId.t) :: :ok do
-    %Conn{context: context}          -> set(context)
-    %Context{context_id: context_id} -> set(context_id)
-    context_id                       ->
+  defun set(conn_or_context_or_id :: Conn.t() | Context.t() | ContextId.t()) :: :ok do
+    %Conn{context: context} ->
+      set(context)
+
+    %Context{context_id: context_id} ->
+      set(context_id)
+
+    context_id ->
       _previous_value = Process.put(@key, context_id)
       :ok
   end
 
-  defun get!() :: ContextId.t do
+  defun get!() :: ContextId.t() do
     case Process.get(@key) do
-      nil        -> raise "No context ID found!"
+      nil -> raise "No context ID found!"
       context_id -> context_id
     end
   end

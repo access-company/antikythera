@@ -9,20 +9,20 @@ defmodule Antikythera.ConnTest do
   test "get_req_header" do
     expected_value = "hoge"
     conn = ConnHelper.make_conn(%{headers: %{"foo" => expected_value}})
-    assert Conn.get_req_header(conn, "foo")             == expected_value
+    assert Conn.get_req_header(conn, "foo") == expected_value
     assert Conn.get_req_header(conn, "nonexisting_key") == nil
   end
 
   test "get_req_cookie" do
     expected_value = "hoge"
     conn = ConnHelper.make_conn(%{cookies: %{"foo" => expected_value}})
-    assert Conn.get_req_cookie(conn, "foo")             == expected_value
+    assert Conn.get_req_cookie(conn, "foo") == expected_value
     assert Conn.get_req_cookie(conn, "nonexisting_key") == nil
   end
 
   test "get_req_query" do
     conn = ConnHelper.make_conn(%{query_params: %{"foo1" => "foo1", "foo2" => "foo2"}})
-    assert Conn.get_req_query(conn, "foo1")            == "foo1"
+    assert Conn.get_req_query(conn, "foo1") == "foo1"
     assert Conn.get_req_query(conn, "nonexisting_key") == nil
   end
 
@@ -61,13 +61,23 @@ defmodule Antikythera.ConnTest do
     assert conn3.resp_cookies == %{"key" => %SetCookie{value: "new_value", path: "/"}}
 
     conn4 = Conn.put_resp_cookie(conn3, "key", "new_value", %{domain: "x.com"})
-    assert conn4.resp_cookies == %{"key" => %SetCookie{value: "new_value", path: "/", domain: "x.com"}}
+
+    assert conn4.resp_cookies == %{
+             "key" => %SetCookie{value: "new_value", path: "/", domain: "x.com"}
+           }
 
     conn5 = Conn.put_resp_cookie(conn4, "key", "new_value", %{secure: true, path: "/hoge"})
-    assert conn5.resp_cookies == %{"key" => %SetCookie{value: "new_value", secure: true, path: "/hoge"}}
+
+    assert conn5.resp_cookies == %{
+             "key" => %SetCookie{value: "new_value", secure: true, path: "/hoge"}
+           }
 
     conn6 = Conn.put_resp_cookie(conn5, "new_key", "value")
-    assert conn6.resp_cookies == %{"key" => %SetCookie{value: "new_value", secure: true, path: "/hoge"}, "new_key" => %SetCookie{value: "value", path: "/"}}
+
+    assert conn6.resp_cookies == %{
+             "key" => %SetCookie{value: "new_value", secure: true, path: "/hoge"},
+             "new_key" => %SetCookie{value: "value", path: "/"}
+           }
   end
 
   test "put_status" do
@@ -91,13 +101,17 @@ defmodule Antikythera.ConnTest do
     conn2 = Conn.put_resp_cookie_to_revoke(conn1, "key1")
     assert conn2.resp_cookies == %{"key1" => %SetCookie{value: "", path: "/", max_age: 0}}
     conn3 = Conn.put_resp_cookie_to_revoke(conn2, "key2")
-    assert conn3.resp_cookies == %{"key1" => %SetCookie{value: "", path: "/", max_age: 0}, "key2" => %SetCookie{value: "", path: "/", max_age: 0}}
+
+    assert conn3.resp_cookies == %{
+             "key1" => %SetCookie{value: "", path: "/", max_age: 0},
+             "key2" => %SetCookie{value: "", path: "/", max_age: 0}
+           }
   end
 
   test "get_session" do
     session = %Session{state: :update, id: nil, data: %{"key" => "value"}}
     conn = ConnHelper.make_conn(%{assigns: %{session: session}})
-    assert Conn.get_session(conn, "key")             == "value"
+    assert Conn.get_session(conn, "key") == "value"
     assert Conn.get_session(conn, "nonexisting_key") == nil
   end
 
@@ -156,16 +170,16 @@ defmodule Antikythera.ConnTest do
   end
 
   test "json/3 should return body as JSON" do
-    conn  = ConnHelper.make_conn()
+    conn = ConnHelper.make_conn()
     conn2 = Conn.json(conn, 200, %{msg: "json_api@HelloController"})
-    assert conn2.status       == 200
+    assert conn2.status == 200
     assert conn2.resp_headers == %{"content-type" => "application/json"}
-    assert conn2.resp_body    == ~S({"msg":"json_api@HelloController"})
+    assert conn2.resp_body == ~S({"msg":"json_api@HelloController"})
   end
 
   test "json/3 should interpret both pos_integer and atom as an HTTP status code" do
     old_hdr = %{"foo" => "bar"}
-    conn  = ConnHelper.make_conn(%{resp_headers: old_hdr})
+    conn = ConnHelper.make_conn(%{resp_headers: old_hdr})
 
     conn2 = Conn.json(conn, :ok, %{msg: "json_api@HelloController"})
     assert conn2.status == 200
@@ -176,7 +190,7 @@ defmodule Antikythera.ConnTest do
 
   test "json/3 should add content-type header" do
     old_hdr = %{"foo" => "bar"}
-    conn  = ConnHelper.make_conn(%{resp_headers: old_hdr})
+    conn = ConnHelper.make_conn(%{resp_headers: old_hdr})
 
     conn2 = Conn.json(conn, 200, %{msg: "json_api@HelloController"})
     assert conn2.resp_headers == Map.put(old_hdr, "content-type", "application/json")
@@ -186,17 +200,17 @@ defmodule Antikythera.ConnTest do
     redirect_path = "/redirect/path"
     conn1 = ConnHelper.make_conn()
     conn2 = Conn.redirect(conn1, redirect_path)
-    assert conn2.status       == 302
+    assert conn2.status == 302
     assert conn2.resp_headers == %{"location" => redirect_path}
 
     conn3 = ConnHelper.make_conn()
     conn4 = Conn.redirect(conn3, redirect_path, 301)
-    assert conn4.status       == 301
+    assert conn4.status == 301
     assert conn4.resp_headers == %{"location" => redirect_path}
 
     conn5 = ConnHelper.make_conn()
     conn6 = Conn.redirect(conn5, redirect_path, :moved_permanently)
-    assert conn6.status       == 301
+    assert conn6.status == 301
     assert conn6.resp_headers == %{"location" => redirect_path}
   end
 end

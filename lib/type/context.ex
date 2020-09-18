@@ -16,11 +16,13 @@ defmodule Antikythera.Context do
     use Croma.SubtypeOfTuple, elem_modules: [Croma.Atom, Croma.Atom]
   end
 
-  use Croma.Struct, recursive_new?: true, fields: [
-    start_time:       Time,
-    context_id:       ContextId,
-    gear_name:        GearName,
-    executor_pool_id: Croma.TypeGen.nilable(ExecutorPool.Id),
-    gear_entry_point: Croma.TypeGen.nilable(GearEntryPoint),
-  ]
+  use Croma.Struct,
+    recursive_new?: true,
+    fields: [
+      start_time: Time,
+      context_id: ContextId,
+      gear_name: GearName,
+      executor_pool_id: Croma.TypeGen.nilable(ExecutorPool.Id),
+      gear_entry_point: Croma.TypeGen.nilable(GearEntryPoint)
+    ]
 end

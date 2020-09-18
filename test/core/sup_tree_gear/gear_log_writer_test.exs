@@ -6,8 +6,10 @@ defmodule AntikytheraCore.GearLog.WriterTest do
   alias Antikythera.Test.GearConfigHelper
   alias AntikytheraCore.Context
 
-  @dir         Path.join([__DIR__, "..", "..", "..", "_build", "test", "log", "testgear"]) |> Path.expand()
-  @logger_name Testgear.Logger # GearLog.Writer API call must use registered name atom
+  @dir Path.join([__DIR__, "..", "..", "..", "_build", "test", "log", "testgear"])
+       |> Path.expand()
+  # GearLog.Writer API call must use registered name atom
+  @logger_name Testgear.Logger
 
   defp clean() do
     File.rm_rf!(@dir)
@@ -15,7 +17,8 @@ defmodule AntikytheraCore.GearLog.WriterTest do
 
   defp write(msg) do
     now = Time.now()
-    Writer.info(@logger_name, now, Context.make_context_id(now), msg) # Testgear.AlertManager process/name atom are not required for info/4 call
+    # Testgear.AlertManager process/name atom are not required for info/4 call
+    Writer.info(@logger_name, now, Context.make_context_id(now), msg)
   end
 
   defp assert_content_of_rotated(msg) do
@@ -34,7 +37,8 @@ defmodule AntikytheraCore.GearLog.WriterTest do
     timer1 = get_timer(pid)
     :timer.sleep(Process.read_timer(timer1) + 100)
     assert Process.read_timer(timer1) == false
-    _ = :sys.get_state(pid) # ensure that the :rotate message has been processed
+    # ensure that the :rotate message has been processed
+    _ = :sys.get_state(pid)
     timer1
   end
 
@@ -78,7 +82,8 @@ defmodule AntikytheraCore.GearLog.WriterTest do
     assert_content_of_rotated("message 1")
     timer2 = get_timer(pid)
     assert timer2 != timer1
-    assert Process.read_timer(timer2) # timer2 should be valid
+    # timer2 should be valid
+    assert Process.read_timer(timer2)
   end
 
   test "should not rotate log file and just reset timer if nothing is ever written", context do

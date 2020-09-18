@@ -11,7 +11,7 @@ defmodule AntikytheraCore.Config.EncryptionKey do
 
   @type t :: binary
   @table_name AntikytheraCore.Ets.SystemCache.table_name()
-  @ets_key    :config_encryption_key
+  @ets_key :config_encryption_key
 
   defun init() :: :ok do
     key = File.read!(CorePath.config_encryption_key_path())

@@ -37,20 +37,24 @@ defmodule AntikytheraCore.MnesiaNodesCleaner do
   @impl true
   def handle_info(:timeout, state) do
     case ClusterHostsPoller.current_hosts() do
-      {:ok, hosts}                   -> clean_nonexisting_nodes_from_mnesia(hosts)
-      {:error, :not_yet_initialized} -> :ok # nothing we can do; just wait and retry again
+      {:ok, hosts} -> clean_nonexisting_nodes_from_mnesia(hosts)
+      # nothing we can do; just wait and retry again
+      {:error, :not_yet_initialized} -> :ok
     end
+
     {:noreply, state, @interval}
   end
 
   defp clean_nonexisting_nodes_from_mnesia(hosts) do
     # Compare "host"s (String.t) instead of "node"s (atom) and avoid unnecessary conversions from String.t to atom.
-    connected_hosts     = [Node.self() | Node.list()] |> MapSet.new(&Cluster.node_to_host/1)
+    connected_hosts = [Node.self() | Node.list()] |> MapSet.new(&Cluster.node_to_host/1)
     current_known_hosts = Enum.into(hosts, connected_hosts, fn {h, _} -> h end)
+
     :mnesia.system_info(:db_nodes)
     |> Enum.reject(fn n -> MapSet.member?(current_known_hosts, Cluster.node_to_host(n)) end)
     |> Enum.each(fn n ->
       L.info("removing #{n} from mnesia schema")
+
       # :mnesia.del_table_copy(:schema, node) is idempotent; it's OK for multiple nodes to concurrently call this.
       {:atomic, :ok} = :mnesia.del_table_copy(:schema, n)
     end)

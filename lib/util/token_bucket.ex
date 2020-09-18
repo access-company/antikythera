@@ -15,14 +15,17 @@ defmodule Antikythera.TokenBucket do
   Internally the actual bucket name is prefixed with the given `epool_id`.
   Note that return value on error is slightly different from that of `Foretoken.take/5` (for backward compatibility).
   """
-  defun take(epool_id               :: v[Antikythera.ExecutorPool.Id.t],
-             bucket                 :: any,
-             milliseconds_per_token :: g[pos_integer],
-             max_tokens             :: g[pos_integer],
-             tokens_to_take         :: g[pos_integer] \\ 1) :: :ok | {:error, pos_integer} do
+  defun take(
+          epool_id :: v[Antikythera.ExecutorPool.Id.t()],
+          bucket :: any,
+          milliseconds_per_token :: g[pos_integer],
+          max_tokens :: g[pos_integer],
+          tokens_to_take :: g[pos_integer] \\ 1
+        ) :: :ok | {:error, pos_integer} do
     bucket_with_epool_id = {epool_id, bucket}
+
     case Foretoken.take(bucket_with_epool_id, milliseconds_per_token, max_tokens, tokens_to_take) do
-      :ok                                   -> :ok
+      :ok -> :ok
       {:error, {:not_enough_token, millis}} -> {:error, millis}
     end
   end

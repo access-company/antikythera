@@ -6,11 +6,15 @@ defmodule AntikytheraEal.ImplChooser do
       Module.split(__CALLER__.module)
       |> List.last()
       |> Macro.underscore()
-      |> String.to_atom() # during compilation, safe to call `String.to_atom/1`
+      # during compilation, safe to call `String.to_atom/1`
+      |> String.to_atom()
+
     behaviour_module = Module.safe_concat(__CALLER__.module, "Behaviour")
+
     quote bind_quoted: [config_key: config_key, behaviour_module: behaviour_module] do
       @behaviour behaviour_module
       impl_module = AntikytheraEal.ImplChooser.extract_impl_module(config_key)
+
       behaviour_module.behaviour_info(:callbacks)
       |> Enum.each(fn {name, arity} ->
         vars = AntikytheraEal.ImplChooser.make_vars(arity, __MODULE__)
@@ -25,9 +29,11 @@ defmodule AntikytheraEal.ImplChooser do
   end
 
   def make_vars(n, module) do
-    Enum.drop(0..n, 1) # Works even if `n == 0`
+    # Works even if `n == 0`
+    Enum.drop(0..n, 1)
     |> Enum.map(fn i ->
-      Macro.var(:"arg#{i}", module) # during compilation, safe to generate atoms
+      # during compilation, safe to generate atoms
+      Macro.var(:"arg#{i}", module)
     end)
   end
 

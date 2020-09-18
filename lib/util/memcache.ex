@@ -63,7 +63,7 @@ defmodule Antikythera.Memcache do
 
   Please note that records in #{inspect(__MODULE__)} could be evicted anytime so the error handling must be needed.
   """
-  defun read(key :: Key.t, epool_id :: v[EPoolId.t]) :: R.t(Value.t, :not_found) do
+  defun read(key :: Key.t(), epool_id :: v[EPoolId.t()]) :: R.t(Value.t(), :not_found) do
     Memcache.read(key, epool_id)
     |> R.bind(fn {_, expire_at, prob_expire_at, value} ->
       if expired?(expire_at, prob_expire_at) do
@@ -85,15 +85,20 @@ defmodule Antikythera.Memcache do
 
   Parameters `lifetime_in_sec` and `prob_lifetime_ratio` are used to call `write/5` and the details are described above.
   """
-  defun read_or_else_write(key                 :: Key.t,
-                           epool_id            :: v[EPoolId.t],
-                           lifetime_in_sec     :: v[non_neg_integer],
-                           prob_lifetime_ratio :: v[NormalizedFloat.t] \\ @default_ratio,
-                           fun                 :: (-> Value.t)) :: R.t(Value.t, :too_large_key | :too_large_value) do
+  defun read_or_else_write(
+          key :: Key.t(),
+          epool_id :: v[EPoolId.t()],
+          lifetime_in_sec :: v[non_neg_integer],
+          prob_lifetime_ratio :: v[NormalizedFloat.t()] \\ @default_ratio,
+          fun :: (() -> Value.t())
+        ) :: R.t(Value.t(), :too_large_key | :too_large_value) do
     case read(key, epool_id) do
-      {:ok, value}         -> {:ok, value}
+      {:ok, value} ->
+        {:ok, value}
+
       {:error, _not_found} ->
         value = fun.()
+
         case write(key, value, epool_id, lifetime_in_sec, prob_lifetime_ratio) do
           :ok -> {:ok, value}
           err -> err
@@ -103,13 +108,17 @@ defmodule Antikythera.Memcache do
 
   defp expired?(expire_at, prob_expire_at) do
     case System.monotonic_time(:millisecond) do
-      now when now < prob_expire_at -> false
-      now when expire_at < now      -> true
+      now when now < prob_expire_at ->
+        false
+
+      now when expire_at < now ->
+        true
+
       now ->
         rnd = :rand.uniform()
         t0 = expire_at - prob_expire_at
-        t1 = now       - prob_expire_at
-        rnd < (t1 / t0)
+        t1 = now - prob_expire_at
+        rnd < t1 / t0
     end
   end
 
@@ -118,15 +127,17 @@ defmodule Antikythera.Memcache do
 
   See above descriptions for more details.
   """
-  defun write(key                 :: Key.t,
-              value               :: Value.t,
-              epool_id            :: v[EPoolId.t],
-              lifetime_in_sec     :: v[non_neg_integer],
-              prob_lifetime_ratio :: v[NormalizedFloat.t] \\ @default_ratio) :: :ok | {:error, :too_large_key | :too_large_value} do
+  defun write(
+          key :: Key.t(),
+          value :: Value.t(),
+          epool_id :: v[EPoolId.t()],
+          lifetime_in_sec :: v[non_neg_integer],
+          prob_lifetime_ratio :: v[NormalizedFloat.t()] \\ @default_ratio
+        ) :: :ok | {:error, :too_large_key | :too_large_value} do
     cond do
-      not Key.valid?(key)     -> {:error, :too_large_key}
+      not Key.valid?(key) -> {:error, :too_large_key}
       not Value.valid?(value) -> {:error, :too_large_value}
-      true                    -> MemcacheWriter.write(key, value, epool_id, lifetime_in_sec, prob_lifetime_ratio)
+      true -> MemcacheWriter.write(key, value, epool_id, lifetime_in_sec, prob_lifetime_ratio)
     end
   end
 

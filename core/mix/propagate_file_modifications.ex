@@ -43,15 +43,18 @@ defmodule Mix.Tasks.Compile.PropagateFileModifications do
         if newer_dependency_exists?(mtime, dependencies) do
           File.touch!(target)
         end
-      {:error, :enoent} -> :ok
+
+      {:error, :enoent} ->
+        :ok
     end
   end
 
   defp newer_dependency_exists?(target_mtime, dependencies) do
     Enum.any?(dependencies, fn d ->
       case File.stat(d) do
-        {:ok, stat}       -> target_mtime < stat.mtime
-        {:error, :enoent} -> false # neglect nonexisting entry (probably due to absence of toplevel of the directory tree)
+        {:ok, stat} -> target_mtime < stat.mtime
+        # neglect nonexisting entry (probably due to absence of toplevel of the directory tree)
+        {:error, :enoent} -> false
       end
     end)
   end

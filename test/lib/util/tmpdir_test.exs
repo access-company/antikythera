@@ -7,12 +7,13 @@ defmodule Antikythera.TmpdirTest do
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraCore.TmpdirTracker
 
-  @context  ConnHelper.make_conn().context
+  @context ConnHelper.make_conn().context
   @epool_id @context.executor_pool_id
   @base_dir Path.join(CorePath.gear_tmp_dir(), EPoolId.to_string(@epool_id))
 
   setup do
     assert Path.wildcard(Path.join(@base_dir, "*")) == []
+
     on_exit(fn ->
       assert Path.wildcard(Path.join(@base_dir, "*")) == []
     end)
@@ -26,7 +27,8 @@ defmodule Antikythera.TmpdirTest do
         f.(tmpdir)
       end)
     after
-      _ = :sys.get_state(TmpdirTracker) # wait until `:finished` message gets processed
+      # wait until `:finished` message gets processed
+      _ = :sys.get_state(TmpdirTracker)
     end
   end
 
@@ -36,27 +38,33 @@ defmodule Antikythera.TmpdirTest do
   end
 
   test "make/2 should remove directory when passed function fails" do
-    catch_error make(fn _ -> raise "raise!" end)
-    catch_throw make(fn _ -> throw "throw!" end)
-    catch_exit  make(fn _ -> exit  "exit!"  end)
+    catch_error(make(fn _ -> raise "raise!" end))
+    catch_throw(make(fn _ -> throw("throw!") end))
+    catch_exit(make(fn _ -> exit("exit!") end))
   end
 
   test "make/2 should remove directory when calling process is killed" do
     test_pid = self()
-    caller = spawn(fn ->
-      make(fn _ ->
-        send(test_pid, :inside_make)
-        :timer.sleep(1000)
+
+    caller =
+      spawn(fn ->
+        make(fn _ ->
+          send(test_pid, :inside_make)
+          :timer.sleep(1000)
+        end)
       end)
-    end)
-    assert_receive(:inside_make) # make sure that the directory was created
+
+    # make sure that the directory was created
+    assert_receive(:inside_make)
     Process.exit(caller, :kill)
     :timer.sleep(100)
   end
 
   test "nested call of make/2 should raise" do
-    catch_error make(fn _ ->
-      make(fn dir -> dir end)
-    end)
+    catch_error(
+      make(fn _ ->
+        make(fn dir -> dir end)
+      end)
+    )
   end
 end

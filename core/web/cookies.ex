@@ -8,22 +8,34 @@ defmodule AntikytheraCore.Cookies do
 
   def make_from_cowboy_req(req) do
     case Map.get(req.headers, "cookie") do
-      nil -> %{}
+      nil ->
+        %{}
+
       value ->
         try do
           :cow_cookie.parse_cookie(value)
           |> Map.new(fn {k, v} -> {URI.decode_www_form(k), URI.decode_www_form(v)} end)
         rescue
           e in ArgumentError ->
-            L.error(~s(Fail to parse cookie: "#{value}" from "#{req.method} #{req.scheme}://#{req.host}#{req.path}"))
+            L.error(
+              ~s(Fail to parse cookie: "#{value}" from "#{req.method} #{req.scheme}://#{req.host}#{
+                req.path
+              }")
+            )
+
             raise e
         end
     end
   end
 
   def merge_cookies_to_cowboy_req(cookies, req0) do
-    Enum.reduce(cookies, req0, fn({key, %SetCookie{value: value} = cookie}, req) ->
-      :cowboy_req.set_resp_cookie(URI.encode_www_form(key), URI.encode_www_form(value), req, convert_to_cowboy_cookie_opts(cookie))
+    Enum.reduce(cookies, req0, fn {key, %SetCookie{value: value} = cookie}, req ->
+      :cowboy_req.set_resp_cookie(
+        URI.encode_www_form(key),
+        URI.encode_www_form(value),
+        req,
+        convert_to_cowboy_cookie_opts(cookie)
+      )
     end)
   end
 

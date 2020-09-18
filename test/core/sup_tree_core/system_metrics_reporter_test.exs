@@ -7,7 +7,8 @@ defmodule AntikytheraCore.SystemMetricsReporterTest do
   alias AntikytheraCore.Metrics.AggregateStrategy.Gauge
 
   setup do
-    {:ok, pid} = SystemMetricsReporter.start_link([self()]) # will be killed together with `self` when each test is completed
+    # will be killed together with `self` when each test is completed
+    {:ok, pid} = SystemMetricsReporter.start_link([self()])
     {:ok, [pid: pid]}
   end
 
@@ -18,6 +19,6 @@ defmodule AntikytheraCore.SystemMetricsReporterTest do
     {t, data_list, :nopool} = GenServerHelper.receive_cast_message()
     assert start_time <= t
     assert Enum.any?(data_list, &match?({"vm_messages_in_mailboxes", Gauge, _}, &1))
-    assert Enum.any?(data_list, &match?({"vm_reductions"           , Gauge, _}, &1))
+    assert Enum.any?(data_list, &match?({"vm_reductions", Gauge, _}, &1))
   end
 end
