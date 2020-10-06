@@ -138,7 +138,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     case reason do
       :normal                            -> job_succeeded(state)
       {:shutdown, {reason2, stacktrace}} -> job_failed(state, reason2, stacktrace)
-      :killed                            -> job_failed(state, :killed, [])
+      :kill                              -> job_failed(state, :killed, [])
     end
     {:stop, :normal, state}
   end

@@ -49,6 +49,6 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
       fn(reason, stacktrace) -> GearError.error(conn, convert_error_reason(reason), stacktrace) end)
   end
 
-  defp convert_error_reason({:exit, :killed}), do: :killed
-  defp convert_error_reason(reason          ), do: reason
+  defp convert_error_reason({:exit, :kill}), do: :killed
+  defp convert_error_reason(reason        ), do: reason
 end
