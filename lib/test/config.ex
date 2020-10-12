@@ -18,6 +18,7 @@ defmodule Antikythera.Test.Config do
 
   def init() do
     ExUnit.start()
+
     if blackbox_test?() do
       ExUnit.configure(exclude: [:test], include: [:blackbox, :blackbox_only])
       IO.puts("Target base URL: #{base_url()}")
@@ -28,10 +29,20 @@ defmodule Antikythera.Test.Config do
 
   def base_url() do
     gear_name = Mix.Project.config()[:app]
+
     case test_mode() do
-      :whitebox       -> "http://#{CowboyRouting.default_domain(gear_name, :local)}:#{Antikythera.Env.port_to_listen()}"
-      :blackbox_local -> "http://#{CowboyRouting.default_domain(gear_name, :local)}:#{System.get_env("TEST_PORT") || 8080}"
-      other_env       -> base_url_for_deployment(gear_name, other_env)
+      :whitebox ->
+        "http://#{CowboyRouting.default_domain(gear_name, :local)}:#{
+          Antikythera.Env.port_to_listen()
+        }"
+
+      :blackbox_local ->
+        "http://#{CowboyRouting.default_domain(gear_name, :local)}:#{
+          System.get_env("TEST_PORT") || 8080
+        }"
+
+      other_env ->
+        base_url_for_deployment(gear_name, other_env)
     end
   end
 
@@ -45,9 +56,9 @@ defmodule Antikythera.Test.Config do
 
   def test_mode() do
     case System.get_env("TEST_MODE") do
-      nil              -> :whitebox
+      nil -> :whitebox
       "blackbox_local" -> :blackbox_local
-      other            -> test_mode_for_deployment(other)
+      other -> test_mode_for_deployment(other)
     end
   end
 
@@ -58,7 +69,7 @@ defmodule Antikythera.Test.Config do
   defp test_secret(env_var_name) do
     case System.get_env(env_var_name) do
       nil -> raise "Environment variable `#{env_var_name}` not found!"
-      s   -> Poison.decode!(s)
+      s -> Poison.decode!(s)
     end
   end
 

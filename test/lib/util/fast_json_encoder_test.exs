@@ -17,7 +17,8 @@ defmodule Antikythera.FastJasonEncoderTest do
   test "primitives" do
     values = [0, 1, 1.5, true, false, nil]
     Enum.each(values, &assert_compatible_with_poison/1)
-    assert_compatible_with_poison(:ok, "ok") # Atom is encoded as a string
+    # Atom is encoded as a string
+    assert_compatible_with_poison(:ok, "ok")
   end
 
   test "complex types" do
@@ -26,7 +27,7 @@ defmodule Antikythera.FastJasonEncoderTest do
 
     # Atom is encoded as a string
     assert_compatible_with_poison(%{key: "value"}, %{"key" => "value"})
-    assert_compatible_with_poison(%{key: :ok    }, %{"key" => "ok"   })
+    assert_compatible_with_poison(%{key: :ok}, %{"key" => "ok"})
 
     # Skip `FastJasonEncoder.encode/1` vs `Poison.encode/1` because the order of the field may change.
     obj = %{"k1" => "v1", "k2" => "v2"}
@@ -37,7 +38,8 @@ defmodule Antikythera.FastJasonEncoderTest do
   test "Antikythera.Time" do
     time = {Antikythera.Time, {2017, 1, 1}, {0, 0, 0}, 0}
     values = [time, [time], %{time: time}]
-    Enum.each(values, fn(value) ->
+
+    Enum.each(values, fn value ->
       {:ok, json} = FastJasonEncoder.encode(value)
       assert json == Poison.encode!(value)
     end)
@@ -46,7 +48,8 @@ defmodule Antikythera.FastJasonEncoderTest do
   test "DateTime" do
     datetime = ~U[2017-01-01 00:00:00.000000Z]
     values = [datetime, [datetime], %{datetime: datetime}]
-    Enum.each(values, fn(value) ->
+
+    Enum.each(values, fn value ->
       {:ok, json} = FastJasonEncoder.encode(value)
       assert json == Poison.encode!(value)
     end)
@@ -54,7 +57,8 @@ defmodule Antikythera.FastJasonEncoderTest do
 
   test "MapSet" do
     values = [MapSet.new(), MapSet.new([1, "foo", %{}])]
-    Enum.each(values, fn(value) ->
+
+    Enum.each(values, fn value ->
       {:ok, json} = FastJasonEncoder.encode(value)
       assert json == Poison.encode!(value)
     end)
@@ -75,7 +79,8 @@ defmodule Antikythera.FastJasonEncoderTest do
       %MyContainer{content: "item"},
       %MyContainer{content: %MyContainer{content: %MyContainer{content: "item"}}}
     ]
-    Enum.each(values, fn(value) ->
+
+    Enum.each(values, fn value ->
       {:ok, json} = FastJasonEncoder.encode(value)
       assert json == Poison.encode!(value)
       assert json == Poison.encode!(Map.from_struct(value))

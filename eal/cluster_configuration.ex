@@ -25,27 +25,27 @@ defmodule AntikytheraEal.ClusterConfiguration do
     - all running nodes in the cluster maintain connections to each other, and
     - each node can notice and cleanup when it is about to be terminated.
     """
-    @callback running_hosts() :: R.t(%{String.t => boolean})
+    @callback running_hosts() :: R.t(%{String.t() => boolean})
 
     @doc """
     Returns identifier of the data center zone in which current node is running.
 
     This callback is called only at startup and the return value is passed to `RaftFleet.activate/1`.
     """
-    @callback zone_of_this_host() :: String.t
+    @callback zone_of_this_host() :: String.t()
   end
 
   defmodule StandAlone do
     @behaviour Behaviour
 
     @impl true
-    defun running_hosts() :: R.t(%{String.t => boolean}) do
+    defun running_hosts() :: R.t(%{String.t() => boolean}) do
       [_, host] = Node.self() |> Atom.to_string() |> String.split("@")
       {:ok, %{host => true}}
     end
 
     @impl true
-    defun zone_of_this_host() :: String.t, do: "zone"
+    defun zone_of_this_host() :: String.t(), do: "zone"
   end
 
   use AntikytheraEal.ImplChooser

@@ -7,9 +7,10 @@ defmodule Antikythera.Test.ConfigTest do
     original = System.get_env(env_var_name)
     System.put_env(env_var_name, ~S({"foo": "bar"}))
     assert secret_getter.()["foo"] == "bar"
+
     case original do
       nil -> System.delete_env(env_var_name)
-      v   -> System.put_env(env_var_name, v)
+      v -> System.put_env(env_var_name, v)
     end
   end
 

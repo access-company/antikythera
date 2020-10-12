@@ -51,8 +51,14 @@ defmodule Antikythera.Websocket do
   alias Antikythera.Conn
   alias Antikythera.Websocket.{Frame, FrameList}
 
-  @type state            :: any
-  @type terminate_reason :: :normal | :stop | :timeout | :remote | {:remote, Frame.close_code, Frame.close_payload} | {:error, any}
+  @type state :: any
+  @type terminate_reason ::
+          :normal
+          | :stop
+          | :timeout
+          | :remote
+          | {:remote, Frame.close_code(), Frame.close_payload()}
+          | {:error, any}
 
   @typedoc """
   Type of return value of `init/1`, `handle_client_message/3` and `handle_server_message/3` callbacks.
@@ -62,7 +68,7 @@ defmodule Antikythera.Websocket do
   To close the connection, include a `:close` frame in the 2nd element of the return value.
   Note that the remaining frames after the close frame will not be sent.
   """
-  @type callback_result :: {state, FrameList.t}
+  @type callback_result :: {state, FrameList.t()}
 
   @doc """
   Callback function to be used during websocket handshake request.
@@ -78,7 +84,7 @@ defmodule Antikythera.Websocket do
   `use Antikythera.Websocket` generates a default implementation of this callback, which just returns the given `Antikythera.Conn.t`.
   Note that you can use plugs without overriding the default.
   """
-  @callback connect(Conn.t) :: Conn.t
+  @callback connect(Conn.t()) :: Conn.t()
 
   @doc """
   Callback function to be called right after a connection is established.
@@ -89,17 +95,17 @@ defmodule Antikythera.Websocket do
   2. send initial message to client (2nd element of return value)
   3. register the process to make it accessible from other processes in the system (see "Name registration" above)
   """
-  @callback init(Conn.t) :: callback_result
+  @callback init(Conn.t()) :: callback_result
 
   @doc """
   Callback function to be called on receipt of a client message.
   """
-  @callback handle_client_message(state, Conn.t, Frame.t) :: callback_result
+  @callback handle_client_message(state, Conn.t(), Frame.t()) :: callback_result
 
   @doc """
   Callback function to be called on receipt of a message from other process in the cluster.
   """
-  @callback handle_server_message(state, Conn.t, any) :: callback_result
+  @callback handle_server_message(state, Conn.t(), any) :: callback_result
 
   @doc """
   Callback function to clean up resources used by the websocket connection.
@@ -107,11 +113,16 @@ defmodule Antikythera.Websocket do
   For typical use cases you don't need to implement this callback;
   `Antikythera.Websocket` generates a default implementation (which does nothing) for you.
   """
-  @callback terminate(state, Conn.t, terminate_reason) :: any
+  @callback terminate(state, Conn.t(), terminate_reason) :: any
 
   defmacro __using__(_) do
     quote do
-      expected = Mix.Project.config()[:app] |> Atom.to_string() |> Macro.camelize() |> Module.concat("Websocket")
+      expected =
+        Mix.Project.config()[:app]
+        |> Atom.to_string()
+        |> Macro.camelize()
+        |> Module.concat("Websocket")
+
       if __MODULE__ != expected do
         raise "invalid module name: expected=#{expected} actual=#{__MODULE__}"
       end
@@ -125,7 +136,7 @@ defmodule Antikythera.Websocket do
       @impl true
       def terminate(_state, _conn, _reason), do: :ok
 
-      defoverridable [connect: 1, terminate: 3]
+      defoverridable connect: 1, terminate: 3
     end
   end
 end

@@ -25,35 +25,44 @@ defmodule Antikythera.GearApplication.ErrorHandler do
   alias AntikytheraCore.GearModule
 
   @all_handlers [
-    error:       2,
-    no_route:    1,
-    bad_request: 1,
+    error: 2,
+    no_route: 1,
+    bad_request: 1
   ]
 
   @doc false
-  defun find_error_handler_module(gear_name :: v[GearName.t]) :: nil | module do
-    mod = GearModule.error_handler_unsafe(gear_name) # during compilation of gear, allowed to call unsafe function
+  defun find_error_handler_module(gear_name :: v[GearName.t()]) :: nil | module do
+    # during compilation of gear, allowed to call unsafe function
+    mod = GearModule.error_handler_unsafe(gear_name)
+
     try do
       exported_funs = mod.module_info(:exports)
       not_defined_handlers = Enum.reject(@all_handlers, &(&1 in exported_funs))
+
       if Enum.empty?(not_defined_handlers) do
         mod
       else
         IO.puts("""
-        [antikythera] warning: #{mod} exists but some of the error handlers are not defined: #{inspect(not_defined_handlers)};
+        [antikythera] warning: #{mod} exists but some of the error handlers are not defined: #{
+          inspect(not_defined_handlers)
+        };
         [antikythera]   #{mod} is not eligible for a custom error handler module.
         """)
+
         nil
       end
     rescue
-      UndefinedFunctionError -> nil # module not defined
+      # module not defined
+      UndefinedFunctionError -> nil
     end
   end
 
   defmacro __using__(_) do
     quote do
       # Assuming that module attribute `@gear_name` is defined in the __CALLER__'s context
-      @error_handler_module Antikythera.GearApplication.ErrorHandler.find_error_handler_module(@gear_name)
+      @error_handler_module Antikythera.GearApplication.ErrorHandler.find_error_handler_module(
+                              @gear_name
+                            )
       defun error_handler_module() :: nil | module do
         @error_handler_module
       end

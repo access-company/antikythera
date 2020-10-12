@@ -12,7 +12,7 @@ defmodule Antikythera.NestedMap do
   defun deep_merge(m1 :: v[map], m2 :: v[map]) :: map do
     Map.merge(m1, m2, fn
       _k, v1, v2 when is_map(v1) and is_map(v2) -> deep_merge(v1, v2)
-      _k, _v1, v2                               -> v2
+      _k, _v1, v2 -> v2
     end)
   end
 
@@ -21,11 +21,14 @@ defmodule Antikythera.NestedMap do
       [key] ->
         new_value = Map.get(m, key) |> fun.()
         Map.put(m, key, new_value)
+
       [k | ks] ->
-        child_map = case Map.fetch(m, k) do
-          {:ok, v} when is_map(v) -> v
-          _                       -> %{}
-        end
+        child_map =
+          case Map.fetch(m, k) do
+            {:ok, v} when is_map(v) -> v
+            _ -> %{}
+          end
+
         new_map = force_update(child_map, ks, fun)
         Map.put(m, k, new_map)
     end
@@ -40,14 +43,17 @@ defmodule Antikythera.NestedMap do
     case keys do
       [key] ->
         MapUtil.update_existing(m, key, fun)
+
       [k | ks] ->
         case Map.fetch(m, k) do
           {:ok, v} when is_map(v) ->
             case update_existing_in(v, ks, fun) do
               {:ok, new_map} -> {:ok, Map.put(m, k, new_map)}
-              _              -> :error
+              _ -> :error
             end
-          _                       -> :error
+
+          _ ->
+            :error
         end
     end
   end

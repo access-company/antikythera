@@ -6,7 +6,11 @@ defmodule AntikytheraCore.OsUtil do
   alias AntikytheraCore.Ets.SystemCache
 
   defun init() :: :ok do
-    :ets.insert(SystemCache.table_name(), {:total_memory_size_in_bytes, get_total_memory_size_in_bytes()})
+    :ets.insert(
+      SystemCache.table_name(),
+      {:total_memory_size_in_bytes, get_total_memory_size_in_bytes()}
+    )
+
     :ok
   end
 
@@ -17,7 +21,7 @@ defmodule AntikytheraCore.OsUtil do
 
   defunp get_total_memory_size_in_bytes() :: pos_integer do
     case :os.type() do
-      {:unix, :linux}  -> total_memory_size_linux()
+      {:unix, :linux} -> total_memory_size_linux()
       {:unix, :darwin} -> total_memory_size_darwin()
     end
   end

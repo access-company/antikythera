@@ -11,14 +11,14 @@ defmodule AntikytheraCore.GearLog.Level do
     from_string(level_str)
   end
 
-  defun from_string(level_str :: String.t) :: t do
+  defun from_string(level_str :: String.t()) :: t do
     new(level_str) |> R.get!()
   end
 
   defun write_to_log?(min_level :: t, message_level :: t) :: boolean do
-    (:info , :debug) -> false
-    (:error, :debug) -> false
-    (:error, :info ) -> false
-    (_     , _     ) -> true
+    :info, :debug -> false
+    :error, :debug -> false
+    :error, :info -> false
+    _, _ -> true
   end
 end

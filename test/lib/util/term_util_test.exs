@@ -9,14 +9,16 @@ defmodule Antikythera.TermUtilTest do
     assert is_integer(size)
     assert size >= 0
     assert TermUtil.size_smaller_or_equal?(t, size)
+
     if size > 0 do
       refute TermUtil.size_smaller_or_equal?(t, size - 1)
     end
+
     size
   end
 
   property "size of any term can be computed" do
-    check all t <- term() do
+    check all(t <- term()) do
       assert_term_size(t)
     end
   end

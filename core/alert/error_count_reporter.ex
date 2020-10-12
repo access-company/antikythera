@@ -25,16 +25,21 @@ defmodule AntikytheraCore.Alert.ErrorCountReporter do
     new_state =
       case timer do
         nil -> %{state | count: count + 1, timer: start_timer()}
-        _   -> %{state | count: count + 1}
+        _ -> %{state | count: count + 1}
       end
+
     {:ok, new_state}
   end
 
   @impl true
-  def handle_info(:error_count_reporter_timeout, %{otp_app_name: otp_app_name, count: count} = state) do
+  def handle_info(
+        :error_count_reporter_timeout,
+        %{otp_app_name: otp_app_name, count: count} = state
+      ) do
     ErrorCountsAccumulator.submit(otp_app_name, count)
     {:ok, %{state | count: 0, timer: nil}}
   end
+
   def handle_info(_msg, state) do
     {:ok, state}
   end

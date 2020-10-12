@@ -15,7 +15,8 @@ defmodule AntikytheraCore.Alert.Handler.Email do
 
   - `to` - Required. List of email addresses to be sent. Must not be an empty list.
   - `errors_per_body` - Optional. Integer number of errors printed in body of an alert mail.
-    Details of errors beyond this threshold will be omitted. Defaults to #{@default_errors_per_body}.
+    Details of errors beyond this threshold will be omitted.
+    Defaults to #{@default_errors_per_body}.
   """
 
   alias Antikythera.{Email, Time, Env}
@@ -34,23 +35,29 @@ defmodule AntikytheraCore.Alert.Handler.Email do
   def send_alerts([], _, _) do
     []
   end
+
   def send_alerts(messages, %{"to" => to} = handler_config, otp_app_name) do
-    epb = case Map.get(handler_config, "errors_per_body") do
-      int when is_integer(int) -> int
-      _anything_else           -> @default_errors_per_body
-    end
+    epb =
+      case Map.get(handler_config, "errors_per_body") do
+        int when is_integer(int) -> int
+        _anything_else -> @default_errors_per_body
+      end
+
     mail = %AM.Mail{
-      from:    @from,
-      to:      to,
+      from: @from,
+      to: to,
       subject: subject(messages, otp_app_name),
-      body:    body(messages, epb),
+      body: body(messages, epb)
     }
-    _ = spawn(AM, :deliver, [mail]) # just spawn and forget, since async/await handling in :gen_event handler is cumbersome
+
+    # just spawn and forget, since async/await handling in :gen_event handler is cumbersome
+    _ = spawn(AM, :deliver, [mail])
     []
   end
 
   defp subject([{_time, body}], otp_app_name), do: tag(otp_app_name) <> headline(body)
-  defp subject(messages       , otp_app_name) do
+
+  defp subject(messages, otp_app_name) do
     [{_time, body} | tl] = messages
     "#{tag(otp_app_name)}#{headline(body)} [and other #{length(tl)} error(s)]"
   end
@@ -61,9 +68,10 @@ defmodule AntikytheraCore.Alert.Handler.Email do
 
   defp body(messages, errors_per_body) do
     {messages_with_full_body, messages_without_full_body} = Enum.split(messages, errors_per_body)
+
     Enum.join([
-      Enum.map(messages_with_full_body   , fn {t, b} -> time_body(t, b) end),
-      Enum.map(messages_without_full_body, fn {t, b} -> time_headline(t, b) end),
+      Enum.map(messages_with_full_body, fn {t, b} -> time_body(t, b) end),
+      Enum.map(messages_without_full_body, fn {t, b} -> time_headline(t, b) end)
     ])
   end
 
@@ -80,15 +88,15 @@ defmodule AntikytheraCore.Alert.Handler.Email do
 
   defp truncate_by_length(str, length) do
     case String.split_at(str, length) do
-      {head_str, ""       } -> head_str
+      {head_str, ""} -> head_str
       {head_str, _tail_str} -> head_str <> "..."
     end
   end
 
   @impl true
-  defun validate_config(config :: HandlerConfig.t) :: boolean do
+  defun validate_config(config :: HandlerConfig.t()) :: boolean do
     %{"to" => [_ | _] = addresses} -> addresses_valid?(addresses)
-    _                              -> false
+    _ -> false
   end
 
   defp addresses_valid?(addresses) do

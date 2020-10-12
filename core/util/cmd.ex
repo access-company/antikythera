@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Cmd do
-  defun hostname() :: String.t do
+  defun hostname() :: String.t() do
     {host, 0} = System.cmd("hostname", ["-f"])
     String.trim_trailing(host)
   end

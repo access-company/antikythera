@@ -15,6 +15,7 @@ defmodule AntikytheraCore.FileSetup do
       if File.dir?(CorePath.antikythera_root_dir()) do
         File.rm_rf!(CorePath.antikythera_root_dir())
       end
+
       ensure_dirs()
 
       # Note the timing of ETS table initialization:
@@ -43,8 +44,16 @@ defmodule AntikytheraCore.FileSetup do
   defp write_randomly_generated_secrets() do
     config_enc_key_path = CorePath.config_encryption_key_path()
     File.mkdir_p!(Path.dirname(config_enc_key_path))
-    File.write!(config_enc_key_path                     , :crypto.strong_rand_bytes(20) |> Base.encode64(padding: false))
-    File.write!(CorePath.system_info_access_token_path(), :crypto.strong_rand_bytes(20) |> Base.encode64(padding: false))
+
+    File.write!(
+      config_enc_key_path,
+      :crypto.strong_rand_bytes(20) |> Base.encode64(padding: false)
+    )
+
+    File.write!(
+      CorePath.system_info_access_token_path(),
+      :crypto.strong_rand_bytes(20) |> Base.encode64(padding: false)
+    )
   end
 
   defp ensure_dirs() do
@@ -54,8 +63,9 @@ defmodule AntikytheraCore.FileSetup do
       CorePath.history_dir(),
       CorePath.compiled_gears_dir(),
       CorePath.tenant_setting_dir(),
-      CorePath.gear_tmp_dir(),
-    ] |> Enum.each(&File.mkdir_p!/1)
+      CorePath.gear_tmp_dir()
+    ]
+    |> Enum.each(&File.mkdir_p!/1)
   end
 
   defp write_empty_tenant_ids() do
@@ -67,6 +77,7 @@ defmodule AntikytheraCore.FileSetup do
       path = Path.join(CorePath.history_dir(), "#{Env.antikythera_instance_name()}")
       File.write!(path, "#{version}\n", [:append])
     end
+
     :ok
   end
 end

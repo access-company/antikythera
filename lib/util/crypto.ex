@@ -14,10 +14,11 @@ defmodule Antikythera.Crypto do
     end
   end
 
-  defp secure_compare_impl(<<x, left :: binary>>, <<y, right :: binary>>, acc) do
+  defp secure_compare_impl(<<x, left::binary>>, <<y, right::binary>>, acc) do
     use Bitwise
-    secure_compare_impl(left, right, acc ||| (x ^^^ y))
+    secure_compare_impl(left, right, acc ||| x ^^^ y)
   end
+
   defp secure_compare_impl(<<>>, <<>>, acc) do
     acc
   end
@@ -58,19 +59,27 @@ defmodule Antikythera.Crypto do
 
     alias Croma.Result, as: R
 
-    @iv_len       16
+    @iv_len 16
     @auth_tag_len 16
 
-    @type key128 :: <<_::_ * 128>>
+    @type key128 :: <<_::_*128>>
 
-    defun ctr128_encrypt(plain :: v[binary], password :: v[binary], key_derivation_fun :: (binary -> key128) \\ &md5/1) :: binary do
+    defun ctr128_encrypt(
+            plain :: v[binary],
+            password :: v[binary],
+            key_derivation_fun :: (binary -> key128) \\ &md5/1
+          ) :: binary do
       iv = :crypto.strong_rand_bytes(@iv_len)
       key = key_derivation_fun.(password)
       {_, encrypted} = :crypto.stream_init(:aes_ctr, key, iv) |> :crypto.stream_encrypt(plain)
       iv <> encrypted
     end
 
-    defun ctr128_decrypt(encrypted :: v[binary], password :: v[binary], key_derivation_fun :: (binary -> key128) \\ &md5/1) :: R.t(binary) do
+    defun ctr128_decrypt(
+            encrypted :: v[binary],
+            password :: v[binary],
+            key_derivation_fun :: (binary -> key128) \\ &md5/1
+          ) :: R.t(binary) do
       split_16(encrypted)
       |> R.map(fn {iv, enc} ->
         key = key_derivation_fun.(password)
@@ -79,21 +88,35 @@ defmodule Antikythera.Crypto do
       end)
     end
 
-    defun gcm128_encrypt(plain :: v[binary], password :: v[binary], aad :: v[binary] \\ "", key_derivation_fun :: (binary -> key128) \\ &md5/1) :: binary do
+    defun gcm128_encrypt(
+            plain :: v[binary],
+            password :: v[binary],
+            aad :: v[binary] \\ "",
+            key_derivation_fun :: (binary -> key128) \\ &md5/1
+          ) :: binary do
       iv = :crypto.strong_rand_bytes(@iv_len)
       key = key_derivation_fun.(password)
-      {encrypted, auth_tag} = :crypto.block_encrypt(:aes_gcm, key, iv, {aad, plain, @auth_tag_len})
+
+      {encrypted, auth_tag} =
+        :crypto.block_encrypt(:aes_gcm, key, iv, {aad, plain, @auth_tag_len})
+
       iv <> auth_tag <> encrypted
     end
 
-    defun gcm128_decrypt(encrypted :: v[binary], password :: v[binary], aad :: v[binary] \\ "", key_derivation_fun :: (binary -> key128) \\ &md5/1) :: R.t(binary) do
+    defun gcm128_decrypt(
+            encrypted :: v[binary],
+            password :: v[binary],
+            aad :: v[binary] \\ "",
+            key_derivation_fun :: (binary -> key128) \\ &md5/1
+          ) :: R.t(binary) do
       R.m do
-        {iv , enc1} <- split_16(encrypted)
+        {iv, enc1} <- split_16(encrypted)
         {tag, enc2} <- split_16(enc1)
         key = key_derivation_fun.(password)
+
         case :crypto.block_decrypt(:aes_gcm, key, iv, {aad, enc2, tag}) do
           :error -> {:error, :decryption_failed}
-          plain  -> {:ok, plain}
+          plain -> {:ok, plain}
         end
       end
     end
@@ -102,7 +125,7 @@ defmodule Antikythera.Crypto do
       :crypto.hash(:md5, password)
     end
 
-    defp split_16(<<iv :: binary-size(16), rest :: binary>>), do: {:ok, {iv, rest}}
-    defp split_16(_                                        ), do: {:error, :invalid_input}
+    defp split_16(<<iv::binary-size(16), rest::binary>>), do: {:ok, {iv, rest}}
+    defp split_16(_), do: {:error, :invalid_input}
   end
 end

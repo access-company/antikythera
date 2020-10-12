@@ -30,20 +30,23 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
   @antikythera_instance_name Antikythera.Env.antikythera_instance_name()
 
   def run([comma_separated_gear_dirs | git_refs]) do
-    {:ok, _} = Application.ensure_all_started(:hackney) # to fetch current versions via `Antikythera.Httpc`
+    # to fetch current versions via `Antikythera.Httpc`
+    {:ok, _} = Application.ensure_all_started(:hackney)
     ensure_working_repository_clean()
     branch = current_branch()
     gears_map = gears_to_test(comma_separated_gear_dirs)
     has_testgear? = Map.has_key?(gears_map, "testgear")
     {hash_from, hash_to} = upgrade_from_and_to(git_refs)
 
-    status = try do
-      start_antikythera_local(gears_map, hash_from)
-      prepare_and_run_blackbox_test(has_testgear?, gears_map, hash_to)
-    after
-      checkout_and_deps_get(branch)
-      _ = run_mix_task(["antikythera_local.stop"])
-    end
+    status =
+      try do
+        start_antikythera_local(gears_map, hash_from)
+        prepare_and_run_blackbox_test(has_testgear?, gears_map, hash_to)
+      after
+        checkout_and_deps_get(branch)
+        _ = run_mix_task(["antikythera_local.stop"])
+      end
+
     exit({:shutdown, status})
   end
 
@@ -55,16 +58,17 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
 
   defp upgrade_from_and_to(git_refs) do
     case git_refs do
-      []         -> {commit_hash("HEAD^"), commit_hash("HEAD")}
-      [from]     -> {commit_hash(from   ), commit_hash("HEAD")}
-      [from, to] -> {commit_hash(from   ), commit_hash(to    )}
+      [] -> {commit_hash("HEAD^"), commit_hash("HEAD")}
+      [from] -> {commit_hash(from), commit_hash("HEAD")}
+      [from, to] -> {commit_hash(from), commit_hash(to)}
     end
   end
 
   defp current_branch() do
     case System.cmd("git", ["symbolic-ref", "--quiet", "--short", "HEAD"]) do
       {branch, 0} -> String.trim_trailing(branch)
-      {_, 1}      -> commit_hash("HEAD") # HEAD is not a symbolic ref
+      # HEAD is not a symbolic ref
+      {_, 1} -> commit_hash("HEAD")
     end
   end
 
@@ -98,12 +102,17 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
     # `mix.lock` file can have modifications if some package info (e.g. build tool) is missing in `hash_from` version.
     # We discard the diff (possibly a conflict) before `git checkout`.
     {output, 0} = System.cmd("git", ["diff", "--name-only", "HEAD"])
+
     case String.split(output, "\n", trim: true) do
-      []           -> :ok
-      ["mix.lock"] -> {_, 0} = System.cmd("git", ["checkout", "mix.lock"])
-      # fail if other files have modifications
+      [] ->
+        :ok
+
+      ["mix.lock"] ->
+        {_, 0} = System.cmd("git", ["checkout", "mix.lock"])
+        # fail if other files have modifications
     end
-    {_, 0} = System.cmd("git", ["checkout", ref], [stderr_to_stdout: true])
+
+    {_, 0} = System.cmd("git", ["checkout", ref], stderr_to_stdout: true)
     0 = run_mix_task(["deps.get"])
   end
 
@@ -120,13 +129,16 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
   defp run_mix_task(args) do
     run_mix_task(args, [], false)
   end
+
   defp run_mix_task(args, opts, always_output?) do
     {output, status} = System.cmd("mix", args, opts)
+
     cond do
-      status != 0    -> IO.puts("running mix task #{inspect(args)} failed! output =\n#{output}")
+      status != 0 -> IO.puts("running mix task #{inspect(args)} failed! output =\n#{output}")
       always_output? -> IO.puts(output)
-      true           -> :ok
+      true -> :ok
     end
+
     status
   end
 
@@ -146,12 +158,14 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
       def send_loop() do
         send_loop(__MODULE__.spawn_link("/ws?name=upgrade_test"))
       end
+
       defp send_loop(ws_client_pid) do
         :timer.sleep(500)
         send_json(ws_client_pid, %{"command" => "echo"})
+
         receive do
           {{:text, _json_string}, ^ws_client_pid} -> send_loop(ws_client_pid)
-          :exit                                   -> :ok
+          :exit -> :ok
         after
           1_000 -> raise "No reply from ws server!"
         end
@@ -165,13 +179,17 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
   defp with_websocket_client_process(false, f) do
     f.()
   end
+
   defp with_websocket_client_process(true, f) do
     IO.puts("Start websocket connection to testgear")
-    send_loop_closure = fn -> WS.send_loop() end # Load `WS` module before calling `f.()`
-    :timer.sleep(5_000) # wait for initialization of the target web server
+    # Load `WS` module before calling `f.()`
+    send_loop_closure = fn -> WS.send_loop() end
+    # wait for initialization of the target web server
+    :timer.sleep(5_000)
     {sender_pid, ref} = spawn_monitor(send_loop_closure)
     f.()
     send(sender_pid, :exit)
+
     receive do
       {:DOWN, ^ref, :process, ^sender_pid, reason} ->
         if reason != :normal do

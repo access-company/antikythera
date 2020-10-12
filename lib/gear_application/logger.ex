@@ -9,7 +9,7 @@ defmodule Antikythera.GearApplication.Logger do
     quote unquote: false do
       defmodule Logger do
         for level <- [:debug, :info, :error] do
-          @spec unquote(level)(String.t) :: :ok
+          @spec unquote(level)(String.t()) :: :ok
           def unquote(level)(msg) when is_binary(msg) do
             AntikytheraCore.GearLog.Writer.unquote(level)(__MODULE__, msg)
           end

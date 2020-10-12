@@ -1,7 +1,8 @@
 defmodule AntikytheraCore.PeriodicLog.ReductionBuilderTest do
   use Croma.TestCase
 
-  @dir Path.join([__DIR__, "..", "..", "..", "..", "_build", "test", "log", "antikythera"]) |> Path.expand()
+  @dir Path.join([__DIR__, "..", "..", "..", "..", "_build", "test", "log", "antikythera"])
+       |> Path.expand()
 
   test "should exist" do
     pid = Process.whereis(ReductionBuilder)
@@ -20,6 +21,7 @@ defmodule AntikytheraCore.PeriodicLog.ReductionBuilderTest do
     build_state2 = state2.build_state
     refute state2.log_state.empty?
 
-    refute Map.equal?(build_state1, build_state2) # ensure that the build state has been updated
+    # ensure that the build state has been updated
+    refute Map.equal?(build_state1, build_state2)
   end
 end

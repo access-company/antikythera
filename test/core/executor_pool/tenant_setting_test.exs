@@ -6,7 +6,7 @@ defmodule AntikytheraCore.ExecutorPool.TenantSettingTest do
   alias AntikytheraCore.TenantExecutorPoolsManager
   alias AntikytheraCore.Path, as: CorePath
 
-  @tenant_id      "dummy_tenant"
+  @tenant_id "dummy_tenant"
   @tenant_setting TenantSetting.default()
 
   defp assert_associated_gears(gears) do
@@ -16,15 +16,18 @@ defmodule AntikytheraCore.ExecutorPool.TenantSettingTest do
 
   defp send_check_and_wait() do
     send(TenantExecutorPoolsManager, :check)
+
     case :sys.get_state(TenantExecutorPoolsManager)[:fetcher] do
-      nil         -> :ok
+      nil -> :ok
       {pid, _ref} -> ProcessHelper.monitor_wait(pid)
     end
+
     assert :sys.get_state(TenantExecutorPoolsManager)[:fetcher] == nil
   end
 
   setup do
     File.write!(CorePath.tenant_ids_file_path(), :zlib.gzip(@tenant_id))
+
     on_exit(fn ->
       ExecutorPoolHelper.kill_and_wait({:tenant, @tenant_id}, fn ->
         settings_before = :sys.get_state(TenantExecutorPoolsManager)[:settings]
@@ -73,11 +76,14 @@ defmodule AntikytheraCore.ExecutorPool.TenantSettingTest do
     TenantSetting.persist_new_tenant_and_broadcast(@tenant_id, [])
     assert_associated_gears([])
     assert TenantExecutorPoolsManager.all()[@tenant_id] == Map.put(@tenant_setting, :gears, gears)
-    :timer.sleep(1_000)   # wait until file modification becomes stale
-    send_check_and_wait() # receive the disassociated tenant setting; still associated
+    # wait until file modification becomes stale
+    :timer.sleep(1_000)
+    # receive the disassociated tenant setting; still associated
+    send_check_and_wait()
     assert TenantExecutorPoolsManager.all()[@tenant_id] == Map.put(@tenant_setting, :gears, gears)
     assert length(Supervisor.which_children(AntikytheraCore.ExecutorPool.Sup)) == 1
-    send_check_and_wait() # actually disassociate
+    # actually disassociate
+    send_check_and_wait()
     assert TenantExecutorPoolsManager.all()[@tenant_id] == @tenant_setting
     assert Supervisor.which_children(AntikytheraCore.ExecutorPool.Sup) == []
   end
