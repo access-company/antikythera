@@ -87,5 +87,5 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
   end
 
   defp convert_error_reason({:exit, :kill}), do: :killed
-  defp convert_error_reason(reason        ), do: reason
+  defp convert_error_reason(reason), do: reason
 end

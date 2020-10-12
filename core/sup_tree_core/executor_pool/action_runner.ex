@@ -69,6 +69,7 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
         Process.unlink(pid)
         Process.exit(pid, :kill)
         GearError.error(conn, :timeout, [])
+
       :exit, {:kill, {GenServer, :call, [^pid | _]}} ->
         # `pid` has been brutally killed by someone, probably due to heap limit violation.
         # We additionally consume the EXIT message in mailbox, just to be sure that it won't result in memory leak.
