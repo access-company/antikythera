@@ -39,25 +39,33 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporter do
     {:noreply, state, @interval}
   end
 
-  defunp make_metrics_list(epool_id :: v[EPoolId.t]) :: DataList.t do
+  defunp make_metrics_list(epool_id :: v[EPoolId.t()]) :: DataList.t() do
     {working_a, max_a} = fetch_usage_action(epool_id)
     {working_j, max_j} = fetch_usage_job(epool_id)
-    %{count: count_ws, max: max_ws, rejected: rejected_ws} = WebsocketConnectionsCounter.stats(epool_id)
+
+    %{count: count_ws, max: max_ws, rejected: rejected_ws} =
+      WebsocketConnectionsCounter.stats(epool_id)
+
     List.flatten([
-      count_and_ratio("epool_working_action_runner", working_a, max_a ),
-      count_and_ratio("epool_working_job_runner"   , working_j, max_j ),
-      count_and_ratio("epool_websocket_connections", count_ws , max_ws),
-      {"epool_websocket_rejected_count", :gauge, rejected_ws},
+      count_and_ratio("epool_working_action_runner", working_a, max_a),
+      count_and_ratio("epool_working_job_runner", working_j, max_j),
+      count_and_ratio("epool_websocket_connections", count_ws, max_ws),
+      {"epool_websocket_rejected_count", :gauge, rejected_ws}
     ])
   end
 
-  defunp fetch_usage_action(epool_id :: v[EPoolId.t]) :: usage_rational do
+  defunp fetch_usage_action(epool_id :: v[EPoolId.t()]) :: usage_rational do
     name_action = RegName.action_runner_pool_multi(epool_id)
-    picked_pool = Supervisor.which_children(name_action) |> Enum.map(fn {_, pid, _, _} -> pid end) |> Enum.random()
+
+    picked_pool =
+      Supervisor.which_children(name_action)
+      |> Enum.map(fn {_, pid, _, _} -> pid end)
+      |> Enum.random()
+
     PoolSup.status(picked_pool) |> extract()
   end
 
-  defunp fetch_usage_job(epool_id :: v[EPoolId.t]) :: usage_rational do
+  defunp fetch_usage_job(epool_id :: v[EPoolId.t()]) :: usage_rational do
     name_job = RegName.async_job_runner_pool(epool_id)
     PoolSup.status(name_job) |> extract()
   end
@@ -67,5 +75,7 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporter do
   end
 
   defp count_and_ratio(label, n, 0), do: [{label <> "_count", :gauge, n}]
-  defp count_and_ratio(label, n, d), do: [{label <> "_count", :gauge, n}, {label <> "_%", :gauge, 100 * n / d}]
+
+  defp count_and_ratio(label, n, d),
+    do: [{label <> "_count", :gauge, n}, {label <> "_%", :gauge, 100 * n / d}]
 end

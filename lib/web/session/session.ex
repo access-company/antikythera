@@ -17,21 +17,23 @@ defmodule Antikythera.Session do
     use Croma.SubtypeOfAtom, values: [:update, :renew, :destroy]
   end
 
-  use Croma.Struct, recursive_new?: true, fields: [
-    state: Antikythera.Session.State,
-    id:    Croma.TypeGen.nilable(Croma.String),
-    data:  Croma.Map,
-  ]
+  use Croma.Struct,
+    recursive_new?: true,
+    fields: [
+      state: Antikythera.Session.State,
+      id: Croma.TypeGen.nilable(Croma.String),
+      data: Croma.Map
+    ]
 
-  defun get(%__MODULE__{data: data}, key :: v[String.t]) :: any do
+  defun get(%__MODULE__{data: data}, key :: v[String.t()]) :: any do
     data[key]
   end
 
-  defun put(%__MODULE__{data: data} = session, key :: v[String.t], value :: any) :: t do
+  defun put(%__MODULE__{data: data} = session, key :: v[String.t()], value :: any) :: t do
     %__MODULE__{session | data: Map.put(data, key, value)}
   end
 
-  defun delete(%__MODULE__{data: data} = session, key :: v[String.t]) :: t do
+  defun delete(%__MODULE__{data: data} = session, key :: v[String.t()]) :: t do
     %__MODULE__{session | data: Map.delete(data, key)}
   end
 

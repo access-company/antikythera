@@ -12,19 +12,19 @@ defmodule AntikytheraCore.Ets.TenantToGearsMapping do
     AntikytheraCore.Ets.create_read_optimized_table(@table_name)
   end
 
-  defun set(tenant_id :: v[TenantId.t], gear_names :: [GearName.t]) :: :ok do
+  defun set(tenant_id :: v[TenantId.t()], gear_names :: [GearName.t()]) :: :ok do
     :ets.insert(@table_name, {tenant_id, gear_names})
     :ok
   end
 
-  defun unset(tenant_id :: v[TenantId.t]) :: :ok do
+  defun unset(tenant_id :: v[TenantId.t()]) :: :ok do
     :ets.delete(@table_name, tenant_id)
     :ok
   end
 
-  defun associated?(tenant_id :: v[TenantId.t], gear_name :: v[GearName.t]) :: boolean do
+  defun associated?(tenant_id :: v[TenantId.t()], gear_name :: v[GearName.t()]) :: boolean do
     case :ets.lookup(@table_name, tenant_id) do
-      []                -> false
+      [] -> false
       [{_, gear_names}] -> gear_name in gear_names
     end
   end

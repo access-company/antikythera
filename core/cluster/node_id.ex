@@ -13,7 +13,7 @@ defmodule AntikytheraCore.Cluster.NodeId do
   alias Antikythera.NodeId
 
   @table_name AntikytheraCore.Ets.SystemCache.table_name()
-  @key        :node_id
+  @key :node_id
 
   defun init() :: :ok do
     {:ok, h} = :inet.gethostname()
@@ -23,7 +23,7 @@ defmodule AntikytheraCore.Cluster.NodeId do
     :ok
   end
 
-  defun get() :: NodeId.t do
+  defun get() :: NodeId.t() do
     :ets.lookup_element(@table_name, @key, 2)
   end
 end

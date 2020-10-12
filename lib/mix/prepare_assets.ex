@@ -79,13 +79,16 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
       dump_asset_file_paths()
     else
       IO.puts("Skipping. Asset preparation is not configured.")
-      IO.puts("Define `antikythera_prepare_assets` npm-script if you want antikythera to prepare assets for your gear.")
+
+      IO.puts(
+        "Define `antikythera_prepare_assets` npm-script if you want antikythera to prepare assets for your gear."
+      )
     end
   end
 
   defp npm_script_available?() do
-    with {:ok, json}                            <- File.read("package.json"),
-         {:ok, %{"scripts" => map}}             <- Poison.decode(json),
+    with {:ok, json} <- File.read("package.json"),
+         {:ok, %{"scripts" => map}} <- Poison.decode(json),
          %{"antikythera_prepare_assets" => cmd} <- map do
       is_binary(cmd)
     else
@@ -106,11 +109,16 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
     case System.get_env("GIT_PREVIOUS_SUCCESSFUL_COMMIT") do
       nil ->
         :ok
+
       commit ->
         files_to_check = ["package.json", "npm-shrinkwrap.json", "package-lock.json"]
         {_output, status} = System.cmd("git", ["diff", "--quiet", commit, "--" | files_to_check])
+
         if status == 1 do
-          IO.puts("Removing node_modules/ in order to avoid potential issues in npm's dependency resolution.")
+          IO.puts(
+            "Removing node_modules/ in order to avoid potential issues in npm's dependency resolution."
+          )
+
           File.rm_rf!("node_modules")
         end
     end
@@ -122,11 +130,13 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
       # > 16 for CRITICAL
       # https://yarnpkg.com/lang/en/docs/cli/audit/
       {_, status, _} = run_command("yarn", ["audit", "--level", "critical"], env)
+
       if status >= 16 do
         raise "One or more critical packages are found: #{status}"
       end
     else
       {output, status, _} = run_command("npm", ["audit", "--parseable"], env)
+
       if status != 0 do
         if File.exists?("package-lock.json") || File.exists?("npm-shrinkwrap.json") do
           # Some vulnerabilities were found. So we check the audit level.
@@ -147,14 +157,17 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
 
   def dump_asset_file_paths() do
     IO.puts("Done. Current assets under priv/static/ directory:")
+
     case Asset.list_asset_file_paths() do
-      []    -> IO.puts("  (No asset files exist)")
+      [] -> IO.puts("  (No asset files exist)")
       paths -> Enum.each(paths, fn path -> IO.puts("  * " <> path) end)
     end
   end
 
-  defun run_command!(cmd :: v[String.t], args :: v[[String.t]], env :: v[String.t]) :: String.t do
+  defun run_command!(cmd :: v[String.t()], args :: v[[String.t()]], env :: v[String.t()]) ::
+          String.t() do
     {output, status, invocation} = run_command(cmd, args, env)
+
     if status == 0 do
       output
     else
@@ -162,10 +175,14 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
     end
   end
 
-  defun run_command(cmd :: v[String.t], args :: v[[String.t]], env :: v[String.t]) :: {String.t, non_neg_integer, String.t} do
+  defun run_command(cmd :: v[String.t()], args :: v[[String.t()]], env :: v[String.t()]) ::
+          {String.t(), non_neg_integer, String.t()} do
     invocation = Enum.join([cmd | args], " ")
     IO.puts("$ #{invocation}")
-    {output, status} = System.cmd(cmd, args, [stderr_to_stdout: true, env: %{"ANTIKYTHERA_COMPILE_ENV" => env}])
+
+    {output, status} =
+      System.cmd(cmd, args, stderr_to_stdout: true, env: %{"ANTIKYTHERA_COMPILE_ENV" => env})
+
     IO.puts(output)
     {output, status, invocation}
   end

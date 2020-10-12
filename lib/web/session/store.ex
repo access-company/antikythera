@@ -7,10 +7,10 @@ defmodule Antikythera.Session.Store do
   Behaviour of session store.
   """
 
-  @type session_id :: nil | String.t
-  @type session_kv :: %{String.t => any}
+  @type session_id :: nil | String.t()
+  @type session_kv :: %{String.t() => any}
 
   @callback load(session_id) :: {session_id, session_kv}
-  @callback save(session_id, session_kv) :: String.t
+  @callback save(session_id, session_kv) :: String.t()
   @callback delete(session_id) :: :ok
 end

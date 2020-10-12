@@ -15,7 +15,8 @@ defmodule Antikythera.Test.GenServerHelper do
 
   def send_message_and_wait(server, message) do
     send(server, message)
-    _ = :sys.get_state(server) # wait until the server finishes processing the message using synchronous round-trip
+    # wait until the server finishes processing the message using synchronous round-trip
+    _ = :sys.get_state(server)
     :ok
   end
 end

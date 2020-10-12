@@ -10,14 +10,16 @@ defmodule AntikytheraCore.TenantExecutorPoolsManagerTest do
   alias AntikytheraCore.Ets.TenantToGearsMapping
   alias AntikytheraCore.Path, as: CorePath
 
-  @tenant_id           "g_12345678"
-  @epool_id            {:tenant, @tenant_id}
-  @sup_name            RegName.supervisor_unsafe(@epool_id)
+  @tenant_id "g_12345678"
+  @epool_id {:tenant, @tenant_id}
+  @sup_name RegName.supervisor_unsafe(@epool_id)
   @tenant_setting_path CorePath.tenant_setting_file_path(@tenant_id)
 
   defp wait_until_one_off_fetcher_finishes() do
     case :sys.get_state(TenantExecutorPoolsManager)[:fetcher] do
-      nil         -> :ok
+      nil ->
+        :ok
+
       {pid, _ref} ->
         ProcessHelper.monitor_wait(pid)
         :timer.sleep(10)
@@ -38,16 +40,24 @@ defmodule AntikytheraCore.TenantExecutorPoolsManagerTest do
   defp assert_record_exists(gears) do
     assert :ets.lookup(TenantToGearsMapping.table_name(), @tenant_id) == [{@tenant_id, gears}]
   end
+
   defp assert_record_not_exists() do
     assert :ets.lookup(TenantToGearsMapping.table_name(), @tenant_id) == []
   end
 
   defp make_setting(na, sa, sj, ws, gears) do
-    %TenantSetting{n_pools_a: na, pool_size_a: sa, pool_size_j: sj, ws_max_connections: ws, gears: gears}
+    %TenantSetting{
+      n_pools_a: na,
+      pool_size_a: sa,
+      pool_size_j: sj,
+      ws_max_connections: ws,
+      gears: gears
+    }
   end
 
   setup do
     File.write!(CorePath.tenant_ids_file_path(), :zlib.gzip(@tenant_id))
+
     on_exit(fn ->
       # Remove setting => stop and remove ETS record
       ExecutorPoolHelper.kill_and_wait(@epool_id, fn ->
@@ -89,9 +99,12 @@ defmodule AntikytheraCore.TenantExecutorPoolsManagerTest do
       refute File.exists?(@tenant_setting_path)
       assert is_pid(Process.whereis(@sup_name))
       assert_record_exists([:gear1])
-      :timer.sleep(1_000)   # wait until file modification becomes stale
-      send_check_and_wait() # receive the disassociated tenant setting; still associated
-      send_check_and_wait() # actually disassociate
+      # wait until file modification becomes stale
+      :timer.sleep(1_000)
+      # receive the disassociated tenant setting; still associated
+      send_check_and_wait()
+      # actually disassociate
+      send_check_and_wait()
       assert_record_not_exists()
       assert is_nil(Process.whereis(@sup_name))
     end)

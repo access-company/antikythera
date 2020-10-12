@@ -8,10 +8,10 @@ defmodule AntikytheraCore.MetricsUploaderTest do
   alias AntikytheraEal.MetricsStorage, as: Storage
 
   test "submit should reject invalid arguments" do
-    catch_error U.submit(U, [                                                        ])
-    catch_error U.submit(U, [{:not_a_string  , :average             , 1             }])
-    catch_error U.submit(U, [{"metrics_type1", :nonexisting_strategy, 1.5           }])
-    catch_error U.submit(U, [{"metrics_type1", :average             , "not a number"}])
+    catch_error(U.submit(U, []))
+    catch_error(U.submit(U, [{:not_a_string, :average, 1}]))
+    catch_error(U.submit(U, [{"metrics_type1", :nonexisting_strategy, 1.5}]))
+    catch_error(U.submit(U, [{"metrics_type1", :average, "not a number"}]))
   end
 
   defp submit(t, values, epool_id \\ :nopool) do
@@ -27,6 +27,7 @@ defmodule AntikytheraCore.MetricsUploaderTest do
   defp download_and_get_value(t) do
     t1 = Time.truncate_to_minute(t)
     t2 = Time.shift_minutes(t1, 1)
+
     Storage.Memory.download(:antikythera, :nopool, t1, t2)
     |> Enum.map(fn {_time, doc} ->
       assert_document_properties(doc)
@@ -40,7 +41,7 @@ defmodule AntikytheraCore.MetricsUploaderTest do
   end
 
   defp assert_document_properties(doc) do
-    assert doc["node_id"     ] == NodeId.get()
+    assert doc["node_id"] == NodeId.get()
     assert doc["otp_app_name"] == "antikythera"
   end
 
@@ -56,7 +57,8 @@ defmodule AntikytheraCore.MetricsUploaderTest do
 
     t_future = Time.shift_minutes(now, 1)
     submit(t_future, [0.4, 0.5, 0.6])
-    buffer2 = force_data_flushing() # should not flush anything
+    # should not flush anything
+    buffer2 = force_data_flushing()
     future_unit = {Time.truncate_to_minute(t_future), :nopool}
     assert buffer2[future_unit] == %{{"metrics1", Average} => {3, 1.5}}
     assert_in_delta(download_and_get_value(t_past), 0.2, 0.00001)
@@ -68,9 +70,14 @@ defmodule AntikytheraCore.MetricsUploaderTest do
     submit(t_past, [0.4, 0.5, 0.6], {:tenant, "g_12345678"})
     _ = force_data_flushing()
 
-    [{_t, %{"metrics1_avg" => v1}}] = Storage.Memory.download(:antikythera, {:gear, :testgear}, t_past, t_future)
+    [{_t, %{"metrics1_avg" => v1}}] =
+      Storage.Memory.download(:antikythera, {:gear, :testgear}, t_past, t_future)
+
     assert_in_delta(v1, 0.2, 0.00001)
-    [{_t, %{"metrics1_avg" => v2}}] = Storage.Memory.download(:antikythera, {:tenant, "g_12345678"}, t_past, t_future)
+
+    [{_t, %{"metrics1_avg" => v2}}] =
+      Storage.Memory.download(:antikythera, {:tenant, "g_12345678"}, t_past, t_future)
+
     assert_in_delta(v2, 0.5, 0.00001)
   end
 

@@ -21,20 +21,24 @@ defmodule AntikytheraCore.Alert.LoggerBackend do
   end
 
   @impl true
-  def handle_event({:error, gl, {Logger, message, {ymd, {h, min, s, ms}}, metadata}}, state) when node(gl) == node() do
+  def handle_event({:error, gl, {Logger, message, {ymd, {h, min, s, ms}}, metadata}}, state)
+      when node(gl) == node() do
     time = {Antikythera.Time, ymd, {h, min, s}, ms}
     CoreAlertManager.notify(CoreAlertManager, body(message, metadata), time)
     {:ok, state}
   end
+
   def handle_event(_event, state) do
     {:ok, state}
   end
 
-  defunp body(message :: Logger.message, metadata :: Keyword.t) :: String.t do
+  defunp body(message :: Logger.message(), metadata :: Keyword.t()) :: String.t() do
     # Just dump everything attached
-    metadata_str = Enum.map_join(metadata, "\n", fn {key, value} ->
-      "#{key}: #{inspect(value)}"
-    end)
+    metadata_str =
+      Enum.map_join(metadata, "\n", fn {key, value} ->
+        "#{key}: #{inspect(value)}"
+      end)
+
     "#{message}\n#{metadata_str}"
   end
 

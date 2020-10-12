@@ -10,6 +10,7 @@ defmodule Mix.Tasks.AntikytheraLocal.Start do
     if !Enum.empty?(AntikytheraLocal.RunningEnvironment.currently_running_os_process_ids()) do
       raise "#{Env.antikythera_instance_name()} already started"
     end
+
     AntikytheraLocal.RunningEnvironment.setup(gear_repo_dirs)
     IO.puts("Successfully started #{Env.antikythera_instance_name()}.")
   end

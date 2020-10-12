@@ -23,11 +23,11 @@ defmodule AntikytheraCore.StartupManager do
   alias AntikytheraCore.Handler.CowboyRouting
   require AntikytheraCore.Logger, as: L
 
-  @typep step  :: :all_gears_installed
+  @typep step :: :all_gears_installed
   @typep state :: %{step => boolean}
 
   def start_link([]) do
-    GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   @impl true
@@ -45,16 +45,21 @@ defmodule AntikytheraCore.StartupManager do
     CowboyRouting.update_routing(gear_names, all_initialization_steps_finished?(state))
     {:noreply, state}
   end
+
   def handle_cast(:all_gears_installed, state) do
     handle_completion_notice(:all_gears_installed, state)
   end
 
-  defunp handle_completion_notice(completed_step :: v[atom], old_state :: state) :: {:noreply, state} do
+  defunp handle_completion_notice(completed_step :: v[atom], old_state :: state) ::
+           {:noreply, state} do
     L.info("received #{completed_step}")
     new_state = Map.put(old_state, completed_step, true)
-    if !all_initialization_steps_finished?(old_state) and all_initialization_steps_finished?(new_state) do
+
+    if !all_initialization_steps_finished?(old_state) and
+         all_initialization_steps_finished?(new_state) do
       CowboyRouting.update_routing(GearManager.running_gear_names(), true)
     end
+
     {:noreply, new_state}
   end
 
@@ -69,7 +74,7 @@ defmodule AntikytheraCore.StartupManager do
     GenServer.call(__MODULE__, :initialized?)
   end
 
-  defun update_routing(gear_names :: [GearName.t]) :: :ok do
+  defun update_routing(gear_names :: [GearName.t()]) :: :ok do
     GenServer.cast(__MODULE__, {:update_routing, gear_names})
   end
 

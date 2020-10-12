@@ -13,14 +13,14 @@ defmodule AntikytheraCore.Metrics.AggregateStrategy do
   For detailed information about each strategy refer to each module's documentation.
   """
 
-  @type data_t    :: any
+  @type data_t :: any
   @type results_t :: Keyword.t(number)
 
   defmodule Behaviour do
     alias AntikytheraCore.Metrics.AggregateStrategy, as: Strategy
-    @callback init(number)                   :: Strategy.data_t
-    @callback merge(Strategy.data_t, number) :: Strategy.data_t
-    @callback results(Strategy.data_t)       :: Strategy.results_t
+    @callback init(number) :: Strategy.data_t()
+    @callback merge(Strategy.data_t(), number) :: Strategy.data_t()
+    @callback results(Strategy.data_t()) :: Strategy.results_t()
   end
 
   # We should not use macro to generate the following list of modules,
@@ -30,15 +30,17 @@ defmodule AntikytheraCore.Metrics.AggregateStrategy do
     __MODULE__.Gauge,
     __MODULE__.RequestCount,
     __MODULE__.Sum,
-    __MODULE__.TimeDistribution,
+    __MODULE__.TimeDistribution
   ]
 
   all_behaviour_impl_names =
     Enum.map(all_behaviour_impl_modules, fn mod ->
-      Module.split(mod) |> List.last() |> Macro.underscore() |> String.to_atom() # during compilation, no problem
+      # during compilation, no problem
+      Module.split(mod) |> List.last() |> Macro.underscore() |> String.to_atom()
     end)
 
   use Croma.SubtypeOfAtom, values: all_behaviour_impl_modules
+
   defmodule Name do
     use Croma.SubtypeOfAtom, values: all_behaviour_impl_names
   end

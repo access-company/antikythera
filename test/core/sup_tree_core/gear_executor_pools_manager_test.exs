@@ -10,11 +10,16 @@ defmodule AntikytheraCore.GearExecutorPoolsManagerTest do
   alias ExecutorPoolHelper
 
   @gear_name :testgear
-  @epool_id  {:gear, @gear_name}
+  @epool_id {:gear, @gear_name}
 
   defp put_setting_to_core_config_cache(setting) do
     m1 = ConfigCache.Core.read()
-    m2 = NestedMap.deep_merge(m1, %{gears: %{@gear_name => %{executor_pool: Map.from_struct(setting)}}})
+
+    m2 =
+      NestedMap.deep_merge(m1, %{
+        gears: %{@gear_name => %{executor_pool: Map.from_struct(setting)}}
+      })
+
     ConfigCache.Core.write(m2)
     GenServerHelper.send_message_and_wait(GearExecutorPoolsManager, :timeout)
   end
@@ -33,11 +38,23 @@ defmodule AntikytheraCore.GearExecutorPoolsManagerTest do
     ExecutorPoolHelper.wait_until_async_job_queue_added(@epool_id)
     ExecutorPoolHelper.assert_current_setting(@epool_id, 1, 5, 2, 100)
 
-    setting1 = %EPoolSetting{n_pools_a: 2, pool_size_a: 1, pool_size_j: 1, ws_max_connections: 200}
+    setting1 = %EPoolSetting{
+      n_pools_a: 2,
+      pool_size_a: 1,
+      pool_size_j: 1,
+      ws_max_connections: 200
+    }
+
     put_setting_to_core_config_cache(setting1)
     ExecutorPoolHelper.assert_current_setting(@epool_id, 2, 1, 1, 200)
 
-    setting2 = %EPoolSetting{n_pools_a: 3, pool_size_a: 2, pool_size_j: 2, ws_max_connections: 100}
+    setting2 = %EPoolSetting{
+      n_pools_a: 3,
+      pool_size_a: 2,
+      pool_size_j: 2,
+      ws_max_connections: 100
+    }
+
     put_setting_to_core_config_cache(setting2)
     ExecutorPoolHelper.assert_current_setting(@epool_id, 3, 2, 2, 100)
 

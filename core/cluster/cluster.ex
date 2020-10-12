@@ -12,7 +12,7 @@ defmodule AntikytheraCore.Cluster do
     |> R.map(&connect_to_other_nodes/1)
   end
 
-  defun connect_to_other_nodes(running_hosts_map :: %{String.t => boolean}) :: boolean do
+  defun connect_to_other_nodes(running_hosts_map :: %{String.t() => boolean}) :: boolean do
     # Compare hostnames so as not to be confused by "name" part of nodenames (substring before '@').
     running_hosts = Map.keys(running_hosts_map)
     unconnected_in_service_hosts = running_hosts -- connected_hosts()
@@ -20,28 +20,29 @@ defmodule AntikytheraCore.Cluster do
     connected_to_majority?(running_hosts)
   end
 
-  defunp connect(host :: v[String.t]) :: :ok do
+  defunp connect(host :: v[String.t()]) :: :ok do
     # The following `String.to_atom` is inevitable; fortunately number of nodes is not too many.
     # Note that the following naming scheme is defined in the boot script and passed to relx's script: see `NODENAME` env var.
     nodename = String.to_atom("antikythera@" <> host)
+
     case Node.connect(nodename) do
       :ignored -> L.info("failed to connect to #{host} (this node is not alive)")
-      false    -> L.info("failed to connect to #{host}")
-      true     -> L.info("successfully connected to #{host}")
+      false -> L.info("failed to connect to #{host}")
+      true -> L.info("successfully connected to #{host}")
     end
   end
 
-  defunp connected_to_majority?(running_hosts :: [String.t]) :: boolean do
+  defunp connected_to_majority?(running_hosts :: [String.t()]) :: boolean do
     n_unconnected = length(running_hosts -- connected_hosts())
-    n_all         = length(running_hosts)
+    n_all = length(running_hosts)
     2 * n_unconnected < n_all
   end
 
-  defunp connected_hosts() :: [String.t] do
+  defunp connected_hosts() :: [String.t()] do
     [Node.self() | Node.list()] |> Enum.map(&node_to_host/1)
   end
 
-  defun node_to_host(n :: v[atom]) :: String.t do
+  defun node_to_host(n :: v[atom]) :: String.t() do
     Atom.to_string(n) |> String.split("@") |> Enum.at(1)
   end
 end

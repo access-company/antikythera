@@ -9,7 +9,7 @@ defmodule AntikytheraCore.Metrics.AggregateStrategy.TimeDistributionTest do
   end
 
   property "find_95_percentile returns the same result as naive implementation" do
-    check all l <- list_of(integer()), !Enum.empty?(l) do
+    check all(l <- list_of(integer()), !Enum.empty?(l)) do
       count = length(l)
       assert TimeDistribution.find_95_percentile(count, l) == find_95_percentile_naive(count, l)
     end

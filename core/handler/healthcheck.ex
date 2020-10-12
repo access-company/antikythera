@@ -16,9 +16,12 @@ defmodule AntikytheraCore.Handler.Healthcheck do
     @impl true
     def init(req, nil) do
       L.info("healthcheck: not yet initialized... returning 400")
+
       # We have to close the connection (i.e. not to keep-alive the connection for the next healthcheck request)
       # so that changes in cowboy routing take effect after initialization finished.
-      {:ok, :cowboy_req.reply(400, %{"connection" => "close"}, "healthcheck: still initializing", req), nil}
+      {:ok,
+       :cowboy_req.reply(400, %{"connection" => "close"}, "healthcheck: still initializing", req),
+       nil}
     end
   end
 end

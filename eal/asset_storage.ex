@@ -21,7 +21,7 @@ defmodule AntikytheraEal.AssetStorage do
     @doc """
     Lists all already-stored asset files for the specified gear.
     """
-    @callback list(GearName.t) :: [String.t]
+    @callback list(GearName.t()) :: [String.t()]
 
     @doc """
     Lists common key prefixes of all already-stored asset files for all gears.
@@ -29,7 +29,7 @@ defmodule AntikytheraEal.AssetStorage do
     Based on the key format defined in `Antikythera.Asset`,
     the prefixes are expected to be the list of gear names which have already-stored asset files.
     """
-    @callback list_toplevel_prefixes() :: [String.t]
+    @callback list_toplevel_prefixes() :: [String.t()]
 
     @doc """
     Uploads the given asset file to the storage.
@@ -41,12 +41,13 @@ defmodule AntikytheraEal.AssetStorage do
     - `mime` : MIME type of the asset file.
     - `gzip?`: Whether gzip compression is beneficial for the asset file.
     """
-    @callback upload(path :: Path.t, key :: String.t, mime :: String.t, gzip? :: boolean) :: :ok
+    @callback upload(path :: Path.t(), key :: String.t(), mime :: String.t(), gzip? :: boolean) ::
+                :ok
 
     @doc """
     Deletes an asset file identified by the given `key`.
     """
-    @callback delete(key :: String.t) :: :ok
+    @callback delete(key :: String.t()) :: :ok
   end
 
   defmodule NoOp do

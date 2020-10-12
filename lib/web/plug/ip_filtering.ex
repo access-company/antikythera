@@ -39,42 +39,57 @@ defmodule Antikythera.Plug.IpFiltering do
   alias AntikytheraCore.Ets.ConfigCache
   alias AntikytheraCore.Config.Gear, as: GearConfig
 
-  @type arg_static :: boolean | [:inet.ip_address]
+  @type arg_static :: boolean | [:inet.ip_address()]
 
-  defun check_by_static_ranges(conn :: v[Conn.t], opts :: Keyword.t(arg_static)) :: Conn.t do
+  defun check_by_static_ranges(conn :: v[Conn.t()], opts :: Keyword.t(arg_static)) :: Conn.t() do
     allowed_ip_ranges = opts[:ranges]
     run_check_on_cloud(conn, opts, fn -> allowed_ip_ranges end)
   end
 
-  @type arg_gear_config :: boolean | String.t
+  @type arg_gear_config :: boolean | String.t()
 
-  defun check_by_gear_config(conn :: v[Conn.t], opts :: Keyword.t(arg_gear_config)) :: Conn.t do
+  defun check_by_gear_config(conn :: v[Conn.t()], opts :: Keyword.t(arg_gear_config)) :: Conn.t() do
     run_check_on_cloud(conn, opts, fn ->
       field_name = Keyword.get(opts, :field_name, "ALLOWED_IP_RANGES")
       %Conn{context: %Context{gear_name: gear_name}} = conn
+
       case ConfigCache.Gear.read(gear_name) do
-        %GearConfig{kv: kv} -> Map.get(kv, field_name, []) |> Enum.map(&IpAddress.V4.parse_range!/1)
-        nil                 -> []
+        %GearConfig{kv: kv} ->
+          Map.get(kv, field_name, []) |> Enum.map(&IpAddress.V4.parse_range!/1)
+
+        nil ->
+          []
       end
     end)
   end
 
   if Antikythera.Env.compiling_for_cloud?() or Mix.env() == :test do
-    defun run_check_on_cloud(conn :: v[Conn.t], opts :: Keyword.t, fun :: (() -> [:inet.ip4_address])) :: Conn.t do
+    defun run_check_on_cloud(
+            conn :: v[Conn.t()],
+            opts :: Keyword.t(),
+            fun :: (() -> [:inet.ip4_address()])
+          ) :: Conn.t() do
       run_check(conn, opts, fun)
     end
   else
-    defun run_check_on_cloud(conn :: v[Conn.t], _opts :: Keyword.t, _fun :: (() -> [:inet.ip4_address])) :: Conn.t do
-      conn # Do nothing
+    defun run_check_on_cloud(
+            conn :: v[Conn.t()],
+            _opts :: Keyword.t(),
+            _fun :: (() -> [:inet.ip4_address()])
+          ) :: Conn.t() do
+      # Do nothing
+      conn
     end
   end
 
   # The following should be `defunp` but is made public in order to suppress warning about "unused function"
   # (which then results in "spec for undefined function" error) when not `compiling_for_cloud?`.
   @doc false
-  defun run_check(%Conn{request: %Request{sender: sender}} = conn,
-                  opts          :: Keyword.t(term),
-                  ip_ranges_fun :: (() -> [:inet.ip_address])) :: Conn.t do
+  defun run_check(
+          %Conn{request: %Request{sender: sender}} = conn,
+          opts :: Keyword.t(term),
+          ip_ranges_fun :: (() -> [:inet.ip_address()])
+        ) :: Conn.t() do
     case sender do
       {:web, ip_str} ->
         case IpAddress.V4.parse(ip_str) do
@@ -84,9 +99,13 @@ defmodule Antikythera.Plug.IpFiltering do
             else
               reject(conn)
             end
-          {:error, _} -> reject(conn)
+
+          {:error, _} ->
+            reject(conn)
         end
-      {:gear, _} -> if Keyword.get(opts, :allow_g2g, false), do: conn, else: reject(conn)
+
+      {:gear, _} ->
+        if Keyword.get(opts, :allow_g2g, false), do: conn, else: reject(conn)
     end
   end
 

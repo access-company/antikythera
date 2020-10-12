@@ -22,7 +22,7 @@ defmodule Antikythera.Plug.NoCache do
 
   alias Antikythera.Conn
 
-  defun put_resp_header(conn :: v[Conn.t], _opts :: any) :: Conn.t do
+  defun put_resp_header(conn :: v[Conn.t()], _opts :: any) :: Conn.t() do
     Conn.put_resp_header(conn, "cache-control", @header_value)
   end
 end

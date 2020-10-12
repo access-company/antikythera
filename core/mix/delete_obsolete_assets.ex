@@ -31,34 +31,42 @@ defmodule Mix.Tasks.AntikytheraCore.DeleteObsoleteAssets do
 
   def run(_) do
     deployable_gears = History.all_deployable_gear_names() |> MapSet.new()
+
     {gears_existing, gears_nonexisting} =
       AssetStorage.list_toplevel_prefixes()
-      |> Enum.map(&String.to_atom/1) # it's OK to make dynamic atoms within mix task
+      # it's OK to make dynamic atoms within mix task
+      |> Enum.map(&String.to_atom/1)
       |> Enum.split_with(&(&1 in deployable_gears))
+
     handle_existing_gears(gears_existing)
     Enum.each(gears_nonexisting, &delete_all_assets_for_gear/1)
   end
 
-  defunp handle_existing_gears(gear_names :: [GearName.t]) :: :ok do
+  defunp handle_existing_gears(gear_names :: [GearName.t()]) :: :ok do
     threshold_time = Time.now() |> Time.shift_days(-@retention_days)
+
     Enum.each(gear_names, fn gear_name ->
       delete_obsolete_assets_for_gear(gear_name, threshold_time)
     end)
   end
 
-  defunp delete_obsolete_assets_for_gear(gear_name :: v[GearName.t], threshold_time :: v[Time.t]) :: :ok do
+  defunp delete_obsolete_assets_for_gear(
+           gear_name :: v[GearName.t()],
+           threshold_time :: v[Time.t()]
+         ) :: :ok do
     keys_to_retain = AssetList.load_all(gear_name, threshold_time)
+
     AssetStorage.list(gear_name)
     |> Enum.reject(&(&1 in keys_to_retain))
     |> Enum.each(&delete/1)
   end
 
-  defunp delete_all_assets_for_gear(gear_name :: v[GearName.t]) :: :ok do
+  defunp delete_all_assets_for_gear(gear_name :: v[GearName.t()]) :: :ok do
     AssetStorage.list(gear_name)
     |> Enum.each(&delete/1)
   end
 
-  defunp delete(key :: String.t) :: :ok do
+  defunp delete(key :: String.t()) :: :ok do
     IO.puts("deleting an asset in cloud storage: #{key}")
     AssetStorage.delete(key)
   end

@@ -11,10 +11,10 @@ defmodule AntikytheraCore.GearManager do
   alias Antikythera.GearName
   require AntikytheraCore.Logger, as: L
 
-  @typep state_t :: %{GearName.t => nil}
+  @typep state_t :: %{GearName.t() => nil}
 
   def start_link([]) do
-    GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   @impl true
@@ -34,6 +34,7 @@ defmodule AntikytheraCore.GearManager do
     update_routing(new_state)
     {:noreply, new_state}
   end
+
   def handle_cast({:gear_stopped, gear_name}, state) do
     L.info("gear stopped: #{gear_name}")
     new_state = Map.delete(state, gear_name)
@@ -49,15 +50,15 @@ defmodule AntikytheraCore.GearManager do
   #
   # Public API
   #
-  defun running_gear_names() :: [GearName.t] do
+  defun running_gear_names() :: [GearName.t()] do
     GenServer.call(__MODULE__, :all_gear_names)
   end
 
-  defun gear_started(gear_name :: v[GearName.t]) :: :ok do
+  defun gear_started(gear_name :: v[GearName.t()]) :: :ok do
     GenServer.cast(__MODULE__, {:gear_started, gear_name})
   end
 
-  defun gear_stopped(gear_name :: v[GearName.t]) :: :ok do
+  defun gear_stopped(gear_name :: v[GearName.t()]) :: :ok do
     GenServer.cast(__MODULE__, {:gear_stopped, gear_name})
   end
 end

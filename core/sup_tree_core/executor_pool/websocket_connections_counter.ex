@@ -20,7 +20,7 @@ defmodule AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter do
   end
 
   defunp start_link(max :: v[non_neg_integer], name :: v[atom]) :: {:ok, pid} do
-    GenServer.start_link(__MODULE__, max, [name: name])
+    GenServer.start_link(__MODULE__, max, name: name)
   end
 
   @impl true
@@ -37,6 +37,7 @@ defmodule AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter do
       {:reply, {:error, :too_many_connections}, %{state | rejected: rejected + 1}}
     end
   end
+
   def handle_call(:stats, _from, state) do
     {:reply, state, %{state | rejected: 0}}
   end
@@ -54,23 +55,26 @@ defmodule AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter do
   #
   # Public API
   #
-  defun increment(epool_id :: v[EPoolId.t], ws_pid :: v[pid]) :: :ok | {:error, :too_many_connections} do
+  defun increment(epool_id :: v[EPoolId.t()], ws_pid :: v[pid]) ::
+          :ok | {:error, :too_many_connections} do
     GenServer.call(RegName.websocket_connections_counter(epool_id), {:increment, ws_pid})
   end
 
-  defun stats(epool_id :: v[EPoolId.t]) :: %{(:count | :max | :rejected) => non_neg_integer} do
+  defun stats(epool_id :: v[EPoolId.t()]) :: %{(:count | :max | :rejected) => non_neg_integer} do
     GenServer.call(RegName.websocket_connections_counter(epool_id), :stats)
   end
 
-  defun set_max(epool_id :: v[EPoolId.t], max :: v[non_neg_integer]) :: :ok do
+  defun set_max(epool_id :: v[EPoolId.t()], max :: v[non_neg_integer]) :: :ok do
     GenServer.cast(RegName.websocket_connections_counter(epool_id), {:set_max, max})
   end
 
   #
   # terminating websocket connection processes
   #
-  @random_wait_time_max             (if Antikythera.Env.compiling_for_cloud?(), do: 10 * 60_000, else: 10)
-  @deadline_to_kill_all_connections (if Antikythera.Env.compiling_for_cloud?(), do: 30 * 60_000, else: 50)
+  @random_wait_time_max if Antikythera.Env.compiling_for_cloud?(), do: 10 * 60_000, else: 10
+  @deadline_to_kill_all_connections if Antikythera.Env.compiling_for_cloud?(),
+                                      do: 30 * 60_000,
+                                      else: 50
 
   defun start_terminating_all_ws_connections() :: :ok do
     spawn(&gradually_terminate_all_ws_connections/0)
@@ -85,8 +89,9 @@ defmodule AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter do
         Supervisor.which_children(exec_pool_sup)
         |> Enum.find_value(fn
           {__MODULE__, pid, _, _} -> pid
-          _                       -> nil
+          _ -> nil
         end)
+
       spawn_monitor(fn -> gradually_terminate_ws_connections(counter_pid) end)
     end)
   end
@@ -98,11 +103,19 @@ defmodule AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter do
     :timer.sleep(:rand.uniform(@random_wait_time_max))
 
     case Process.info(counter_pid, :monitors) do
-      nil             -> :ok # counter_pid is not alive
-      {:monitors, []} -> :ok
+      # counter_pid is not alive
+      nil ->
+        :ok
+
+      {:monitors, []} ->
+        :ok
+
       {:monitors, ms} ->
-        {pids_with_index, len} = Enum.map_reduce(ms, 0, fn({:process, pid}, i) -> {{pid, i}, i + 1} end)
+        {pids_with_index, len} =
+          Enum.map_reduce(ms, 0, fn {:process, pid}, i -> {{pid, i}, i + 1} end)
+
         interval = @deadline_to_kill_all_connections / len
+
         Enum.each(pids_with_index, fn {pid, i} ->
           Process.send_after(pid, {:antikythera_internal, :close}, round(interval * i))
         end)

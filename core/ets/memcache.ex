@@ -13,19 +13,25 @@ defmodule AntikytheraCore.Ets.Memcache do
     AntikytheraCore.Ets.create_read_optimized_table(@table_name)
   end
 
-  defun read(key :: term, epool_id :: v[EPoolId.t]) :: R.t(term, :not_found) do
+  defun read(key :: term, epool_id :: v[EPoolId.t()]) :: R.t(term, :not_found) do
     case :ets.lookup(@table_name, {epool_id, key}) do
-      []        -> {:error, :not_found}
-      [element] -> {:ok   , element}
+      [] -> {:error, :not_found}
+      [element] -> {:ok, element}
     end
   end
 
-  defun write(key :: term, value :: term, expire_at :: integer, prob_expire_at :: integer, epool_id :: v[EPoolId.t]) :: :ok do
+  defun write(
+          key :: term,
+          value :: term,
+          expire_at :: integer,
+          prob_expire_at :: integer,
+          epool_id :: v[EPoolId.t()]
+        ) :: :ok do
     :ets.insert(@table_name, {{epool_id, key}, expire_at, prob_expire_at, value})
     :ok
   end
 
-  defun delete(key :: term, epool_id :: v[EPoolId.t]) :: :ok do
+  defun delete(key :: term, epool_id :: v[EPoolId.t()]) :: :ok do
     :ets.delete(@table_name, {epool_id, key})
     :ok
   end

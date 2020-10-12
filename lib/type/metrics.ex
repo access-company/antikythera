@@ -6,11 +6,11 @@ defmodule Antikythera.Metrics.Data do
   alias AntikytheraCore.Metrics.Buffer
   alias AntikytheraCore.Metrics.AggregateStrategy, as: Strategy
 
-  @type t :: {String.t, Strategy.Name.t, Buffer.metrics_value}
+  @type t :: {String.t(), Strategy.Name.t(), Buffer.metrics_value()}
 
   defun valid?(v :: term) :: boolean do
     {n, s, v} when is_binary(n) and is_number(v) -> Strategy.Name.valid?(s)
-    _                                            -> false
+    _ -> false
   end
 end
 

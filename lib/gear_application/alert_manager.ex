@@ -10,7 +10,7 @@ defmodule Antikythera.GearApplication.AlertManager do
   defmacro __using__(_) do
     quote do
       defmodule AlertManager do
-        defun notify(body :: v[String.t]) :: :ok do
+        defun notify(body :: v[String.t()]) :: :ok do
           AntikytheraCore.Alert.Manager.notify(__MODULE__, body)
         end
       end

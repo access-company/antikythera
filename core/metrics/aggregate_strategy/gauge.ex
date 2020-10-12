@@ -19,5 +19,5 @@ defmodule Strategy.Gauge do
   defun merge(_old_value :: data_t, value :: v[number]) :: data_t, do: value
 
   @impl true
-  defun results(value :: data_t) :: Strategy.results_t, do: [value: value]
+  defun results(value :: data_t) :: Strategy.results_t(), do: [value: value]
 end

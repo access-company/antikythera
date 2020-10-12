@@ -19,5 +19,5 @@ defmodule Strategy.Sum do
   defun merge(old_value :: data_t, value :: v[number]) :: data_t, do: old_value + value
 
   @impl true
-  defun results(value :: data_t) :: Strategy.results_t, do: [sum: value]
+  defun results(value :: data_t) :: Strategy.results_t(), do: [sum: value]
 end

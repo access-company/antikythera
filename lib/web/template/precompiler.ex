@@ -30,63 +30,88 @@ defmodule Antikythera.TemplatePrecompiler do
 
   defp check_caller_module(mod) do
     gear_name_camel = Mix.Project.config()[:app] |> Atom.to_string() |> Macro.camelize()
+
     case Module.split(mod) do
       [^gear_name_camel, "Template"] -> :ok
-      _                              -> raise "`use #{inspect(__MODULE__)}` is usable only in `#{gear_name_camel}.Template`"
+      _ -> raise "`use #{inspect(__MODULE__)}` is usable only in `#{gear_name_camel}.Template`"
     end
   end
 
   defp define_haml_content_funs(dir) do
     haml_paths = Path.wildcard(Path.join([dir, "template", "**", "*.html.haml"]))
+
     if Enum.empty?(haml_paths) do
       []
     else
       clause_header =
         quote do
-          @spec content_for(String.t, Keyword.t(any)) :: {:safe, String.t}
+          @spec content_for(String.t(), Keyword.t(any)) :: {:safe, String.t()}
           def content_for(name, params \\ [])
         end
+
       clauses = Enum.map(haml_paths, &define_haml_content_fun(dir, &1))
       [clause_header | clauses]
     end
   end
 
   defp define_haml_content_fun(dir, path) do
-    name           = path |> Path.relative_to(Path.join(dir, "template")) |> String.replace_suffix(".html.haml", "")
-    eex_content    = path |> File.read!() |> Calliope.Render.precompile()
-    quoted_content = EEx.compile_string(eex_content, [file: path, engine: TemplateEngine])
-    var_names      = extract_free_vars_in_quoted(quoted_content)
+    name =
+      path
+      |> Path.relative_to(Path.join(dir, "template"))
+      |> String.replace_suffix(".html.haml", "")
+
+    eex_content = path |> File.read!() |> Calliope.Render.precompile()
+    quoted_content = EEx.compile_string(eex_content, file: path, engine: TemplateEngine)
+    var_names = extract_free_vars_in_quoted(quoted_content)
+
     quote do
       # file modifications are tracked by `PropagateFileModifications`; `@external_resource` here would be redundant
       def content_for(unquote(name), params) do
         import Antikythera.TemplateSanitizer
-        unquote(Enum.map(var_names, &Macro.var(&1, nil))) = Enum.map(unquote(var_names), &Keyword.fetch!(params, &1))
+
+        unquote(Enum.map(var_names, &Macro.var(&1, nil))) =
+          Enum.map(unquote(var_names), &Keyword.fetch!(params, &1))
+
         unquote(quoted_content)
       end
     end
   end
 
   defp extract_free_vars_in_quoted(q) do
-    {free_vars_map, _} = MacroUtil.prewalk_accumulate(q, {%{}, MapSet.new()}, &extract_vars_in_ast_node/2)
+    {free_vars_map, _} =
+      MacroUtil.prewalk_accumulate(q, {%{}, MapSet.new()}, &extract_vars_in_ast_node/2)
+
     for {var_name, count} <- free_vars_map, count > 0, do: var_name
   end
 
   defp extract_vars_in_ast_node(t, {acc_free, acc_bound} = acc) do
     case t do
-      {:::, _, [_, {:binary, _, nil}]}  -> {Map.update(acc_free, :binary, -1, &(&1 - 1)), acc_bound} # cancel count of type expr in AST of string interpolation
-      {:= , _, [lhs, _rhs]}             -> {acc_free, MapSet.union(collect_vars(lhs), acc_bound)}
-      {:<-, _, [lhs, _rhs]}             -> {acc_free, MapSet.union(collect_vars(lhs), acc_bound)}
-      {:->, _, [[lhs | _guards], _rhs]} -> {acc_free, MapSet.union(collect_vars(lhs), acc_bound)}
-      {name, _, nil}                    -> if name in acc_bound, do: acc, else: {Map.update(acc_free, name, 1, &(&1 + 1)), acc_bound}
-      _                                 -> acc
+      # cancel count of type expr in AST of string interpolation
+      {:"::", _, [_, {:binary, _, nil}]} ->
+        {Map.update(acc_free, :binary, -1, &(&1 - 1)), acc_bound}
+
+      {:=, _, [lhs, _rhs]} ->
+        {acc_free, MapSet.union(collect_vars(lhs), acc_bound)}
+
+      {:<-, _, [lhs, _rhs]} ->
+        {acc_free, MapSet.union(collect_vars(lhs), acc_bound)}
+
+      {:->, _, [[lhs | _guards], _rhs]} ->
+        {acc_free, MapSet.union(collect_vars(lhs), acc_bound)}
+
+      {name, _, nil} ->
+        if name in acc_bound, do: acc, else: {Map.update(acc_free, name, 1, &(&1 + 1)), acc_bound}
+
+      _ ->
+        acc
     end
   end
 
-  defunp collect_vars(q :: Macro.t) :: MapSet.t do
-    MacroUtil.prewalk_accumulate(q, [], fn(t, acc) ->
+  defunp collect_vars(q :: Macro.t()) :: MapSet.t() do
+    MacroUtil.prewalk_accumulate(q, [], fn t, acc ->
       case t do
         {name, _, nil} when is_atom(name) -> [name | acc]
-        _                                 -> acc
+        _ -> acc
       end
     end)
     |> MapSet.new()
