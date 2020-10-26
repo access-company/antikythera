@@ -108,7 +108,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
       :debug -> IO.ANSI.cyan() <> formatted <> IO.ANSI.reset()
       _ -> formatted
     end
-    |> IO.binwrite()
+    |> IO.write()
   end
 
   defp determine_write_to_terminal() do
