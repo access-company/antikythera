@@ -103,12 +103,18 @@ defmodule AntikytheraCore.GearLog.FileHandle do
   end
 
   defunp write_debug_log(level :: v[Level.t()], formatted :: v[String.t()]) :: :ok do
-    case level do
-      :error -> IO.ANSI.red() <> formatted <> IO.ANSI.reset()
-      :debug -> IO.ANSI.cyan() <> formatted <> IO.ANSI.reset()
-      _ -> formatted
+    colored =
+      case level do
+        :error -> IO.ANSI.red() <> formatted <> IO.ANSI.reset()
+        :debug -> IO.ANSI.cyan() <> formatted <> IO.ANSI.reset()
+        _ -> formatted
+      end
+
+    if String.valid?(colored) do
+      IO.write(colored)
+    else
+      IO.binwrite(colored)
     end
-    |> IO.binwrite()
   end
 
   defp determine_write_to_terminal() do
