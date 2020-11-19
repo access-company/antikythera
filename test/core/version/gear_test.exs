@@ -21,7 +21,7 @@ defmodule AntikytheraCore.Version.GearTest do
     end)
   end
 
-  describe "install_gears_whose_deps_met/3" do
+  describe "install_gears_whose_deps_met/4" do
     test "should appropriately reorder gear installations according to their gear dependencies" do
       %{
         [] => [],
