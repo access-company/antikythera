@@ -130,21 +130,28 @@ defmodule AntikytheraCore.Version.Gear do
         {g, __MODULE__.gear_dependencies_from_app_file(g, gear_names)}
       end)
 
-    pairs_not_installed =
-      __MODULE__.install_gears_whose_deps_met(gear_and_deps_pairs, MapSet.new(), fn gear_name ->
-        try do
-          install_or_upgrade_to_next_version(gear_name)
-        rescue
-          e -> L.error("Failed to install #{gear_name}: #{Exception.message(e)}")
+    {pairs_not_installed, num_failed_install} =
+      __MODULE__.install_gears_whose_deps_met(
+        gear_and_deps_pairs,
+        MapSet.new(),
+        0,
+        fn gear_name ->
+          try do
+            install_or_upgrade_to_next_version(gear_name)
+          rescue
+            e ->
+              L.error("Failed to install #{gear_name}: #{Exception.message(e)}")
+              :error
+          end
         end
-      end)
+      )
 
     Enum.each(pairs_not_installed, fn {gear_name, deps} ->
       L.error("#{gear_name} is not installed due to unmatched dependencies: #{inspect(deps)}")
     end)
 
     num_installable = length(gear_names)
-    num_installed = num_installable - length(pairs_not_installed)
+    num_installed = num_installable - length(pairs_not_installed) - num_failed_install
     # version_upgrade_test starts Antikythera without gears.
     # Then, we can't check number of installed gears.
     needs_check = Antikythera.Env.runtime_env() != :local
@@ -163,24 +170,26 @@ defmodule AntikytheraCore.Version.Gear do
   defun install_gears_whose_deps_met(
           pairs :: v[[gear_and_deps_pair]],
           installed_gears_set :: MapSet.t(),
-          f :: (GearName.t() -> :ok)
-        ) :: [gear_and_deps_pair] do
+          num_failed_install :: v[non_neg_integer],
+          f :: (GearName.t() -> :ok | :error)
+        ) :: {[gear_and_deps_pair], non_neg_integer} do
     if Enum.empty?(pairs) do
-      []
+      {[], num_failed_install}
     else
       {pairs_installable, pairs_not_installable} =
         Enum.split_with(pairs, fn {_, deps} -> MapSet.subset?(deps, installed_gears_set) end)
 
       if Enum.empty?(pairs_installable) do
         # we cannot make progress any more
-        pairs_not_installable
+        {pairs_not_installable, num_failed_install}
       else
         gears_installable = Keyword.keys(pairs_installable)
-        Enum.each(gears_installable, f)
+        gears_installed = Enum.filter(gears_installable, fn gear -> f.(gear) == :ok end)
 
         install_gears_whose_deps_met(
           pairs_not_installable,
-          Enum.into(gears_installable, installed_gears_set),
+          Enum.into(gears_installed, installed_gears_set),
+          num_failed_install + length(gears_installable) - length(gears_installed),
           f
         )
       end
