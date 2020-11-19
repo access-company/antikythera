@@ -38,11 +38,9 @@ defmodule AntikytheraCore.Version.GearTest do
     |> Enum.each(fn {pairs, gears_to_be_rejected} ->
       pairs_to_be_rejected = Enum.filter(pairs, fn {g, _} -> g in gears_to_be_rejected end)
 
-      {ret, num_installed} =
-        V.install_gears_whose_deps_met(pairs, MapSet.new(), fn g -> send(self(), g) end)
+      ret = V.install_gears_whose_deps_met(pairs, MapSet.new(), fn g -> send(self(), g) end)
 
       assert set(ret) == set(pairs_to_be_rejected)
-      assert num_installed == length(pairs) - length(gears_to_be_rejected)
       assert set(all_messages_in_mailbox()) == set(Keyword.keys(pairs) -- gears_to_be_rejected)
     end)
   end
@@ -57,8 +55,6 @@ defmodule AntikytheraCore.Version.GearTest do
       gears = [:gear1, :gear2, :gear3]
       pairs_not_installed = []
 
-      num_installed = length(gears) - length(pairs_not_installed)
-
       :meck.expect(AntikytheraCore.Version.Gear, :gear_dependencies_from_app_file, fn _gear_name,
                                                                                       _known_gear_names ->
         MapSet.new()
@@ -68,7 +64,7 @@ defmodule AntikytheraCore.Version.GearTest do
         AntikytheraCore.Version.Gear,
         :install_gears_whose_deps_met,
         fn _gear_and_deps_pairs, _installed_gears_set, _f ->
-          {pairs_not_installed, num_installed}
+          pairs_not_installed
         end
       )
 
@@ -79,8 +75,6 @@ defmodule AntikytheraCore.Version.GearTest do
       gears = [:gear1, :gear2, :gear3]
       pairs_not_installed = [gear1: set([]), gear2: set([])]
 
-      num_installed = length(gears) - length(pairs_not_installed)
-
       :meck.expect(AntikytheraCore.Version.Gear, :gear_dependencies_from_app_file, fn _gear_name,
                                                                                       _known_gear_names ->
         MapSet.new()
@@ -90,7 +84,7 @@ defmodule AntikytheraCore.Version.GearTest do
         AntikytheraCore.Version.Gear,
         :install_gears_whose_deps_met,
         fn _gear_and_deps_pairs, _installed_gears_set, _f ->
-          {pairs_not_installed, num_installed}
+          pairs_not_installed
         end
       )
 
@@ -101,8 +95,6 @@ defmodule AntikytheraCore.Version.GearTest do
       gears = [:gear1, :gear2, :gear3, :gear4]
       pairs_not_installed = [gear1: set([]), gear2: set([])]
 
-      num_installed = length(gears) - length(pairs_not_installed)
-
       :meck.expect(AntikytheraCore.Version.Gear, :gear_dependencies_from_app_file, fn _gear_name,
                                                                                       _known_gear_names ->
         MapSet.new()
@@ -112,7 +104,7 @@ defmodule AntikytheraCore.Version.GearTest do
         AntikytheraCore.Version.Gear,
         :install_gears_whose_deps_met,
         fn _gear_and_deps_pairs, _installed_gears_set, _f ->
-          {pairs_not_installed, num_installed}
+          pairs_not_installed
         end
       )
 
@@ -123,8 +115,6 @@ defmodule AntikytheraCore.Version.GearTest do
       gears = []
       pairs_not_installed = []
 
-      num_installed = length(gears) - length(pairs_not_installed)
-
       :meck.expect(AntikytheraCore.Version.Gear, :gear_dependencies_from_app_file, fn _gear_name,
                                                                                       _known_gear_names ->
         MapSet.new()
@@ -134,7 +124,7 @@ defmodule AntikytheraCore.Version.GearTest do
         AntikytheraCore.Version.Gear,
         :install_gears_whose_deps_met,
         fn _gear_and_deps_pairs, _installed_gears_set, _f ->
-          {pairs_not_installed, num_installed}
+          pairs_not_installed
         end
       )
 

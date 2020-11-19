@@ -130,7 +130,7 @@ defmodule AntikytheraCore.Version.Gear do
         {g, __MODULE__.gear_dependencies_from_app_file(g, gear_names)}
       end)
 
-    {pairs_not_installed, num_installed} =
+    pairs_not_installed =
       __MODULE__.install_gears_whose_deps_met(gear_and_deps_pairs, MapSet.new(), fn gear_name ->
         try do
           install_or_upgrade_to_next_version(gear_name)
@@ -143,7 +143,8 @@ defmodule AntikytheraCore.Version.Gear do
       L.error("#{gear_name} is not installed due to unmatched dependencies: #{inspect(deps)}")
     end)
 
-    num_installable = length(pairs_not_installed) + num_installed
+    num_installable = length(gear_names)
+    num_installed = num_installable - length(pairs_not_installed)
     # version_upgrade_test starts Antikythera without gears.
     # Then, we can't check number of installed gears.
     needs_check = Antikythera.Env.runtime_env() != :local
@@ -163,16 +164,16 @@ defmodule AntikytheraCore.Version.Gear do
           pairs :: v[[gear_and_deps_pair]],
           installed_gears_set :: MapSet.t(),
           f :: (GearName.t() -> :ok)
-        ) :: {[gear_and_deps_pair], non_neg_integer} do
+        ) :: [gear_and_deps_pair] do
     if Enum.empty?(pairs) do
-      {[], MapSet.size(installed_gears_set)}
+      []
     else
       {pairs_installable, pairs_not_installable} =
         Enum.split_with(pairs, fn {_, deps} -> MapSet.subset?(deps, installed_gears_set) end)
 
       if Enum.empty?(pairs_installable) do
         # we cannot make progress any more
-        {pairs_not_installable, MapSet.size(installed_gears_set)}
+        pairs_not_installable
       else
         gears_installable = Keyword.keys(pairs_installable)
         Enum.each(gears_installable, f)
