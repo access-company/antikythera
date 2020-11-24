@@ -157,7 +157,7 @@ defmodule AntikytheraCore.Version.Gear do
     needs_check = Antikythera.Env.runtime_env() != :local
 
     is_enough_gears_installed =
-      num_installable != 0 && num_installed / num_installable > @installed_gear_ratio_threshold
+      num_installable != 0 and num_installed / num_installable > @installed_gear_ratio_threshold
 
     if !needs_check || is_enough_gears_installed do
       :ok
