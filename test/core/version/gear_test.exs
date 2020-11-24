@@ -57,11 +57,7 @@ defmodule AntikytheraCore.Version.GearTest do
 
       {ret, num_failed_install} =
         V.install_gears_whose_deps_met(pairs, MapSet.new(), 0, fn g ->
-          if g == failed_to_install_gear do
-            :error
-          else
-            :ok
-          end
+          if g == failed_to_install_gear, do: :error, else: :ok
         end)
 
       assert Enum.empty?(ret)
@@ -76,11 +72,7 @@ defmodule AntikytheraCore.Version.GearTest do
 
       {ret, num_failed_install} =
         V.install_gears_whose_deps_met(pairs, MapSet.new(), 0, fn g ->
-          if g == failed_to_install_gear do
-            :error
-          else
-            :ok
-          end
+          if g == failed_to_install_gear, do: :error, else: :ok
         end)
 
       assert set(ret) == set(pairs_to_be_rejected)
