@@ -59,7 +59,7 @@ defmodule AntikytheraCore.VersionSynchronizer do
   end
 
   defp install_gears() do
-    Version.Gear.install_gears_at_startup(History.all_deployable_gear_names())
+    :ok = Version.Gear.install_gears_at_startup(History.all_deployable_gear_names())
     StartupManager.all_gears_installed()
   end
 

@@ -9,6 +9,8 @@ defmodule AntikytheraCore.Version.Gear do
   alias AntikytheraCore.Path, as: CorePath
   require AntikytheraCore.Logger, as: L
 
+  @installed_gear_ratio_threshold 0.5
+
   defun install_or_upgrade_to_next_version(gear_name :: v[GearName.t()]) :: :ok do
     case Version.current_version(gear_name) do
       nil -> install_latest_gear(gear_name)
@@ -113,7 +115,7 @@ defmodule AntikytheraCore.Version.Gear do
   @typep gear_dependencies :: MapSet.t()
   @typep gear_and_deps_pair :: {GearName.t(), gear_dependencies}
 
-  defun install_gears_at_startup(gear_names :: v[[GearName.t()]]) :: :ok do
+  defun install_gears_at_startup(gear_names :: v[[GearName.t()]]) :: :ok | :error do
     if Antikythera.Env.running_with_release?() do
       do_install_gears_at_startup(gear_names)
     else
@@ -121,55 +123,84 @@ defmodule AntikytheraCore.Version.Gear do
     end
   end
 
-  defunp do_install_gears_at_startup(gear_names :: v[[GearName.t()]]) :: :ok do
+  defunpt do_install_gears_at_startup(gear_names :: v[[GearName.t()]]) :: :ok | :error do
+    # Tests need `__MODULE__.` to mock these functions.
     gear_and_deps_pairs =
-      Enum.map(gear_names, fn g -> {g, gear_dependencies_from_app_file(g, gear_names)} end)
-
-    pairs_not_installed =
-      install_gears_whose_deps_met(gear_and_deps_pairs, MapSet.new(), fn gear_name ->
-        try do
-          install_or_upgrade_to_next_version(gear_name)
-        rescue
-          e -> L.error("Failed to install #{gear_name}: #{Exception.message(e)}")
-        end
+      Enum.map(gear_names, fn g ->
+        {g, __MODULE__.gear_dependencies_from_app_file(g, gear_names)}
       end)
+
+    {pairs_not_installed, num_failed_install} =
+      __MODULE__.install_gears_whose_deps_met(
+        gear_and_deps_pairs,
+        MapSet.new(),
+        0,
+        fn gear_name ->
+          try do
+            install_or_upgrade_to_next_version(gear_name)
+          rescue
+            e ->
+              L.error("Failed to install #{gear_name}: #{Exception.message(e)}")
+              :error
+          end
+        end
+      )
 
     Enum.each(pairs_not_installed, fn {gear_name, deps} ->
       L.error("#{gear_name} is not installed due to unmatched dependencies: #{inspect(deps)}")
     end)
+
+    num_installable = length(gear_names)
+    num_installed = num_installable - length(pairs_not_installed) - num_failed_install
+    # version_upgrade_test starts Antikythera without gears.
+    # Then, we can't check number of installed gears.
+    needs_check = Antikythera.Env.runtime_env() != :local
+
+    is_enough_gears_installed =
+      num_installable != 0 and num_installed / num_installable > @installed_gear_ratio_threshold
+
+    if !needs_check || is_enough_gears_installed do
+      :ok
+    else
+      :error
+    end
   end
 
-  defunpt install_gears_whose_deps_met(
-            pairs :: v[[gear_and_deps_pair]],
-            installed_gears_set :: MapSet.t(),
-            f :: (GearName.t() -> :ok)
-          ) :: [gear_and_deps_pair] do
+  # public for mock
+  defun install_gears_whose_deps_met(
+          pairs :: v[[gear_and_deps_pair]],
+          installed_gears_set :: MapSet.t(),
+          num_failed_install :: v[non_neg_integer],
+          f :: (GearName.t() -> :ok | :error)
+        ) :: {[gear_and_deps_pair], non_neg_integer} do
     if Enum.empty?(pairs) do
-      []
+      {[], num_failed_install}
     else
       {pairs_installable, pairs_not_installable} =
         Enum.split_with(pairs, fn {_, deps} -> MapSet.subset?(deps, installed_gears_set) end)
 
       if Enum.empty?(pairs_installable) do
         # we cannot make progress any more
-        pairs_not_installable
+        {pairs_not_installable, num_failed_install}
       else
         gears_installable = Keyword.keys(pairs_installable)
-        Enum.each(gears_installable, f)
+        gears_installed = Enum.filter(gears_installable, fn gear -> f.(gear) == :ok end)
 
         install_gears_whose_deps_met(
           pairs_not_installable,
-          Enum.into(gears_installable, installed_gears_set),
+          Enum.into(gears_installed, installed_gears_set),
+          num_failed_install + length(gears_installable) - length(gears_installed),
           f
         )
       end
     end
   end
 
-  defunp gear_dependencies_from_app_file(
-           gear_name :: v[GearName.t()],
-           known_gear_names :: v[[GearName.t()]]
-         ) :: gear_dependencies do
+  # public for mock
+  defun gear_dependencies_from_app_file(
+          gear_name :: v[GearName.t()],
+          known_gear_names :: v[[GearName.t()]]
+        ) :: gear_dependencies do
     version = History.latest_installable_gear_version(gear_name)
     # gear's tarball is not yet unpacked; directly read .app file in `compiled_gears` directory
     app_file_path =
