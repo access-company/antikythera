@@ -47,6 +47,7 @@ defmodule Antikythera.Test.Config do
   end
 
   Enum.each(deployment_envs, fn env ->
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     defp base_url_for_deployment(gear_name, unquote(:"blackbox_#{env}")) do
       "https://" <> CowboyRouting.default_domain(gear_name, unquote(env))
     end
@@ -63,6 +64,7 @@ defmodule Antikythera.Test.Config do
   end
 
   Enum.each(deployment_envs, fn env ->
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     defp test_mode_for_deployment(unquote("blackbox_#{env}")), do: :"blackbox_#{unquote(env)}"
   end)
 

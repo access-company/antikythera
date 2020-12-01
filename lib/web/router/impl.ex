@@ -119,6 +119,7 @@ defmodule Antikythera.Router.Impl do
       path_matches_expr = make_path_matches_expr_wildcard(path_info_arg_expr_nowildcard)
 
       quote do
+        # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
         def unquote(:"__#{from}_route__")(unquote(method), unquote(path_info_arg_expr)) do
           Antikythera.Router.Impl.route_clause_body(
             unquote(controller),
@@ -135,6 +136,7 @@ defmodule Antikythera.Router.Impl do
       path_matches_expr = make_path_matches_expr_nowildcard(path_info_arg_expr)
 
       quote do
+        # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
         def unquote(:"__#{from}_route__")(unquote(method), unquote(path_info_arg_expr)) do
           Antikythera.Router.Impl.route_clause_body(
             unquote(controller),
@@ -144,6 +146,7 @@ defmodule Antikythera.Router.Impl do
           )
         end
 
+        # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
         def unquote(:"__#{from}_route__")(unquote(method), unquote(path_info_arg_expr2)) do
           Antikythera.Router.Impl.route_clause_body(
             unquote(controller),
@@ -158,6 +161,7 @@ defmodule Antikythera.Router.Impl do
 
   defunp default_clause(from :: v[:web | :gear]) :: Macro.t() do
     quote do
+      # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
       def unquote(:"__#{from}_route__")(_, _) do
         nil
       end
@@ -170,9 +174,9 @@ defmodule Antikythera.Router.Impl do
          ) :: [String.t() | Macro.t()] do
     String.split(path_pattern, "/", trim: true)
     |> Enum.map(fn
-      # `String.to_atom` during compilation;
+      # `String.to_atom` during compilation; nothing to worry about
+      # credo:disable-for-lines:2 Credo.Check.Warning.UnsafeToAtom
       ":" <> placeholder -> Macro.var(String.to_atom(placeholder), router_module)
-      # nothing to worry about
       "*" <> placeholder -> Macro.var(String.to_atom(placeholder), router_module)
       fixed -> fixed
     end)

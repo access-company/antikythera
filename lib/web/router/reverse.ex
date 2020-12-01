@@ -14,6 +14,7 @@ defmodule Antikythera.Router.Reverse do
       {placeholder_vars, placeholder_types} =
         String.split(path, "/", trim: true)
         |> Enum.map(fn
+          # credo:disable-for-lines:2 Credo.Check.Warning.UnsafeToAtom
           ":" <> name -> {Macro.var(String.to_atom(name), __MODULE__), quote(do: String.t())}
           "*" <> name -> {Macro.var(String.to_atom(name), __MODULE__), quote(do: [String.t()])}
           _ -> nil
@@ -21,6 +22,7 @@ defmodule Antikythera.Router.Reverse do
         |> Enum.reject(&is_nil/1)
         |> Enum.unzip()
 
+      # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
       fun_name = :"#{path_name}_path"
 
       @spec unquote(fun_name)(unquote_splicing(placeholder_types), %{String.t() => String.t()}) ::

@@ -162,6 +162,7 @@ defmodule AntikytheraCore.Handler.WebsocketState do
   end
 
   for level <- [:info, :error] do
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     defunp unquote(:"log_#{level}")(
              %__MODULE__{
                conn: %Conn{context: %Context{context_id: context_id}},

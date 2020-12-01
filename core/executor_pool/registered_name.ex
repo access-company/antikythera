@@ -12,6 +12,7 @@ defmodule AntikytheraCore.ExecutorPool.RegisteredName do
   end
 
   defun supervisor_unsafe(epool_id :: v[EPoolId.t()]) :: atom do
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     Module.concat(supervisor_parts(epool_id))
   end
 
@@ -24,6 +25,7 @@ defmodule AntikytheraCore.ExecutorPool.RegisteredName do
   end
 
   defun action_runner_pool_multi_unsafe(epool_id :: v[EPoolId.t()]) :: atom do
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     Module.concat(action_runner_pool_multi_parts(epool_id))
   end
 
@@ -36,6 +38,7 @@ defmodule AntikytheraCore.ExecutorPool.RegisteredName do
   end
 
   defun async_job_runner_pool_unsafe(epool_id :: v[EPoolId.t()]) :: atom do
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     Module.concat(async_job_runner_pool_parts(epool_id))
   end
 
@@ -48,6 +51,7 @@ defmodule AntikytheraCore.ExecutorPool.RegisteredName do
   end
 
   defun async_job_broker_unsafe(epool_id :: v[EPoolId.t()]) :: atom do
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     Module.concat(async_job_broker_parts(epool_id))
   end
 
@@ -60,6 +64,7 @@ defmodule AntikytheraCore.ExecutorPool.RegisteredName do
   end
 
   defun websocket_connections_counter_unsafe(epool_id :: v[EPoolId.t()]) :: atom do
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     Module.concat(websocket_connections_counter_parts(epool_id))
   end
 
@@ -72,6 +77,7 @@ defmodule AntikytheraCore.ExecutorPool.RegisteredName do
   end
 
   defun memcache_writer_unsafe(epool_id :: v[EPoolId.t()]) :: atom do
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     Module.concat(memcache_writer_parts(epool_id))
   end
 
@@ -94,6 +100,7 @@ defmodule AntikytheraCore.ExecutorPool.RegisteredName do
   end
 
   defun async_job_queue_unsafe(epool_id :: v[EPoolId.t()]) :: atom do
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     Module.concat(async_job_queue_parts(epool_id))
   end
 
