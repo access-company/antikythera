@@ -161,6 +161,7 @@ defmodule Antikythera.Router do
   end
 
   for from <- [:web, :gear] do
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     defmacro unquote(:"only_from_#{from}")(do: block) do
       current_from = unquote(from)
 
@@ -231,6 +232,7 @@ defmodule Antikythera.Router do
   defmacro websocket(path, opts \\ []) do
     %Macro.Env{module: router_module} = __CALLER__
     # during compilation, it's safe to call `Module.concat/2`
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     ws_module = Module.split(router_module) |> hd() |> Module.concat("Websocket")
 
     quote do

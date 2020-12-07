@@ -163,6 +163,7 @@ defmodule Antikythera.Httpc do
       request(unquote(method), url, "", headers, options)
     end
 
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     defun unquote(:"#{method}!")(
             url :: Url.t(),
             headers :: Headers.t() \\ %{},
@@ -182,6 +183,7 @@ defmodule Antikythera.Httpc do
       request(unquote(method), url, body, headers, options)
     end
 
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     defun unquote(:"#{method}!")(
             url :: Url.t(),
             body :: ReqBody.t(),
@@ -400,11 +402,13 @@ defmodule Antikythera.Httpc.Mockable do
 
   Enum.each([:get, :delete, :options, :head], fn method ->
     defdelegate unquote(method)(url, headers, options), to: Antikythera.Httpc
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     defdelegate unquote(:"#{method}!")(url, headers, options), to: Antikythera.Httpc
   end)
 
   Enum.each([:post, :put, :patch], fn method ->
     defdelegate unquote(method)(url, body, headers, options), to: Antikythera.Httpc
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     defdelegate unquote(:"#{method}!")(url, body, headers, options), to: Antikythera.Httpc
   end)
 end

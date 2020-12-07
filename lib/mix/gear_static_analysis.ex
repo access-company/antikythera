@@ -1,5 +1,8 @@
 # Copyright(c) 2015-2020 ACCESS CO., LTD. All rights reserved.
 
+# `Module.concat` is safe because mix task runs in a separate process.
+# credo:disable-for-this-file Credo.Check.Warning.UnsafeToAtom
+
 defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   @moduledoc """
   Statically checks issues in gear's source code.

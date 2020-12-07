@@ -26,6 +26,7 @@ defmodule Mix.Tasks.AntikytheraCore.UploadNewAssetVersions do
   defp all_assets(gear_name) do
     gear_name_camel = gear_name |> Atom.to_string() |> Macro.camelize()
     # the module is not yet loaded, it's inevitable to make a new atom here
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     mod = Module.concat(gear_name_camel, "Asset")
 
     try do

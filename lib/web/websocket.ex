@@ -121,6 +121,7 @@ defmodule Antikythera.Websocket do
         Mix.Project.config()[:app]
         |> Atom.to_string()
         |> Macro.camelize()
+        # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
         |> Module.concat("Websocket")
 
       if __MODULE__ != expected do

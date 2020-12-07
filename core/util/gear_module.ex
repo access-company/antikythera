@@ -18,6 +18,7 @@ defmodule AntikytheraCore.GearModule do
   end
 
   defun error_handler_unsafe(gear_name :: v[GearName.t()]) :: module do
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     camelize_gear_name(gear_name) |> Module.concat("Controller.Error")
   end
 
@@ -34,12 +35,15 @@ defmodule AntikytheraCore.GearModule do
       camelize_gear_name(gear_name) |> Module.safe_concat(unquote(module_basename))
     end
 
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     defun unquote(:"#{name}_unsafe")(gear_name :: v[GearName.t()]) :: module do
+      # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
       camelize_gear_name(gear_name) |> Module.concat(unquote(module_basename))
     end
   end)
 
   defun root_supervisor_unsafe(gear_name :: v[GearName.t()]) :: module do
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     camelize_gear_name(gear_name) |> Module.concat("Supervisor")
   end
 

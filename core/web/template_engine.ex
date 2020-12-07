@@ -49,6 +49,7 @@ defmodule AntikytheraCore.TemplateEngine do
   @impl true
   def handle_expr(state, "=", expr) do
     %{iodata: iodata, dynamic: dynamic, vars_count: vars_count} = state
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     var = Macro.var(:"arg#{vars_count}", __MODULE__)
 
     q =

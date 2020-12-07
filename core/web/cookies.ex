@@ -23,7 +23,7 @@ defmodule AntikytheraCore.Cookies do
               }")
             )
 
-            raise e
+            reraise e, __STACKTRACE__
         end
     end
   end
