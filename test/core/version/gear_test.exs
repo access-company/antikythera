@@ -107,6 +107,7 @@ defmodule AntikytheraCore.Version.GearTest do
       assert V.do_install_gears_at_startup(gears) == :ok
     end
 
+    @tag capture_log: true
     test "should return :error if most gears are not installed" do
       gears = [:gear1, :gear2, :gear3]
       pairs_not_installed = [gear1: set([]), gear2: set([])]
@@ -149,6 +150,7 @@ defmodule AntikytheraCore.Version.GearTest do
       assert V.do_install_gears_at_startup(gears) == :error
     end
 
+    @tag capture_log: true
     test "should return :error if half of gears are not installed" do
       gears = [:gear1, :gear2, :gear3, :gear4]
       pairs_not_installed = [gear1: set([]), gear2: set([])]
