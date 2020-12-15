@@ -29,6 +29,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   alias AntikytheraCore.Context, as: CoreContext
   alias AntikytheraCore.GearLog.{Writer, ContextHelper}
   alias AntikytheraCore.ExecutorPool.AsyncJobLog.Writer, as: JobLogWriter
+  require AntikytheraCore.Logger, as: L
 
   @idle_timeout 60_000
 
@@ -218,7 +219,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
 
   defp write_failed_log(
          %{
-           context: %Context{context_id: context_id},
+           context: %Context{gear_name: gear_name, context_id: context_id},
            logger_name: logger_name,
            log_prefix: log_prefix
          },
@@ -226,6 +227,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
          error_reason
        ) do
     Writer.error(logger_name, end_time, context_id, log_prefix <> error_reason)
+    L.error("Process killed: gear_name=#{gear_name}, context_id=#{context_id}")
     JobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "FAILED")
   end
 
