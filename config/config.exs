@@ -48,7 +48,7 @@ config :antikythera, [
 
   # Measure the time taken to install all gears at startup,
   # and if it exceeds this value, Antikythera write to the error log.
-  gear_install_notify_threshold: nil,
+  gear_install_notify_threshold_in_seconds: nil,
 
   # Alert settings.
   alert: [
