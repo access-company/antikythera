@@ -163,9 +163,16 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     Process.cancel_timer(timer_ref)
 
     case reason do
-      :normal -> job_succeeded(state)
-      {:shutdown, {reason2, stacktrace}} -> job_failed(state, reason2, stacktrace)
-      :kill -> job_failed(state, :killed, [])
+      :normal ->
+        job_succeeded(state)
+
+      {:shutdown, {reason2, stacktrace}} ->
+        job_failed(state, reason2, stacktrace)
+
+      :kill ->
+        %{gear_name: gear_name, context_id: context_id} = state.context
+        L.error("Process killed: gear_name=#{gear_name}, context_id=#{context_id}")
+        job_failed(state, :killed, [])
     end
 
     {:stop, :normal, state}
@@ -219,7 +226,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
 
   defp write_failed_log(
          %{
-           context: %Context{gear_name: gear_name, context_id: context_id},
+           context: %Context{context_id: context_id},
            logger_name: logger_name,
            log_prefix: log_prefix
          },
@@ -227,7 +234,6 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
          error_reason
        ) do
     Writer.error(logger_name, end_time, context_id, log_prefix <> error_reason)
-    L.error("Process killed: gear_name=#{gear_name}, context_id=#{context_id}")
     JobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "FAILED")
   end
 
