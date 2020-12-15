@@ -79,6 +79,8 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
           0 -> :ok
         end
 
+        %{gear_name: gear_name, context_id: context_id} = conn.context
+        L.error("Process killed: gear_name=#{gear_name}, context_id=#{context_id}")
         GearError.error(conn, :killed, [])
     after
       Process.flag(:trap_exit, false)
