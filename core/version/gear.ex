@@ -10,6 +10,7 @@ defmodule AntikytheraCore.Version.Gear do
   require AntikytheraCore.Logger, as: L
 
   @installed_gear_ratio_threshold 0.5
+  @notify_threshold Application.fetch_env!(:antikythera, :gear_install_notify_threshold)
 
   defun install_or_upgrade_to_next_version(gear_name :: v[GearName.t()]) :: :ok do
     case Version.current_version(gear_name) do
@@ -130,8 +131,8 @@ defmodule AntikytheraCore.Version.Gear do
         {g, __MODULE__.gear_dependencies_from_app_file(g, gear_names)}
       end)
 
-    {pairs_not_installed, num_failed_install} =
-      __MODULE__.install_gears_whose_deps_met(
+    {microsec, {pairs_not_installed, num_failed_install}} =
+      :timer.tc(__MODULE__, :install_gears_whose_deps_met, [
         gear_and_deps_pairs,
         MapSet.new(),
         0,
@@ -144,7 +145,16 @@ defmodule AntikytheraCore.Version.Gear do
               :error
           end
         end
-      )
+      ])
+
+    sec = div(microsec, 1_000_000)
+    msg = "Finish gear installation. time: #{sec} seconds, num_of_gaers: #{length(gear_names)}"
+
+    if is_number(@notify_threshold) and sec > @notify_threshold do
+      L.error(msg)
+    else
+      L.info(msg)
+    end
 
     Enum.each(pairs_not_installed, fn {gear_name, deps} ->
       L.error("#{gear_name} is not installed due to unmatched dependencies: #{inspect(deps)}")
