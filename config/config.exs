@@ -46,6 +46,10 @@ config :antikythera, [
   # Note that gears using their own custom error handlers are not affected by this configuration item.
   return_detailed_info_on_error?: true,
 
+  # Measure the time taken to install all gears at startup,
+  # and if it exceeds this value, Antikythera write to the error log.
+  gear_install_notify_threshold_in_seconds: nil,
+
   # Alert settings.
   alert: [
     email: [
