@@ -29,6 +29,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   alias AntikytheraCore.Context, as: CoreContext
   alias AntikytheraCore.GearLog.{Writer, ContextHelper}
   alias AntikytheraCore.ExecutorPool.AsyncJobLog.Writer, as: JobLogWriter
+  require AntikytheraCore.Logger, as: L
 
   @idle_timeout 60_000
 
@@ -162,9 +163,16 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     Process.cancel_timer(timer_ref)
 
     case reason do
-      :normal -> job_succeeded(state)
-      {:shutdown, {reason2, stacktrace}} -> job_failed(state, reason2, stacktrace)
-      :kill -> job_failed(state, :killed, [])
+      :normal ->
+        job_succeeded(state)
+
+      {:shutdown, {reason2, stacktrace}} ->
+        job_failed(state, reason2, stacktrace)
+
+      :kill ->
+        %{gear_name: gear_name, context_id: context_id} = state.context
+        L.error("Process killed: gear_name=#{gear_name}, context_id=#{context_id}")
+        job_failed(state, :killed, [])
     end
 
     {:stop, :normal, state}
