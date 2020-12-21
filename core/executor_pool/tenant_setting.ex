@@ -126,7 +126,7 @@ defmodule AntikytheraCore.ExecutorPool.TenantSetting do
     :ok
   end
 
-  # To be used by sazabi
+  # To be used by administrative gear
   defun persist_new_tenant_and_broadcast(tenant_id :: v[TenantId.t()], gears :: [GearName.t()]) ::
           :ok do
     tsetting = %__MODULE__{@default | gears: Enum.sort(gears)}
