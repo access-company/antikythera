@@ -3,16 +3,6 @@ version: 2.1
 # Note that each `run` command is executed by a separate bash process.
 # We have to use `$BASH_ENV`, which contains file path to `.bashrc` file, to pass information to the subsequent bash processes.
 references:
-  checkout_external: &checkout_external
-    name: Checkout master of external repository
-    command: |
-      if [ -d .git ]; then
-        git checkout .
-        git checkout master
-        git pull "$EXTERNAL_GIT_REPOSITORY" master
-      else
-        git clone "$EXTERNAL_GIT_REPOSITORY" .
-      fi
   restore_updated_antikythera_instance_example_directory: &restore_updated_antikythera_instance_example_directory
     restore_cache:
       keys:
@@ -62,7 +52,6 @@ commands:
             source $BASH_ENV
             elixir_version="$(grep elixir /usr/local/asdf/tool-versions-copy)"
             asdf global ${elixir_version}
-
   add_github_hostkey:
     description: Add GitHub's server host key to known_hosts
     steps:
@@ -72,6 +61,21 @@ commands:
           command: |
             mkdir -p ~/.ssh
             echo >> ~/.ssh/known_hosts 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ=='
+  checkout_external:
+    description: Checkout master of external repository
+    parameters:
+      repo:
+        type: string
+    steps:
+      - run:
+          command: |
+            if [ -d .git ]; then
+              git checkout .
+              git checkout master
+              git pull << parameters.repo >> master
+            else
+              git clone << parameters.repo >> .
+            fi
 
 
 jobs:
@@ -159,10 +163,8 @@ jobs:
             - antikythera_instance_example-repo-{{ .Branch }}-
             - antikythera_instance_example-repo-
       - add_github_hostkey
-      - run:
-          <<: *checkout_external
-          environment:
-            EXTERNAL_GIT_REPOSITORY: git@github.com:access-company/antikythera_instance_example.git
+      - checkout_external:
+          repo: git@github.com:access-company/antikythera_instance_example.git
       - run:
           name: Compile antikythera_instance_example
           # Compile beforehand in order to create cache for later builds/jobs.
@@ -216,10 +218,8 @@ jobs:
             - testgear-repo-{{ .Branch }}-
             - testgear-repo-
       - add_github_hostkey
-      - run:
-          <<: *checkout_external
-          environment:
-            EXTERNAL_GIT_REPOSITORY: git@github.com:access-company/testgear.git
+      - checkout_external:
+          repo: git@github.com:access-company/testgear.git
       - run:
           name: Fetch dependencies with latest antikythera_instance_example and compile
           command: |
