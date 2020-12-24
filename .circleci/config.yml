@@ -69,7 +69,17 @@ commands:
             - asdf_directory-{{ .Branch }}-{{ .Revision }}
             - asdf_directory-{{ .Branch }}-
             - asdf_directory-
-
+  enable_asdf_and_elixir:
+    description: Enable asdf and elixir by loading asdf.sh
+    steps:
+      - run:
+          # Global Elixir version is required for projects that depends on antikythera,
+          # since symlinked `.tool-versions` file is not available at the first `mix` invocation.
+          command: |
+            echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
+            source $BASH_ENV
+            elixir_version="$(grep elixir /usr/local/asdf/tool-versions-copy)"
+            asdf global ${elixir_version}
 
 jobs:
   prepare_elixir:
@@ -129,7 +139,7 @@ jobs:
     steps:
       - install_prerequisites
       - restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - enable_asdf_and_elixir
       - restore_cache:
           keys:
             - antikythera-repo-{{ .Branch }}-{{ .Revision }}
@@ -150,7 +160,7 @@ jobs:
     steps:
       - install_prerequisites
       - restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - enable_asdf_and_elixir
       - restore_cache:
           keys:
             - antikythera_instance_example-repo-{{ .Branch }}-
@@ -207,7 +217,7 @@ jobs:
     steps:
       - install_prerequisites
       - restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - enable_asdf_and_elixir
       - restore_cache:
           keys:
             - testgear-repo-{{ .Branch }}-
@@ -237,7 +247,7 @@ jobs:
     steps:
       - install_prerequisites
       - restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - enable_asdf_and_elixir
       - *restore_updated_antikythera_instance_example_directory
       - *restore_testgear_directory
       - *add_github_hostkey
@@ -249,7 +259,7 @@ jobs:
     steps:
       - install_prerequisites
       - restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - enable_asdf_and_elixir
       - *restore_updated_antikythera_instance_example_directory
       - *restore_testgear_directory
       - *edit_etc_hosts
@@ -271,7 +281,7 @@ jobs:
     steps:
       - install_prerequisites
       - restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - enable_asdf_and_elixir
       - *restore_testgear_directory
       - *add_github_hostkey
       - run:
@@ -293,7 +303,7 @@ jobs:
     steps:
       - install_prerequisites
       - restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - enable_asdf_and_elixir
       - *restore_updated_testgear_directory
       - *edit_etc_hosts
       - run: mix test --trace
@@ -303,7 +313,7 @@ jobs:
     steps:
       - install_prerequisites
       - restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - enable_asdf_and_elixir
       - *restore_updated_testgear_directory
       - *edit_etc_hosts
       - run:
