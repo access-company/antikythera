@@ -3,12 +3,6 @@ version: 2.1
 # Note that each `run` command is executed by a separate bash process.
 # We have to use `$BASH_ENV`, which contains file path to `.bashrc` file, to pass information to the subsequent bash processes.
 references:
-  restore_asdf_directory: &restore_asdf_directory
-    restore_cache:
-      keys:
-        - asdf_directory-{{ .Branch }}-{{ .Revision }}
-        - asdf_directory-{{ .Branch }}-
-        - asdf_directory-
   enable_asdf_and_elixir: &enable_asdf_and_elixir
     run:
       name: Enable asdf and elixir by loading asdf.sh
@@ -68,6 +62,14 @@ commands:
       - run: echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen
       - run: apt-get update && apt-get install -y unzip locales
       - run: echo 'export LANG=en_US.UTF-8' >> $BASH_ENV
+  restore_asdf_directory:
+    steps:
+      - restore_cache:
+          keys:
+            - asdf_directory-{{ .Branch }}-{{ .Revision }}
+            - asdf_directory-{{ .Branch }}-
+            - asdf_directory-
+
 
 jobs:
   prepare_elixir:
@@ -75,7 +77,7 @@ jobs:
     working_directory: /tmp/antikythera
     steps:
       - install_prerequisites
-      - *restore_asdf_directory
+      - restore_asdf_directory
       # To use antikythera's `.tool-versions` file, take the repository here.
       # Note that we won't save the repository because no change occurs during this job.
       - restore_cache:
@@ -126,7 +128,7 @@ jobs:
     working_directory: /tmp/antikythera
     steps:
       - install_prerequisites
-      - *restore_asdf_directory
+      - restore_asdf_directory
       - *enable_asdf_and_elixir
       - restore_cache:
           keys:
@@ -147,7 +149,7 @@ jobs:
     working_directory: /tmp/antikythera_instance_example
     steps:
       - install_prerequisites
-      - *restore_asdf_directory
+      - restore_asdf_directory
       - *enable_asdf_and_elixir
       - restore_cache:
           keys:
@@ -204,7 +206,7 @@ jobs:
     working_directory: /tmp/testgear
     steps:
       - install_prerequisites
-      - *restore_asdf_directory
+      - restore_asdf_directory
       - *enable_asdf_and_elixir
       - restore_cache:
           keys:
@@ -234,7 +236,7 @@ jobs:
     working_directory: /tmp/antikythera_instance_example
     steps:
       - install_prerequisites
-      - *restore_asdf_directory
+      - restore_asdf_directory
       - *enable_asdf_and_elixir
       - *restore_updated_antikythera_instance_example_directory
       - *restore_testgear_directory
@@ -246,7 +248,7 @@ jobs:
     working_directory: /tmp/antikythera_instance_example
     steps:
       - install_prerequisites
-      - *restore_asdf_directory
+      - restore_asdf_directory
       - *enable_asdf_and_elixir
       - *restore_updated_antikythera_instance_example_directory
       - *restore_testgear_directory
@@ -268,7 +270,7 @@ jobs:
     working_directory: /tmp/testgear
     steps:
       - install_prerequisites
-      - *restore_asdf_directory
+      - restore_asdf_directory
       - *enable_asdf_and_elixir
       - *restore_testgear_directory
       - *add_github_hostkey
@@ -290,7 +292,7 @@ jobs:
     working_directory: /tmp/testgear
     steps:
       - install_prerequisites
-      - *restore_asdf_directory
+      - restore_asdf_directory
       - *enable_asdf_and_elixir
       - *restore_updated_testgear_directory
       - *edit_etc_hosts
@@ -300,7 +302,7 @@ jobs:
     working_directory: /tmp/testgear
     steps:
       - install_prerequisites
-      - *restore_asdf_directory
+      - restore_asdf_directory
       - *enable_asdf_and_elixir
       - *restore_updated_testgear_directory
       - *edit_etc_hosts
