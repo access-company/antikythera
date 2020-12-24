@@ -1,23 +1,14 @@
 version: 2.1
 
-# Note that each `run` command is executed by a separate bash process.
-# We have to use `$BASH_ENV`, which contains file path to `.bashrc` file, to pass information to the subsequent bash processes.
-references:
-  edit_etc_hosts: &edit_etc_hosts
-    run:
-      name: Add testgear.localhost and <hostname>.local to /etc/hosts
-      command: echo "127.0.0.1 testgear.localhost $(hostname).local" >> /etc/hosts
-  restore_updated_testgear_directory: &restore_updated_testgear_directory
-    restore_cache:
-      keys:
-        - testgear-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
-
 executors:
   erlang-executor:
     docker:
       - image: erlang:20.3.8.26 # Using pre-built official image since erlang installation takes long time
         environment:
           ANTIKYTHERA_INSTANCE_DEP: '{:antikythera_instance_example, [git: "git@github.com:access-company/antikythera_instance_example.git"]}'
+
+# Note that each `run` command is executed by a separate bash process.
+# We have to use `$BASH_ENV`, which contains file path to `.bashrc` file, to pass information to the subsequent bash processes.
 
 commands:
   install_prerequisites:
@@ -78,6 +69,16 @@ commands:
       - restore_cache:
           keys:
             - testgear-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+  edit_etc_hosts:
+    description: Add testgear.localhost and <hostname>.local to /etc/hosts
+    steps:
+      - run: echo "127.0.0.1 testgear.localhost $(hostname).local" >> /etc/hosts
+  restore_updated_testgear_directory:
+    steps:
+      - restore_cache:
+          keys:
+            - testgear-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+
 
 jobs:
   prepare_elixir:
@@ -245,7 +246,7 @@ jobs:
       - restore_updated_antikythera_instance_example_directory
       - restore_testgear_directory
       - add_github_hostkey
-      - *edit_etc_hosts
+      - edit_etc_hosts
       - run: mix antikythera_local.upgrade_compatibility_test ../testgear
   version_upgrade_test:
     executor: erlang-executor
@@ -256,7 +257,7 @@ jobs:
       - enable_asdf_and_elixir
       - restore_updated_antikythera_instance_example_directory
       - restore_testgear_directory
-      - *edit_etc_hosts
+      - edit_etc_hosts
       - run: mix antikythera_local.version_upgrade_test ../testgear
   publish_updated_antikythera_instance_example:
     executor: erlang-executor
@@ -298,8 +299,8 @@ jobs:
       - install_prerequisites
       - restore_asdf_directory
       - enable_asdf_and_elixir
-      - *restore_updated_testgear_directory
-      - *edit_etc_hosts
+      - restore_updated_testgear_directory
+      - edit_etc_hosts
       - run: mix test --trace
   testgear_blackbox_test:
     executor: erlang-executor
@@ -308,8 +309,8 @@ jobs:
       - install_prerequisites
       - restore_asdf_directory
       - enable_asdf_and_elixir
-      - *restore_updated_testgear_directory
-      - *edit_etc_hosts
+      - restore_updated_testgear_directory
+      - edit_etc_hosts
       - run:
           name: Run testgear in background
           command: iex -S mix
