@@ -3,10 +3,6 @@ version: 2.1
 # Note that each `run` command is executed by a separate bash process.
 # We have to use `$BASH_ENV`, which contains file path to `.bashrc` file, to pass information to the subsequent bash processes.
 references:
-  restore_testgear_directory: &restore_testgear_directory
-    restore_cache:
-      keys:
-        - testgear-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   edit_etc_hosts: &edit_etc_hosts
     run:
       name: Add testgear.localhost and <hostname>.local to /etc/hosts
@@ -77,7 +73,11 @@ commands:
       - restore_cache:
           keys:
             - antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
-
+  restore_testgear_directory:
+    steps:
+      - restore_cache:
+          keys:
+            - testgear-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
 
 jobs:
   prepare_elixir:
@@ -243,7 +243,7 @@ jobs:
       - restore_asdf_directory
       - enable_asdf_and_elixir
       - restore_updated_antikythera_instance_example_directory
-      - *restore_testgear_directory
+      - restore_testgear_directory
       - add_github_hostkey
       - *edit_etc_hosts
       - run: mix antikythera_local.upgrade_compatibility_test ../testgear
@@ -255,7 +255,7 @@ jobs:
       - restore_asdf_directory
       - enable_asdf_and_elixir
       - restore_updated_antikythera_instance_example_directory
-      - *restore_testgear_directory
+      - restore_testgear_directory
       - *edit_etc_hosts
       - run: mix antikythera_local.version_upgrade_test ../testgear
   publish_updated_antikythera_instance_example:
@@ -276,7 +276,7 @@ jobs:
       - install_prerequisites
       - restore_asdf_directory
       - enable_asdf_and_elixir
-      - *restore_testgear_directory
+      - restore_testgear_directory
       - add_github_hostkey
       - run:
           name: Fetch dependencies with updated (now published) antikythera_instance_example
