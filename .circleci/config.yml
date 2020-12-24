@@ -3,14 +3,6 @@ version: 2.1
 # Note that each `run` command is executed by a separate bash process.
 # We have to use `$BASH_ENV`, which contains file path to `.bashrc` file, to pass information to the subsequent bash processes.
 references:
-  install_prerequisites: &install_prerequisites
-    run:
-      name: Install required apt packages and generate locale
-      # Installing `locales` automatically triggers `locale-gen` once in postinstall step
-      command: |
-        echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen
-        apt-get update && apt-get install -y unzip locales
-        echo 'export LANG=en_US.UTF-8' >> $BASH_ENV
   restore_asdf_directory: &restore_asdf_directory
     restore_cache:
       keys:
@@ -69,12 +61,20 @@ executors:
         environment:
           ANTIKYTHERA_INSTANCE_DEP: '{:antikythera_instance_example, [git: "git@github.com:access-company/antikythera_instance_example.git"]}'
 
+commands:
+  install_prerequisites:
+    description: Install required apt packages and generate locale
+    steps:
+      - run: echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen
+      - run: apt-get update && apt-get install -y unzip locales
+      - run: echo 'export LANG=en_US.UTF-8' >> $BASH_ENV
+
 jobs:
   prepare_elixir:
     executor: erlang-executor
     working_directory: /tmp/antikythera
     steps:
-      - *install_prerequisites
+      - install_prerequisites
       - *restore_asdf_directory
       # To use antikythera's `.tool-versions` file, take the repository here.
       # Note that we won't save the repository because no change occurs during this job.
@@ -125,7 +125,7 @@ jobs:
     executor: erlang-executor
     working_directory: /tmp/antikythera
     steps:
-      - *install_prerequisites
+      - install_prerequisites
       - *restore_asdf_directory
       - *enable_asdf_and_elixir
       - restore_cache:
@@ -146,7 +146,7 @@ jobs:
     executor: erlang-executor
     working_directory: /tmp/antikythera_instance_example
     steps:
-      - *install_prerequisites
+      - install_prerequisites
       - *restore_asdf_directory
       - *enable_asdf_and_elixir
       - restore_cache:
@@ -203,7 +203,7 @@ jobs:
     executor: erlang-executor
     working_directory: /tmp/testgear
     steps:
-      - *install_prerequisites
+      - install_prerequisites
       - *restore_asdf_directory
       - *enable_asdf_and_elixir
       - restore_cache:
@@ -233,7 +233,7 @@ jobs:
     executor: erlang-executor
     working_directory: /tmp/antikythera_instance_example
     steps:
-      - *install_prerequisites
+      - install_prerequisites
       - *restore_asdf_directory
       - *enable_asdf_and_elixir
       - *restore_updated_antikythera_instance_example_directory
@@ -245,7 +245,7 @@ jobs:
     executor: erlang-executor
     working_directory: /tmp/antikythera_instance_example
     steps:
-      - *install_prerequisites
+      - install_prerequisites
       - *restore_asdf_directory
       - *enable_asdf_and_elixir
       - *restore_updated_antikythera_instance_example_directory
@@ -267,7 +267,7 @@ jobs:
     executor: erlang-executor
     working_directory: /tmp/testgear
     steps:
-      - *install_prerequisites
+      - install_prerequisites
       - *restore_asdf_directory
       - *enable_asdf_and_elixir
       - *restore_testgear_directory
@@ -289,7 +289,7 @@ jobs:
     executor: erlang-executor
     working_directory: /tmp/testgear
     steps:
-      - *install_prerequisites
+      - install_prerequisites
       - *restore_asdf_directory
       - *enable_asdf_and_elixir
       - *restore_updated_testgear_directory
@@ -299,7 +299,7 @@ jobs:
     executor: erlang-executor
     working_directory: /tmp/testgear
     steps:
-      - *install_prerequisites
+      - install_prerequisites
       - *restore_asdf_directory
       - *enable_asdf_and_elixir
       - *restore_updated_testgear_directory
