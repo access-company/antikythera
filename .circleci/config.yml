@@ -3,11 +3,6 @@ version: 2.1
 # Note that each `run` command is executed by a separate bash process.
 # We have to use `$BASH_ENV`, which contains file path to `.bashrc` file, to pass information to the subsequent bash processes.
 references:
-  container_config: &container_config
-    docker:
-      - image: erlang:20.3.8.26 # Using pre-built official image since erlang installation takes long time
-        environment:
-          ANTIKYTHERA_INSTANCE_DEP: '{:antikythera_instance_example, [git: "git@github.com:access-company/antikythera_instance_example.git"]}'
   install_prerequisites: &install_prerequisites
     run:
       name: Install required apt packages and generate locale
@@ -67,9 +62,16 @@ references:
       keys:
         - testgear-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
 
+executors:
+  erlang-executor:
+    docker:
+      - image: erlang:20.3.8.26 # Using pre-built official image since erlang installation takes long time
+        environment:
+          ANTIKYTHERA_INSTANCE_DEP: '{:antikythera_instance_example, [git: "git@github.com:access-company/antikythera_instance_example.git"]}'
+
 jobs:
   prepare_elixir:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/antikythera
     steps:
       - *install_prerequisites
@@ -120,7 +122,7 @@ jobs:
           paths:
             - /usr/local/asdf
   antikythera_whitebox_test:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/antikythera
     steps:
       - *install_prerequisites
@@ -141,7 +143,7 @@ jobs:
             - .
             - ~/.cache
   update_antikythera_instance_example:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/antikythera_instance_example
     steps:
       - *install_prerequisites
@@ -198,7 +200,7 @@ jobs:
             - .
             - ~/.cache
   prepare_testgear:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/testgear
     steps:
       - *install_prerequisites
@@ -228,7 +230,7 @@ jobs:
             - .
             - ~/.cache
   upgrade_compatibility_test:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/antikythera_instance_example
     steps:
       - *install_prerequisites
@@ -240,7 +242,7 @@ jobs:
       - *edit_etc_hosts
       - run: mix antikythera_local.upgrade_compatibility_test ../testgear
   version_upgrade_test:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/antikythera_instance_example
     steps:
       - *install_prerequisites
@@ -251,7 +253,7 @@ jobs:
       - *edit_etc_hosts
       - run: mix antikythera_local.version_upgrade_test ../testgear
   publish_updated_antikythera_instance_example:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/antikythera_instance_example
     steps:
       - *restore_updated_antikythera_instance_example_directory
@@ -262,7 +264,7 @@ jobs:
             git push git@github.com:access-company/antikythera_instance_example.git HEAD:master
           fi
   update_testgear:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/testgear
     steps:
       - *install_prerequisites
@@ -284,7 +286,7 @@ jobs:
             - .
             - ~/.cache
   testgear_whitebox_test:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/testgear
     steps:
       - *install_prerequisites
@@ -294,7 +296,7 @@ jobs:
       - *edit_etc_hosts
       - run: mix test --trace
   testgear_blackbox_test:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/testgear
     steps:
       - *install_prerequisites
