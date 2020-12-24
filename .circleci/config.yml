@@ -3,16 +3,6 @@ version: 2.1
 # Note that each `run` command is executed by a separate bash process.
 # We have to use `$BASH_ENV`, which contains file path to `.bashrc` file, to pass information to the subsequent bash processes.
 references:
-  enable_asdf_and_elixir: &enable_asdf_and_elixir
-    run:
-      name: Enable asdf and elixir by loading asdf.sh
-      # Global Elixir version is required for projects that depends on antikythera,
-      # since symlinked `.tool-versions` file is not available at the first `mix` invocation.
-      command: |
-        echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
-        source $BASH_ENV
-        elixir_version="$(grep elixir /usr/local/asdf/tool-versions-copy)"
-        asdf global ${elixir_version}
   add_github_hostkey: &add_github_hostkey
     run:
       name: Add GitHub's server host key to known_hosts
