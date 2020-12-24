@@ -3,10 +3,6 @@ version: 2.1
 # Note that each `run` command is executed by a separate bash process.
 # We have to use `$BASH_ENV`, which contains file path to `.bashrc` file, to pass information to the subsequent bash processes.
 references:
-  restore_updated_antikythera_instance_example_directory: &restore_updated_antikythera_instance_example_directory
-    restore_cache:
-      keys:
-        - antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   restore_testgear_directory: &restore_testgear_directory
     restore_cache:
       keys:
@@ -76,6 +72,11 @@ commands:
             else
               git clone << parameters.repo >> .
             fi
+  restore_updated_antikythera_instance_example_directory:
+    steps:
+      - restore_cache:
+          keys:
+            - antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
 
 
 jobs:
@@ -241,7 +242,7 @@ jobs:
       - install_prerequisites
       - restore_asdf_directory
       - enable_asdf_and_elixir
-      - *restore_updated_antikythera_instance_example_directory
+      - restore_updated_antikythera_instance_example_directory
       - *restore_testgear_directory
       - add_github_hostkey
       - *edit_etc_hosts
@@ -253,7 +254,7 @@ jobs:
       - install_prerequisites
       - restore_asdf_directory
       - enable_asdf_and_elixir
-      - *restore_updated_antikythera_instance_example_directory
+      - restore_updated_antikythera_instance_example_directory
       - *restore_testgear_directory
       - *edit_etc_hosts
       - run: mix antikythera_local.version_upgrade_test ../testgear
@@ -261,7 +262,7 @@ jobs:
     executor: erlang-executor
     working_directory: /tmp/antikythera_instance_example
     steps:
-      - *restore_updated_antikythera_instance_example_directory
+      - restore_updated_antikythera_instance_example_directory
       - add_github_hostkey
       - run: |
           if ! git diff --quiet HEAD origin/master; then
