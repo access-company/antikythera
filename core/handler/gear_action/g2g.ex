@@ -10,6 +10,7 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
   alias AntikytheraCore.Conn, as: CoreConn
   alias AntikytheraCore.Handler.{GearAction, GearError, HelperModules}
   alias AntikytheraCore.GearLog.ContextHelper
+  require AntikytheraCore.Logger, as: L
 
   defun handle(
           %GReq{path: path} = req,
@@ -82,10 +83,15 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
       mfa,
       Env.gear_action_timeout(),
       &CoreConn.run_before_send(&1, conn),
-      fn reason, stacktrace -> GearError.error(conn, convert_error_reason(reason), stacktrace) end
+      fn
+        {:exit, :kill}, stacktrace ->
+          %{gear_name: gear_name, context_id: context_id} = conn.context
+          L.error("Process killed: gear_name=#{gear_name}, context_id=#{context_id}")
+          GearError.error(conn, :killed, stacktrace)
+
+        reason, stacktrace ->
+          GearError.error(conn, reason, stacktrace)
+      end
     )
   end
-
-  defp convert_error_reason({:exit, :kill}), do: :killed
-  defp convert_error_reason(reason), do: reason
 end
