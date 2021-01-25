@@ -1,4 +1,4 @@
-# Copyright(c) 2015-2020 ACCESS CO., LTD. All rights reserved.
+# Copyright(c) 2015-2021 ACCESS CO., LTD. All rights reserved.
 
 defmodule Mix.Tasks.AntikytheraLocal.PrepareGear do
   @shortdoc "Builds an OTP application tarball of the specified gear"
