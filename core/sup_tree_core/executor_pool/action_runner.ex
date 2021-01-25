@@ -59,8 +59,13 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
 
     try do
       case GenServer.call(pid, {:run, conn, entry_point}, Env.gear_action_timeout()) do
-        {:ok, conn2} -> CoreConn.run_before_send(conn2, conn)
-        {:error, reason, stacktrace} -> GearError.error(conn, reason, stacktrace)
+        {:ok, conn2} ->
+          unlink_and_kill_process(pid)
+          CoreConn.run_before_send(conn2, conn)
+
+        {:error, reason, stacktrace} ->
+          unlink_and_kill_process(pid)
+          GearError.error(conn, reason, stacktrace)
       end
     catch
       :exit, {:timeout, _} ->
@@ -85,5 +90,10 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
     after
       Process.flag(:trap_exit, false)
     end
+  end
+
+  defunp unlink_and_kill_process(pid :: v[pid]) :: true do
+    Process.unlink(pid)
+    Process.exit(pid, :kill)
   end
 end
