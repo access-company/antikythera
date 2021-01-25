@@ -141,7 +141,8 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            entry_point :: v[GearEntryPoint.t()],
            helper_modules :: v[HelperModules.t()]
          ) :: Conn.t() do
-    ExecutorPoolHelper.with_executor(conn1, gear_name, helper_modules, fn pid, conn2 ->
+    ExecutorPoolHelper.with_executor(conn1, gear_name, helper_modules, fn _pid, conn2, epool_id ->
+      {:ok, pid} = ActionRunner.start_link(epool_id)
       ActionRunner.run(pid, conn2, entry_point)
     end)
   end

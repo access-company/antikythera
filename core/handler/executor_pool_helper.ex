@@ -19,7 +19,7 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
           conn :: v[Conn.t()],
           gear_name :: v[GearName.t()],
           helper_modules :: v[HelperModules.t()],
-          f :: (pid, Conn.t() -> Conn.t())
+          f :: (pid, Conn.t(), EPoolId.t() -> Conn.t())
         ) :: Conn.t() do
     case find_executor_pool(conn, gear_name, helper_modules) do
       {:ok, epool_id} -> run_within_executor_pool(conn, helper_modules, epool_id, f)
@@ -45,7 +45,7 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
 
     try do
       PoolSup.Multi.transaction(GearActionRunnerPools.table_name(), epool_id, fn pid ->
-        f.(pid, conn2)
+        f.(pid, conn2, epool_id)
       end)
     catch
       :exit, {:timeout, _} ->
