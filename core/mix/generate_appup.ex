@@ -1,4 +1,4 @@
-# Copyright(c) 2015-2020 ACCESS CO., LTD. All rights reserved.
+# Copyright(c) 2015-2021 ACCESS CO., LTD. All rights reserved.
 
 defmodule Mix.Tasks.AntikytheraCore.GenerateAppup do
   @shortdoc "Generates an appup file using the previous version located at the specified directory"

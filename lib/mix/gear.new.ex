@@ -1,4 +1,4 @@
-# Copyright(c) 2015-2020 ACCESS CO., LTD. All rights reserved.
+# Copyright(c) 2015-2021 ACCESS CO., LTD. All rights reserved.
 
 defmodule Mix.Tasks.Antikythera.Gear.New do
   @shortdoc "Generates a mix project for a new gear application"

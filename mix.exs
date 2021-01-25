@@ -1,4 +1,4 @@
-# Copyright(c) 2015-2020 ACCESS CO., LTD. All rights reserved.
+# Copyright(c) 2015-2021 ACCESS CO., LTD. All rights reserved.
 
 # Change in `mix_common.exs` should trigger full compilation of the antikythera project
 # (see also `Mix.Tasks.Compile.PropagateFileModifications`)
