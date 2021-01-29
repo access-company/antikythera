@@ -14,11 +14,7 @@ defmodule AntikytheraCore.Cluster do
 
   defun connect_to_other_nodes(running_hosts_map :: %{String.t() => boolean}) :: boolean do
     # Compare hostnames so as not to be confused by "name" part of nodenames (substring before '@').
-    running_hosts =
-      running_hosts_map
-      |> Map.to_list()
-      |> Enum.filter(fn {_, v}  -> v end)
-      |> Enum.map(fn {k, _} -> k end)
+    running_hosts = Map.keys(running_hosts_map)
     unconnected_in_service_hosts = running_hosts -- connected_hosts()
     Enum.each(unconnected_in_service_hosts, &connect/1)
     connected_to_majority?(running_hosts)
