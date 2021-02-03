@@ -9,7 +9,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
   defmodule SizeCheck do
     @interval if Antikythera.Env.compiling_for_release?() ||
                    Antikythera.Env.compiling_for_mix_task?(),
-                 do: 60_000,
+                 do: 30_000,
                  else: 100
     # 100MB
     @max_size if Mix.env() == :test, do: 4_096, else: 104_857_600
