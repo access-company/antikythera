@@ -48,7 +48,7 @@ defmodule AntikytheraCore do
     System.put_env("ERL_LIBS", new_value)
   end
 
-  defp establish_connections_to_other_nodes(tries_remaining \\ 3) do
+  defp establish_connections_to_other_nodes(tries_remaining \\ 80) do
     if tries_remaining == 0 do
       raise "cannot establish connections to other nodes!"
     else
