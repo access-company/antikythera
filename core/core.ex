@@ -5,6 +5,7 @@ use Croma
 defmodule AntikytheraCore do
   use Application
   require AntikytheraCore.Logger, as: L
+  alias AntikytheraEal.ClusterConfiguration
 
   @doc """
   Callback implementation of `Application.start/2`.
@@ -21,7 +22,9 @@ defmodule AntikytheraCore do
     AntikytheraCore.Config.Core.load()
     # Just to suppress log messages by :syn.init()
     if not Antikythera.Env.no_listen?() do
-      establish_connections_to_other_nodes()
+      calculate_connection_retry_count_from_health_check_grace_period()
+      |> establish_connections_to_other_nodes()
+
       :syn.init()
     end
 
@@ -48,7 +51,15 @@ defmodule AntikytheraCore do
     System.put_env("ERL_LIBS", new_value)
   end
 
-  defp establish_connections_to_other_nodes(tries_remaining \\ 80) do
+  @connection_retry_interval_ms 5_000
+  defunp connection_retry_interval_ms() :: pos_integer, do: @connection_retry_interval_ms
+
+  defunp calculate_connection_retry_count_from_health_check_grace_period() :: non_neg_integer do
+    connection_retry_interval_s = connection_retry_interval_ms() / 1000
+    trunc(ClusterConfiguration.health_check_grace_period() / connection_retry_interval_s)
+  end
+
+  defp establish_connections_to_other_nodes(tries_remaining) do
     if tries_remaining == 0 do
       raise "cannot establish connections to other nodes!"
     else
@@ -58,14 +69,14 @@ defmodule AntikytheraCore do
 
         _otherwise ->
           L.info("failed to establish connections to other nodes; retry afterward")
-          :timer.sleep(5_000)
+          :timer.sleep(@connection_retry_interval_ms)
           establish_connections_to_other_nodes(tries_remaining - 1)
       end
     end
   end
 
   defp activate_raft_fleet(f) do
-    :ok = RaftFleet.activate(AntikytheraEal.ClusterConfiguration.zone_of_this_host())
+    :ok = RaftFleet.activate(ClusterConfiguration.zone_of_this_host())
 
     try do
       f.()

@@ -33,6 +33,15 @@ defmodule AntikytheraEal.ClusterConfiguration do
     This callback is called only at startup and the return value is passed to `RaftFleet.activate/1`.
     """
     @callback zone_of_this_host() :: String.t()
+
+    @doc """
+    Returns the number of seconds for which the intial health check to this host is delayed to
+    provide ample warm-up time for the host.
+
+    This callback is called only at startup and the return value is used to calculate the retry count for
+    establishing connections to other nodes.
+    """
+    @callback health_check_grace_period() :: pos_integer
   end
 
   defmodule StandAlone do
@@ -46,6 +55,9 @@ defmodule AntikytheraEal.ClusterConfiguration do
 
     @impl true
     defun zone_of_this_host() :: String.t(), do: "zone"
+
+    @impl true
+    defun health_check_grace_period() :: pos_integer, do: 400
   end
 
   use AntikytheraEal.ImplChooser
