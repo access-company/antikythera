@@ -141,6 +141,31 @@ defmodule Antikythera.Env do
     end
   end
 
+  if Antikythera.Env.Mapping.cloud?(@compile_env) do
+    @scheme "https"
+  else
+    @scheme "http"
+  end
+
+  @doc """
+  Return the base URL which based on the `Host` HTTP header of the request.
+
+  This function is useful if you use a custom domain.
+  Whether the scheme of the URL is `https` or `http` depends on whether `Antikythera.Env.Mapping.cloud?/1` returns true or false.
+  """
+  defun base_url(%Antikythera.Conn{request: %Antikythera.Request{headers: headers}}) :: v[Url.t()] do
+    case headers do
+      %{"host" => host} -> @scheme <> "://" <> host
+      _ -> raise "`Host` header is not in the request"
+    end
+  end
+
+  @doc """
+  Return the base URL of the gear.
+
+  If the gear name is `my_gear` and the Antikythera is deployed at `antikythera.example.com`,
+  this function returns `https://my-gear.antikythera.example.com`.
+  """
   defun default_base_url(
           gear_name :: v[GearName.t() | GearNameStr.t()],
           env :: v[t] \\ @compile_env
