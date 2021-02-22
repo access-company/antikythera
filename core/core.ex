@@ -35,20 +35,7 @@ defmodule AntikytheraCore do
         start_cowboy_http()
       end
 
-      # Test code to run TerminationManager during the a9a boot process
-      unless Mix.env() == :test do
-        IO.puts("--")
-        :timer.sleep(180_000)
-      end
-
       {:ok, pid} = start_sup()
-
-      # Test code to run TerminationManager during the a9a boot process
-      unless Mix.env() == :test do
-        IO.puts("--")
-        :timer.sleep(60_000)
-      end
-
       # `GearManager` and `StartupManager` must be up and running here
       AntikytheraCore.Config.Gear.load_all(0)
       L.info("started AntikytheraCore")

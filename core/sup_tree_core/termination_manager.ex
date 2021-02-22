@@ -39,8 +39,7 @@ defmodule AntikytheraCore.TerminationManager do
       %__MODULE__{in_service?: true, log_flushed?: false, not_in_service_count: 0, brokers: []}
     end
 
-    # Test value to run TerminationManager during the a9a boot process
-    @threshold_count 1
+    @threshold_count 3
     # Ensure 30 minutes have passed since the async job brokers stopped in `cleanup/1`
     @flush_log_threshold_count @threshold_count + 11
 
@@ -83,8 +82,7 @@ defmodule AntikytheraCore.TerminationManager do
     end
   end
 
-  # Test value to run TerminationManager during the a9a boot process
-  @interval 60_000
+  @interval 180_000
 
   def start_link([]) do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
