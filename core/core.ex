@@ -53,7 +53,7 @@ defmodule AntikytheraCore do
 
   @connection_retry_interval_ms 5_000
 
-  defunp calculate_connection_retry_count_from_health_check_grace_period() :: non_neg_integer do
+  defunpt calculate_connection_retry_count_from_health_check_grace_period() :: non_neg_integer do
     connection_retry_interval_s = @connection_retry_interval_ms() / 1000
     trunc(ClusterConfiguration.health_check_grace_period() / connection_retry_interval_s)
   end
