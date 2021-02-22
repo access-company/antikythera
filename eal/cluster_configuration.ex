@@ -35,7 +35,7 @@ defmodule AntikytheraEal.ClusterConfiguration do
     @callback zone_of_this_host() :: String.t()
 
     @doc """
-    Returns the number of seconds for which the intial health check to this host is delayed to
+    Returns the number of seconds for which the initial health check to this host is delayed to
     provide ample warm-up time for the host.
 
     This callback is called only at startup and the return value is used to calculate the retry count for
