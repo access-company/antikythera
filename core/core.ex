@@ -36,14 +36,16 @@ defmodule AntikytheraCore do
       end
 
       # Test code to run TerminationManager during the a9a boot process
-      unless Antikythera.Env.runtime_env() == :undefined do
+      unless Mix.env() == :test do
+        IO.puts("--")
         :timer.sleep(180_000)
       end
 
       {:ok, pid} = start_sup()
 
       # Test code to run TerminationManager during the a9a boot process
-      unless Antikythera.Env.runtime_env() == :undefined do
+      unless Mix.env() == :test do
+        IO.puts("--")
         :timer.sleep(60_000)
       end
 
