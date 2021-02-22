@@ -4,8 +4,8 @@ use Croma
 
 defmodule AntikytheraCore do
   use Application
-  require AntikytheraCore.Logger, as: L
   alias AntikytheraEal.ClusterConfiguration
+  require AntikytheraCore.Logger, as: L
 
   @doc """
   Callback implementation of `Application.start/2`.
