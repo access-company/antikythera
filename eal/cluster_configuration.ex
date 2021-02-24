@@ -41,7 +41,7 @@ defmodule AntikytheraEal.ClusterConfiguration do
     This callback is called only at startup and the return value is used to calculate the trial count for
     establishing connections to other nodes.
     """
-    @callback health_check_grace_period() :: non_neg_integer
+    @callback health_check_grace_period_in_seconds() :: non_neg_integer
   end
 
   defmodule StandAlone do
@@ -57,7 +57,7 @@ defmodule AntikytheraEal.ClusterConfiguration do
     defun zone_of_this_host() :: String.t(), do: "zone"
 
     @impl true
-    defun health_check_grace_period() :: non_neg_integer, do: 300
+    defun health_check_grace_period_in_seconds() :: non_neg_integer, do: 300
   end
 
   use AntikytheraEal.ImplChooser

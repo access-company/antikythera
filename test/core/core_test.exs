@@ -12,10 +12,10 @@ defmodule AntikytheraCoreTest do
     end)
   end
 
-  defp mock_health_check_grace_period(grace_period) do
+  defp mock_health_check_grace_period_in_seconds(grace_period) do
     :meck.expect(
       ClusterConfiguration,
-      :health_check_grace_period,
+      :health_check_grace_period_in_seconds,
       fn ->
         grace_period
       end
@@ -30,7 +30,7 @@ defmodule AntikytheraCoreTest do
         {301, 60}
       ],
       fn {grace_period, expected_trial_count} ->
-        mock_health_check_grace_period(grace_period)
+        mock_health_check_grace_period_in_seconds(grace_period)
 
         assert AntikytheraCore.calculate_connection_trial_count_from_health_check_grace_period() ==
                  expected_trial_count

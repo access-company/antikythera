@@ -58,7 +58,8 @@ defmodule AntikytheraCore do
 
     result =
       trunc(
-        ClusterConfiguration.health_check_grace_period() / connection_retrial_interval_in_seconds
+        ClusterConfiguration.health_check_grace_period_in_seconds() /
+          connection_retrial_interval_in_seconds
       )
 
     if result < 1, do: 1, else: result
