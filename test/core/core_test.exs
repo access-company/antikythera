@@ -22,18 +22,18 @@ defmodule AntikytheraCoreTest do
     )
   end
 
-  test "calculate_connection_retry_count_from_health_check_grace_period/1 should return an appropriate retry count" do
+  test "calculate_connection_trial_count_from_health_check_grace_period/0 should return an appropriate trial count" do
     Enum.each(
       [
-        {0, 0},
-        {400, 80},
-        {401, 80}
+        {0, 1},
+        {300, 60},
+        {301, 60}
       ],
-      fn {grace_period, expected_retry_count} ->
+      fn {grace_period, expected_trial_count} ->
         mock_health_check_grace_period(grace_period)
 
-        assert AntikytheraCore.calculate_connection_retry_count_from_health_check_grace_period() ==
-                 expected_retry_count
+        assert AntikytheraCore.calculate_connection_trial_count_from_health_check_grace_period() ==
+                 expected_trial_count
       end
     )
   end

@@ -22,7 +22,7 @@ defmodule AntikytheraCore do
     AntikytheraCore.Config.Core.load()
     # Just to suppress log messages by :syn.init()
     if not Antikythera.Env.no_listen?() do
-      calculate_connection_retry_count_from_health_check_grace_period()
+      calculate_connection_trial_count_from_health_check_grace_period()
       |> establish_connections_to_other_nodes()
 
       :syn.init()
@@ -51,11 +51,17 @@ defmodule AntikytheraCore do
     System.put_env("ERL_LIBS", new_value)
   end
 
-  @connection_retry_interval_in_milliseconds 5_000
+  @connection_retrial_interval_in_milliseconds 5_000
 
-  defunpt calculate_connection_retry_count_from_health_check_grace_period() :: non_neg_integer do
-    connection_retry_interval_in_seconds = @connection_retry_interval_in_milliseconds / 1000
-    trunc(ClusterConfiguration.health_check_grace_period() / connection_retry_interval_in_seconds)
+  defunpt calculate_connection_trial_count_from_health_check_grace_period() :: pos_integer do
+    connection_retrial_interval_in_seconds = @connection_retrial_interval_in_milliseconds / 1000
+
+    result =
+      trunc(
+        ClusterConfiguration.health_check_grace_period() / connection_retrial_interval_in_seconds
+      )
+
+    if result < 1, do: 1, else: result
   end
 
   defp establish_connections_to_other_nodes(tries_remaining) do
@@ -68,7 +74,7 @@ defmodule AntikytheraCore do
 
         _otherwise ->
           L.info("failed to establish connections to other nodes; retry afterward")
-          :timer.sleep(@connection_retry_interval_in_milliseconds)
+          :timer.sleep(@connection_retrial_interval_in_milliseconds)
           establish_connections_to_other_nodes(tries_remaining - 1)
       end
     end
