@@ -51,11 +51,11 @@ defmodule AntikytheraCore do
     System.put_env("ERL_LIBS", new_value)
   end
 
-  @connection_retry_interval_ms 5_000
+  @connection_retry_interval_in_milliseconds 5_000
 
   defunpt calculate_connection_retry_count_from_health_check_grace_period() :: non_neg_integer do
-    connection_retry_interval_s = @connection_retry_interval_ms / 1000
-    trunc(ClusterConfiguration.health_check_grace_period() / connection_retry_interval_s)
+    connection_retry_interval_in_seconds = @connection_retry_interval_in_milliseconds / 1000
+    trunc(ClusterConfiguration.health_check_grace_period() / connection_retry_interval_in_seconds)
   end
 
   defp establish_connections_to_other_nodes(tries_remaining) do
@@ -68,7 +68,7 @@ defmodule AntikytheraCore do
 
         _otherwise ->
           L.info("failed to establish connections to other nodes; retry afterward")
-          :timer.sleep(@connection_retry_interval_ms)
+          :timer.sleep(@connection_retry_interval_in_milliseconds)
           establish_connections_to_other_nodes(tries_remaining - 1)
       end
     end
