@@ -38,10 +38,10 @@ defmodule AntikytheraEal.ClusterConfiguration do
     Returns the number of seconds for which the initial health check to this host is delayed to
     provide ample warm-up time for the host.
 
-    This callback is called only at startup and the return value is used to calculate the retry count for
+    This callback is called only at startup and the return value is used to calculate the trial count for
     establishing connections to other nodes.
     """
-    @callback health_check_grace_period() :: pos_integer
+    @callback health_check_grace_period() :: non_neg_integer
   end
 
   defmodule StandAlone do
@@ -57,7 +57,7 @@ defmodule AntikytheraEal.ClusterConfiguration do
     defun zone_of_this_host() :: String.t(), do: "zone"
 
     @impl true
-    defun health_check_grace_period() :: pos_integer, do: 400
+    defun health_check_grace_period() :: non_neg_integer, do: 300
   end
 
   use AntikytheraEal.ImplChooser
