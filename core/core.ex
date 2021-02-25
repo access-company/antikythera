@@ -56,13 +56,10 @@ defmodule AntikytheraCore do
   defunpt calculate_connection_trial_count_from_health_check_grace_period() :: pos_integer do
     connection_retrial_interval_in_seconds = @connection_retrial_interval_in_milliseconds / 1000
 
-    result =
-      trunc(
-        ClusterConfiguration.health_check_grace_period_in_seconds() /
-          connection_retrial_interval_in_seconds
-      )
-
-    max(result, 1)
+    (ClusterConfiguration.health_check_grace_period_in_seconds() /
+       connection_retrial_interval_in_seconds)
+    |> trunc()
+    |> max(1)
   end
 
   defp establish_connections_to_other_nodes(tries_remaining) do
