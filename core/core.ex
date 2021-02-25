@@ -62,7 +62,7 @@ defmodule AntikytheraCore do
           connection_retrial_interval_in_seconds
       )
 
-    if result < 1, do: 1, else: result
+    max(result, 1)
   end
 
   defp establish_connections_to_other_nodes(tries_remaining) do
