@@ -7,9 +7,7 @@ defmodule AntikytheraCoreTest do
   setup do
     :meck.new(ClusterConfiguration, [:passthrough])
 
-    on_exit(fn ->
-      :meck.unload()
-    end)
+    on_exit(&:meck.unload/0)
   end
 
   defp mock_health_check_grace_period_in_seconds(grace_period) do
