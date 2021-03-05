@@ -154,9 +154,9 @@ defmodule Antikythera.Env do
   Whether the scheme of the URL is `https` or `http` depends on whether `Antikythera.Env.Mapping.cloud?/1` returns true or false.
   """
   defun base_url(%Antikythera.Conn{request: %Antikythera.Request{headers: headers}}) :: v[Url.t()] do
-    case headers do
-      %{"host" => host} -> @scheme <> "://" <> host
-      _ -> raise "`Host` header is not in the request"
+    case Map.get(headers, "host") do
+      nil -> raise "`Host` header is not in the request"
+      host -> @scheme <> "://" <> host
     end
   end
 
