@@ -4,7 +4,7 @@ use Croma
 
 defmodule AntikytheraCore.Config.Gear do
   alias Croma.Result, as: R
-  alias Antikythera.{GearName, SecondsSinceEpoch, Domain, CowboyWildcardDomain}
+  alias Antikythera.{GearName, SecondsSinceEpoch, Domain, CowboyWildcardSubdomain}
   alias Antikythera.Crypto.Aes
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraCore.Ets.ConfigCache.Gear, as: GCache
@@ -17,7 +17,7 @@ defmodule AntikytheraCore.Config.Gear do
 
   defmodule CustomDomainList do
     use Croma.SubtypeOfList,
-      elem_module: Croma.TypeGen.union([Domain, CowboyWildcardDomain]),
+      elem_module: Croma.TypeGen.union([Domain, CowboyWildcardSubdomain]),
       max_length: 10
   end
 

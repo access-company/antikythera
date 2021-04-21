@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Handler.CowboyRouting do
-  alias Antikythera.{Env, Domain, CowboyWildcardDomain, GearName, GearNameStr}
+  alias Antikythera.{Env, Domain, CowboyWildcardSubdomain, GearName, GearNameStr}
   alias AntikytheraCore.GearModule
   alias AntikytheraCore.Config.Gear, as: GearConfig
   alias AntikytheraCore.Ets.ConfigCache
@@ -69,7 +69,7 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
     {"/[...]", GearAction.Web, gear_name}
   end
 
-  defunp domains_of(gear_name :: v[GearName.t()]) :: [Domain.t() | CowboyWildcardDomain.t()] do
+  defunp domains_of(gear_name :: v[GearName.t()]) :: [Domain.t() | CowboyWildcardSubdomain.t()] do
     custom_domains =
       case ConfigCache.Gear.read(gear_name) do
         nil -> []
