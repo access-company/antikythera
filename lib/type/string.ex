@@ -37,6 +37,10 @@ defmodule Antikythera.Domain do
   use Croma.SubtypeOfString, pattern: ~r/\A#{@pattern_body}\z/
 end
 
+defmodule Antikythera.CowboyWildcardDomain do
+  use Croma.SubtypeOfString, pattern: ~r/\A:_\.#{Antikythera.Domain.pattern_body()}\z/
+end
+
 defmodule Antikythera.DomainList do
   use Croma.SubtypeOfList, elem_module: Antikythera.Domain, max_length: 10
 end

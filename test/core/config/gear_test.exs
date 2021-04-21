@@ -9,7 +9,7 @@ defmodule AntikytheraCore.Config.GearTest do
 
   @gear1_conf %Gear{
     kv: %{"foo" => "bar1"},
-    domains: ["my.domain.com"],
+    domains: ["my.domain.com", ":_.wildcard.domain.com"],
     log_level: Level.default(),
     alerts: %{}
   }
