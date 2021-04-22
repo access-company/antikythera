@@ -38,6 +38,10 @@ defmodule Antikythera.Domain do
 end
 
 defmodule Antikythera.CowboyWildcardSubdomain do
+  @moduledoc """
+  A type module to represent a wildcard subdomain in a form which is acceptable by cowboy.
+  """
+
   use Croma.SubtypeOfString, pattern: ~r/\A:_\.#{Antikythera.Domain.pattern_body()}\z/
 end
 
