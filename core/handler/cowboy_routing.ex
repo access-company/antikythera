@@ -100,17 +100,20 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
   @current_compile_env Env.compile_env()
 
   # This can also used by administrative gears
+  defun base_domain(env :: v[Env.t()] \\ @current_compile_env) :: Domain.t() do
+    case Keyword.get(@deployments, env) do
+      nil -> System.get_env("BASE_DOMAIN") || "localhost"
+      domain -> domain
+    end
+  end
+
+  # This can also used by administrative gears
   defun default_domain(
           gear_name :: v[GearName.t() | GearNameStr.t()],
           env :: v[Env.t()] \\ @current_compile_env
         ) :: Domain.t() do
     gear_name_replaced = to_string(gear_name) |> String.replace("_", "-")
-
-    base_domain =
-      case Keyword.get(@deployments, env) do
-        nil -> System.get_env("BASE_DOMAIN") || "localhost"
-        domain -> domain
-      end
+    base_domain = base_domain(env)
 
     "#{gear_name_replaced}.#{base_domain}"
   end
