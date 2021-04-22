@@ -4,6 +4,7 @@ defmodule Antikythera.StringTypesTest do
   use ExUnit.Case
   alias Antikythera.VersionStr
   alias Antikythera.Domain
+  alias Antikythera.CowboyWildcardSubdomain
   alias Antikythera.EncodedPath
   alias Antikythera.UnencodedPath
   alias Antikythera.Email
@@ -45,6 +46,14 @@ defmodule Antikythera.StringTypesTest do
     refute Domain.valid?("end-with-hyphen-")
     refute Domain.valid?("-" <> String.duplicate("a", 63))
     refute Domain.valid?(String.duplicate("a", 63) <> "-")
+  end
+
+  test "validate CowboyWildcardSubdomain" do
+    assert CowboyWildcardSubdomain.valid?(":_.example.com")
+
+    refute CowboyWildcardSubdomain.valid?("*.example.com")
+    refute CowboyWildcardSubdomain.valid?(":subdomain.example.com")
+    refute CowboyWildcardSubdomain.valid?("subdomain.:_.example.com")
   end
 
   test "validate EncodedPath" do
