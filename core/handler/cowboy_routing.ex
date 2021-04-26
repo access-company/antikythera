@@ -111,7 +111,7 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
           custom_domain :: v[Domain.t() | CowboyWildcardSubdomain.t()],
           env :: v[Env.t()] \\ @current_compile_env
         ) :: v[boolean] do
-    custom_domain |> String.split(".") |> tl() |> Enum.join(".") == base_domain(env)
+    custom_domain |> String.split(".", parts: 2) |> Enum.at(1) == base_domain(env)
   end
 
   # This can also be used by administrative gears
