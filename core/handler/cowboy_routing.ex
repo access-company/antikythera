@@ -99,15 +99,22 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
   @deployments Application.fetch_env!(:antikythera, :deployments)
   @current_compile_env Env.compile_env()
 
-  # This can also used by administrative gears
-  defun base_domain(env :: v[Env.t()] \\ @current_compile_env) :: Domain.t() do
+  defunp base_domain(env :: v[Env.t()]) :: Domain.t() do
     case Keyword.get(@deployments, env) do
       nil -> System.get_env("BASE_DOMAIN") || "localhost"
       domain -> domain
     end
   end
 
-  # This can also used by administrative gears
+  # This can also be used by administrative gears, and should be used when validating custom domains
+  defun conflicts_with_default_domain?(
+          custom_domain :: v[Domain.t() | CowboyWildcardSubdomain.t()],
+          env :: v[Env.t()] \\ @current_compile_env
+        ) :: v[boolean] do
+    custom_domain |> String.split(".") |> tl() |> Enum.join(".") == base_domain(env)
+  end
+
+  # This can also be used by administrative gears
   defun default_domain(
           gear_name :: v[GearName.t() | GearNameStr.t()],
           env :: v[Env.t()] \\ @current_compile_env
