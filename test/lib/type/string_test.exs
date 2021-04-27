@@ -57,6 +57,7 @@ defmodule Antikythera.StringTypesTest do
     refute CowboyWildcardSubdomain.valid?("*.example.com")
     refute CowboyWildcardSubdomain.valid?(":subdomain.example.com")
     refute CowboyWildcardSubdomain.valid?("subdomain.:_.example.com")
+    refute CowboyWildcardSubdomain.valid?(":_.:_.example.com")
     # should be disjoint from Domain
     refute CowboyWildcardSubdomain.valid?("jp.access-company.com")
     refute CowboyWildcardSubdomain.valid?("localhost")
