@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Handler.CowboyRouting do
-  alias Antikythera.{Env, Domain, GearName, GearNameStr}
+  alias Antikythera.{Env, Domain, CowboyWildcardSubdomain, GearName, GearNameStr}
   alias AntikytheraCore.GearModule
   alias AntikytheraCore.Config.Gear, as: GearConfig
   alias AntikytheraCore.Ets.ConfigCache
@@ -69,7 +69,7 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
     {"/[...]", GearAction.Web, gear_name}
   end
 
-  defunp domains_of(gear_name :: v[GearName.t()]) :: [Domain.t()] do
+  defunp domains_of(gear_name :: v[GearName.t()]) :: [Domain.t() | CowboyWildcardSubdomain.t()] do
     custom_domains =
       case ConfigCache.Gear.read(gear_name) do
         nil -> []
@@ -99,18 +99,28 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
   @deployments Application.fetch_env!(:antikythera, :deployments)
   @current_compile_env Env.compile_env()
 
-  # This can also used by administrative gears
+  defunp base_domain(env :: v[Env.t()]) :: Domain.t() do
+    case Keyword.get(@deployments, env) do
+      nil -> System.get_env("BASE_DOMAIN") || "localhost"
+      domain -> domain
+    end
+  end
+
+  # This can also be used by administrative gears, and should be used when validating custom domains
+  defun conflicts_with_default_domain?(
+          custom_domain :: v[Domain.t() | CowboyWildcardSubdomain.t()],
+          env :: v[Env.t()] \\ @current_compile_env
+        ) :: v[boolean] do
+    custom_domain |> String.split(".", parts: 2) |> Enum.at(1) == base_domain(env)
+  end
+
+  # This can also be used by administrative gears
   defun default_domain(
           gear_name :: v[GearName.t() | GearNameStr.t()],
           env :: v[Env.t()] \\ @current_compile_env
         ) :: Domain.t() do
     gear_name_replaced = to_string(gear_name) |> String.replace("_", "-")
-
-    base_domain =
-      case Keyword.get(@deployments, env) do
-        nil -> System.get_env("BASE_DOMAIN") || "localhost"
-        domain -> domain
-      end
+    base_domain = base_domain(env)
 
     "#{gear_name_replaced}.#{base_domain}"
   end
