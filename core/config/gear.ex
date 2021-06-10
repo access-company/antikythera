@@ -27,7 +27,10 @@ defmodule AntikytheraCore.Config.Gear do
       kv: Croma.Map,
       domains: CustomDomainList,
       log_level: Level,
-      alerts: HandlerConfigsMap
+      alerts: HandlerConfigsMap,
+      # can be used to store instance-specific information
+      # whose structure needs to be managed by administrative gears
+      internal_kv: {Croma.Map, default: %{}}
     ]
 
   defun default() :: t do
