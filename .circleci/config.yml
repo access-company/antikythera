@@ -1,81 +1,92 @@
-version: 2
+version: 2.1
 
-# Note that each `run` command is executed by a separate bash process.
-# We have to use `$BASH_ENV`, which contains file path to `.bashrc` file, to pass information to the subsequent bash processes.
-references:
-  container_config: &container_config
+executors:
+  erlang-executor:
     docker:
       - image: erlang:20.3.8.26 # Using pre-built official image since erlang installation takes long time
         environment:
           ANTIKYTHERA_INSTANCE_DEP: '{:antikythera_instance_example, [git: "git@github.com:access-company/antikythera_instance_example.git"]}'
-  install_prerequisites: &install_prerequisites
-    run:
-      name: Install required apt packages and generate locale
-      # Installing `locales` automatically triggers `locale-gen` once in postinstall step
-      command: |
-        echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen
-        apt-get update && apt-get install -y unzip locales
-        echo 'export LANG=en_US.UTF-8' >> $BASH_ENV
-  restore_asdf_directory: &restore_asdf_directory
-    restore_cache:
-      keys:
-        - asdf_directory-{{ .Branch }}-{{ .Revision }}
-        - asdf_directory-{{ .Branch }}-
-        - asdf_directory-
-  enable_asdf_and_elixir: &enable_asdf_and_elixir
-    run:
-      name: Enable asdf and elixir by loading asdf.sh
-      # Global Elixir version is required for projects that depends on antikythera,
-      # since symlinked `.tool-versions` file is not available at the first `mix` invocation.
-      command: |
-        echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
-        source $BASH_ENV
-        elixir_version="$(grep elixir /usr/local/asdf/tool-versions-copy)"
-        asdf global ${elixir_version}
-  add_github_hostkey: &add_github_hostkey
-    run:
-      name: Add GitHub's server host key to known_hosts
-      # Ported from CircleCI's official `checkout` script. You may check original implementation in CircleCI's build result UI.
-      # This is required BEFORE `git` command is invoked without involving CircleCI's official `checkout` step.
-      command: |
-        mkdir -p ~/.ssh
-        cat << EOF >> ~/.ssh/known_hosts
-        github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-        EOF
-  checkout_external: &checkout_external
-    name: Checkout master of external repository
-    command: |
-      if [ -d .git ]; then
-        git checkout .
-        git checkout master
-        git pull "$EXTERNAL_GIT_REPOSITORY" master
-      else
-        git clone "$EXTERNAL_GIT_REPOSITORY" .
-      fi
-  restore_updated_antikythera_instance_example_directory: &restore_updated_antikythera_instance_example_directory
-    restore_cache:
-      keys:
-        - antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
-  restore_testgear_directory: &restore_testgear_directory
-    restore_cache:
-      keys:
-        - testgear-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
-  edit_etc_hosts: &edit_etc_hosts
-    run:
-      name: Add testgear.localhost and <hostname>.local to /etc/hosts
-      command: echo "127.0.0.1 testgear.localhost $(hostname).local" >> /etc/hosts
-  restore_updated_testgear_directory: &restore_updated_testgear_directory
-    restore_cache:
-      keys:
-        - testgear-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+
+# Note that each `run` command is executed by a separate bash process.
+# We have to use `$BASH_ENV`, which contains file path to `.bashrc` file, to pass information to the subsequent bash processes.
+
+commands:
+  install_prerequisites:
+    description: Install required apt packages and generate locale
+    steps:
+      - run: echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen
+      - run: apt-get update && apt-get install -y unzip locales
+      - run: echo 'export LANG=en_US.UTF-8' >> $BASH_ENV
+  restore_asdf_directory:
+    steps:
+      - restore_cache:
+          keys:
+            - asdf_directory-{{ .Branch }}-{{ .Revision }}
+            - asdf_directory-{{ .Branch }}-
+            - asdf_directory-
+  enable_asdf_and_elixir:
+    description: Enable asdf and elixir by loading asdf.sh
+    steps:
+      - run:
+          # Global Elixir version is required for projects that depends on antikythera,
+          # since symlinked `.tool-versions` file is not available at the first `mix` invocation.
+          command: |
+            echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
+            source $BASH_ENV
+            elixir_version="$(grep elixir /usr/local/asdf/tool-versions-copy)"
+            asdf global ${elixir_version}
+  add_github_hostkey:
+    description: Add GitHub's server host key to known_hosts
+    steps:
+      - run:
+          # Ported from CircleCI's official `checkout` script. You may check original implementation in CircleCI's build result UI.
+          # This is required BEFORE `git` command is invoked without involving CircleCI's official `checkout` step.
+          command: |
+            mkdir -p ~/.ssh
+            echo >> ~/.ssh/known_hosts 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ=='
+  checkout_external:
+    description: Checkout master of external repository
+    parameters:
+      repo:
+        type: string
+    steps:
+      - run:
+          command: |
+            if [ -d .git ]; then
+              git checkout .
+              git checkout master
+              git pull << parameters.repo >> master
+            else
+              git clone << parameters.repo >> .
+            fi
+  restore_updated_antikythera_instance_example_directory:
+    steps:
+      - restore_cache:
+          keys:
+            - antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+  restore_testgear_directory:
+    steps:
+      - restore_cache:
+          keys:
+            - testgear-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+  edit_etc_hosts:
+    description: Add testgear.localhost and <hostname>.local to /etc/hosts
+    steps:
+      - run: echo "127.0.0.1 testgear.localhost $(hostname).local" >> /etc/hosts
+  restore_updated_testgear_directory:
+    steps:
+      - restore_cache:
+          keys:
+            - testgear-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+
 
 jobs:
   prepare_elixir:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/antikythera
     steps:
-      - *install_prerequisites
-      - *restore_asdf_directory
+      - install_prerequisites
+      - restore_asdf_directory
       # To use antikythera's `.tool-versions` file, take the repository here.
       # Note that we won't save the repository because no change occurs during this job.
       - restore_cache:
@@ -122,12 +133,12 @@ jobs:
           paths:
             - /usr/local/asdf
   antikythera_whitebox_test:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/antikythera
     steps:
-      - *install_prerequisites
-      - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - install_prerequisites
+      - restore_asdf_directory
+      - enable_asdf_and_elixir
       - restore_cache:
           keys:
             - antikythera-repo-{{ .Branch }}-{{ .Revision }}
@@ -143,21 +154,19 @@ jobs:
             - .
             - ~/.cache
   update_antikythera_instance_example:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/antikythera_instance_example
     steps:
-      - *install_prerequisites
-      - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - install_prerequisites
+      - restore_asdf_directory
+      - enable_asdf_and_elixir
       - restore_cache:
           keys:
             - antikythera_instance_example-repo-{{ .Branch }}-
             - antikythera_instance_example-repo-
-      - *add_github_hostkey
-      - run:
-          <<: *checkout_external
-          environment:
-            EXTERNAL_GIT_REPOSITORY: git@github.com:access-company/antikythera_instance_example.git
+      - add_github_hostkey
+      - checkout_external:
+          repo: git@github.com:access-company/antikythera_instance_example.git
       - run:
           name: Compile antikythera_instance_example
           # Compile beforehand in order to create cache for later builds/jobs.
@@ -200,21 +209,19 @@ jobs:
             - .
             - ~/.cache
   prepare_testgear:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/testgear
     steps:
-      - *install_prerequisites
-      - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - install_prerequisites
+      - restore_asdf_directory
+      - enable_asdf_and_elixir
       - restore_cache:
           keys:
             - testgear-repo-{{ .Branch }}-
             - testgear-repo-
-      - *add_github_hostkey
-      - run:
-          <<: *checkout_external
-          environment:
-            EXTERNAL_GIT_REPOSITORY: git@github.com:access-company/testgear.git
+      - add_github_hostkey
+      - checkout_external:
+          repo: git@github.com:access-company/testgear.git
       - run:
           name: Fetch dependencies with latest antikythera_instance_example and compile
           command: |
@@ -230,48 +237,48 @@ jobs:
             - .
             - ~/.cache
   upgrade_compatibility_test:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/antikythera_instance_example
     steps:
-      - *install_prerequisites
-      - *restore_asdf_directory
-      - *enable_asdf_and_elixir
-      - *restore_updated_antikythera_instance_example_directory
-      - *restore_testgear_directory
-      - *add_github_hostkey
-      - *edit_etc_hosts
+      - install_prerequisites
+      - restore_asdf_directory
+      - enable_asdf_and_elixir
+      - restore_updated_antikythera_instance_example_directory
+      - restore_testgear_directory
+      - add_github_hostkey
+      - edit_etc_hosts
       - run: mix antikythera_local.upgrade_compatibility_test ../testgear
   version_upgrade_test:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/antikythera_instance_example
     steps:
-      - *install_prerequisites
-      - *restore_asdf_directory
-      - *enable_asdf_and_elixir
-      - *restore_updated_antikythera_instance_example_directory
-      - *restore_testgear_directory
-      - *edit_etc_hosts
+      - install_prerequisites
+      - restore_asdf_directory
+      - enable_asdf_and_elixir
+      - restore_updated_antikythera_instance_example_directory
+      - restore_testgear_directory
+      - edit_etc_hosts
       - run: mix antikythera_local.version_upgrade_test ../testgear
   publish_updated_antikythera_instance_example:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/antikythera_instance_example
     steps:
-      - *restore_updated_antikythera_instance_example_directory
-      - *add_github_hostkey
+      - restore_updated_antikythera_instance_example_directory
+      - add_github_hostkey
       - run: |
           if ! git diff --quiet HEAD origin/master; then
             git --no-pager show
             git push git@github.com:access-company/antikythera_instance_example.git HEAD:master
           fi
   update_testgear:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/testgear
     steps:
-      - *install_prerequisites
-      - *restore_asdf_directory
-      - *enable_asdf_and_elixir
-      - *restore_testgear_directory
-      - *add_github_hostkey
+      - install_prerequisites
+      - restore_asdf_directory
+      - enable_asdf_and_elixir
+      - restore_testgear_directory
+      - add_github_hostkey
       - run:
           name: Fetch dependencies with updated (now published) antikythera_instance_example
           command: |
@@ -286,24 +293,24 @@ jobs:
             - .
             - ~/.cache
   testgear_whitebox_test:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/testgear
     steps:
-      - *install_prerequisites
-      - *restore_asdf_directory
-      - *enable_asdf_and_elixir
-      - *restore_updated_testgear_directory
-      - *edit_etc_hosts
+      - install_prerequisites
+      - restore_asdf_directory
+      - enable_asdf_and_elixir
+      - restore_updated_testgear_directory
+      - edit_etc_hosts
       - run: mix test --trace
   testgear_blackbox_test:
-    <<: *container_config
+    executor: erlang-executor
     working_directory: /tmp/testgear
     steps:
-      - *install_prerequisites
-      - *restore_asdf_directory
-      - *enable_asdf_and_elixir
-      - *restore_updated_testgear_directory
-      - *edit_etc_hosts
+      - install_prerequisites
+      - restore_asdf_directory
+      - enable_asdf_and_elixir
+      - restore_updated_testgear_directory
+      - edit_etc_hosts
       - run:
           name: Run testgear in background
           command: iex -S mix
