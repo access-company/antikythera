@@ -30,11 +30,10 @@ defmodule AntikytheraCore.Ets.ConfigCache.Gear do
   alias Antikythera.GearName
   alias AntikytheraCore.Config.Gear, as: GearConfig
 
-  defun read(gear_name :: v[GearName.t()]) :: nil | GearConfig.t() | :error do
+  defun read(gear_name :: v[GearName.t()]) :: nil | GearConfig.t() do
     case :ets.lookup(@table_name, gear_name) do
       [] -> nil
       [{_gear_name, %GearConfig{} = gear_config}] -> gear_config
-      _ -> :error
     end
   end
 
