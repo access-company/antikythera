@@ -33,7 +33,7 @@ defmodule AntikytheraCore.Ets.ConfigCache.Gear do
   defun read(gear_name :: v[GearName.t()]) :: nil | GearConfig.t() do
     case :ets.lookup(@table_name, gear_name) do
       [] -> nil
-      [{_gear_name, gear_config}] -> gear_config
+      [{_gear_name, %GearConfig{} = gear_config}] -> gear_config
     end
   end
 
