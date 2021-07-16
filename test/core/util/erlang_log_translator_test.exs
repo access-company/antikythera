@@ -11,7 +11,7 @@ defmodule AntikytheraCore.ErlangLogTranslatorTest do
     on_exit(&:meck.unload/0)
   end
 
-  test "should neglect SASL progress report" do
+  test "should neglect SASL progress report from supervisor" do
     # Use ActionRunner as just a GenServer, not as a PoolSup worker
     children = [{ActionRunner, [nil]}]
     {:ok, _pid} = Supervisor.start_link(children, strategy: :one_for_one, name: :test_supervisor)
@@ -20,9 +20,18 @@ defmodule AntikytheraCore.ErlangLogTranslatorTest do
     Process.sleep(100)
 
     [{_pid, {ErlangLogTranslator, :translate, args}, return}] = :meck.history(ErlangLogTranslator)
-    [_min_level, :info, :report, {:progress, data}] = args
-    assert data[:supervisor] == {:local, :test_supervisor}
+
+    supervisor =
+      if System.otp_release() >= "21" do
+        [_min_level, :info, :report, {{:supervisor, :progress}, data}] = args
+        data[:supervisor]
+      else
+        [_min_level, :info, :report, {:progress, data}] = args
+        data[:supervisor]
+      end
+
     assert return == :skip
+    assert supervisor == {:local, :test_supervisor}
   end
 
   test "should neglect SASL supervisor report on brutal kill of a worker process in nameless PoolSup" do
@@ -34,8 +43,17 @@ defmodule AntikytheraCore.ErlangLogTranslatorTest do
     Process.sleep(100)
 
     [{_pid, {ErlangLogTranslator, :translate, args}, return}] = :meck.history(ErlangLogTranslator)
-    [_min_level, :error, :report, {:supervisor_report, data}] = args
-    assert match?({_pid, PoolSup.Callback}, data[:supervisor])
+
+    supervisor =
+      if System.otp_release() >= "21" do
+        [_min_level, :error, :report, {{:supervisor, :child_terminated}, data}] = args
+        data[:supervisor]
+      else
+        [_min_level, :error, :report, {:supervisor_report, data}] = args
+        data[:supervisor]
+      end
+
     assert return == :skip
+    assert match?({_pid, PoolSup.Callback}, supervisor)
   end
 end
