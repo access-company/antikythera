@@ -28,7 +28,7 @@ defmodule AntikytheraCore.PeriodicLog.MessageBuilderTest do
       assert String.ends_with?(log, "This process has already exited.")
     end
 
-    test "should build log including messages if the process has some messages" do
+    test "should build log containing messages if the process has some messages" do
       pid = spawn(fn -> Process.sleep(1_000) end)
       mock_recon_proc_count_with_one_process(pid)
 
