@@ -23,10 +23,10 @@ defmodule AntikytheraCore.ErlangLogTranslatorTest do
 
     supervisor =
       if System.otp_release() >= "21" do
-        [_min_level, :info, :report, {{:supervisor, :progress}, data}] = args
+        assert [_min_level, :info, :report, {{:supervisor, :progress}, data}] = args
         data[:supervisor]
       else
-        [_min_level, :info, :report, {:progress, data}] = args
+        assert [_min_level, :info, :report, {:progress, data}] = args
         data[:supervisor]
       end
 
@@ -46,10 +46,10 @@ defmodule AntikytheraCore.ErlangLogTranslatorTest do
 
     supervisor =
       if System.otp_release() >= "21" do
-        [_min_level, :error, :report, {{:supervisor, :child_terminated}, data}] = args
+        assert [_min_level, :error, :report, {{:supervisor, :child_terminated}, data}] = args
         data[:supervisor]
       else
-        [_min_level, :error, :report, {:supervisor_report, data}] = args
+        assert [_min_level, :error, :report, {:supervisor_report, data}] = args
         data[:supervisor]
       end
 
