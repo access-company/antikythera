@@ -26,15 +26,14 @@ defmodule AntikytheraCore.PeriodicLog.MessageBuilder do
     procs
     |> Enum.reduce(log_time, fn {pid, qlen, info}, acc ->
       acc2 = acc <> "\n" <> Integer.to_string(qlen) <> " " <> inspect(info, structs: false)
-      append_messages_to_log(acc2, Process.info(pid))
+      append_messages_to_log(acc2, Process.info(pid, :messages))
     end)
   end
 
   defp append_messages_to_log(log, nil), do: log <> "\n    This process has already exited."
 
-  defp append_messages_to_log(log, process_info) do
-    process_info
-    |> Keyword.get(:messages)
+  defp append_messages_to_log(log, {:messages, messages}) do
+    messages
     |> Enum.take(@max_msg_to_log)
     |> Enum.reduce(log, fn msg, acc -> acc <> "\n    " <> inspect(msg, structs: false) end)
   end
