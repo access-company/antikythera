@@ -1,4 +1,4 @@
-180,183c180,187
+180,183c180,186
 <     # Setup remote shell command to control node
 <     exec "$BINDIR/erl" "$NAME_TYPE" "$id" -remsh "$NAME" -boot start_clean -mode interactive \
 <          -boot_var ERTS_LIB_DIR "$ERTS_LIB_DIR" $MAYBE_DIST_ARGS \
@@ -6,18 +6,17 @@
 ---
 >     # Setup Elixir remote shell command to control node
 >     exec "$BINDIR/erl" \
->         -pa "$ROOTDIR"/lib/*/ebin "$ROOTDIR"/lib/consolidated \
 >         -hidden -noshell -boot start_clean -mode interactive \
 >         -boot_var ERTS_LIB_DIR "$ERTS_LIB_DIR" $MAYBE_DIST_ARGS \
 >         -kernel net_ticktime "$TICKTIME" \
 >         -user Elixir.IEx.CLI "$NAME_TYPE" "$id" -setcookie "$COOKIE" \
 >         -extra --no-halt +iex --remsh "$NAME"
-713c717,718
+713c716,717
 <             -args_file "$VMARGS_PATH" -- "$@"
 ---
 >             -args_file "$VMARGS_PATH" \
 >             -user Elixir.IEx.CLI -extra --no-halt +iex -- "$@"
-726c731,732
+726c730,731
 <             -args_file "$VMARGS_PATH" -- "$@"
 ---
 >             -args_file "$VMARGS_PATH" \
