@@ -89,7 +89,7 @@ defmodule Antikythera.Mixfile do
       {:foretoken, "0.3.0", [antikythera_internal: true]},
       {:recon, "2.5.1", [antikythera_internal: true]},
       # only to generate release
-      {:relx, "3.23.1", [antikythera_internal: true, only: :prod, runtime: false]},
+      {:relx, "3.33.0", [antikythera_internal: true, only: :prod, runtime: false]},
 
       # The following libraries are used by both antikythera itself and gears.
       {:poison, "2.2.0"},
@@ -132,15 +132,15 @@ defmodule Antikythera.Mixfile do
       # fast_xml
       {:p1_utils, "1.0.13", [indirect: true]},
       # relx
-      {:bbmustache, "1.0.4", [indirect: true, only: :prod, runtime: false]},
+      {:bbmustache, "1.5.0", [indirect: true, only: :prod, runtime: false]},
       # relx
-      {:cf, "0.2.2", [indirect: true, only: :prod, runtime: false]},
+      {:cf, "0.3.1", [indirect: true, only: :prod, runtime: false]},
       # relx
-      {:erlware_commons, "1.0.0", [indirect: true, only: :prod, runtime: false]},
+      {:erlware_commons, "1.2.0", [indirect: true, only: :prod, runtime: false]},
       # relx
-      {:getopt, "0.8.2", [indirect: true, only: :prod, runtime: false]},
+      {:getopt, "1.0.1", [indirect: true, only: :prod, runtime: false]},
       # relx
-      {:providers, "1.6.0", [indirect: true, only: :prod, runtime: false]},
+      {:providers, "1.8.0", [indirect: true, only: :prod, runtime: false]},
 
       # indirect tool deps
       # credo
