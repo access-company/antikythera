@@ -56,7 +56,9 @@ defmodule Antikythera.Mixfile do
   def application() do
     [
       mod: {AntikytheraCore, []},
-      applications: Antikythera.MixCommon.antikythera_runtime_dependency_applications(deps())
+      applications:
+        Antikythera.MixCommon.antikythera_runtime_dependency_applications(deps()) ++
+          Application.fetch_env!(:antikythera, :required_applications)
     ]
   end
 
