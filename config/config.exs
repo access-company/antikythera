@@ -65,4 +65,7 @@ config :antikythera, [
     alert_mailer:          AntikytheraEal.AlertMailer.MemoryInbox        ,
     asset_storage:         AntikytheraEal.AssetStorage.NoOp              ,
   ],
+
+  # Applications which should start before starting antikythera.
+  required_applications: [],
 ]
