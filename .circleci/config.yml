@@ -43,12 +43,12 @@ references:
         github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
         EOF
   checkout_external: &checkout_external
-    name: Checkout master of external repository
+    name: Checkout the specified branch of external repository
     command: |
       if [ -d .git ]; then
         git checkout .
-        git checkout master
-        git pull "$EXTERNAL_GIT_REPOSITORY" master
+        git checkout "$EXTERNAL_GIT_BRANCH"
+        git pull "$EXTERNAL_GIT_REPOSITORY" "$EXTERNAL_GIT_BRANCH"
       else
         git clone "$EXTERNAL_GIT_REPOSITORY" .
       fi
@@ -158,6 +158,7 @@ jobs:
           <<: *checkout_external
           environment:
             EXTERNAL_GIT_REPOSITORY: git@github.com:access-company/antikythera_instance_example.git
+            EXTERNAL_GIT_BRANCH: master
       - run:
           name: Compile antikythera_instance_example
           # Compile beforehand in order to create cache for later builds/jobs.
@@ -215,6 +216,7 @@ jobs:
           <<: *checkout_external
           environment:
             EXTERNAL_GIT_REPOSITORY: git@github.com:access-company/testgear.git
+            EXTERNAL_GIT_BRANCH: master
       - run:
           name: Fetch dependencies with latest antikythera_instance_example and compile
           command: |
