@@ -47,6 +47,7 @@ references:
     command: |
       if [ -d .git ]; then
         git checkout .
+        git fetch
         git checkout "$EXTERNAL_GIT_BRANCH"
         git pull "$EXTERNAL_GIT_REPOSITORY" "$EXTERNAL_GIT_BRANCH"
       else
