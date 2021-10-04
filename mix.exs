@@ -87,7 +87,7 @@ defmodule Antikythera.Mixfile do
       {:raft_fleet, "0.10.1", [antikythera_internal: true]},
       {:rafted_value, "0.11.1", [antikythera_internal: true]},
       {:syn, "1.6.3", [antikythera_internal: true]},
-      {:fast_xml, "1.1.34", [antikythera_internal: true]},
+      {:fast_xml, "1.1.45", [antikythera_internal: true]},
       {:foretoken, "0.3.0", [antikythera_internal: true]},
       {:recon, "2.5.1", [antikythera_internal: true]},
       # only to generate release
@@ -132,7 +132,7 @@ defmodule Antikythera.Mixfile do
       # idna
       {:unicode_util_compat, "0.4.1", [indirect: true]},
       # fast_xml
-      {:p1_utils, "1.0.13", [indirect: true]},
+      {:p1_utils, "1.0.21", [indirect: true]},
       # relx
       {:bbmustache, "1.5.0", [indirect: true, only: :prod, runtime: false]},
       # relx
