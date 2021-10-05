@@ -159,7 +159,7 @@ jobs:
           <<: *checkout_external
           environment:
             EXTERNAL_GIT_REPOSITORY: git@github.com:access-company/antikythera_instance_example.git
-            EXTERNAL_GIT_BRANCH: 235114_modify_tool_versions_reading
+            EXTERNAL_GIT_BRANCH: master
       - run:
           name: Compile antikythera_instance_example
           # Compile beforehand in order to create cache for later builds/jobs.
