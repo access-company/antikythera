@@ -102,16 +102,18 @@ defmodule Antikythera.Mixfile do
 
       # tools
       {:exsync, "0.2.4", [only: :dev]},
+      # 0.23.0 requires Elixir 1.10 or later
       {:ex_doc, "0.22.2", [only: :dev, runtime: false]},
-      {:dialyxir, "1.0.0", [only: :dev, runtime: false]},
+      {:dialyxir, "1.1.0", [only: :dev, runtime: false]},
       {:credo, "1.4.0", [only: :dev, runtime: false]},
-      {:mix_test_watch, "1.0.2", [only: :dev, runtime: false]},
-      {:meck, "0.9.0", [only: :test]},
-      {:mox, "0.5.2", [only: :test]},
+      {:mix_test_watch, "1.1.0", [only: :dev, runtime: false]},
+      {:meck, "0.9.2", [only: :test]},
+      {:mox, "1.0.0", [only: :test]},
       # 0.13.0 requires hackney ~> 1.16
       {:excoveralls, "0.12.0", [only: :test]},
       {:stream_data, "0.5.0", [only: :test]},
       # as a websocket client implementation to use during test (including upgrade_compatibility_test)
+      # 1.4.0 requires OTP 21 or later
       {:websocket_client, "1.3.0", [only: :test]},
 
       # indirect deps
@@ -149,6 +151,8 @@ defmodule Antikythera.Mixfile do
       {:bunt, "0.2.0", [indirect: true, only: :dev]},
       # ex_doc
       {:earmark, "1.4.10", [indirect: true, only: :dev]},
+      # earmark
+      {:earmark_parser, "1.4.10", [indirect: true, only: :dev]},
       # ex_doc
       {:makeup_elixir, "0.14.1", [indirect: true, only: :dev]},
       # makeup_elixir
@@ -156,7 +160,9 @@ defmodule Antikythera.Mixfile do
       # makeup
       {:nimble_parsec, "0.6.0", [indirect: true, only: :dev]},
       # exsync and mix_test_watch
-      {:file_system, "0.2.8", [indirect: true, only: :dev]}
+      {:file_system, "0.2.10", [indirect: true, only: :dev]},
+      # dialyxir
+      {:erlex, "0.2.6", [indirect: true, only: :dev]}
     ]
   end
 
