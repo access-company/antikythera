@@ -119,6 +119,8 @@ defmodule AntikytheraCore.GearLog.FileHandle do
 
   defp determine_write_to_terminal() do
     !Antikythera.Env.compiling_for_release?() &&
-      (Antikythera.Env.compiling_for_mix_task?() || Mix.env() == :dev)
+      (Antikythera.Env.compiling_for_mix_task?() ||
+         Mix.env() == :dev ||
+         (Mix.env() == :test && System.get_env("TEST_LOG_ON_TERMINAL") == "true"))
   end
 end

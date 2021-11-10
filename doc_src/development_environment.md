@@ -73,6 +73,8 @@
             - `true` is implicitly set when using `Antikythera.Mix.Task.prepare_antikythera_instance/0` in your mix task.
         - `LOG_LEVEL`:
             - Log level of all gears. Defaults to `info`. See also [logging](https://hexdocs.pm/antikythera/logging.html).
+        - `TEST_LOG_ON_TERMINAL`:
+            - A boolean flag for enabling output gear log on terminal during `mix test`. Defaults to `false`.
         - `SOME_GEAR_CONFIG_JSON`:
             - Gear config of `:some_gear`. See also [gear_config](https://hexdocs.pm/antikythera/gear_config.html).
     - Compile-time environment variables: (to change the followings you need to recompile antikythera)
