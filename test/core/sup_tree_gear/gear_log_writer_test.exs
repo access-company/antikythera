@@ -97,4 +97,14 @@ defmodule AntikytheraCore.GearLog.WriterTest do
     assert timer2 != timer1
     assert Path.wildcard(@dir <> "/testgear.log.*.gz") == []
   end
+
+  test "should get and set write_on_terminal?. it is ok if the logger does not exist" do
+    assert !Writer.write_on_terminal?(:testgear)
+    assert Writer.set_write_on_terminal(:testgear, true) == :ok
+    assert Writer.write_on_terminal?(:testgear)
+
+    assert !Writer.write_on_terminal?(:not_exist)
+    assert Writer.set_write_on_terminal(:not_exist, true) == :ok
+    assert !Writer.write_on_terminal?(:not_exist)
+  end
 end
