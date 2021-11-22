@@ -90,8 +90,8 @@ defmodule AntikytheraCore.Handler.GearError do
     do_output_error_to_log(gear_name, log_message, reason)
   end
 
-  if Antikythera.Env.compile_env() == :undefined do
-    alias AntikytheraCore.GearLog.Writer
+  if Mix.env() == :test do
+    alias AntikytheraCore.GearLog.Writer, warn: false
 
     defunp do_output_error_to_log(
              gear_name :: v[GearName.t()],
