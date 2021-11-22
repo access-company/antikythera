@@ -44,6 +44,12 @@ defmodule AntikytheraCore.GearLog.LogRotation do
     end
   end
 
+  defun set_write_to_terminal(%State{file_handle: handle} = state, new_val :: boolean | nil) ::
+          State.t() do
+    opts = if is_nil(new_val), do: [], else: [write_to_terminal: new_val]
+    %State{state | file_handle: FileHandle.set_write_to_terminal(handle, opts)}
+  end
+
   defun rotate(
           %State{file_handle: handle, empty?: empty?, timer: timer, interval: interval} = state
         ) :: State.t() do

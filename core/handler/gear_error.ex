@@ -102,10 +102,9 @@ defmodule AntikytheraCore.Handler.GearError do
 
       case reason do
         {:error, %ExUnit.AssertionError{}} ->
-          old_value = Writer.write_on_terminal?(gear_name)
-          :ok = Writer.set_write_on_terminal(gear_name, true)
+          :ok = Writer.set_write_to_terminal(gear_name, true)
           gear_logger_module.error(log_message)
-          :ok = Writer.set_write_on_terminal(gear_name, old_value)
+          :ok = Writer.set_write_to_terminal(gear_name, nil)
 
         _ ->
           gear_logger_module.error(log_message)

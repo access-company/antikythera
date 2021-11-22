@@ -50,19 +50,8 @@ defmodule AntikytheraCore.GearLog.Writer do
   end
 
   @impl true
-  def handle_call(
-        :write_on_terminal?,
-        _from,
-        %State{log_state: %{file_handle: {_, _, _, current_value}}} = state
-      ) do
-    {:reply, current_value, state}
-  end
-
-  @impl true
-  def handle_cast({:set_write_on_terminal, new_val}, %State{log_state: log_state} = state) do
-    %{file_handle: {path, t, file, _}} = log_state
-    new_log_state = %{log_state | file_handle: {path, t, file, new_val}}
-    {:noreply, %State{state | log_state: new_log_state}}
+  def handle_cast({:set_write_to_terminal, new_val}, %State{log_state: log_state} = state) do
+    {:noreply, %State{state | log_state: LogRotation.set_write_to_terminal(log_state, new_val)}}
   end
 
   @impl true
@@ -146,18 +135,11 @@ defmodule AntikytheraCore.GearLog.Writer do
     end
   end
 
-  defun write_on_terminal?(gear_name :: v[GearName.t()]) :: v[boolean] do
-    case logger_name(gear_name) do
-      nil -> false
-      name -> GenServer.call(name, :write_on_terminal?)
-    end
-  end
-
-  defun set_write_on_terminal(gear_name :: v[GearName.t()], next_write_on_terminal? :: v[boolean]) ::
+  defun set_write_to_terminal(gear_name :: v[GearName.t()], new_val :: v[boolean | nil]) ::
           :ok do
     case logger_name(gear_name) do
       nil -> :ok
-      name -> GenServer.cast(name, {:set_write_on_terminal, next_write_on_terminal?})
+      name -> GenServer.cast(name, {:set_write_to_terminal, new_val})
     end
   end
 

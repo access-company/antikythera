@@ -77,6 +77,14 @@ defmodule AntikytheraCore.GearLog.FileHandle do
       " [" <> Atom.to_string(level) <> "] context=" <> context_id <> " "
   end
 
+  defun set_write_to_terminal(
+          {file_path, last_checked_at, io_device, _} = _handle :: t,
+          opts :: Keyword.t() \\ []
+        ) :: t do
+    write_to_terminal? = Keyword.get(opts, :write_to_terminal, determine_write_to_terminal())
+    {file_path, last_checked_at, io_device, write_to_terminal?}
+  end
+
   defun rotate({file_path, _, io_device, write_to_terminal?} :: t) :: t do
     :ok = File.close(io_device)
     rename(file_path)

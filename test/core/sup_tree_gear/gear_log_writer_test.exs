@@ -33,6 +33,10 @@ defmodule AntikytheraCore.GearLog.WriterTest do
     assert :sys.get_state(pid).log_state.empty? == b
   end
 
+  defp assert_write_to_terminal?(pid, b) do
+    assert {_, _, _, ^b} = :sys.get_state(pid).log_state.file_handle
+  end
+
   defp wait_for_timer(pid) do
     timer1 = get_timer(pid)
     :timer.sleep(Process.read_timer(timer1) + 100)
@@ -98,13 +102,16 @@ defmodule AntikytheraCore.GearLog.WriterTest do
     assert Path.wildcard(@dir <> "/testgear.log.*.gz") == []
   end
 
-  test "should get and set write_on_terminal?. it is ok if the logger does not exist" do
-    refute Writer.write_on_terminal?(:testgear)
-    assert Writer.set_write_on_terminal(:testgear, true) == :ok
-    assert Writer.write_on_terminal?(:testgear)
+  test "should get and set write_on_terminal?. it is ok if the logger does not exist", context do
+    pid = context[:pid]
+    assert_write_to_terminal?(pid, false)
+    assert Writer.set_write_to_terminal(:testgear, true) == :ok
+    assert_write_to_terminal?(pid, true)
+    assert Writer.set_write_to_terminal(:testgear, nil) == :ok
+    assert_write_to_terminal?(pid, false)
 
-    refute Writer.write_on_terminal?(:not_exist)
-    assert Writer.set_write_on_terminal(:not_exist, true) == :ok
-    refute Writer.write_on_terminal?(:not_exist)
+    assert Writer.set_write_to_terminal(:not_exist, true) == :ok
+    assert Writer.set_write_to_terminal(:not_exist, nil) == :ok
+    assert Writer.set_write_to_terminal(:not_exist, false) == :ok
   end
 end
