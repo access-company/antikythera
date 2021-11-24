@@ -108,11 +108,10 @@ defmodule AntikytheraCore.GearLog.WriterTest do
     assert_write_to_terminal?(pid, false)
     assert Writer.set_write_to_terminal(:testgear, true) == :ok
     assert_write_to_terminal?(pid, true)
-    assert Writer.set_write_to_terminal(:testgear, nil) == :ok
+    assert Writer.restore_write_to_terminal(:testgear) == :ok
     assert_write_to_terminal?(pid, false)
 
     assert Writer.set_write_to_terminal(:not_exist, true) == :ok
-    assert Writer.set_write_to_terminal(:not_exist, nil) == :ok
-    assert Writer.set_write_to_terminal(:not_exist, false) == :ok
+    assert Writer.restore_write_to_terminal(:not_exist) == :ok
   end
 end

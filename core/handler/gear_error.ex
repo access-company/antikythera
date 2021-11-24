@@ -104,7 +104,7 @@ defmodule AntikytheraCore.Handler.GearError do
         {:error, %ExUnit.AssertionError{}} ->
           :ok = Writer.set_write_to_terminal(gear_name, true)
           gear_logger_module.error(log_message)
-          :ok = Writer.set_write_to_terminal(gear_name, nil)
+          :ok = Writer.restore_write_to_terminal(gear_name)
 
         _ ->
           gear_logger_module.error(log_message)

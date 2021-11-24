@@ -79,10 +79,13 @@ defmodule AntikytheraCore.GearLog.FileHandle do
 
   defun set_write_to_terminal(
           {file_path, last_checked_at, io_device, _} = _handle :: t,
-          new_val :: nil | boolean \\ nil
+          new_val :: boolean
         ) :: t do
-    write_to_terminal? = if new_val != nil, do: new_val, else: determine_write_to_terminal()
-    {file_path, last_checked_at, io_device, write_to_terminal?}
+    {file_path, last_checked_at, io_device, new_val}
+  end
+
+  defun restore_write_to_terminal({file_path, last_checked_at, io_device, _} = _handle :: t) :: t do
+    {file_path, last_checked_at, io_device, determine_write_to_terminal()}
   end
 
   defun rotate({file_path, _, io_device, write_to_terminal?} :: t) :: t do
