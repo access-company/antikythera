@@ -102,7 +102,7 @@ defmodule AntikytheraCore.GearLog.WriterTest do
     assert Path.wildcard(@dir <> "/testgear.log.*.gz") == []
   end
 
-  test "should get and set write_on_terminal?. it is ok if the logger does not exist", context do
+  test "should set and restore write_on_terminal?. it is ok if the logger does not exist", context do
     pid = context[:pid]
     assert_write_to_terminal?(pid, false)
     assert Writer.set_write_to_terminal(:testgear, true) == :ok
