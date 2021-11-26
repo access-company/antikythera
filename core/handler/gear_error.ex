@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Handler.GearError do
-  alias Antikythera.{Conn, Request, Http.Method, ErrorReason}
+  alias Antikythera.{Conn, Request, Http.Method, ErrorReason, GearName}
   alias Antikythera.ExecutorPool.BadIdReason
   alias AntikytheraCore.Conn, as: CoreConn
   alias AntikytheraCore.GearModule
@@ -84,9 +84,41 @@ defmodule AntikytheraCore.Handler.GearError do
          ) :: :ok do
     %Request{method: method, path_info: path_info} = request
     path = "/" <> Enum.join(path_info, "/")
-    gear_logger_module = CoreConn.gear_name(conn) |> GearModule.logger()
+    gear_name = CoreConn.gear_name(conn)
     log_message = "#{Method.to_string(method)} #{path} #{ErrorReason.format(reason, stacktrace)}"
-    gear_logger_module.error(log_message)
+
+    do_output_error_to_log(gear_name, log_message, reason)
+  end
+
+  if Antikythera.Env.compile_env() == :undefined do
+    alias AntikytheraCore.GearLog.Writer, warn: false
+
+    defunp do_output_error_to_log(
+             gear_name :: v[GearName.t()],
+             log_message :: v[String.t()],
+             reason :: reason
+           ) :: :ok do
+      gear_logger_module = gear_name |> GearModule.logger()
+
+      case reason do
+        {:error, %ExUnit.AssertionError{}} ->
+          :ok = Writer.set_write_to_terminal(gear_name, true)
+          gear_logger_module.error(log_message)
+          :ok = Writer.restore_write_to_terminal(gear_name)
+
+        _ ->
+          gear_logger_module.error(log_message)
+      end
+    end
+  else
+    defunp do_output_error_to_log(
+             gear_name :: v[GearName.t()],
+             log_message :: v[String.t()],
+             _reason :: reason
+           ) :: :ok do
+      gear_logger_module = gear_name |> GearModule.logger()
+      gear_logger_module.error(log_message)
+    end
   end
 
   if Application.fetch_env!(:antikythera, :return_detailed_info_on_error?) do

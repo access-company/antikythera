@@ -50,6 +50,16 @@ defmodule AntikytheraCore.GearLog.Writer do
   end
 
   @impl true
+  def handle_cast({:set_write_to_terminal, new_val}, %State{log_state: log_state} = state) do
+    {:noreply, %State{state | log_state: LogRotation.set_write_to_terminal(log_state, new_val)}}
+  end
+
+  @impl true
+  def handle_cast(:restore_write_to_terminal, %State{log_state: log_state} = state) do
+    {:noreply, %State{state | log_state: LogRotation.restore_write_to_terminal(log_state)}}
+  end
+
+  @impl true
   def handle_cast(
         {_, level, _, _} = gear_log,
         %State{log_state: log_state, min_level: min_level} = state
@@ -127,6 +137,20 @@ defmodule AntikytheraCore.GearLog.Writer do
             ) :: :ok do
         GenServer.cast(logger_name, {t, unquote(level), context_id, msg})
       end
+    end
+  end
+
+  defun set_write_to_terminal(gear_name :: v[GearName.t()], new_val :: v[boolean]) :: :ok do
+    case logger_name(gear_name) do
+      nil -> :ok
+      name -> GenServer.cast(name, {:set_write_to_terminal, new_val})
+    end
+  end
+
+  defun restore_write_to_terminal(gear_name :: v[GearName.t()]) :: :ok do
+    case logger_name(gear_name) do
+      nil -> :ok
+      name -> GenServer.cast(name, :restore_write_to_terminal)
     end
   end
 

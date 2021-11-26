@@ -77,6 +77,17 @@ defmodule AntikytheraCore.GearLog.FileHandle do
       " [" <> Atom.to_string(level) <> "] context=" <> context_id <> " "
   end
 
+  defun set_write_to_terminal(
+          {file_path, last_checked_at, io_device, _} = _handle :: t,
+          new_val :: boolean
+        ) :: t do
+    {file_path, last_checked_at, io_device, new_val}
+  end
+
+  defun restore_write_to_terminal({file_path, last_checked_at, io_device, _} = _handle :: t) :: t do
+    {file_path, last_checked_at, io_device, determine_write_to_terminal()}
+  end
+
   defun rotate({file_path, _, io_device, write_to_terminal?} :: t) :: t do
     :ok = File.close(io_device)
     rename(file_path)
@@ -119,6 +130,8 @@ defmodule AntikytheraCore.GearLog.FileHandle do
 
   defp determine_write_to_terminal() do
     !Antikythera.Env.compiling_for_release?() &&
-      (Antikythera.Env.compiling_for_mix_task?() || Mix.env() == :dev)
+      (Antikythera.Env.compiling_for_mix_task?() ||
+         Mix.env() == :dev ||
+         (Mix.env() == :test && System.get_env("TEST_LOG_ON_TERMINAL") == "true"))
   end
 end
