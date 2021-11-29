@@ -169,7 +169,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
       {:shutdown, {reason2, stacktrace}} ->
         job_failed(state, reason2, stacktrace)
 
-      :kill ->
+      :killed ->
         %{gear_name: gear_name, context_id: context_id} = state.context
         L.error("Process killed: gear_name=#{gear_name}, context_id=#{context_id}")
         job_failed(state, :killed, [])

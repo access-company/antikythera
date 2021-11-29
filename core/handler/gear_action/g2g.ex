@@ -84,7 +84,7 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
       Env.gear_action_timeout(),
       &CoreConn.run_before_send(&1, conn),
       fn
-        {:exit, :kill}, stacktrace ->
+        {:exit, :killed}, stacktrace ->
           %{gear_name: gear_name, context_id: context_id} = conn.context
           L.error("Process killed: gear_name=#{gear_name}, context_id=#{context_id}")
           GearError.error(conn, :killed, stacktrace)
