@@ -14,16 +14,24 @@ defmodule Antikythera.Test.Config do
 
   alias AntikytheraCore.Handler.CowboyRouting
 
+  # TODO: remove when upgrading to Elixir v1.10+ where this timeout is infinity
+  @long_module_load_timeout 600_000
+
   deployment_envs = Application.fetch_env!(:antikythera, :deployments) |> Keyword.keys()
 
   def init() do
     ExUnit.start()
 
     if blackbox_test?() do
-      ExUnit.configure(exclude: [:test], include: [:blackbox, :blackbox_only])
+      ExUnit.configure(
+        exclude: [:test],
+        include: [:blackbox, :blackbox_only],
+        module_load_timeout: @long_module_load_timeout
+      )
+
       IO.puts("Target base URL: #{base_url()}")
     else
-      ExUnit.configure(exclude: [:blackbox_only])
+      ExUnit.configure(exclude: [:blackbox_only], module_load_timeout: @long_module_load_timeout)
     end
   end
 
