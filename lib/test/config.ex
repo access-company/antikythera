@@ -39,14 +39,14 @@ defmodule Antikythera.Test.Config do
     end
   end
 
-  # Explicit termination of gear's supervisor is require to ensure that
+  # Explicit termination of gear's supervisor is required to ensure that
   # the gear's logger gracefully closes its log file.
   defp stop_gear_supervisors() do
     GearManager.running_gear_names()
     |> Enum.each(fn gear_name ->
       :ok =
         gear_name
-        |> GearModule.root_supervisor_unsafe()
+        |> GearModule.root_supervisor()
         |> Supervisor.stop()
     end)
   end
