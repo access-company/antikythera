@@ -13,6 +13,8 @@ defmodule Antikythera.Test.Config do
   """
 
   alias AntikytheraCore.Handler.CowboyRouting
+  alias AntikytheraCore.GearManager
+  alias AntikytheraCore.GearModule
 
   # TODO: remove when upgrading to Elixir v1.10+ where this timeout is infinity
   @long_module_load_timeout 600_000
@@ -20,6 +22,8 @@ defmodule Antikythera.Test.Config do
   deployment_envs = Application.fetch_env!(:antikythera, :deployments) |> Keyword.keys()
 
   def init() do
+    System.at_exit(fn _ -> stop_gear_supervisors() end)
+
     ExUnit.start()
 
     if blackbox_test?() do
@@ -33,6 +37,18 @@ defmodule Antikythera.Test.Config do
     else
       ExUnit.configure(exclude: [:blackbox_only], module_load_timeout: @long_module_load_timeout)
     end
+  end
+
+  # Explicit termination of gear's supervisor is require to ensure that
+  # the gear's logger gracefully closes its log file.
+  defp stop_gear_supervisors() do
+    GearManager.running_gear_names()
+    |> Enum.each(fn gear_name ->
+      :ok =
+        gear_name
+        |> GearModule.root_supervisor_unsafe()
+        |> Supervisor.stop()
+    end)
   end
 
   def base_url() do
