@@ -21,8 +21,9 @@ defmodule Antikythera.Plug.Session do
   alias Antikythera.Conn
   alias Antikythera.Session
 
-  defun load(conn :: v[Conn.t()], opts :: Keyword.t(String.t() | atom)) :: Conn.t() do
-    key = opts[:key]
+  defun load(conn :: v[Conn.t()], opts :: Keyword.t(String.t() | atom | map)) :: Conn.t() do
+    key             = opts[:key]
+    set_cookie_opts = opts[:set_cookie]
     store_name = Keyword.get(opts, :store, :cookie) |> Atom.to_string() |> Macro.camelize()
     store_module = Module.safe_concat("Antikythera.Session", store_name)
     {session_id, data} = store_module.load(Conn.get_req_cookie(conn, key))
@@ -34,23 +35,23 @@ defmodule Antikythera.Plug.Session do
     }
 
     conn
-    |> Conn.register_before_send(make_before_send(store_module, key))
+    |> Conn.register_before_send(make_before_send(store_module, key, set_cookie_opts))
     |> Conn.assign(:session, session)
   end
 
-  defunp make_before_send(store :: module, key :: String.t()) :: (Conn.t() -> Conn.t()) do
+  defunp make_before_send(store :: module, key :: String.t(), set_cookie_opts :: map) :: (Conn.t() -> Conn.t()) do
     fn %Conn{assigns: %{session: session}} = conn ->
       %Session{state: state, id: id, data: data} = session
 
       case state do
         :update ->
           new_id = store.save(id, data)
-          Conn.put_resp_cookie(conn, key, new_id)
+          Conn.put_resp_cookie(conn, key, new_id, set_cookie_opts)
 
         :renew ->
           store.delete(id)
           new_id = store.save(nil, data)
-          Conn.put_resp_cookie(conn, key, new_id)
+          Conn.put_resp_cookie(conn, key, new_id, set_cookie_opts)
 
         :destroy ->
           store.delete(id)
