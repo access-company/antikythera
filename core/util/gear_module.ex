@@ -42,6 +42,10 @@ defmodule AntikytheraCore.GearModule do
     end
   end)
 
+  defun root_supervisor(gear_name :: v[GearName.t()]) :: module do
+    camelize_gear_name(gear_name) |> Module.safe_concat("Supervisor")
+  end
+
   defun root_supervisor_unsafe(gear_name :: v[GearName.t()]) :: module do
     # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     camelize_gear_name(gear_name) |> Module.concat("Supervisor")
