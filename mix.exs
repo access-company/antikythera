@@ -105,7 +105,7 @@ defmodule Antikythera.Mixfile do
       # 0.23.0 requires Elixir 1.10 or later
       {:ex_doc, "0.22.2", [only: :dev, runtime: false]},
       {:dialyxir, "1.1.0", [only: :dev, runtime: false]},
-      {:credo, "1.4.0", [only: :dev, runtime: false]},
+      {:credo, "1.6.1", [only: :dev, runtime: false]},
       {:mix_test_watch, "1.1.0", [only: :dev, runtime: false]},
       {:meck, "0.9.2", [only: :test]},
       {:mox, "1.0.0", [only: :test]},
@@ -159,7 +159,7 @@ defmodule Antikythera.Mixfile do
       {:makeup, "1.0.3", [indirect: true, only: :dev]},
       # makeup
       {:nimble_parsec, "0.6.0", [indirect: true, only: :dev]},
-      # exsync and mix_test_watch
+      # credo, exsync and mix_test_watch
       {:file_system, "0.2.10", [indirect: true, only: :dev]},
       # dialyxir
       {:erlex, "0.2.6", [indirect: true, only: :dev]}
