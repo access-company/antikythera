@@ -49,6 +49,14 @@ defmodule AntikytheraCore.Config.Gear do
           {:error, reason} ->
             msg = "failed to decode gear config JSON (#{gear_name}): #{inspect(reason)}"
             L.error(msg)
+            L.error("Raw data for (#{gear_name}: #{inspect(encrypted, limit: :infinity)}")
+
+            L.error(
+              "Decrypted data for (#{gear_name}: #{
+                inspect(Aes.ctr128_decrypt(encrypted, EncryptionKey.get()))
+              }"
+            )
+
             raise msg
         end
 
