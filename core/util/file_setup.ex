@@ -47,12 +47,14 @@ defmodule AntikytheraCore.FileSetup do
 
     File.write!(
       config_enc_key_path,
-      :crypto.strong_rand_bytes(20) |> Base.encode64(padding: false)
+      :crypto.strong_rand_bytes(20) |> Base.encode64(padding: false),
+      [:sync]
     )
 
     File.write!(
       CorePath.system_info_access_token_path(),
-      :crypto.strong_rand_bytes(20) |> Base.encode64(padding: false)
+      :crypto.strong_rand_bytes(20) |> Base.encode64(padding: false),
+      [:sync]
     )
   end
 
@@ -69,13 +71,13 @@ defmodule AntikytheraCore.FileSetup do
   end
 
   defp write_empty_tenant_ids() do
-    File.write!(CorePath.tenant_ids_file_path(), :zlib.gzip(""))
+    File.write!(CorePath.tenant_ids_file_path(), :zlib.gzip(""), [:sync])
   end
 
   def write_initial_antikythera_instance_version_to_history_if_non_cloud(version) do
     if non_cloud_and_using_tmp_dir?() do
       path = Path.join(CorePath.history_dir(), "#{Env.antikythera_instance_name()}")
-      File.write!(path, "#{version}\n", [:append])
+      File.write!(path, "#{version}\n", [:append, :sync])
     end
 
     :ok

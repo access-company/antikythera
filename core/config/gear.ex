@@ -77,7 +77,7 @@ defmodule AntikytheraCore.Config.Gear do
   defun write(gear_name :: v[GearName.t()], config :: v[t]) :: :ok do
     path = CorePath.gear_config_file_path(gear_name)
     content = Aes.ctr128_encrypt(Poison.encode!(config), EncryptionKey.get())
-    File.write!(path, content)
+    File.write!(path, content, [:sync])
   end
 
   defunp gear_names_having_modified_config_files(last_checked_at :: v[SecondsSinceEpoch.t()]) :: [
