@@ -12,7 +12,7 @@ end
 # It's allowed to load `mix_common.exs` multiple times in case it is changed after successful deps.update.
 # We temporarily disable "redefining module" warning.
 Code.compiler_options(ignore_module_conflict: true)
-Code.load_file(mix_common_path)
+Code.require_file(mix_common_path)
 Code.compiler_options(ignore_module_conflict: false)
 
 # Cleanup too-old entries in tmp/ (if any)
