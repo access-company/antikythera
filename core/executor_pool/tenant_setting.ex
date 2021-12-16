@@ -92,7 +92,14 @@ defmodule AntikytheraCore.ExecutorPool.TenantSetting do
         {:error, :enoent} -> :ok
       end
     else
-      :ok = File.write(path, Poison.encode!(setting), [:sync])
+      node_name = Node.self() |> Atom.to_string()
+      # Convert `#PID<0.23069.636>` to `0.23069.636`
+      pid_path_safe_string =
+        inspect(self()) |> String.split("<") |> Enum.at(1) |> String.replace(">", "")
+
+      temp_path = "#{path}-#{node_name}-#{pid_path_safe_string}"
+      File.write!(temp_path, Poison.encode!(setting), [:sync])
+      File.rename!(temp_path, path)
     end
   end
 

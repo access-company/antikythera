@@ -66,7 +66,14 @@ defmodule AntikytheraCore.Config.Core do
   defun write(config :: v[map]) :: :ok do
     path = CorePath.core_config_file_path()
     content = Aes.ctr128_encrypt(inspect(config), EncryptionKey.get())
-    File.write!(path, content, [:sync])
+    node_name = Node.self() |> Atom.to_string()
+    # Convert `#PID<0.23069.636>` to `0.23069.636`
+    pid_path_safe_string =
+      inspect(self()) |> String.split("<") |> Enum.at(1) |> String.replace(">", "")
+
+    temp_path = "#{path}-#{node_name}-#{pid_path_safe_string}"
+    File.write!(temp_path, content, [:sync])
+    File.rename!(temp_path, path)
   end
 
   defun dump_from_env_to_file() :: :ok do
