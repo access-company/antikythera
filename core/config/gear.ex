@@ -77,14 +77,7 @@ defmodule AntikytheraCore.Config.Gear do
   defun write(gear_name :: v[GearName.t()], config :: v[t]) :: :ok do
     path = CorePath.gear_config_file_path(gear_name)
     content = Aes.ctr128_encrypt(Poison.encode!(config), EncryptionKey.get())
-    node_name = Node.self() |> Atom.to_string()
-    # Convert `#PID<0.23069.636>` to `0.23069.636`
-    pid_path_safe_string =
-      inspect(self()) |> String.split("<") |> Enum.at(1) |> String.replace(">", "")
-
-    temp_path = "#{path}-#{node_name}-#{pid_path_safe_string}"
-    File.write!(temp_path, content, [:sync])
-    File.rename!(temp_path, path)
+    CorePath.atomic_write!(path, content)
   end
 
   defunp gear_names_having_modified_config_files(last_checked_at :: v[SecondsSinceEpoch.t()]) :: [

@@ -5,6 +5,8 @@ use Croma
 defmodule AntikytheraCore.Path do
   alias Antikythera.{Env, GearName, TenantId, SecondsSinceEpoch}
 
+  @temp_file_suffix "-temp"
+
   #
   # paths under antikythera root directory
   #
@@ -137,7 +139,10 @@ defmodule AntikytheraCore.Path do
     since_with_margin = max(0, since - @file_modification_time_margin_in_seconds)
 
     Path.wildcard(Path.join(dir, "*"))
-    |> Enum.filter(fn path -> modified_regular_file?(path, since_with_margin) end)
+    |> Enum.filter(fn path ->
+      modified_regular_file?(path, since_with_margin) &&
+        !String.ends_with?(path, @temp_file_suffix)
+    end)
     |> Enum.sort()
   end
 
@@ -148,5 +153,19 @@ defmodule AntikytheraCore.Path do
       # removed between `Path.wildcard/1` and `File.stat/2`
       {:error, :enoent} -> false
     end
+  end
+
+  defun atomic_write!(
+          path :: Path.t(),
+          content :: iodata()
+        ) :: :ok do
+    node_name = Node.self() |> Atom.to_string()
+    # Convert `#PID<0.23069.636>` to `0.23069.636`
+    pid_path_safe_string =
+      inspect(self()) |> String.split("<") |> Enum.at(1) |> String.replace(">", "")
+
+    temp_path = "#{path}-#{node_name}-#{pid_path_safe_string}#{@temp_file_suffix}"
+    File.write!(temp_path, content, [:sync])
+    File.rename!(temp_path, path)
   end
 end
