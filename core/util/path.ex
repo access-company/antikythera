@@ -140,8 +140,8 @@ defmodule AntikytheraCore.Path do
 
     Path.wildcard(Path.join(dir, "*"))
     |> Enum.filter(fn path ->
-      modified_regular_file?(path, since_with_margin) &&
-        !String.ends_with?(path, @temp_file_suffix)
+      modified_regular_file?(path, since_with_margin) and
+        not String.ends_with?(path, @temp_file_suffix)
     end)
     |> Enum.sort()
   end
