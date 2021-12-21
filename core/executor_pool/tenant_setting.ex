@@ -92,7 +92,7 @@ defmodule AntikytheraCore.ExecutorPool.TenantSetting do
         {:error, :enoent} -> :ok
       end
     else
-      :ok = File.write(path, Poison.encode!(setting), [:sync])
+      CorePath.atomic_write!(path, Poison.encode!(setting))
     end
   end
 

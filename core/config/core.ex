@@ -66,7 +66,7 @@ defmodule AntikytheraCore.Config.Core do
   defun write(config :: v[map]) :: :ok do
     path = CorePath.core_config_file_path()
     content = Aes.ctr128_encrypt(inspect(config), EncryptionKey.get())
-    File.write!(path, content, [:sync])
+    CorePath.atomic_write!(path, content)
   end
 
   defun dump_from_env_to_file() :: :ok do
