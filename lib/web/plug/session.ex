@@ -20,10 +20,14 @@ defmodule Antikythera.Plug.Session do
 
   alias Antikythera.Conn
   alias Antikythera.Session
+  alias Antikythera.Http
 
-  defun load(conn :: v[Conn.t()], opts :: Keyword.t(String.t() | atom | map)) :: Conn.t() do
+  @type load_option_t ::
+          {:key, String.t()} | {:store, atom} | {:set_cookie, Http.SetCookie.options_t()}
+
+  defun load(conn :: v[Conn.t()], opts :: v[list(load_option_t)]) :: Conn.t() do
     key             = opts[:key]
-    set_cookie_opts = opts[:set_cookie]
+    set_cookie_opts = Keyword.get(opts, :set_cookie, %{})
     store_name = Keyword.get(opts, :store, :cookie) |> Atom.to_string() |> Macro.camelize()
     store_module = Module.safe_concat("Antikythera.Session", store_name)
     {session_id, data} = store_module.load(Conn.get_req_cookie(conn, key))
