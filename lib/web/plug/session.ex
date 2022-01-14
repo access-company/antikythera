@@ -26,7 +26,7 @@ defmodule Antikythera.Plug.Session do
           {:key, String.t()} | {:store, atom} | {:set_cookie, Http.SetCookie.options_t()}
 
   defun load(conn :: v[Conn.t()], opts :: v[list(load_option_t)]) :: Conn.t() do
-    key             = opts[:key]
+    key = opts[:key]
     set_cookie_opts = Keyword.get(opts, :set_cookie, %{})
     store_name = Keyword.get(opts, :store, :cookie) |> Atom.to_string() |> Macro.camelize()
     store_module = Module.safe_concat("Antikythera.Session", store_name)
@@ -43,7 +43,8 @@ defmodule Antikythera.Plug.Session do
     |> Conn.assign(:session, session)
   end
 
-  defunp make_before_send(store :: module, key :: String.t(), set_cookie_opts :: map) :: (Conn.t() -> Conn.t()) do
+  defunp make_before_send(store :: module, key :: String.t(), set_cookie_opts :: map) ::
+           (Conn.t() -> Conn.t()) do
     fn %Conn{assigns: %{session: session}} = conn ->
       %Session{state: state, id: id, data: data} = session
 
