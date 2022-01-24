@@ -12,5 +12,11 @@ defmodule Antikythera.Plug.ContentDecoding do
   Compression can pack very large data into a small body, so automatically decompressing it may lead to running out of memory.
 
   Therefore, this plug can be used only if the request client is trusted (e.g. after authentication).
+
+  ## Usage
+
+  Put the following line in your controller module:
+
+      plug Antikythera.Plug.ContentDecoding, :decode, []
   """
 end
