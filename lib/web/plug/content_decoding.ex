@@ -23,7 +23,7 @@ defmodule Antikythera.Plug.ContentDecoding do
   alias Croma.Result
   alias Antikythera.{Request, Conn, Http.Body}
 
-  defun decode(%Conn{request: request} = conn) :: v[Conn.t()] do
+  defun decode(%Conn{request: request} = conn, _opts :: any) :: v[Conn.t()] do
     case Conn.get_req_header(conn, "content-encoding") do
       "gzip" -> decode_gzip(request.body)
       _ -> {:ok, request.body}
