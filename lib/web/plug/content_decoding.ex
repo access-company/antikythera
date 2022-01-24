@@ -19,4 +19,25 @@ defmodule Antikythera.Plug.ContentDecoding do
 
       plug Antikythera.Plug.ContentDecoding, :decode, []
   """
+
+  alias Croma.Result
+  alias Antikythera.{Request, Conn, Http.Body}
+
+  defun decode(%Conn{request: request} = conn) :: v[Conn.t()] do
+    case Conn.get_req_header(conn, "content-encoding") do
+      "gzip" -> decode_gzip(request.body)
+      _ -> {:ok, request.body}
+    end
+    |> case do
+      {:ok, decoded_body} ->
+        Conn.request(conn, Request.body(request, decoded_body))
+
+      {:error, _} ->
+        Conn.put_status(conn, 400) |> Conn.put_resp_body("Unable to decode the body.")
+    end
+  end
+
+  defunp decode_gzip(body :: Body.t()) :: Result.t(binary) do
+    Result.try(fn -> :zlib.gunzip(body) end)
+  end
 end
