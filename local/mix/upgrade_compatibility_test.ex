@@ -1,4 +1,4 @@
-# Copyright(c) 2015-2021 ACCESS CO., LTD. All rights reserved.
+# Copyright(c) 2015-2022 ACCESS CO., LTD. All rights reserved.
 
 defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
   @shortdoc "Runs tests to ensure that antikythera's upgrade doesn't break backward-compatibility"
