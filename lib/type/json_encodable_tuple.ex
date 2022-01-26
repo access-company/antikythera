@@ -1,4 +1,4 @@
-# Copyright(c) 2015-2021 ACCESS CO., LTD. All rights reserved.
+# Copyright(c) 2015-2022 ACCESS CO., LTD. All rights reserved.
 
 # In order to convert maps with frequently used tuple values directly into JSON on `Poison.encode/1,2`,
 # implements tuple-to-string conversion for specific types (especially Antikythera.Time.t).
