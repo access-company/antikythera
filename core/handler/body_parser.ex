@@ -39,6 +39,17 @@ defmodule AntikytheraCore.Handler.BodyParser do
 
   defunp parse_body(req2 :: :cowboy_req.req(), raw :: v[RawBody.t()]) ::
            {:ok, Body.t()} | invalid_tuple do
+    # If the body is compressed, Antikythera do nothing, and a gear will handle it
+    # because a gear wants to save the compressed body to a file or unzips it and parse JSON in it.
+    # This also protect Antikythera from handling very big unzipped body without memory limit.
+    case :cowboy_req.header("content-encoding", req2, "") do
+      "" -> parse_raw_body(req2, raw)
+      _ -> {:ok, raw}
+    end
+  end
+
+  defunp parse_raw_body(req2 :: :cowboy_req.req(), raw :: v[RawBody.t()]) ::
+           {:ok, Body.t()} | invalid_tuple do
     case :cowboy_req.header("content-type", req2) do
       "application/json" <> _charset -> parse_json(raw)
       "application/x-ldjson" <> _charset -> parse_json_stream(raw)
