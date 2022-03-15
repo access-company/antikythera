@@ -15,7 +15,7 @@ Current contents describes how our antikythera instance and gears are deployed i
 
 - For automatic deployment, antikythera assumes that all gears' code is managed as follows:
     - Repository
-        - Every gear implementation is expected to have its own repository in either GitHub (dev/prod), or antikythera git server (dev only).
+        - Every gear implementation is expected to have its own repository in GitHub (dev/prod).
         - The repository in GitHub must belong to [access-company/Antikythera team](https://github.com/orgs/access-company/teams/antikythera)
           so that the antikythera team and antikythera's auto-deploy component have read/write access to it.
     - Branches
