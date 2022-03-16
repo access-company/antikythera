@@ -53,10 +53,21 @@ defmodule AntikytheraCore.Release.Appup do
     {only_v1, only_v2, diff_pairs} = :beam_lib.cmp_dirs(v1_ebin_dir, v2_ebin_dir)
     diff = reject_unchanged_modules(diff_pairs) |> Enum.map(fn {_f1, f2} -> f2 end)
 
+    # Croma automatically defines a module which might be common across multiple gears,
+    # e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Url`.
+    # Such module must not be deleted when upgrading one of the gears
+    # because the other gears are still using that module.
+    only_v1_without_auto_generated =
+      Enum.reject(only_v1, fn beam_file ->
+        beam_file
+        |> read_module_name()
+        |> AntikytheraCore.Version.Gear.auto_generated_module?()
+      end)
+
     file_content = {
       v2_charlist,
       [
-        {v1_charlist, generate_instructions(only_v2, diff, only_v1)}
+        {v1_charlist, generate_instructions(only_v2, diff, only_v1_without_auto_generated)}
       ],
       [
         {v1_charlist, generate_instructions(only_v1, diff, only_v2)}
