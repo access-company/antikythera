@@ -70,7 +70,7 @@ defmodule AntikytheraCore.Release.Appup do
         {v1_charlist, generate_instructions(only_v2, diff, only_v1_without_auto_generated)}
       ],
       [
-        {v1_charlist, generate_instructions(only_v1_without_auto_generated, diff, only_v2)}
+        {v1_charlist, generate_instructions(only_v1, diff, only_v2)}
       ]
     }
 
