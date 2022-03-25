@@ -56,15 +56,10 @@ defmodule AntikytheraCore.Release.Appup do
     file_content = {
       v2_charlist,
       [
-        # Since some modules might be common across multiple gears,
-        # delete_module instructions might accidentally delete modules in use.
-        # So we don't delete modules in the upgrade instruction.
-        # Note that, as a consequence of the above,
-        # we need to deploy without hot code upgrade to delete really unused modules.
-        {v1_charlist, generate_instructions(only_v2, diff, [])}
+        {v1_charlist, generate_instructions(only_v2, diff)}
       ],
       [
-        {v1_charlist, generate_instructions(only_v1, diff, only_v2)}
+        {v1_charlist, generate_instructions(only_v1, diff)}
       ]
     }
 
@@ -105,12 +100,17 @@ defmodule AntikytheraCore.Release.Appup do
     end
   end
 
-  defp generate_instructions(added, diff, deleted) do
+  # By using macros, a gear might create modules which are common across multiple gears.
+  # (e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Url`)
+  # To prevent `:delete_module` instructions from deleting modules
+  # which are still used by the other gears, we don't delete modules in appup.
+  # Note that, as a consequence of the above,
+  # we need to deploy without hot code upgrade to delete really unused modules.
+  defp generate_instructions(added, diff) do
     # add_module instructions must precede load_module instructions
     List.flatten([
       Enum.map(added, fn f -> {:add_module, read_module_name(f)} end),
-      generate_instructions_for_changed_modules(diff),
-      Enum.map(deleted, fn f -> {:delete_module, read_module_name(f)} end)
+      generate_instructions_for_changed_modules(diff)
     ])
   end
 
