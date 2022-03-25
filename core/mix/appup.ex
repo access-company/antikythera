@@ -102,7 +102,7 @@ defmodule AntikytheraCore.Release.Appup do
 
   # By using macros, a gear might create modules which are common across multiple gears.
   # (e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Url`)
-  # To prevent `:delete_module` instructions from deleting modules
+  # To prevent `:delete_module` instructions from deleting those modules
   # which are still used by the other gears, we don't delete modules in appup.
   # Note that, as a consequence of the above,
   # we need to deploy without hot code upgrade to delete really unused modules.
