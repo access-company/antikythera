@@ -108,7 +108,6 @@ defmodule Antikythera.Mixfile do
       {:credo, "1.6.1", [only: :dev, runtime: false]},
       {:mix_test_watch, "1.1.0", [only: :dev, runtime: false]},
       {:meck, "0.9.2", [only: :test]},
-      {:mox, "1.0.0", [only: :test]},
       # 0.13.0 requires hackney ~> 1.16
       {:excoveralls, "0.12.0", [only: :test]},
       {:stream_data, "0.5.0", [only: :test]},
