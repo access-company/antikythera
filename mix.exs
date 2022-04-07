@@ -113,8 +113,7 @@ defmodule Antikythera.Mixfile do
       {:excoveralls, "0.12.0", [only: :test]},
       {:stream_data, "0.5.0", [only: :test]},
       # as a websocket client implementation to use during test (including upgrade_compatibility_test)
-      # 1.4.0 requires OTP 21 or later
-      {:websocket_client, "1.3.0", [only: :test]},
+      {:websocket_client, "1.4.2", [only: :test]},
 
       # indirect deps
       # cowboy

@@ -47,5 +47,5 @@
   "stream_data": {:hex, :stream_data, "0.5.0", "b27641e58941685c75b353577dc602c9d2c12292dd84babf506c2033cd97893e", [:mix], [], "hexpm", "012bd2eec069ada4db3411f9115ccafa38540a3c78c4c0349f151fc761b9e271"},
   "syn": {:hex, :syn, "1.6.3", "e3400a6286a7c44ed0a0293d0e83a1f44aa9b1a9ec2c8d54eee2cd1f4ff2f94e", [:rebar3], [], "hexpm", "5fd3d8b9b7edbf5d386a80ee2544234f807918c3437a47fd0a40ed7cd8b16275"},
   "unicode_util_compat": {:hex, :unicode_util_compat, "0.4.1", "d869e4c68901dd9531385bb0c8c40444ebf624e60b6962d95952775cac5e90cd", [:rebar3], [], "hexpm", "1d1848c40487cdb0b30e8ed975e34e025860c02e419cb615d255849f3427439d"},
-  "websocket_client": {:hex, :websocket_client, "1.3.0", "2275d7daaa1cdacebf2068891c9844b15f4fdc3de3ec2602420c2fb486db59b6", [:rebar3], [], "hexpm", "b864fa076f059b615da4ab99240e515b26132ce4d2d0f9df5d7f22f01fa04b65"},
+  "websocket_client": {:hex, :websocket_client, "1.4.2", "f1036e3f9427eecdb66808eee56dbcaeb5a1a352306e6a0d0d23a9487205f4d7", [:rebar3], [], "hexpm", "c005e5f8f2f6a8533c497a509dc52f3e6fb42fa2e0d67bff8ebc8802868d84ed"},
 }
