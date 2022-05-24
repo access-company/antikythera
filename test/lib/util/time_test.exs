@@ -6,6 +6,8 @@ defmodule Antikythera.TimeTest do
   alias Antikythera.{IsoTimestamp, ImfFixdate}
   alias Antikythera.IsoTimestamp.Basic, as: IsoBasic
 
+  doctest Antikythera.Time
+
   test "to_iso_timestamp should return valid ISO8601 extended format string" do
     [
       Time.now(),
