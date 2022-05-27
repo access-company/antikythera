@@ -34,7 +34,8 @@ defmodule Antikythera.Time do
   end
 
   @doc """
-  Convert timestamps into `Antikythera.Time.t`, leveraging `recursive_new?` option of `Croma.Struct`.
+  Convert timestamps into `Antikythera.Time.t` or wrap valid `Antikythera.Time.t`,
+  leveraging `recursive_new?` option of `Croma.Struct`.
 
   Only `Antikythera.IsoTimestamp.t` can be converted.
 
