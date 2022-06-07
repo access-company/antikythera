@@ -12,7 +12,7 @@ defmodule Antikythera.Time do
   so that values of this type can be directly converted to `Antikythera.IsoTimestamp.t` on `Poison.encode/1`.
 
       iex> Poison.encode(%{time: {Antikythera.Time, {2017, 1, 1}, {0, 0, 0}, 0}})
-      {:ok, "{\"time\":\"2017-01-01T00:00:00.000+00:00\"}"}
+      {:ok, "{\\"time\\":\\"2017-01-01T00:00:00.000+00:00\\"}"}
 
   See also `new/1`.
   """
@@ -34,11 +34,24 @@ defmodule Antikythera.Time do
   end
 
   @doc """
-  Convert timestamps into `Antikythera.Time.t`, leveraging `recursive_new?` option of `Croma.Struct`.
+  Convert timestamps into `Antikythera.Time.t` or wrap valid `Antikythera.Time.t`,
+  leveraging `recursive_new?` option of `Croma.Struct`.
 
   Only `Antikythera.IsoTimestamp.t` can be converted.
+
+      iex> {:ok, time} = #{__MODULE__}.new("2015-01-23T23:50:07Z")
+      {:ok, {#{__MODULE__}, {2015, 1, 23}, {23, 50, 7}, 0}}
+      iex> #{__MODULE__}.new(time)
+      {:ok, {#{__MODULE__}, {2015, 1, 23}, {23, 50, 7}, 0}}
+      iex> #{__MODULE__}.new("2015-01-23T23:50:07") |> Croma.Result.error?()
+      true
+      iex> #{__MODULE__}.new(nil) |> Croma.Result.error?()
+      true
   """
-  defun new(s :: v[IsoTimestamp.t()]) :: R.t(t), do: from_iso_timestamp(s)
+  defun new(t | IsoTimestamp.t()) :: R.t(t) do
+    s when is_binary(s) -> from_iso_timestamp(s)
+    t -> R.wrap_if_valid(t, __MODULE__)
+  end
 
   defun truncate_to_day({__MODULE__, date, {_, _, _}, _} :: t) :: t,
     do: {__MODULE__, date, {0, 0, 0}, 0}
