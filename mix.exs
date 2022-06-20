@@ -98,7 +98,6 @@ defmodule Antikythera.Mixfile do
       {:jason, "1.2.2"},
       {:gettext, "0.17.1"},
       {:croma, "0.10.2"},
-      {:pbkdf2, "2.0.0"},
 
       # tools
       {:exsync, "0.2.4", [only: :dev]},
@@ -114,6 +113,9 @@ defmodule Antikythera.Mixfile do
       # as a websocket client implementation to use during test (including upgrade_compatibility_test)
       # 1.4.0 requires OTP 21 or later
       {:websocket_client, "1.3.0", [only: :test]},
+      # to test `Antikythera.Crypto.Aes`
+      # TODO: replace by `:crypto.pbkdf2_hmac/5` which is introduced by OTP 24.2
+      {:pbkdf2, "2.0.0", [only: :test]},
 
       # indirect deps
       # cowboy
