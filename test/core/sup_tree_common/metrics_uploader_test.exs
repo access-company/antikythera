@@ -8,10 +8,10 @@ defmodule AntikytheraCore.MetricsUploaderTest do
   alias AntikytheraEal.MetricsStorage, as: Storage
 
   test "submit should reject invalid arguments" do
-    catch_error(U.submit(U, []))
-    catch_error(U.submit(U, [{:not_a_string, :average, 1}]))
-    catch_error(U.submit(U, [{"metrics_type1", :nonexisting_strategy, 1.5}]))
-    catch_error(U.submit(U, [{"metrics_type1", :average, "not a number"}]))
+    catch_error(U.submit(U, [], :nopool))
+    catch_error(U.submit(U, [{:not_a_string, :average, 1}], :nopool))
+    catch_error(U.submit(U, [{"metrics_type1", :nonexisting_strategy, 1.5}], :nopool))
+    catch_error(U.submit(U, [{"metrics_type1", :average, "not a number"}], :nopool))
   end
 
   defp submit(t, values, epool_id \\ :nopool) do
