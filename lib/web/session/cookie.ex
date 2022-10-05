@@ -15,7 +15,7 @@ defmodule Antikythera.Session.Cookie do
     nil ->
       {nil, %{}}
 
-    cookie ->
+    cookie when is_binary(cookie) ->
       value = Poison.decode(cookie) |> Croma.Result.get(%{})
       {nil, value}
   end
