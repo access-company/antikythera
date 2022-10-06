@@ -179,7 +179,7 @@ defmodule AntikytheraCore.Alert.ManagerTest do
              "** (ArithmeticError) bad argument in arithmetic expression: 1 / 0\nsecond line3"
            ) == :ok
 
-    assert %{message_buffer: buffer1, busy?: true} = get_handler_state(EmailHandler)
+    assert %{message_buffer: ^buffer1, busy?: true} = get_handler_state(EmailHandler)
     assert MemoryInbox.get() == []
 
     # not to be ignored
@@ -193,7 +193,7 @@ defmodule AntikytheraCore.Alert.ManagerTest do
     assert [
              {time2,
               "** (ArithmeticError) bad argument in arithmetic expression: 1 / 0\nsecond line4"},
-             {time1,
+             {^time1,
               "** (UndefinedFunctionError) function Hoge.foo/0 is undefined (module Hoge is not available)\nsecond line2"}
            ] = buffer2
 
