@@ -85,7 +85,7 @@ defmodule AntikytheraCore.Handler.WebsocketState do
     try do
       {:ok, f.()}
     catch
-      error_kind, reason -> {{error_kind, reason}, System.stacktrace()}
+      error_kind, reason -> {{error_kind, reason}, __STACKTRACE__}
     end
     |> case do
       {:ok, {new_gear_impl_state, frames_to_send}} ->
@@ -122,13 +122,13 @@ defmodule AntikytheraCore.Handler.WebsocketState do
       ws_module.terminate(gear_impl_state, conn, reason)
     catch
       :error, error ->
-        log_error(state, now, ErrorReason.format({:error, error}, System.stacktrace()))
+        log_error(state, now, ErrorReason.format({:error, error}, __STACKTRACE__))
 
       :throw, value ->
-        log_error(state, now, ErrorReason.format({:throw, value}, System.stacktrace()))
+        log_error(state, now, ErrorReason.format({:throw, value}, __STACKTRACE__))
 
       :exit, reason ->
-        log_error(state, now, ErrorReason.format({:error, reason}, System.stacktrace()))
+        log_error(state, now, ErrorReason.format({:error, reason}, __STACKTRACE__))
     end
   end
 

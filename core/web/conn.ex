@@ -107,7 +107,7 @@ defmodule AntikytheraCore.Conn do
     rescue
       e ->
         # Field in `conn` is of unexpected type; we must fall-back to the gear's error handler (and then recur).
-        st = System.stacktrace()
+        st = __STACKTRACE__
         # Just to suppress validation error (due to invalid resp_body) during testing
         %Conn{conn | resp_body: ""}
         |> GearError.error({:error, e}, st)
@@ -146,7 +146,7 @@ defmodule AntikytheraCore.Conn do
     rescue
       e ->
         # Field in `conn` is of unexpected type; we must fall-back to the gear's error handler (and then recur).
-        st = System.stacktrace()
+        st = __STACKTRACE__
         # Just to suppress validation error (due to invalid resp_body) during testing
         %Conn{conn | resp_body: ""}
         |> GearError.error({:error, e}, st)
@@ -161,7 +161,7 @@ defmodule AntikytheraCore.Conn do
         _ -> raise "unexpected value returned by controller action"
       end
     rescue
-      e -> GearError.error(conn_before_action, {:error, e}, System.stacktrace())
+      e -> GearError.error(conn_before_action, {:error, e}, __STACKTRACE__)
     end
   end
 

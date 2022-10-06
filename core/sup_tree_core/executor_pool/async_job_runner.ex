@@ -320,9 +320,9 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
       module.run(payload, metadata, context)
       # if no error occurs the process exits with `:normal`
     catch
-      :error, error -> exit({:shutdown, {{:error, error}, System.stacktrace()}})
-      :throw, value -> exit({:shutdown, {{:throw, value}, System.stacktrace()}})
-      :exit, reason -> exit({:shutdown, {{:exit, reason}, System.stacktrace()}})
+      :error, error -> exit({:shutdown, {{:error, error}, __STACKTRACE__}})
+      :throw, value -> exit({:shutdown, {{:throw, value}, __STACKTRACE__}})
+      :exit, reason -> exit({:shutdown, {{:exit, reason}, __STACKTRACE__}})
     end
   end
 
