@@ -11,3 +11,7 @@
 
 ## Enable multi_time_warp mode for VM's system clock
 +C multi_time_warp
+
+## Limit port range to be used for ErlangVM-to-ErlangVM communications
+-kernel inet_dist_listen_min 6000
+-kernel inet_dist_listen_max 7999

@@ -158,12 +158,6 @@ defmodule Antikythera.MixConfig do
 
   defp default_configs() do
     [
-      # Limit port range to be used for ErlangVM-to-ErlangVM communications.
-      kernel: [
-        inet_dist_listen_min: 6000,
-        inet_dist_listen_max: 7999,
-      ],
-
       # Logger configurations.
       sasl: [
         sasl_error_logger: false, # SASL logs are handled by :logger
