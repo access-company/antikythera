@@ -94,11 +94,12 @@ defmodule Antikythera.MixCommon do
     case Mix.env() do
       :dev -> [
         :mix,     # Suppress warning about Mix.Task behaviour
-        :eex,     # Only used during compilation, suppress warning about EEx.Engine behaviour
         :ex_unit, # Suppress warnings about calling ExUnit functions in Antikythera.Test.*
       ]
       _ -> []
-    end
+    end ++ [
+      :eex,       # Only used during compilation, suppress warning about EEx.Engine behaviour
+    ]
   end
 
   #
