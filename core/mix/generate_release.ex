@@ -77,7 +77,7 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
   defp ensure_antikythera_instance_compiled() do
     try do
       # Generate <antikythera_instance>.app as it can be for older version of the instance.
-      if System.version() |> Version.parse!() |> Version.match?("~> 1.10") do
+      if Version.match?(System.version(), "~> 1.10") do
         {:ok, _} = Mix.Tasks.Compile.App.run(["--force"])
       else
         # TODO: remove this pattern and the suppression just above after upgrading to Elixir 1.10+
