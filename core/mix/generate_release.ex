@@ -89,6 +89,7 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
     end
   end
 
+  # TODO: Remove this conditional branching after requiring Elixir 1.10+
   if Version.match?(System.version(), "~> 1.10") do
     defp force_compile_app!() do
       {:ok, _} = Mix.Tasks.Compile.App.run(["--force"])
