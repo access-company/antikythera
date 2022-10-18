@@ -42,6 +42,10 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
   @vm_args_path Path.join(antikythera_repo_rel_dir, "vm.args")
   @boot_script_patch_path Path.join(antikythera_repo_rel_dir, "boot_script.patch")
   @relx_config_template_path Path.join(antikythera_repo_rel_dir, "relx.config.eex")
+  # TODO: Remove after requiring Elixir 1.11+
+  if Version.match?(System.version(), "~> 1.10.0") do
+    @dialyzer {:no_return, force_compile_app!: 0}
+  end
 
   def run(_args) do
     conf = Mix.Project.config()
@@ -73,21 +77,25 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
     end
   end
 
-  @dialyzer {:no_match, ensure_antikythera_instance_compiled: 0}
   defp ensure_antikythera_instance_compiled() do
     try do
       # Generate <antikythera_instance>.app as it can be for older version of the instance.
-      if Version.match?(System.version(), "~> 1.10") do
-        {:ok, _} = Mix.Tasks.Compile.App.run(["--force"])
-      else
-        # TODO: remove this pattern and the suppression just above after upgrading to Elixir 1.10+
-        :ok = Mix.Tasks.Compile.App.run(["--force"])
-      end
+      force_compile_app!()
     rescue
       File.Error ->
         # Directory for <antikythera_instance>.app does not exist,
         # i.e. the antikythera instance is not yet compiled; run the normal compilation.
         Mix.Tasks.Compile.run([])
+    end
+  end
+
+  if Version.match?(System.version(), "~> 1.10") do
+    defp force_compile_app!() do
+      {:ok, _} = Mix.Tasks.Compile.App.run(["--force"])
+    end
+  else
+    defp force_compile_app!() do
+      :ok = Mix.Tasks.Compile.App.run(["--force"])
     end
   end
 
