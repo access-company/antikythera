@@ -158,9 +158,6 @@ defmodule Antikythera.MixConfig do
   end
 
   defp default_configs() do
-    # Loading log translator
-    Code.eval_file("erlang_log_translator.ex", Path.join(__DIR__, "core/util"))
-
     [
       # Logger configurations.
       sasl: [

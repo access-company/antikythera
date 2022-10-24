@@ -1,7 +1,6 @@
 # Copyright(c) 2015-2022 ACCESS CO., LTD. All rights reserved.
 
-# The module is loaded also during configuration.
-Code.compiler_options(ignore_module_conflict: true)
+use Croma
 
 defmodule AntikytheraCore.ErlangLogTranslator do
   @moduledoc """
@@ -34,5 +33,3 @@ defmodule AntikytheraCore.ErlangLogTranslator do
     Logger.Translator.translate(min_level, level, kind, message)
   end
 end
-
-Code.compiler_options(ignore_module_conflict: false)
