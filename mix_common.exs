@@ -17,6 +17,7 @@ defmodule Antikythera.MixCommon do
       build_embedded:    Mix.env() == :prod,
       test_coverage:     [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.html": :test, "antikythera_local.upgrade_compatibility_test": :test],
+      xref:              [exclude: [EEx, EEx.Engine]], # Suppress undefined application warnings
     ]
   end
 
