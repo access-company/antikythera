@@ -16,6 +16,7 @@ defmodule AntikytheraCore do
   """
   @impl true
   def start(_type, _args) do
+    Logger.add_translator({AntikytheraCore.ErlangLogTranslator, :translate})
     L.info("starting AntikytheraCore")
     add_gears_dir_to_erl_libs()
     AntikytheraCore.FileSetup.setup_files_and_ets_tables()

@@ -168,7 +168,6 @@ defmodule Antikythera.MixConfig do
         level:               :info,
         utc_log:             true,
         handle_sasl_reports: true,
-        translators:         [{AntikytheraCore.ErlangLogTranslator, :translate}],
         backends:            [:console, AntikytheraCore.Alert.LoggerBackend],
         console: [
           format:   "$dateT$time+00:00 [$level$levelpad] $metadata$message\n",
