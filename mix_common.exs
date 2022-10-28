@@ -165,10 +165,11 @@ defmodule Antikythera.MixConfig do
       ],
 
       logger: [
-        level:               :info,
+        level:               (if Mix.env() != :prod and Version.match?(System.version(), "~> 1.11"), do: :notice, else: :info),
         utc_log:             true,
         handle_sasl_reports: true,
         backends:            [:console, AntikytheraCore.Alert.LoggerBackend],
+        translators:         (if Version.match?(System.version(), "~> 1.11"), do: [{Logger.Translator, :translate}], else: [{AntikytheraCore.ErlangLogTranslator, :translate}]),
         console: [
           format:   "$dateT$time+00:00 [$level$levelpad] $metadata$message\n",
           metadata: [:module],
