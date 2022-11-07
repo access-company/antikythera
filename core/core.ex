@@ -17,6 +17,9 @@ defmodule AntikytheraCore do
   @impl true
   def start(_type, _args) do
     Logger.add_translator({AntikytheraCore.ErlangLogTranslator, :translate})
+    # In dev or local environment, the log level is initially set to `:notice` at mix_common.exs
+    # in order to avoid SASL progress reports.
+    # The log level is restored to `:info` after loading antikythera.
     Logger.configure(level: :info)
     L.info("starting AntikytheraCore")
     add_gears_dir_to_erl_libs()
