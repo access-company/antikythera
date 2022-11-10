@@ -80,7 +80,7 @@ defmodule Antikythera.Mixfile do
       # these are considered as implementation details of antikythera and thus must not be used by gear implementations.
       {:cowboy, "2.6.3", [antikythera_internal: true]},
       {:cowlib, "2.7.3", [antikythera_internal: true]},
-      {:hackney, "1.15.2", [antikythera_internal: true]},
+      {:hackney, "1.18.1", [antikythera_internal: true]},
       # 0.4.2 is broken!
       {:calliope, "0.4.1", [antikythera_internal: true]},
       {:pool_sup, "0.6.1", [antikythera_internal: true]},
@@ -103,8 +103,8 @@ defmodule Antikythera.Mixfile do
       {:exsync, "0.2.4", [only: :dev]},
       # 0.23.0 requires Elixir 1.10 or later
       {:ex_doc, "0.22.2", [only: :dev, runtime: false]},
-      {:dialyxir, "1.1.0", [only: :dev, runtime: false]},
-      {:credo, "1.6.1", [only: :dev, runtime: false]},
+      {:dialyxir, "1.2.0", [only: :dev, runtime: false]},
+      {:credo, "1.6.7", [only: :dev, runtime: false]},
       {:mix_test_watch, "1.1.0", [only: :dev, runtime: false]},
       {:meck, "0.9.2", [only: :test]},
       # 0.13.0 requires hackney ~> 1.16
@@ -121,19 +121,19 @@ defmodule Antikythera.Mixfile do
       # cowboy
       {:ranch, "1.7.1", [indirect: true]},
       # hackney
-      {:certifi, "2.5.1", [indirect: true]},
+      {:certifi, "2.9.0", [indirect: true]},
       # hackney
-      {:ssl_verify_fun, "1.1.5", [indirect: true]},
+      {:ssl_verify_fun, "1.1.6", [indirect: true]},
       # hackney
-      {:idna, "6.0.0", [indirect: true]},
+      {:idna, "6.1.1", [indirect: true]},
       # hackney
       {:metrics, "1.0.1", [indirect: true]},
       # hackney
       {:mimerl, "1.2.0", [indirect: true]},
       # certifi
-      {:parse_trans, "3.3.0", [indirect: true]},
+      {:parse_trans, "3.3.1", [indirect: true]},
       # idna
-      {:unicode_util_compat, "0.4.1", [indirect: true]},
+      {:unicode_util_compat, "0.7.0", [indirect: true]},
       # fast_xml
       {:p1_utils, "1.0.23", [indirect: true]},
       # relx
@@ -149,7 +149,7 @@ defmodule Antikythera.Mixfile do
 
       # indirect tool deps
       # credo
-      {:bunt, "0.2.0", [indirect: true, only: :dev]},
+      {:bunt, "0.2.1", [indirect: true, only: :dev]},
       # ex_doc
       {:earmark, "1.4.10", [indirect: true, only: :dev]},
       # earmark
