@@ -46,9 +46,9 @@ defmodule AntikytheraCore.GearTask do
       try do
         {:ok, apply(m, f, as)}
       catch
-        :error, e -> {:error, {:error, e}, System.stacktrace()}
-        :throw, value -> {:error, {:throw, value}, System.stacktrace()}
-        :exit, reason -> {:error, {:exit, reason}, System.stacktrace()}
+        :error, e -> {:error, {:error, e}, __STACKTRACE__}
+        :throw, value -> {:error, {:throw, value}, __STACKTRACE__}
+        :exit, reason -> {:error, {:exit, reason}, __STACKTRACE__}
       end
 
     exit({:shutdown, result})

@@ -82,7 +82,7 @@ defmodule AntikytheraCore.Version.Gear do
       f.()
     rescue
       e ->
-        original_stacktrace = System.stacktrace()
+        original_stacktrace = __STACKTRACE__
         :code.del_path(dir)
         reraise(e, original_stacktrace)
     end

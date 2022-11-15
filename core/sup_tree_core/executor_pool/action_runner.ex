@@ -36,9 +36,9 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
     try do
       {:ok, controller.__action__(conn, action)}
     catch
-      :error, e -> {:error, {:error, e}, System.stacktrace()}
-      :throw, value -> {:error, {:throw, value}, System.stacktrace()}
-      :exit, reason -> {:error, {:exit, reason}, System.stacktrace()}
+      :error, e -> {:error, {:error, e}, __STACKTRACE__}
+      :throw, value -> {:error, {:throw, value}, __STACKTRACE__}
+      :exit, reason -> {:error, {:exit, reason}, __STACKTRACE__}
     after
       Antikythera.GearApplication.ConfigGetter.cleanup_configs_in_process_dictionary()
     end

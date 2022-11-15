@@ -17,6 +17,7 @@ defmodule Antikythera.MixCommon do
       build_embedded:    Mix.env() == :prod,
       test_coverage:     [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.html": :test, "antikythera_local.upgrade_compatibility_test": :test],
+      xref:              [exclude: [EEx, EEx.Engine]], # Suppress undefined application warnings
     ]
   end
 
@@ -157,29 +158,35 @@ defmodule Antikythera.MixConfig do
   end
 
   defp default_configs() do
-    [
-      # Limit port range to be used for ErlangVM-to-ErlangVM communications.
-      kernel: [
-        inet_dist_listen_min: 6000,
-        inet_dist_listen_max: 7999,
-      ],
+    # TODO: Remove after requiring Elixir 1.11+
+    logger_configs_for_compatibility =
+      if Version.match?(System.version(), "~> 1.11") do
+        [
+          # To suppress progress reports during start-up in development environments
+          level: (if Mix.env() == :prod, do: :info, else: :notice)
+        ]
+      else
+        [
+          level: :info,
+          translators: [{AntikytheraCore.ErlangLogTranslator, :translate}]
+        ]
+      end
 
+    [
       # Logger configurations.
       sasl: [
         sasl_error_logger: false, # SASL logs are handled by :logger
       ],
 
       logger: [
-        level:               :info,
         utc_log:             true,
         handle_sasl_reports: true,
-        translators:         [{AntikytheraCore.ErlangLogTranslator, :translate}],
         backends:            [:console, AntikytheraCore.Alert.LoggerBackend],
         console: [
           format:   "$dateT$time+00:00 [$level$levelpad] $metadata$message\n",
           metadata: [:module],
         ],
-      ],
+      ] ++ logger_configs_for_compatibility,
 
       # Persist Raft logs & snapshots for async job queues.
       raft_fleet: [
