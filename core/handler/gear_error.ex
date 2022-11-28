@@ -134,7 +134,7 @@ defmodule AntikytheraCore.Handler.GearError do
         "",
         "Stacktrace (list of {module, function, arity, location}):",
         "[",
-        Enum.map(stacktrace, fn s -> "  #{inspect(s, structs: false)}" end) |> Enum.join("\n"),
+        Enum.map_join(stacktrace, "\n", fn s -> "  #{inspect(s, structs: false)}" end),
         "]"
       ]
       |> Enum.join("\n")

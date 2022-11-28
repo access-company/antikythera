@@ -9,8 +9,9 @@ defmodule Mix.Tasks.Antikythera.Gear.New do
      "Local versions file for version manager tool [asdf](https://github.com/asdf-vm/asdf)"}
   ]
   @symlink_candidates_description @symlink_candidates
-                                  |> Enum.map(fn {name, desc} -> "- `#{name}`\n    - #{desc}" end)
-                                  |> Enum.join("\n")
+                                  |> Enum.map_join("\n", fn {name, desc} ->
+                                    "- `#{name}`\n    - #{desc}"
+                                  end)
   @dep_env_var "ANTIKYTHERA_INSTANCE_DEP"
   @moduledoc """
   #{@shortdoc}.
