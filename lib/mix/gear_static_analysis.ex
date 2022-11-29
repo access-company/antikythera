@@ -152,16 +152,12 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
     end
   end
 
-  defp check_use_within_module(mod, _kw, _meta, file, _tool?) do
-    cond do
-      mod == Gettext ->
-        {:error, file, [],
-         "directly invoking `use Gettext` is not allowed (`use Antikythera.Gettext` instead)"}
-
-      true ->
-        nil
-    end
+  defp check_use_within_module(Gettext, _kw, _meta, file, _tool?) do
+    {:error, file, [],
+     "directly invoking `use Gettext` is not allowed (`use Antikythera.Gettext` instead)"}
   end
+
+  defp check_use_within_module(_mod, _kw, _meta, _file, _tool?), do: nil
 
   defp check_remote_call(mod, fun, args, meta, file, tool?) do
     use_internals? = use_antikythera_internal_modules?()
@@ -208,12 +204,8 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   defp spawning_a_new_process?(_), do: false
 
   defp check_local_call(fun, _args, meta, file, _tool?) do
-    cond do
-      Atom.to_string(fun) |> String.starts_with?("spawn") ->
-        {:error, file, meta, "spawning processes in gear's code is prohibited"}
-
-      true ->
-        nil
+    if Atom.to_string(fun) |> String.starts_with?("spawn") do
+      {:error, file, meta, "spawning processes in gear's code is prohibited"}
     end
   end
 
