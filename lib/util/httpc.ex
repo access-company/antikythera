@@ -121,14 +121,18 @@ defmodule Antikythera.Httpc do
     headers_with_encoding = Map.put_new(downcased_headers, "accept-encoding", "gzip")
     options_map = normalize_options(options)
 
+    uri =
+      with %URI{path: nil} = uri <- URI.parse(url) do
+        L.info("URL with empty path detected: url=#{url}")
+        uri
+      end
+
     url_with_params =
       case options_map[:params] do
         nil ->
           url
 
         params ->
-          uri = URI.parse(url)
-
           query_string =
             case uri.query do
               nil -> URI.encode_query(params)
@@ -137,10 +141,6 @@ defmodule Antikythera.Httpc do
 
           %URI{uri | query: query_string} |> URI.to_string()
       end
-      |> do_if_url_has_empty_path(fn parsed_uri ->
-        L.info("URL with empty path detected: url=#{parsed_uri}")
-        URI.to_string(parsed_uri)
-      end)
 
     hackney_opts = hackney_options(options_map)
 
@@ -210,13 +210,6 @@ defmodule Antikythera.Httpc do
       options_map,
       0
     )
-  end
-
-  defunp do_if_url_has_empty_path(url :: a, f :: (URI.t() -> a)) :: a when a: Url.t() | URI.t() do
-    case URI.parse(url) do
-      %URI{path: nil} = parsed_uri -> f.(parsed_uri)
-      %URI{} -> url
-    end
   end
 
   defp send_request_with_retry(
