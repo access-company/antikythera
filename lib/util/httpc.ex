@@ -54,6 +54,8 @@ defmodule Antikythera.Httpc do
     Pass `skip_body_decompression: true` if compressed body is what you need.
   """
 
+  require AntikytheraCore.Logger, as: L
+
   alias Croma.Result, as: R
   alias Antikythera.{MapUtil, Url}
   alias Antikythera.Http.{Status, Method, Headers, SetCookie, SetCookiesMap}
@@ -119,14 +121,18 @@ defmodule Antikythera.Httpc do
     headers_with_encoding = Map.put_new(downcased_headers, "accept-encoding", "gzip")
     options_map = normalize_options(options)
 
+    uri =
+      with %URI{path: nil} = uri <- URI.parse(url) do
+        L.info("URL with empty path detected: url=#{url}")
+        uri
+      end
+
     url_with_params =
       case options_map[:params] do
         nil ->
           url
 
         params ->
-          uri = URI.parse(url)
-
           query_string =
             case uri.query do
               nil -> URI.encode_query(params)
@@ -221,7 +227,6 @@ defmodule Antikythera.Httpc do
 
       # connection is closed on server side
       {:error, :closed} ->
-        require AntikytheraCore.Logger, as: L
         L.info("{:error, :closed} returned by hackney: attempts=#{attempts} url=#{url}")
         attempts2 = attempts + 1
 
