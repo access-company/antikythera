@@ -11,13 +11,17 @@
 defmodule Antikythera.MixCommon do
   def common_project_settings() do
     [
-      elixir:            "~> 1.9",
-      elixirc_options:   [warnings_as_errors: true],
-      build_path:        build_path(),
-      build_embedded:    Mix.env() == :prod,
-      test_coverage:     [tool: ExCoveralls],
-      preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.html": :test, "antikythera_local.upgrade_compatibility_test": :test],
-      xref:              [exclude: [EEx, EEx.Engine]], # Suppress undefined application warnings
+      elixir:                "~> 1.9",
+      elixirc_options:       [warnings_as_errors: true],
+      build_path:            build_path(),
+      build_embedded:        Mix.env() == :prod,
+      test_coverage:         [tool: ExCoveralls],
+      preferred_cli_env:     [coveralls: :test, "coveralls.detail": :test, "coveralls.html": :test, "antikythera_local.upgrade_compatibility_test": :test],
+      xref:                  [exclude: [EEx, EEx.Engine]], # Suppress undefined application warnings
+
+      # Avoid inclusion of consolidated protocol information in the core PLT file also in Elixir 1.11+.
+      # Since the release build have not used protocol consolidation, this setting does not affect performance in release.
+      consolidate_protocols: false,
     ]
   end
 
