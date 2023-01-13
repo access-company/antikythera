@@ -1,4 +1,4 @@
-# Copyright(c) 2015-2022 ACCESS CO., LTD. All rights reserved.
+# Copyright(c) 2015-2023 ACCESS CO., LTD. All rights reserved.
 
 defmodule Mix.Tasks.AntikytheraLocal.PrepareCore do
   @shortdoc "Builds an OTP release for an antikythera instance"
