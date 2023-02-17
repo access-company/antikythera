@@ -106,7 +106,7 @@ defmodule Antikythera.Router.Impl do
            action :: v[atom],
            opts :: Keyword.t(any)
          ) :: Macro.t() do
-    websocket? = opts[:websocket?] || false
+    websocket? = Keyword.get(opts, :websocket?, false)
 
     if String.contains?(path_pattern, "/*") do
       # For route with wildcard we have to define a slightly modified clause (compared with nowildcard case):
