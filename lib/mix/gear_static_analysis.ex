@@ -188,10 +188,12 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   defp disturbing_execution_of_vm?(:init, _fun), do: true
   defp disturbing_execution_of_vm?(_mod, _fun), do: false
 
-  defp check_writing_to_stdout(IO, fun, args) when fun in [:inspect, :puts, :write] and writing_to_stdout?(args) do
+  defp check_writing_to_stdout(IO, fun, args)
+       when fun in [:inspect, :puts, :write] and writing_to_stdout?(args) do
     severity = if Mix.env() == :prod, do: :error, else: :warning
 
-    {severity, "writing to STDOUT/STDERR is not allowed in prod environment (use each gear's logger instead)"}
+    {severity,
+     "writing to STDOUT/STDERR is not allowed in prod environment (use each gear's logger instead)"}
   end
 
   defp check_writing_to_stdout(_mod, _fun, _args), do: :ok
