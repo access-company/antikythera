@@ -19,7 +19,7 @@ defmodule Antikythera.Test.Config do
   # TODO: remove when upgrading to Elixir v1.10+ where this timeout is infinity
   @long_module_load_timeout 600_000
 
-  deployment_envs = Application.fetch_env!(:antikythera, :deployments) |> Keyword.keys()
+  deployment_envs = Application.compile_env!(:antikythera, :deployments) |> Keyword.keys()
 
   def init() do
     System.at_exit(fn _ -> stop_gear_supervisors() end)

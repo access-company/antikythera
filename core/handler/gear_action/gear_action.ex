@@ -8,7 +8,7 @@ defmodule AntikytheraCore.Handler.GearAction do
   alias AntikytheraCore.Conn, as: CoreConn
   alias AntikytheraCore.{MetricsUploader, Handler.HelperModules, GearLog.Writer}
 
-  @http_headers_to_log Application.fetch_env!(:antikythera, :http_headers_to_log)
+  @http_headers_to_log Application.compile_env!(:antikythera, :http_headers_to_log)
 
   defun split_path_to_segments(path :: v[String.t()]) :: PathInfo.t() do
     String.split(path, "/")

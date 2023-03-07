@@ -121,7 +121,7 @@ defmodule AntikytheraCore.Handler.GearError do
     end
   end
 
-  if Application.fetch_env!(:antikythera, :return_detailed_info_on_error?) do
+  if Application.compile_env!(:antikythera, :return_detailed_info_on_error?) do
     defun internal_error_body(conn :: Conn.t(), reason :: reason, stacktrace :: stacktrace) ::
             String.t() do
       [
