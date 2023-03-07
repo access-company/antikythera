@@ -26,7 +26,7 @@ defmodule AntikytheraCore.Alert.Handler.Email do
 
   @behaviour AntikytheraCore.Alert.Handler
 
-  @from Application.fetch_env!(:antikythera, :alert) |> get_in([:email, :from])
+  @from Application.compile_env!(:antikythera, :alert) |> get_in([:email, :from])
   if !Email.valid?(@from) do
     raise "please set a valid email address in application config (as nested keyword list of `[:alert, :email, :from]`)"
   end

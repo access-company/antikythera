@@ -12,7 +12,7 @@ defmodule AntikytheraCore.Path do
   #
   if Env.compiling_for_cloud?() do
     # Use compile-time application config
-    @antikythera_root_dir Application.fetch_env!(:antikythera, :antikythera_root_dir)
+    @antikythera_root_dir Application.compile_env!(:antikythera, :antikythera_root_dir)
     defun antikythera_root_dir() :: Path.t(), do: @antikythera_root_dir
     defun compiled_core_dir() :: Path.t(), do: Path.join(antikythera_root_dir(), "releases")
   else

@@ -96,7 +96,7 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
   #
   # Handling domains
   #
-  @deployments Application.fetch_env!(:antikythera, :deployments)
+  @deployments Application.compile_env!(:antikythera, :deployments)
   @current_compile_env Env.compile_env()
 
   defunp base_domain(env :: v[Env.t()]) :: Domain.t() do

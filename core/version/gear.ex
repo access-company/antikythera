@@ -10,7 +10,7 @@ defmodule AntikytheraCore.Version.Gear do
   require AntikytheraCore.Logger, as: L
 
   @installed_gear_ratio_threshold 0.5
-  @notify_threshold Application.fetch_env!(
+  @notify_threshold Application.compile_env!(
                       :antikythera,
                       :gear_install_notify_threshold_in_seconds
                     )

@@ -93,7 +93,7 @@ defmodule AntikytheraCore.ExecutorPool.RegisteredName do
   # Async job queues are treated a bit differently, as they are cluster-wide.
   # `:async_job_queue_name_prefix` is introduced here so that some existing deployments can preserve the historic name of job queues.
   # New deployments should be OK with the default value.
-  @job_queue_prefix Application.get_env(:antikythera, :async_job_queue_name_prefix, @prefix)
+  @job_queue_prefix Application.compile_env(:antikythera, :async_job_queue_name_prefix, @prefix)
 
   defun async_job_queue(epool_id :: v[EPoolId.t()]) :: atom do
     Module.safe_concat(async_job_queue_parts(epool_id))
