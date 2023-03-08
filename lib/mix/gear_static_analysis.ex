@@ -152,55 +152,75 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
     end
   end
 
-  defp check_use_within_module(mod, _kw, _meta, file, _tool?) do
-    cond do
-      mod == Gettext ->
-        {:error, file, [],
-         "directly invoking `use Gettext` is not allowed (`use Antikythera.Gettext` instead)"}
+  defp check_use_within_module(Gettext, _kw, _meta, file, _tool?) do
+    {:error, file, [],
+     "directly invoking `use Gettext` is not allowed (`use Antikythera.Gettext` instead)"}
+  end
 
-      true ->
-        nil
+  defp check_use_within_module(_mod, _kw, _meta, _file, _tool?), do: nil
+
+  defguardp writing_to_stdout?(args)
+            when is_list(args) and (length(args) == 1 or hd(args) == :stdio)
+
+  defp check_remote_call(mod, fun, args, meta, file, false) do
+    with :ok <- check_disturbing_execution_of_vm(mod, fun),
+         :ok <- check_writing_to_stdout(mod, fun, args),
+         :ok <- check_spawning_process(mod, fun),
+         :ok <- check_executing_shell_command(mod, fun) do
+      nil
+    else
+      {severity, message} -> {severity, file, meta, message}
     end
   end
 
-  defp check_remote_call(mod, fun, args, meta, file, tool?) do
-    use_internals? = use_antikythera_internal_modules?()
+  defp check_remote_call(_mod, _fun, _args, _meta, _file, _tool?), do: nil
 
-    if !tool? do
-      cond do
-        mod == System and fun in [:halt, :stop] ->
-          {:error, file, meta, "disturbing execution of ErlangVM is strictly prohibited"}
-
-        mod == :erlang and fun == :halt ->
-          {:error, file, meta, "disturbing execution of ErlangVM is strictly prohibited"}
-
-        mod == :init ->
-          {:error, file, meta, "disturbing execution of ErlangVM is strictly prohibited"}
-
-        mod == IO and fun in [:inspect, :puts, :write] and writing_to_stdout?(args) ->
-          severity = if Mix.env() == :prod, do: :error, else: :warning
-
-          {severity, file, meta,
-           "writing to STDOUT/STDERR is not allowed in prod environment (use each gear's logger instead)"}
-
-        mod in [Process, Task, Agent] and spawning_a_new_process?(Atom.to_string(fun)) ->
-          {:error, file, meta, "spawning processes in gear's code is prohibited"}
-
-        mod == :os and fun == :cmd ->
-          {:error, file, meta, "calling :os.cmd/1 in gear's code is prohibited"}
-
-        !use_internals? and mod == System and fun == :cmd ->
-          {:error, file, meta, "calling System.cmd/3 in gear's code is prohibited"}
-
-        true ->
-          nil
-      end
+  defp check_disturbing_execution_of_vm(mod, fun) do
+    if disturbing_execution_of_vm?(mod, fun) do
+      {:error, "disturbing execution of ErlangVM is strictly prohibited"}
+    else
+      :ok
     end
   end
 
-  defp writing_to_stdout?([_]), do: true
-  defp writing_to_stdout?([:stdio | _]), do: true
-  defp writing_to_stdout?(_), do: false
+  defp disturbing_execution_of_vm?(System, fun) when fun in [:halt, :stop], do: true
+  defp disturbing_execution_of_vm?(:erlang, :halt), do: true
+  defp disturbing_execution_of_vm?(:init, _fun), do: true
+  defp disturbing_execution_of_vm?(_mod, _fun), do: false
+
+  defp check_writing_to_stdout(IO, fun, args)
+       when fun in [:inspect, :puts, :write] and writing_to_stdout?(args) do
+    severity = if Mix.env() == :prod, do: :error, else: :warning
+
+    {severity,
+     "writing to STDOUT/STDERR is not allowed in prod environment (use each gear's logger instead)"}
+  end
+
+  defp check_writing_to_stdout(_mod, _fun, _args), do: :ok
+
+  defp check_spawning_process(mod, fun) when mod in [Process, Task, Agent] do
+    if spawning_a_new_process?(Atom.to_string(fun)) do
+      {:error, "spawning processes in gear's code is prohibited"}
+    else
+      :ok
+    end
+  end
+
+  defp check_spawning_process(_mod, _fun), do: :ok
+
+  defp check_executing_shell_command(:os, :cmd) do
+    {:error, "calling :os.cmd/1 in gear's code is prohibited"}
+  end
+
+  defp check_executing_shell_command(System, :cmd) do
+    if use_antikythera_internal_modules?() do
+      :ok
+    else
+      {:error, "calling System.cmd/3 in gear's code is prohibited"}
+    end
+  end
+
+  defp check_executing_shell_command(_mod, _fun), do: :ok
 
   defp spawning_a_new_process?("start" <> _), do: true
   defp spawning_a_new_process?("spawn" <> _), do: true
@@ -208,12 +228,8 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   defp spawning_a_new_process?(_), do: false
 
   defp check_local_call(fun, _args, meta, file, _tool?) do
-    cond do
-      Atom.to_string(fun) |> String.starts_with?("spawn") ->
-        {:error, file, meta, "spawning processes in gear's code is prohibited"}
-
-      true ->
-        nil
+    if Atom.to_string(fun) |> String.starts_with?("spawn") do
+      {:error, file, meta, "spawning processes in gear's code is prohibited"}
     end
   end
 
