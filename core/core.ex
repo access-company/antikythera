@@ -7,6 +7,10 @@ defmodule AntikytheraCore do
   alias AntikytheraEal.ClusterConfiguration
   require AntikytheraCore.Logger, as: L
 
+  defun add_translator_to_logger() :: :ok do
+    Logger.add_translator({AntikytheraCore.ErlangLogTranslator, :translate})
+  end
+
   @doc """
   Callback implementation of `Application.start/2`.
 
@@ -16,7 +20,7 @@ defmodule AntikytheraCore do
   """
   @impl true
   def start(_type, _args) do
-    Logger.add_translator({AntikytheraCore.ErlangLogTranslator, :translate})
+    add_translator_to_logger()
     # In dev or local environment, the log level is initially set to `:notice` at mix_common.exs
     # in order to avoid SASL progress reports.
     # The log level is restored to `:info` after loading antikythera.

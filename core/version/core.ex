@@ -33,6 +33,10 @@ defmodule AntikytheraCore.Version.Core do
            :release_handler.unpack_release('#{version}/#{Env.antikythera_instance_name()}'),
          {:ok, _, _} <- :release_handler.check_install_release(version_charlist, [:purge]),
          {:ok, _, _} <- :release_handler.install_release(version_charlist) do
+      # :release_handler.install_release/1 resets envs of Applications to the default ones.
+      # Therefore, Logger loses its translators which are added by Logger.add_translator/1.
+      # We need to add them again.
+      AntikytheraCore.add_translator_to_logger()
       emit_success_message_to_all_log_files(version)
     else
       {:error, reason} -> L.error("failed to upgrade antikythera instance: #{inspect(reason)}")
