@@ -27,8 +27,7 @@ defmodule Antikythera.Crypto.AesTest do
   property "ctr128_encrypt and decrypt with pbkdf2" do
     check all({data, pw, salt} <- {binary(), binary(), binary()}) do
       kdf = fn pw ->
-        {:ok, k} = :pbkdf2.pbkdf2(:sha, pw, salt, 100, 16)
-        k
+        :crypto.pbkdf2_hmac(:sha, pw, salt, 100, 16)
       end
 
       assert Aes.ctr128_encrypt(data, pw, kdf) |> Aes.ctr128_decrypt(pw, kdf) == {:ok, data}
@@ -44,8 +43,7 @@ defmodule Antikythera.Crypto.AesTest do
   property "gcm128_encrypt and decrypt with pbkdf2" do
     check all({data, pw, salt} <- {binary(), binary(), binary()}) do
       kdf = fn pw ->
-        {:ok, k} = :pbkdf2.pbkdf2(:sha, pw, salt, 100, 16)
-        k
+        :crypto.pbkdf2_hmac(:sha, pw, salt, 100, 16)
       end
 
       assert Aes.gcm128_encrypt(data, pw, "aad", kdf) |> Aes.gcm128_decrypt(pw, "aad", kdf) ==
