@@ -42,10 +42,6 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
   @vm_args_path Path.join(antikythera_repo_rel_dir, "vm.args")
   @boot_script_patch_path Path.join(antikythera_repo_rel_dir, "boot_script.patch")
   @relx_config_template_path Path.join(antikythera_repo_rel_dir, "relx.config.eex")
-  # TODO: Remove after requiring Elixir 1.11+
-  if Version.match?(System.version(), "~> 1.10.0") do
-    @dialyzer {:no_return, force_compile_app!: 0}
-  end
 
   def run(_args) do
     conf = Mix.Project.config()
@@ -89,15 +85,8 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
     end
   end
 
-  # TODO: Remove this conditional branching after requiring Elixir 1.10+
-  if Version.match?(System.version(), "~> 1.10") do
-    defp force_compile_app!() do
-      {:ok, _} = Mix.Tasks.Compile.App.run(["--force"])
-    end
-  else
-    defp force_compile_app!() do
-      :ok = Mix.Tasks.Compile.App.run(["--force"])
-    end
+  defp force_compile_app!() do
+    {:ok, _} = Mix.Tasks.Compile.App.run(["--force"])
   end
 
   defp prepare_sys_config(sys_config_path) do
