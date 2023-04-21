@@ -24,11 +24,7 @@ defmodule Antikythera.Test.Config do
     ExUnit.start()
 
     if blackbox_test?() do
-      ExUnit.configure(
-        exclude: [:test],
-        include: [:blackbox, :blackbox_only]
-      )
-
+      ExUnit.configure(exclude: [:test], include: [:blackbox, :blackbox_only])
       IO.puts("Target base URL: #{base_url()}")
     else
       ExUnit.configure(exclude: [:blackbox_only])
