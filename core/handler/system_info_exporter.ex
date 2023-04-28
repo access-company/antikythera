@@ -35,6 +35,9 @@ defmodule AntikytheraCore.Handler.SystemInfoExporter do
   end
 
   defmodule Versions do
+    @behaviour :cowboy_handler
+
+    @impl :cowboy_handler
     def init(req, nil) do
       AccessToken.with_valid_token(req, fn ->
         body =
@@ -48,6 +51,9 @@ defmodule AntikytheraCore.Handler.SystemInfoExporter do
   end
 
   defmodule Upgradability do
+    @behaviour :cowboy_handler
+
+    @impl :cowboy_handler
     def init(req, nil) do
       AccessToken.with_valid_token(req, fn ->
         upgradability = :sys.get_state(AntikytheraCore.VersionUpgradeTaskQueue).enabled?
@@ -60,6 +66,9 @@ defmodule AntikytheraCore.Handler.SystemInfoExporter do
     alias Antikythera.Time
     alias AntikytheraCore.ErrorCountsAccumulator
 
+    @behaviour :cowboy_handler
+
+    @impl :cowboy_handler
     def init(req, :total) do
       AccessToken.with_valid_token(req, fn ->
         reply(req, ErrorCountsAccumulator.get_total())
