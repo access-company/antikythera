@@ -47,6 +47,15 @@ defmodule AntikytheraCore.Handler.SystemInfoExporter do
     end
   end
 
+  defmodule Upgradability do
+    def init(req, nil) do
+      AccessToken.with_valid_token(req, fn ->
+        upgradability = :sys.get_state(AntikytheraCore.VersionUpgradeTaskQueue).enabled?
+        :cowboy_req.reply(200, %{}, "#{upgradability}", req)
+      end)
+    end
+  end
+
   defmodule ErrorCount do
     alias Antikythera.Time
     alias AntikytheraCore.ErrorCountsAccumulator

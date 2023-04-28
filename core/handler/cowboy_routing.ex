@@ -13,6 +13,7 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
   @healthcheck_route_initialized {"/healthcheck", Healthcheck.Initialized, nil}
   @healthcheck_route_uninitialized {"/healthcheck", Healthcheck.Uninitialized, nil}
   @version_report_route {"/versions", SystemInfoExporter.Versions, nil}
+  @upgradability_check_route {"/upgradability", SystemInfoExporter.Upgradability, nil}
   @total_error_count_route {"/error_count/_total", SystemInfoExporter.ErrorCount, :total}
   @per_app_error_count_route {"/error_count/:otp_app_name", SystemInfoExporter.ErrorCount,
                               :per_otp_app}
@@ -27,6 +28,7 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
     path_rules = [
       if(initialized?, do: @healthcheck_route_initialized, else: @healthcheck_route_uninitialized),
       @version_report_route,
+      @upgradability_check_route,
       @total_error_count_route,
       @per_app_error_count_route
     ]
