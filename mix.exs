@@ -90,8 +90,6 @@ defmodule Antikythera.Mixfile do
       {:fast_xml, "1.1.48", [antikythera_internal: true]},
       {:foretoken, "0.3.0", [antikythera_internal: true]},
       {:recon, "2.5.1", [antikythera_internal: true]},
-      # only to generate release
-      {:relx, "3.33.0", [antikythera_internal: true, only: :prod, runtime: false]},
 
       # The following libraries are used by both antikythera itself and gears.
       {:poison, "2.2.0"},
@@ -136,16 +134,6 @@ defmodule Antikythera.Mixfile do
       {:unicode_util_compat, "0.7.0", [indirect: true]},
       # fast_xml
       {:p1_utils, "1.0.23", [indirect: true]},
-      # relx
-      {:bbmustache, "1.5.0", [indirect: true, only: :prod, runtime: false]},
-      # relx
-      {:cf, "0.3.1", [indirect: true, only: :prod, runtime: false]},
-      # relx
-      {:erlware_commons, "1.2.0", [indirect: true, only: :prod, runtime: false]},
-      # relx
-      {:getopt, "1.0.1", [indirect: true, only: :prod, runtime: false]},
-      # relx
-      {:providers, "1.8.0", [indirect: true, only: :prod, runtime: false]},
 
       # indirect tool deps
       # credo
