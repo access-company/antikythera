@@ -5,6 +5,10 @@ which are exposed to antikythera instance administrators and/or gear developers.
 
 ---
 
+- Next minor version release:
+    - Change backend of `mix antikythera_core.generate_release` from `relx` to `mix release`.
+        - This requires a manual addition of `mix release`'s config and change of related environment variable names.
+    - Upgrade Elixir to v1.11 series.
 - 0.4.0:
     - Add a new callback named `health_check_grace_period_in_seconds/0` to `AntikytheraEal.ClusterConfiguration.Behaviour`.
 - 0.3.0:
