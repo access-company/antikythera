@@ -40,10 +40,18 @@ defmodule AntikytheraCore.TemplateEngine do
     {:__block__, [], Enum.reverse([{:safe, q} | dynamic])}
   end
 
-  @impl true
-  def handle_text(state, text) do
-    %{iodata: iodata} = state
-    %{state | iodata: [text | iodata]}
+  if Version.match?(System.version(), "~> 1.12") do
+    @impl true
+    def handle_text(state, _meta, text) do
+      %{iodata: iodata} = state
+      %{state | iodata: [text | iodata]}
+    end
+  else
+    @impl true
+    def handle_text(state, text) do
+      %{iodata: iodata} = state
+      %{state | iodata: [text | iodata]}
+    end
   end
 
   @impl true
