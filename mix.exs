@@ -84,7 +84,7 @@ defmodule Antikythera.Mixfile do
       # 0.4.2 is broken!
       {:calliope, "0.4.1", [antikythera_internal: true]},
       {:pool_sup, "0.6.1", [antikythera_internal: true]},
-      {:raft_fleet, "0.10.1", [antikythera_internal: true]},
+      {:raft_fleet, "0.10.2", [antikythera_internal: true]},
       {:rafted_value, "0.11.1", [antikythera_internal: true]},
       {:syn, "1.6.3", [antikythera_internal: true]},
       {:fast_xml, "1.1.48", [antikythera_internal: true]},
