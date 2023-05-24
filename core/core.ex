@@ -34,7 +34,7 @@ defmodule AntikytheraCore do
       calculate_connection_trial_count_from_health_check_grace_period()
       |> establish_connections_to_other_nodes()
 
-      :syn.init()
+      :syn.add_node_to_scopes([:antikythera])
     end
 
     L.info("activating RaftFleet")
