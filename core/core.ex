@@ -29,7 +29,7 @@ defmodule AntikytheraCore do
     add_gears_dir_to_erl_libs()
     AntikytheraCore.FileSetup.setup_files_and_ets_tables()
     AntikytheraCore.Config.Core.load()
-    # Just to suppress log messages by :syn.init()
+    # Just to suppress log messages by `:syn.add_node_to_scopes/1`.
     if not Antikythera.Env.no_listen?() do
       calculate_connection_trial_count_from_health_check_grace_period()
       |> establish_connections_to_other_nodes()
