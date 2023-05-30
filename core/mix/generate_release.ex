@@ -1,7 +1,7 @@
 # Copyright(c) 2015-2023 ACCESS CO., LTD. All rights reserved.
 
 defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
-  @shortdoc "Generates a new release tarball for antikythera instance using relx"
+  @shortdoc "Generates a new release tarball for antikythera instance using `mix release`"
 
   @moduledoc """
   #{@shortdoc}.
@@ -18,330 +18,274 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
     If any previous releases exist, relup file to upgrade from the latest existing release to the current release is also generated.
   - Making a new release tarball consists of the following steps:
       - Preparation
-          - `.beam` and `.app` files.
-          - `vm.args`: resides in the git repository and is copied to the release by relx's overlay mechanism.
-          - `sys.config`: generated from mix config and then copied to the release by relx's overlay mechanism.
-          - `relx.config`: generated from `relx.config.eex`.
+          - Template files (`rel/*.eex`) used by `mix release` to create `env.sh` and `vm.args`.
+          - Configuration for `mix release` provided by `#{__MODULE__}.config_for_mix_release/0`.
       - Release generation
-          - If needed, generate .appup files and relup file.
-          - Generate a new release from the input files by `:relx.do/2`.
+          - Ensure that source files are compiled and `<antikythera_instance>.app` is up-to-date.
+          - If a previous release is found, generate `*.appup` and `relup` files.
+              - `*.appup` files are generated before assembling.
+              - `relup` file is generated after assembling.
+          - Generate a new release by `:assemble` step of `mix release`.
+          - Generate `RELEASES` file, which is required by `:release_handler`.
       - Cleanup
-          - Move some files and apply patch to boot script, in order to suit our needs.
-          - Make a tarball. This step also uses `:relx.do/2`.
-          - Remove temporary files.
+          - Make a tarball by `:tar` step of `mix release`, then move it to the version directory.
   """
 
   use Mix.Task
-  alias AntikytheraCore.Release.Appup
 
-  @release_output_dir_basename if(Antikythera.Env.compile_env() == :local,
-                                 do: "rel_local",
-                                 else: "rel"
-                               ) <> "_erlang-#{System.otp_release()}"
-  antikythera_repo_rel_dir = Path.expand(Path.join([__DIR__, "..", "..", "rel"]))
-  @vm_args_path Path.join(antikythera_repo_rel_dir, "vm.args")
-  @boot_script_patch_path Path.join(antikythera_repo_rel_dir, "boot_script.patch")
-  @relx_config_template_path Path.join(antikythera_repo_rel_dir, "relx.config.eex")
+  prefix = if Antikythera.Env.compile_env() == :local, do: "rel_local", else: "rel"
+  @release_output_dir_basename prefix <> "_erlang-#{System.otp_release()}"
+  @antikythera_repo_rel_templates_path Path.expand(Path.join([__DIR__, "..", "..", "rel"]))
 
+  @impl Mix.Task
   def run(_args) do
-    conf = Mix.Project.config()
-    release_name = conf[:app]
+    Mix.Project.get!()
+    config = Mix.Project.config()
+    instance_app = config[:app]
 
-    if release_name == :antikythera,
-      do: Mix.raise("Application name of an antikythera instance must not be `:antikythera`")
-
-    version = conf[:version]
-
-    setup(release_name, version, fn relx_config_path ->
-      do_generate(release_name, version, relx_config_path)
-    end)
-  end
-
-  defp setup(release_name, version, f) do
-    File.mkdir_p!(@release_output_dir_basename)
-    sys_config_path = Path.join(@release_output_dir_basename, "sys.config")
-    relx_config_path = Path.join(@release_output_dir_basename, "relx.config")
-
-    try do
-      ensure_antikythera_instance_compiled()
-      prepare_sys_config(sys_config_path)
-      prepare_relx_config(release_name, version, relx_config_path)
-      f.(relx_config_path)
-    after
-      File.rm!(relx_config_path)
-      File.rm!(sys_config_path)
+    if instance_app == :antikythera do
+      Mix.raise("Application name of an antikythera instance must not be `:antikythera`")
     end
-  end
 
-  defp ensure_antikythera_instance_compiled() do
-    try do
-      # Generate <antikythera_instance>.app as it can be for older version of the instance.
-      force_compile_app!()
-    rescue
-      File.Error ->
-        # Directory for <antikythera_instance>.app does not exist,
-        # i.e. the antikythera instance is not yet compiled; run the normal compilation.
-        Mix.Tasks.Compile.run([])
+    if config[:releases][instance_app] == nil do
+      Mix.raise("""
+      Configuration for `mix release #{instance_app}` is required.
+      See `#{__MODULE__}.config_for_mix_release/0` for more details.
+      """)
     end
+
+    Mix.Task.run("compile")
+    # <antikythera_instance>.app might be stale in some situations
+    # (e.g. when antikythera instance's version is updated by an empty commit).
+    if read_app_version_from_app_file(instance_app) != config[:version] do
+      Mix.Task.rerun("compile.app", ["--force"])
+    end
+
+    release_name_str = Atom.to_string(instance_app)
+    :ok = Mix.Task.run("release", [release_name_str])
   end
 
-  defp force_compile_app!() do
-    {:ok, _} = Mix.Tasks.Compile.App.run(["--force"])
-  end
+  @doc """
+  Generates a release configuration required by `mix #{Mix.Task.task_name(__MODULE__)}`.
 
-  defp prepare_sys_config(sys_config_path) do
-    {config, _} = Mix.Config.eval!(Mix.Project.config()[:config_path])
-    pretty_config_str = :io_lib.fwrite('~p.\n', [config]) |> List.to_string()
-    File.write!(sys_config_path, pretty_config_str)
-    IO.puts("Generated #{sys_config_path}.")
-  end
+  A release name for the configuration must be identical to the antikythera instance name.
+  The following is an example configuration for `antikythera_instance_example`:
 
-  defp prepare_relx_config(release_name, version, relx_config_path) do
-    bindings = [
-      release_name: release_name,
-      release_version: version,
-      lib_dirs: lib_dirs(),
-      vm_args_path: @vm_args_path
-    ]
-
-    file_content = EEx.eval_file(@relx_config_template_path, bindings)
-    File.write!(relx_config_path, file_content)
-    IO.puts("Generated #{relx_config_path}.")
-  end
-
-  defp lib_dirs() do
+  ```
+  def project do
     [
-      Path.join([Mix.Project.build_path(), "lib"]),
-      Path.join(:code.lib_dir(:elixir), "ebin") |> Path.expand(),
-      Path.join(:code.lib_dir(:iex), "ebin") |> Path.expand(),
-      Path.join(:code.lib_dir(:eex), "ebin") |> Path.expand(),
-      Path.join(:code.lib_dir(:mix), "ebin") |> Path.expand(),
-      Path.join(:code.lib_dir(:logger), "ebin") |> Path.expand(),
-      Path.join(:code.lib_dir(:ex_unit), "ebin") |> Path.expand()
+      releases: [
+        antikythera_instance_example: &#{__MODULE__}.config_for_mix_release/0,
+
+        ...
+      ]
+    ]
+  end
+  ```
+  """
+  def config_for_mix_release() do
+    # Release name to generate is identical to the instance app name.
+    release_name_str = Atom.to_string(instance_app())
+
+    [
+      path: Path.join(@release_output_dir_basename, release_name_str),
+      include_executables_for: [:unix],
+      rel_templates_path: @antikythera_repo_rel_templates_path,
+      steps: [&before_assemble/1, :assemble, &after_assemble/1, :tar, &move_tarball/1],
+      # `AntikytheraCore.Release.Appup` detects changes of modules including their metadata.
+      # To include module's metadata in a BEAM file, we set `strip_beams: false` here.
+      strip_beams: false,
+      # Elixir checks the release existence by looking for only a directory for its version,
+      # but we should check the release existence by looking for its release package (tarball).
+      # To skip Elixir's check and proceed to our check, we set `overwrite: true` here.
+      overwrite: true
     ]
   end
 
-  defp do_generate(release_name, version, relx_config_path) do
-    release_output_dir = Path.expand(@release_output_dir_basename)
+  defp instance_app(), do: Mix.Project.config()[:app]
 
-    case existing_release_versions(release_name, release_output_dir) do
-      [] ->
-        generate_from_scratch(release_name, version, relx_config_path, release_output_dir)
+  defp before_assemble(%Mix.Release{version: version} = release) do
+    existing_versions = get_existing_release_versions(release)
 
-      release_versions ->
-        if version in release_versions do
-          IO.puts("Version '#{version}' already exists.")
-        else
-          # Only support upgrade from the latest existing version
-          latest_existing = Enum.sort(release_versions) |> List.last()
+    cond do
+      existing_versions == [] ->
+        Mix.shell().info("Generating release #{version} without upgrade ...")
+        release
 
-          if latest_existing >= version do
-            Mix.raise(
-              "Existing latest release (#{latest_existing}) must precede the current version (#{
-                version
-              })!"
-            )
-          end
+      version in existing_versions ->
+        Mix.shell().info("Version '#{version}' already exists.")
+        %Mix.Release{release | steps: []}
 
-          generate_with_upgrade(
-            release_name,
-            version,
-            latest_existing,
-            relx_config_path,
-            release_output_dir
+      true ->
+        # Only supporting upgrade from the latest existing version.
+        latest_existing = Enum.max(existing_versions)
+
+        if latest_existing >= version do
+          Mix.raise(
+            "Latest existing version (#{latest_existing}) " <>
+              "must precede the current version (#{version})!"
           )
         end
+
+        Mix.shell().info(
+          "Generating release #{version} with upgrade instruction from #{latest_existing} ..."
+        )
+
+        generate_appup_files(release, latest_existing)
+        put_latest_existing_version(release, latest_existing)
     end
   end
 
-  defp existing_release_versions(release_name, release_output_dir) do
-    releases_dir = Path.join([release_output_dir, Atom.to_string(release_name), "releases"])
+  defp get_existing_release_versions(%Mix.Release{} = release) do
+    case File.ls(releases_dir(release)) do
+      {:error, _} ->
+        []
 
-    case File.ls(releases_dir) do
-      {:error, _} -> []
-      {:ok, files} -> files -- ["RELEASES", "#{release_name}.rel", "start_erl.data"]
-    end
-    |> Enum.filter(fn release_version ->
-      File.exists?(Path.join([releases_dir, release_version, "#{release_name}.tar.gz"]))
-    end)
-  end
-
-  defp generate_from_scratch(release_name, version, relx_config_path, release_output_dir) do
-    IO.puts("Generating release #{version} without upgrade ...")
-    run_relx(release_name, version, false, relx_config_path, release_output_dir)
-  end
-
-  defp generate_with_upgrade(
-         release_name,
-         version,
-         from_version,
-         relx_config_path,
-         release_output_dir
-       ) do
-    IO.puts("Generating release #{version} with upgrade instruction from #{from_version} ...")
-    generate_appup_files(release_name, version, from_version, release_output_dir)
-    run_relx(release_name, version, true, relx_config_path, release_output_dir)
-  end
-
-  defp run_relx(release_name, version, upgrade?, relx_config_path, release_output_dir) do
-    relx_opts = [
-      log_level: 2,
-      root_dir: String.to_charlist(File.cwd!()),
-      config: String.to_charlist(relx_config_path),
-      relname: release_name,
-      relvsn: String.to_charlist(version),
-      output_dir: String.to_charlist(release_output_dir),
-      dev_mode: false
-    ]
-
-    release_name_str = Atom.to_string(release_name)
-    generate_release_and_relup(release_name_str, version, upgrade?, release_output_dir, relx_opts)
-    finalize_release_as_tarball(release_name_str, version, release_output_dir, relx_opts)
-  end
-
-  defp generate_release_and_relup(
-         release_name_str,
-         version,
-         upgrade?,
-         release_output_dir,
-         relx_opts
-       ) do
-    commands = if upgrade?, do: ['release', 'relup'], else: ['release']
-    {:ok, _} = run_relx_impl(relx_opts, commands)
-    remove_versioned_boot_script(release_name_str, version, release_output_dir)
-    apply_patch_to_boot_script(release_name_str, release_output_dir)
-
-    if upgrade? do
-      move_relup(release_name_str, version, release_output_dir)
+      {:ok, release_version_dirs_and_other_files} ->
+        Enum.filter(release_version_dirs_and_other_files, &version_with_tarball?(&1, release))
     end
   end
 
-  defp finalize_release_as_tarball(release_name_str, version, release_output_dir, relx_opts) do
-    {:ok, _} = run_relx_impl(relx_opts, ['tar'])
-    move_tarball(release_name_str, version, release_output_dir)
+  defp version_with_tarball?(version, %Mix.Release{} = release) do
+    with true <- Antikythera.VersionStr.valid?(version) do
+      release
+      |> tarball_path(version)
+      |> File.exists?()
+    end
   end
 
-  defp run_relx_impl(relx_opts, commands) do
-    # :relx is a :prod-only dependency and thus we use `apply/3` to suppress warning
-    # (note that when compiling antikythera from within an antikythera instance or gear project,
-    # `Mix.env()` returns `:prod` but :prod-only deps are not available).
-    apply(:relx, :do, [relx_opts, commands])
+  defp generate_appup_files(%Mix.Release{} = release, prev_release_version) do
+    prev_app_versions = read_app_versions_from_rel_file(release, prev_release_version)
+    # We don't support upgrading Erlang/Elixir's core applications.
+    upgradable_apps = [instance_app() | Mix.Project.deps_apps()]
+    Enum.each(upgradable_apps, &generate_appup_if_needed(&1, prev_app_versions[&1], release))
   end
 
-  defp generate_appup_files(release_name, rel_version, from_rel_version, release_output_dir) do
-    current_deps =
-      Mix.Dep.load_on_environment(env: Mix.env()) |> Enum.map(&dep_struct_to_triplet/1)
+  defp generate_appup_if_needed(_app, nil, _release), do: :ok
 
-    release_name_str = Atom.to_string(release_name)
+  defp generate_appup_if_needed(app, prev_version, release) do
+    case read_app_version_from_app_file(app) do
+      ^prev_version ->
+        :ok
 
-    instance_otp_app =
-      {release_name, rel_version, Path.join([Mix.Project.build_path(), "lib", release_name_str])}
-
-    current_otp_apps = [instance_otp_app | current_deps]
-    prev_otp_apps = read_rel_file(release_name_str, from_rel_version, release_output_dir)
-
-    generate_appup_files_impl(
-      release_name_str,
-      current_otp_apps,
-      prev_otp_apps,
-      release_output_dir
-    )
+      version ->
+        dir = Application.app_dir(app)
+        prev_dir = lib_dir_for_app(release, app, prev_version)
+        :ok = AntikytheraCore.Release.Appup.make(app, prev_version, version, prev_dir, dir)
+        Mix.shell().info("Generated #{app}.appup.")
+    end
   end
 
-  defp generate_appup_files_impl(
-         release_name_str,
-         current_otp_apps,
-         prev_otp_apps,
-         release_output_dir
+  defp after_assemble(%Mix.Release{} = release) do
+    create_RELEASES(release)
+
+    case get_latest_existing_version(release) do
+      nil ->
+        release
+
+      prev_version ->
+        make_relup(release, prev_version)
+        release
+    end
+  end
+
+  # credo:disable-for-next-line Credo.Check.Readability.FunctionNames
+  defp create_RELEASES(%Mix.Release{version: version} = release) do
+    releases_dir = String.to_charlist(releases_dir(release))
+    rel_file = rel_file_path(release, version)
+    :ok = :release_handler.create_RELEASES('.', releases_dir, rel_file, [])
+    Mix.shell().info("Generated RELEASES.")
+  end
+
+  defp make_relup(
+         %Mix.Release{version: version, version_path: version_path} = release,
+         prev_version
        ) do
-    Enum.each(current_otp_apps, fn {name, version, dir} ->
-      case prev_otp_apps[name] do
-        nil ->
-          :ok
+    current = make_name_for_relup(release, version)
+    up_from = make_name_for_relup(release, prev_version)
 
-        ^version ->
-          :ok
-
-        prev_version ->
-          prev_dir =
-            Path.join([release_output_dir, release_name_str, "lib", "#{name}-#{prev_version}"])
-
-          Appup.make(name, prev_version, version, prev_dir, dir)
-          IO.puts("Generated #{name}.appup.")
-      end
-    end)
-  end
-
-  defp dep_struct_to_triplet(%Mix.Dep{app: name, opts: opts}) do
-    dir = opts[:build]
-    version = AntikytheraCore.Version.read_from_app_file(dir, name)
-    {name, version, dir}
-  end
-
-  defp read_rel_file(release_name_str, version, release_output_dir) do
-    rel_file_path =
-      Path.join([
-        release_output_dir,
-        release_name_str,
-        "releases",
-        version,
-        "#{release_name_str}.rel"
-      ])
-
-    release_name_chars = String.to_charlist(release_name_str)
-    {:ok, [{:release, {^release_name_chars, _}, {:erts, _}, deps}]} = :file.consult(rel_file_path)
-
-    Map.new(deps, fn
-      {name, version} -> {name, List.to_string(version)}
-      {name, version, _} -> {name, List.to_string(version)}
-    end)
-  end
-
-  defp remove_versioned_boot_script(release_name_str, version, release_output_dir) do
-    File.rm!(
-      Path.join([release_output_dir, release_name_str, "bin", "#{release_name_str}-#{version}"])
-    )
-  end
-
-  defp apply_patch_to_boot_script(release_name_str, release_output_dir) do
-    # Currently "rel/boot_script.patch" contains 3 hunks:
-    # - specify `-mode interactive` emulator flag (instead of `embed`) for easier module loading
-    # - enable iex in remote_console
-    # - automatically start iex on start (which enables auto-completion in remote_console)
-    script_path = Path.join([release_output_dir, release_name_str, "bin", release_name_str])
-    {_, 0} = System.cmd("patch", ["--backup-if-mismatch", script_path, @boot_script_patch_path])
-    # patch command generated a backup
-    if File.exists?("#{script_path}.orig") do
-      Mix.raise(
-        "Patch for #{script_path} does not match exactly. Fix the patch to catch up with relx's boot script."
+    code_paths =
+      Enum.map(
+        read_app_versions_from_rel_file(release, version) ++
+          read_app_versions_from_rel_file(release, prev_version),
+        fn {app, app_version} -> code_path_for_app(release, app, app_version) end
       )
-    end
+
+    outdir = String.to_charlist(version_path)
+    :ok = :systools.make_relup(current, [up_from], [up_from], path: code_paths, outdir: outdir)
+    Mix.shell().info("Generated relup from #{prev_version} to #{version}.")
   end
 
-  defp move_relup(release_name_str, version, release_output_dir) do
-    source = Path.join([release_output_dir, release_name_str, "relup"])
-    dest = Path.join([release_output_dir, release_name_str, "releases", version, "relup"])
-    move_across_partitions(source, dest)
+  defp move_tarball(%Mix.Release{name: name, path: path, version: version} = release) do
+    src = Path.join(path, "#{name}-#{version}.tar.gz")
+    dst = tarball_path(release, version)
+    File.copy!(src, dst)
+    File.rm!(src)
+    release
   end
 
-  defp move_tarball(release_name_str, version, release_output_dir) do
-    source =
-      Path.join([release_output_dir, release_name_str, "#{release_name_str}-#{version}.tar.gz"])
-
-    dest =
-      Path.join([
-        release_output_dir,
-        release_name_str,
-        "releases",
-        version,
-        "#{release_name_str}.tar.gz"
-      ])
-
-    move_across_partitions(source, dest)
+  defp read_app_version_from_app_file(app) do
+    app
+    |> Application.app_dir()
+    |> AntikytheraCore.Version.read_from_app_file(app)
   end
 
-  defp move_across_partitions(source, dest) do
-    File.copy!(source, dest)
-    File.rm!(source)
+  defp releases_dir(%Mix.Release{path: path}), do: Path.join(path, "releases")
+
+  defp tarball_path(%Mix.Release{name: name} = release, version) do
+    release
+    |> releases_dir()
+    |> Path.join(version)
+    |> Path.join("#{name}.tar.gz")
+  end
+
+  defp rel_file_path(%Mix.Release{name: name} = release, version) do
+    release
+    |> releases_dir()
+    |> Path.join(version)
+    |> Path.join("#{name}.rel")
+    |> String.to_charlist()
+  end
+
+  defp read_app_versions_from_rel_file(%Mix.Release{name: name} = release, version) do
+    release_name_chars = Atom.to_charlist(name)
+
+    {:ok, [{:release, {^release_name_chars, _}, {:erts, _}, apps}]} =
+      release
+      |> rel_file_path(version)
+      |> :file.consult()
+
+    Keyword.new(apps, fn
+      {app, app_version} -> {app, List.to_string(app_version)}
+      {app, app_version, _} -> {app, List.to_string(app_version)}
+    end)
+  end
+
+  defp make_name_for_relup(%Mix.Release{} = release, version) do
+    release
+    |> rel_file_path(version)
+    |> :filename.rootname('.rel')
+  end
+
+  defp lib_dir_for_app(%Mix.Release{path: path}, app, app_version) do
+    Path.join([path, "lib", "#{app}-#{app_version}"])
+  end
+
+  defp code_path_for_app(%Mix.Release{} = release, app, app_version) do
+    release
+    |> lib_dir_for_app(app, app_version)
+    |> Path.join("ebin")
+    |> String.to_charlist()
+  end
+
+  defp put_latest_existing_version(%Mix.Release{options: options} = release, latest_existing) do
+    %Mix.Release{
+      release
+      | options: Keyword.put(options, :latest_existing, latest_existing)
+    }
+  end
+
+  defp get_latest_existing_version(%Mix.Release{options: options}) do
+    Keyword.get(options, :latest_existing)
   end
 end

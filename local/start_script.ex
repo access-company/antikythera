@@ -10,9 +10,8 @@ defmodule AntikytheraLocal.StartScript do
     env = [
       {"ANTIKYTHERA_RUNTIME_ENV", "local"},
       {"MIX_ENV", "prod"},
-      {"RELX_REPLACE_OS_VARS", "true"},
-      {"NODENAME", Atom.to_string(NodeName.get())},
-      {"COOKIE", "local"}
+      {"RELEASE_NODE", Atom.to_string(NodeName.get())},
+      {"RELEASE_COOKIE", "local"}
     ]
 
     Cmd.exec_and_output_log!("sh", ["bin/#{Env.antikythera_instance_name()}", command],

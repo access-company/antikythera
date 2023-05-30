@@ -22,7 +22,8 @@ defmodule AntikytheraCore.Cluster do
 
   defunp connect(host :: v[String.t()]) :: :ok do
     # The following `String.to_atom` is inevitable; fortunately number of nodes is not too many.
-    # Note that the following naming scheme is defined in the boot script and passed to relx's script: see `NODENAME` env var.
+    # Note that the following naming scheme of erlang nodes must be set by `RELEASE_NODE`,
+    # which is an environment variable used by `mix release` (see also `rel/env.sh.eex`).
     # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     nodename = String.to_atom("antikythera@" <> host)
 

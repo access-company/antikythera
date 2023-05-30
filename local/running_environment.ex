@@ -34,7 +34,7 @@ defmodule AntikytheraLocal.RunningEnvironment do
   defun setup(gear_repo_dirs :: [Path.t()]) :: :ok do
     create_dir_same_as_node()
     build_core_and_unpack_at_release_dir()
-    StartScript.run("start", @release_dir)
+    StartScript.run("daemon", @release_dir)
     wait_until_directories_are_created()
 
     Enum.each(gear_repo_dirs, fn gear_repo_dir ->
@@ -216,8 +216,6 @@ defmodule AntikytheraLocal.RunningEnvironment do
   end
 
   defp build_core() do
-    Cmd.exec_and_output_log!("mix", ["compile"], env: @compile_environment_vars)
-
     Cmd.exec_and_output_log!("mix", ["antikythera_core.generate_release"],
       env: @compile_environment_vars
     )
