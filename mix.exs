@@ -86,7 +86,7 @@ defmodule Antikythera.Mixfile do
       {:pool_sup, "0.6.1", [antikythera_internal: true]},
       {:raft_fleet, "0.10.2", [antikythera_internal: true]},
       {:rafted_value, "0.11.1", [antikythera_internal: true]},
-      {:syn, "1.6.3", [antikythera_internal: true]},
+      {:syn, "3.3.0", [antikythera_internal: true]},
       {:fast_xml, "1.1.48", [antikythera_internal: true]},
       {:foretoken, "0.3.0", [antikythera_internal: true]},
       {:recon, "2.5.3", [antikythera_internal: true]},

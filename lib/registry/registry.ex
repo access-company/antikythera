@@ -39,7 +39,7 @@ defmodule Antikythera.Registry do
 
     defun register(name :: v[String.t()], epool_id_or_context :: v[EPoolId.t() | Context.t()]) ::
             :ok | {:error, :taken | :pid_already_registered} do
-      :syn.register(Registry.make_name(epool_id_or_context, name), self())
+      :syn.register(:antikythera, Registry.make_name(epool_id_or_context, name), self())
     end
 
     defun send_message(
@@ -47,11 +47,11 @@ defmodule Antikythera.Registry do
             epool_id_or_context :: v[EPoolId.t() | Context.t()],
             message :: any
           ) :: boolean do
-      case :syn.find_by_key(Registry.make_name(epool_id_or_context, name)) do
+      case :syn.lookup(:antikythera, Registry.make_name(epool_id_or_context, name)) do
         :undefined ->
           false
 
-        pid ->
+        {pid, _meta} ->
           send(pid, message)
           true
       end
@@ -70,12 +70,12 @@ defmodule Antikythera.Registry do
     """
 
     defun join(name :: v[String.t()], epool_id_or_context :: v[EPoolId.t() | Context.t()]) :: :ok do
-      :syn.join(Registry.make_name(epool_id_or_context, name), self())
+      :syn.join(:antikythera, Registry.make_name(epool_id_or_context, name), self())
     end
 
     defun leave(name :: v[String.t()], epool_id_or_context :: v[EPoolId.t() | Context.t()]) ::
             :ok | {:error, :pid_not_in_group} do
-      :syn.leave(Registry.make_name(epool_id_or_context, name), self())
+      :syn.leave(:antikythera, Registry.make_name(epool_id_or_context, name), self())
     end
 
     defun publish(
@@ -83,7 +83,9 @@ defmodule Antikythera.Registry do
             epool_id_or_context :: v[EPoolId.t() | Context.t()],
             message :: any
           ) :: non_neg_integer do
-      {:ok, count} = :syn.publish(Registry.make_name(epool_id_or_context, name), message)
+      {:ok, count} =
+        :syn.publish(:antikythera, Registry.make_name(epool_id_or_context, name), message)
+
       count
     end
   end
