@@ -4,7 +4,7 @@
 
 ## Libraries
 
-- You can write tests for your gear using standard [`ExUnit` test framework](http://elixir-lang.org/docs/stable/ex_unit/ExUnit.html).
+- You can write tests for your gear using standard [`ExUnit` test framework](https://hexdocs.pm/ex_unit/ExUnit.html).
 - [`StreamData`](https://github.com/whatyouhide/stream_data) (powerful property-based testing library) is also available out of the box.
   Consider using property-based style, especially when testing side-effect free functions.
 - For testing purposes antikythera provides some helpers.

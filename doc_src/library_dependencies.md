@@ -1,6 +1,6 @@
 # Dependency Management
 
-- Elixir ships with the official build tool [`mix`](http://elixir-lang.org/docs/stable/mix/Mix.html) and it manages dependencies for elixir projects.
+- Elixir ships with the official build tool [`mix`](https://hexdocs.pm/mix/Mix.html) and it manages dependencies for elixir projects.
   Open source libraries written in Elixir or Erlang are basically published at [hex.pm](https://hex.pm/).
   Usually elixir/mix project specifies its dependencies in `mix.exs` file.
 - In antikythera, library dependencies are defined **in your antikythera instance**.
