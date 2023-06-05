@@ -24,7 +24,7 @@ we are not completely relying on [Credo](https://github.com/rrrene/credo) static
 
 ## Typespec
 
-Typespecs are useful for both documentation purpose and success typing analysis ([dialyzer](http://erlang.org/doc/man/dialyzer.html)).
+Typespecs are useful for both documentation purpose and success typing analysis ([dialyzer](https://www.erlang.org/doc/man/dialyzer.html)).
 So it's preferred to explicitly declare typespecs of functions, especially for public ones.
 
 We are utilizing [`Croma.Defun`](https://hexdocs.pm/croma/Croma.Defun.html) series for easy typespec notations.
