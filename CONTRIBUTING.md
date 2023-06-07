@@ -91,13 +91,13 @@ All of them are helpful! Follow the guidelines provided here.
   ```
 
 - After you have made sure that you can run antikythera tests, check out a feature branch from `master` branch.
-    - Antikythera and its related projects use [GitHub-flow](http://scottchacon.com/2011/08/31/github-flow.html);
+    - Antikythera and its related projects use [GitHub-flow](https://scottchacon.com/2011/08/31/github-flow.html);
       anything on `master` are automatically tested (though it is not actually "deployed" to somewhere).
     - For branch name and commit messages, look up recent branches/commits and follow their conventions
       (be sufficiently descriptive and simple).
 - Implement the feature with tests.
     - At least, test behavior of public interfaces of the modules,
-      [as advised by Elixir author, José Valim](http://stackoverflow.com/a/20949676/5421126).
+      [as advised by Elixir author, José Valim](https://stackoverflow.com/a/20949676/5421126).
     - Always confirm that the whole test passes.
       [`mix test.watch`](https://github.com/lpil/mix-test.watch) is useful to monitor file changes and automatically run the test.
     - If your change requires an actual gear for testing, see the next section.

@@ -1,6 +1,6 @@
 # Dependency Management
 
-- Elixir ships with the official build tool [`mix`](http://elixir-lang.org/docs/stable/mix/Mix.html) and it manages dependencies for elixir projects.
+- Elixir ships with the official build tool [`mix`](https://hexdocs.pm/mix/Mix.html) and it manages dependencies for elixir projects.
   Open source libraries written in Elixir or Erlang are basically published at [hex.pm](https://hex.pm/).
   Usually elixir/mix project specifies its dependencies in `mix.exs` file.
 - In antikythera, library dependencies are defined **in your antikythera instance**.
@@ -64,11 +64,11 @@
 - Some development/test libraries are useful and recommended to include in your antikythera instance.
 - Also check out [antikythera's `mix.exs`](https://github.com/access-company/antikythera/blob/master/mix.exs) as a reference.
 
-### Static analysis using [dialyzer](http://www.erlang.org/doc/man/dialyzer.html)
+### Static analysis using [dialyzer](https://www.erlang.org/doc/man/dialyzer.html)
 
 - With [dialyxir](https://github.com/jeremyjh/dialyxir), you can run typecheck of your code by `$ mix dialyzer`.
     - `dialyxir` wraps the `dialyzer`, allowing it to conveniently run from mix projects.
-- See [here](http://learnyousomeerlang.com/dialyzer) for details of success typing analysis.
+- See [here](https://learnyousomeerlang.com/dialyzer) for details of success typing analysis.
 
 ### [ex_doc](https://github.com/elixir-lang/ex_doc) for documentations
 

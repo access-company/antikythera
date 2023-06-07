@@ -10,7 +10,7 @@
 - Other requirements:
     - Some dependencies contain C source code and thus a reasonably new C compiler is required.
     - In macOS you may be warned by outdated GNU make version during compiling antikythera's dependencies.
-      In that case install GNU make using e.g. [homebrew](http://brew.sh/).
+      In that case install GNU make using e.g. [homebrew](https://brew.sh/).
       The installed executable is `gmake`; create a symlink named `make` in somewhere in your `$PATH`
       so that the desired version of make command is selected.
     - Install development header of [Expat](https://libexpat.github.io/), which is required by [fast_xml](https://github.com/processone/fast_xml) library.
@@ -51,7 +51,7 @@
 - Antikythera routes web requests by subdomains and paths. See [routing](https://hexdocs.pm/antikythera/routing.html).
 - In local development, you must be able to resolve subdomain of localhost (e.g. `your-gear.localhost`) into loopback address (`127.0.0.1`).
     - The easiest way is to add a line like `127.0.0.1 your-gear.localhost` to your `/etc/hosts`.
-    - Alternatively, you can setup a local DNS server (such as [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html)) to resolve all subdomains of localhost.
+    - Alternatively, you can setup a local DNS server (such as [dnsmasq](https://thekelleys.org.uk/dnsmasq/doc.html)) to resolve all subdomains of localhost.
 
 ## Environment variables to tweak behavior of antikythera
 

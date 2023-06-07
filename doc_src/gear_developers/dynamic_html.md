@@ -2,7 +2,7 @@
 
 **Note:** This page is being updated for OSS release. Please be patient.
 
-- Gears can use [HAML templates](http://haml.info/) to render dynamic HTML.
+- Gears can use [HAML templates](https://haml.info/) to render dynamic HTML.
 - We are using [calliope](https://github.com/nurugger07/calliope) as the HAML engine.
   Please refer to calliope's documentation for its syntax.
 - To use HAML:
