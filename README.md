@@ -7,8 +7,8 @@
 You can run multiple web services while managing only a single cluster of [ErlangVM][Erlang] nodes.
 From the viewpoint of service developers antikythera provides FaaS(Function as a Service)-like development experiences.
 
-[Elixir]: http://elixir-lang.org/
-[Erlang]: http://www.erlang.org/
+[Elixir]: https://elixir-lang.org/
+[Erlang]: https://www.erlang.org/
 
 **Note:** Antikythera is already used in production at [ACCESS],
 though as an OSS, it is still in early development stage and missing many components.
