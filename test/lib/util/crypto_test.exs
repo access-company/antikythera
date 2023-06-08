@@ -6,9 +6,11 @@ defmodule Antikythera.CryptoTest do
   test "secure_compare/2" do
     assert Crypto.secure_compare("", "")
     assert Crypto.secure_compare("a", "a")
+    assert Crypto.secure_compare("ac", "ac")
     refute Crypto.secure_compare("", "a")
     refute Crypto.secure_compare("a", "")
     refute Crypto.secure_compare("a", "b")
+    refute Crypto.secure_compare("ac", "bc")
   end
 end
 

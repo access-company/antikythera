@@ -15,8 +15,8 @@ defmodule Antikythera.Crypto do
   end
 
   defp secure_compare_impl(<<x, left::binary>>, <<y, right::binary>>, acc) do
-    use Bitwise
-    secure_compare_impl(left, right, acc ||| x ^^^ y)
+    use Bitwise, skip_operators: true
+    secure_compare_impl(left, right, bor(acc, bxor(x, y)))
   end
 
   defp secure_compare_impl(<<>>, <<>>, acc) do
