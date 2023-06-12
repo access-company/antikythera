@@ -44,4 +44,13 @@ defmodule Antikythera.HttpcTest do
       assert Httpc.encode_path(encoded) == encoded
     end
   end
+
+  test "post/4 returns {:invalid, value} if an error occurred" do
+    # `2017/1/0` is a wrong `Time`. The `Poison.Encoder` implementation will raise an error.
+    wrong_time = {Antikythera.Time, {2017, 1, 0}, {0, 0, 0}, 0}
+    expect = {:error, {:invalid, wrong_time}}
+
+    actual = Httpc.post("http://example.com", {:json, %{t: wrong_time}}, %{})
+    assert actual == expect
+  end
 end
