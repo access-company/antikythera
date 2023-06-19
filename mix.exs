@@ -92,7 +92,7 @@ defmodule Antikythera.Mixfile do
       {:recon, "2.5.3", [antikythera_internal: true]},
 
       # The following libraries are used by both antikythera itself and gears.
-      {:poison, "2.2.0"},
+      {:poison, "4.0.1"},
       {:jason, "1.2.2"},
       {:gettext, "0.17.1"},
       {:croma, "0.10.2"},

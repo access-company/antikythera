@@ -120,7 +120,12 @@ defmodule Antikythera.TimeTest do
              {:ok, ~S("2017-01-01T00:00:00.000+00:00")}
 
     assert Poison.encode({Time, {2017, 1, 0}, {0, 0, 0}, 0}) ==
-             {:error, {:invalid, {Time, {2017, 1, 0}, {0, 0, 0}, 0}}}
+             {:error,
+              %Poison.EncodeError{
+                message:
+                  "invalid Antikythera.Time.t, got: {Antikythera.Time, {2017, 1, 0}, {0, 0, 0}, 0}",
+                value: {Antikythera.Time, {2017, 1, 0}, {0, 0, 0}, 0}
+              }}
 
     map_with_time = %{"time" => {Time, {2017, 1, 1}, {0, 0, 0}, 0}}
     assert Poison.encode(map_with_time) == {:ok, ~S({"time":"2017-01-01T00:00:00.000+00:00"})}
