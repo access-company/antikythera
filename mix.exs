@@ -78,8 +78,8 @@ defmodule Antikythera.Mixfile do
     [
       # The following libraries are included to realize antikythera's features;
       # these are considered as implementation details of antikythera and thus must not be used by gear implementations.
-      {:cowboy, "2.6.3", [antikythera_internal: true]},
-      {:cowlib, "2.7.3", [antikythera_internal: true]},
+      {:cowboy, "2.10.0", [antikythera_internal: true]},
+      {:cowlib, "2.12.1", [antikythera_internal: true]},
       {:hackney, "1.18.1", [antikythera_internal: true]},
       # 0.4.2 is broken!
       {:calliope, "0.4.1", [antikythera_internal: true]},
@@ -117,7 +117,7 @@ defmodule Antikythera.Mixfile do
 
       # indirect deps
       # cowboy
-      {:ranch, "1.7.1", [indirect: true]},
+      {:ranch, "1.8.0", [indirect: true]},
       # hackney
       {:certifi, "2.9.0", [indirect: true]},
       # hackney
