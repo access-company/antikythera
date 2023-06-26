@@ -244,7 +244,7 @@ defmodule Antikythera.GearProject do
 
   def load_antikythera_instance_mix_config_file!(instance_name) do
     # Load mix config to import compile-time configurations;
-    # if antikythera instance is not yet available, raise `Mix.Config.LoadError` and fallback to `AntikytheraGearInitialSetup`.
+    # if antikythera instance is not yet available, raise `File.Error` and fallback to `AntikytheraGearInitialSetup`.
     config_path = Path.join([antikythera_instance_dir(instance_name), "config", "config.exs"])
     configs = Config.Reader.read!(config_path)
     Application.put_all_env(configs, persistent: true)
