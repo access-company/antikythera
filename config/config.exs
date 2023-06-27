@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2023 ACCESS CO., LTD. All rights reserved.
 
-use Mix.Config
+import Config, only: [config: 2]
 
 for {app, kw} <- Antikythera.MixConfig.all() do
   config(app, kw)

@@ -129,7 +129,7 @@ defmodule Antikythera.MixConfig do
   setting the same set of mix configurations in `config.exs` files of all antikythera instance projects
   introduces too much boilerplate.
   To avoid the boilerplate, you can call `Antikythera.MixConfig.all/0` to obtain the default values
-  and then set the values by `Mix.Config.config/2` macro in your `config.exs` file.
+  and then set the values by `Config.config/2` macro in your `config.exs` file.
   The default values returned by `Antikythera.MixConfig.all/0` should suffice for most cases.
 
   None of the mix configurations of `:antikythera` application are included in the return value
@@ -137,7 +137,7 @@ defmodule Antikythera.MixConfig do
   For explanations of the configuration items of `:antikythera`, see antikythera's `config.exs` file.
   As a result, your `config.exs` file should look like the following:
 
-      use Mix.Config
+      import Config
 
       try do
         for {app, kw} <- Antikythera.MixConfig.all() do
@@ -244,10 +244,10 @@ defmodule Antikythera.GearProject do
 
   def load_antikythera_instance_mix_config_file!(instance_name) do
     # Load mix config to import compile-time configurations;
-    # if antikythera instance is not yet available, raise `Mix.Config.LoadError` and fallback to `AntikytheraGearInitialSetup`.
+    # if antikythera instance is not yet available, raise `File.Error` and fallback to `AntikytheraGearInitialSetup`.
     config_path = Path.join([antikythera_instance_dir(instance_name), "config", "config.exs"])
-    {configs, _} = Mix.Config.eval!(config_path)
-    Mix.Config.persist(configs)
+    configs = Config.Reader.read!(config_path)
+    Application.put_all_env(configs, persistent: true)
   end
 
   def get_antikythera_instance_project_settings!(instance_name) do
