@@ -34,7 +34,9 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
 
   defp run_action(conn, {controller, action}) do
     try do
-      {:ok, controller.__action__(conn, action)}
+      conn2 = controller.__action__(conn, action)
+      CoreConn.validate(conn2)
+      {:ok, conn2}
     catch
       :error, e -> {:error, {:error, e}, __STACKTRACE__}
       :throw, value -> {:error, {:throw, value}, __STACKTRACE__}

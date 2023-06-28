@@ -179,4 +179,16 @@ defmodule AntikytheraCore.Conn do
       "#{method_string} #{path}?#{params}"
     end
   end
+
+  # RFC9110 says:
+  # > All 1xx (Informational), 204 (No Content), and 304 (Not Modified) responses do not include content.
+  # RFC9110 has only 100 and 101 for 1xx.
+  @empty_body_status_codes [100, 101, 204, 304]
+  defun validate(%Conn{status: status, resp_body: body}) :: :ok do
+    if Enum.member?(@empty_body_status_codes, status) do
+      0 = byte_size(body)
+    end
+
+    :ok
+  end
 end
