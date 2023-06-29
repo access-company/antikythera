@@ -54,11 +54,16 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
   #
   # Public API
   #
-  defun run(pid :: v[pid], conn :: v[Conn.t()], entry_point :: v[GearEntryPoint.t()]) :: Conn.t() do
+  defun run(
+          pid :: v[pid],
+          conn :: v[Conn.t()],
+          entry_point :: v[GearEntryPoint.t()],
+          timeout :: v[GearActionTimeout.t()]
+        ) :: Conn.t() do
     false = Process.flag(:trap_exit, true)
 
     try do
-      case GenServer.call(pid, {:run, conn, entry_point}, GearActionTimeout.default()) do
+      case GenServer.call(pid, {:run, conn, entry_point}, timeout) do
         {:ok, conn2} -> CoreConn.run_before_send(conn2, conn)
         {:error, reason, stacktrace} -> GearError.error(conn, reason, stacktrace)
       end
