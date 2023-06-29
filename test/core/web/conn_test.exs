@@ -5,7 +5,7 @@ defmodule AntikytheraCore.ConnTest do
 
   alias Antikythera.Conn, as: LibConn
 
-  def make_fake_conn(status, body) do
+  defp make_fake_conn(status, body) do
     %LibConn{
       request: nil,
       context: nil,
@@ -22,9 +22,20 @@ defmodule AntikytheraCore.ConnTest do
     test "should return :ok for status which can have body" do
       conn = make_fake_conn(200, "body")
       assert Conn.validate(conn) == :ok
+
+      conn = make_fake_conn(200, "")
+      assert Conn.validate(conn) == :ok
     end
 
-    test "should raise MatchError for status which must not have body" do
+    test "should return :ok for status which must not have body if body is empty" do
+      Enum.each([100, 101, 204, 304], fn status ->
+        conn = make_fake_conn(status, "")
+
+        assert Conn.validate(conn) == :ok
+      end)
+    end
+
+    test "should raise MatchError for status which must not have body if body isn't empty" do
       Enum.each([100, 101, 204, 304], fn status ->
         conn = make_fake_conn(status, "body")
 
