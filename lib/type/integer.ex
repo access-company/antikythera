@@ -18,3 +18,19 @@ defmodule Antikythera.MilliSecondsInGregorian do
   # `- 999` will be removed in the future.
   use Croma.SubtypeOfInt, min: -@time_epoch_offset_milliseconds - 999
 end
+
+defmodule Antikythera.GearActionTimeout do
+  alias Antikythera.Env
+
+  @max_timeout Application.compile_env!(:antikythera, :gear_action_max_timeout)
+  @default_timeout min(Env.gear_action_timeout(), @max_timeout)
+
+  @moduledoc """
+  Type of timeout for gear actions in milliseconds.
+  A value must be a positive integer less than or equal to `#{@max_timeout}`.
+  The default value is determined by `Antikythera.Env.gear_action_timeout/0`,
+  or the maximum value if it exceeds the maximum value.
+  """
+
+  use Croma.SubtypeOfInt, min: 1, max: @max_timeout, default: @default_timeout
+end

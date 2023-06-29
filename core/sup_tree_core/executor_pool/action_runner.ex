@@ -8,7 +8,7 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
   """
 
   use GenServer
-  alias Antikythera.{Env, Conn}
+  alias Antikythera.{Conn, GearActionTimeout}
   alias Antikythera.Context.GearEntryPoint
   alias AntikytheraCore.GearProcess
   alias AntikytheraCore.Conn, as: CoreConn
@@ -58,7 +58,7 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
     false = Process.flag(:trap_exit, true)
 
     try do
-      case GenServer.call(pid, {:run, conn, entry_point}, Env.gear_action_timeout()) do
+      case GenServer.call(pid, {:run, conn, entry_point}, GearActionTimeout.default()) do
         {:ok, conn2} -> CoreConn.run_before_send(conn2, conn)
         {:error, reason, stacktrace} -> GearError.error(conn, reason, stacktrace)
       end

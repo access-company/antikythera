@@ -5,7 +5,7 @@ use Croma
 defmodule AntikytheraCore.Handler.GearAction.G2g do
   alias Antikythera.G2gRequest, as: GReq
   alias Antikythera.G2gResponse, as: GRes
-  alias Antikythera.{Env, Conn, Context, GearName}
+  alias Antikythera.{Conn, Context, GearName, GearActionTimeout}
   alias AntikytheraCore.{GearModule, GearTask}
   alias AntikytheraCore.Conn, as: CoreConn
   alias AntikytheraCore.Handler.{GearAction, GearError, HelperModules}
@@ -81,7 +81,7 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
 
     GearTask.exec_wait(
       mfa,
-      Env.gear_action_timeout(),
+      GearActionTimeout.default(),
       &CoreConn.run_before_send(&1, conn),
       fn
         {:exit, :killed}, stacktrace ->
