@@ -26,7 +26,10 @@ defmodule Antikythera.Router.ImplTest do
 
     for path <- invalid_paths do
       list = [{:get, path, X, :a, []}]
-      catch_error(Impl.generate_route_function_clauses(__MODULE__, :web, list))
+
+      assert_raise RuntimeError, fn ->
+        Impl.generate_route_function_clauses(__MODULE__, :web, list)
+      end
     end
   end
 
@@ -47,11 +50,15 @@ defmodule Antikythera.Router.ImplTest do
 
   test "Impl.generate_route_function_clauses should reject duplicated path names" do
     list = [
-      {:get, "foo1/bar1", X, :a, as: "test_path"},
-      {:get, "foo2/bar2", X, :a, as: "test_path"}
+      {:get, "/foo1/bar1", X, :a, as: "test_path"},
+      {:get, "/foo2/bar2", X, :a, as: "test_path"}
     ]
 
-    catch_error(Impl.generate_route_function_clauses(__MODULE__, :web, list))
+    assert_raise RuntimeError,
+                 "path names are not unique",
+                 fn ->
+                   Impl.generate_route_function_clauses(__MODULE__, :web, list)
+                 end
   end
 
   test "Impl.generate_route_function_clauses should accept valid timeout value" do
