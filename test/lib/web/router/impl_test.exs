@@ -3,6 +3,8 @@
 defmodule Antikythera.Router.ImplTest do
   use Croma.TestCase
 
+  alias Antikythera.GearActionTimeout
+
   test "Impl.generate_route_function_clauses should reject invalid path" do
     invalid_paths = [
       "",
@@ -50,5 +52,33 @@ defmodule Antikythera.Router.ImplTest do
     ]
 
     catch_error(Impl.generate_route_function_clauses(__MODULE__, :web, list))
+  end
+
+  test "Impl.generate_route_function_clauses should accept valid timeout value" do
+    valid_timeout_values = [GearActionTimeout.min(), GearActionTimeout.max()]
+
+    for timeout <- valid_timeout_values do
+      list = [{:get, "/", X, :a, timeout: timeout}]
+      _no_error_raised = Impl.generate_route_function_clauses(__MODULE__, :web, list)
+    end
+  end
+
+  test "Impl.generate_route_function_clauses should reject invalid timeout value" do
+    invalid_timeout_values = [
+      :not_a_number,
+      1_234.567,
+      GearActionTimeout.min() - 1,
+      GearActionTimeout.max() + 1
+    ]
+
+    for timeout <- invalid_timeout_values do
+      list = [{:get, "/", X, :a, timeout: timeout}]
+
+      assert_raise RuntimeError,
+                   ~r/^option `:timeout` must be a positive integer less than or equal to \d+ but given:/,
+                   fn ->
+                     Impl.generate_route_function_clauses(__MODULE__, :web, list)
+                   end
+    end
   end
 end
