@@ -145,6 +145,9 @@ defmodule Antikythera.Httpc do
     hackney_opts = hackney_options(options_map)
 
     ReqBody.convert_body_and_headers_by_body_type(body, headers_with_encoding)
+    |> R.map_error(fn e ->
+      {:invalid, e.value}
+    end)
     |> R.bind(fn {hackney_body, headers} ->
       request_impl(method, url_with_params, headers, hackney_body, hackney_opts, options_map)
     end)
