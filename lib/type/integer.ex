@@ -28,6 +28,7 @@ defmodule Antikythera.GearActionTimeout do
   @moduledoc """
   Type of timeout for gear actions in milliseconds.
   A value must be a positive integer less than or equal to `#{@max_timeout}`.
+  The maximum value can be configured by `:gear_action_max_timeout` config.
   The default value is determined by `Antikythera.Env.gear_action_timeout/0`,
   or the maximum value if it exceeds the maximum value.
   """

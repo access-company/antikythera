@@ -79,7 +79,7 @@
             - Gear config of `:some_gear`. See also [gear_config](https://hexdocs.pm/antikythera/gear_config.html).
     - Compile-time environment variables: (to change the followings you need to recompile antikythera)
         - `GEAR_ACTION_TIMEOUT`:
-            - Milliseconds to wait until gear action finishes. Defaults to `10000`. See also [controller](https://hexdocs.pm/antikythera/controller.html).
+            - Milliseconds to wait until gear action finishes as a default. Defaults to `10000`. See also [controller](https://hexdocs.pm/antikythera/controller.html).
         - `GEAR_PROCESS_MAX_HEAP_SIZE`:
             - Maximum size of per-process heap memory in words. Defaults to `50000000` (400MB in 64-bit architecture).
 

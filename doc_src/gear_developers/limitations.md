@@ -4,7 +4,8 @@ There are certain limitations in Antikythera.
 We list some major limitations here. But this does not cover all the limitations of Antikythera. Please also read other parts of the documentation when you implement gear.
 
 - Execution time of web/g2g request
-    - Set via `GEAR_ACTION_TIMEOUT`. Please refer [here](https://hexdocs.pm/antikythera/development_environment.html#environment-variables-to-tweak-behavior-of-antikythera).
+    - Set via `GEAR_ACTION_TIMEOUT` as a default timeout. Please refer [here](https://hexdocs.pm/antikythera/development_environment.html#environment-variables-to-tweak-behavior-of-antikythera).
+    - Also set via `:timeout` option per API. Please refer to `Antikythera.Router`.
 - Execution time of async job
     - Set via `max_duration`. Please refer [here](https://hexdocs.pm/antikythera/Antikythera.AsyncJob.html#module-registering-jobs).
     - Async job has other limitations too.

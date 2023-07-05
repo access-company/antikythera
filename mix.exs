@@ -202,7 +202,8 @@ defmodule Antikythera.Mixfile do
         "doc_src/gear_developers/gear_config.md",
         "doc_src/gear_developers/i18n.md",
         "doc_src/gear_developers/testing.md",
-        "doc_src/gear_developers/must_nots.md"
+        "doc_src/gear_developers/must_nots.md",
+        "doc_src/gear_developers/limitations.md"
       ],
       groups_for_extras: [
         Basics: Path.wildcard("doc_src/*.md"),
