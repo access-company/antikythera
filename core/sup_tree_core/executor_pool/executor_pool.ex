@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.ExecutorPool do
-  alias Antikythera.GearName
+  alias Antikythera.{GearName, GearActionTimeout}
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
@@ -77,8 +77,8 @@ defmodule AntikytheraCore.ExecutorPool do
       0,
       [
         name: RegName.action_runner_pool_multi_unsafe(epool_id),
-        # chosen as (1) sufficiently loger than gear action timeout (10s), (2) not too frequent
-        checkout_max_duration: 60
+        # chosen as (1) sufficiently longer than gear action timeout, (2) not too frequent
+        checkout_max_duration: div(GearActionTimeout.max(), 1_000) + 30
       ]
     ]
   end

@@ -4,6 +4,7 @@ use Croma
 
 defmodule AntikytheraCore do
   use Application
+  alias Antikythera.GearActionTimeout
   alias AntikytheraEal.ClusterConfiguration
   require AntikytheraCore.Logger, as: L
 
@@ -113,10 +114,10 @@ defmodule AntikytheraCore do
     }
 
     cowboy_proto_opts = %{
-      # timeout of a request with no data transfer; must be sufficiently longer than the gear action timeout (10_000)
-      idle_timeout: 30_000,
+      # timeout of a request with no data transfer; must be sufficiently longer than the gear action timeout
+      idle_timeout: GearActionTimeout.max() + 20_000,
       # timeout of a connection with no requests; this should be longer than LB's idle timeout
-      request_timeout: 120_000,
+      request_timeout: GearActionTimeout.max() + 60_000,
       env: %{dispatch: dispatch_rules},
       stream_handlers: [:cowboy_compress_h, :cowboy_stream_h]
     }
