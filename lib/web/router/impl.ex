@@ -244,10 +244,11 @@ defmodule Antikythera.Router.Impl do
           action :: v[atom],
           path_matches :: Keyword.t(String.t()),
           websocket? :: v[boolean],
-          timeout :: v[GearActionTimeout.t()] \\ GearActionTimeout.default()
+          timeout :: v[pos_integer] \\ GearActionTimeout.default()
         ) :: route_result do
     if Enum.all?(path_matches, fn {_placeholder, match} -> String.printable?(match) end) do
-      {controller, action, Map.new(path_matches), websocket?, timeout}
+      timeout_limited = min(timeout, GearActionTimeout.max())
+      {controller, action, Map.new(path_matches), websocket?, timeout_limited}
     else
       nil
     end
