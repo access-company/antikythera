@@ -7,9 +7,9 @@ defmodule Antikythera.Router.Impl do
   Internal functions to implement request routing.
   """
 
-  alias Antikythera.{Http.Method, PathSegment, PathInfo, Request.PathMatches}
+  alias Antikythera.{Http.Method, PathSegment, PathInfo, Request.PathMatches, GearActionTimeout}
 
-  @typep route_entry :: {Method.t(), String.t(), module, atom, Keyword.t(String.t())}
+  @typep route_entry :: {Method.t(), String.t(), module, atom, Keyword.t(any)}
   @typep route_result_success :: {module, atom, PathMatches.t(), boolean}
   @typep route_result :: nil | route_result_success
 
@@ -112,6 +112,14 @@ defmodule Antikythera.Router.Impl do
       raise "option `:websocket?` must be boolean but given: #{websocket?}"
     end
 
+    timeout = Keyword.get(opts, :timeout, GearActionTimeout.default())
+
+    unless GearActionTimeout.valid?(timeout) do
+      raise "option `:timeout` must be a positive integer less than or equal to #{
+              GearActionTimeout.max()
+            } but given: #{timeout}"
+    end
+
     if String.contains?(path_pattern, "/*") do
       # For route with wildcard we have to define a slightly modified clause (compared with nowildcard case):
       # - `path_info` must be matched with `[... | wildcard]` pattern
@@ -129,7 +137,8 @@ defmodule Antikythera.Router.Impl do
             unquote(controller),
             unquote(action),
             unquote(path_matches_expr),
-            unquote(websocket?)
+            unquote(websocket?),
+            unquote(timeout)
           )
         end
       end
@@ -146,7 +155,8 @@ defmodule Antikythera.Router.Impl do
             unquote(controller),
             unquote(action),
             unquote(path_matches_expr),
-            unquote(websocket?)
+            unquote(websocket?),
+            unquote(timeout)
           )
         end
 
@@ -156,7 +166,8 @@ defmodule Antikythera.Router.Impl do
             unquote(controller),
             unquote(action),
             unquote(path_matches_expr),
-            unquote(websocket?)
+            unquote(websocket?),
+            unquote(timeout)
           )
         end
       end
@@ -232,10 +243,12 @@ defmodule Antikythera.Router.Impl do
           controller :: v[module],
           action :: v[atom],
           path_matches :: Keyword.t(String.t()),
-          websocket? :: v[boolean]
+          websocket? :: v[boolean],
+          timeout :: v[pos_integer] \\ GearActionTimeout.default()
         ) :: route_result do
     if Enum.all?(path_matches, fn {_placeholder, match} -> String.printable?(match) end) do
-      {controller, action, Map.new(path_matches), websocket?}
+      timeout_limited = min(timeout, GearActionTimeout.max())
+      {controller, action, Map.new(path_matches), websocket?, timeout_limited}
     else
       nil
     end

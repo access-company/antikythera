@@ -123,6 +123,17 @@ defmodule Antikythera.Router do
 
   If websocket endpoint is enabled, you can get its path with `MyGear.Router.websocket_path/0`.
   Also if static file serving is enabled, path prefix for static files can be obtained by `MyGear.Router.static_prefix/0`.
+
+  ## Per-API timeout
+
+  You can specify timeout for each API by `:timeout` option.
+  The timeout is specified in milliseconds.
+  For example, the following API times out after 60 seconds.
+
+      get "/foo", Hello, :long_action, timeout: 60_000
+
+  The maximum timeout is determined by `:gear_action_max_timeout` configuration in `config/config.exs`.
+  The default value is 10 seconds, which can be configured by `GEAR_ACTION_TIMEOUT` environment variable.
   """
 
   alias Antikythera.Router.Impl

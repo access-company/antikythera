@@ -46,6 +46,9 @@ config :antikythera, [
   # Note that gears using their own custom error handlers are not affected by this configuration item.
   return_detailed_info_on_error?: true,
 
+  # Maximum limit of the timeout for gear actions in milliseconds.
+  gear_action_max_timeout: 180_000,
+
   # Measure the time taken to install all gears at startup,
   # and if it exceeds this value, Antikythera write to the error log.
   gear_install_notify_threshold_in_seconds: nil,

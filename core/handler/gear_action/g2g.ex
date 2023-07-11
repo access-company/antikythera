@@ -5,7 +5,7 @@ use Croma
 defmodule AntikytheraCore.Handler.GearAction.G2g do
   alias Antikythera.G2gRequest, as: GReq
   alias Antikythera.G2gResponse, as: GRes
-  alias Antikythera.{Env, Conn, Context, GearName}
+  alias Antikythera.{Conn, Context, GearName, GearActionTimeout, PathInfo}
   alias AntikytheraCore.{GearModule, GearTask}
   alias AntikytheraCore.Conn, as: CoreConn
   alias AntikytheraCore.Handler.{GearAction, GearError, HelperModules}
@@ -22,7 +22,8 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
 
     with_route(helper_modules, req, context, receiver_gear, path_info, fn controller,
                                                                           action,
-                                                                          path_matches ->
+                                                                          path_matches,
+                                                                          timeout ->
       with_conn(
         req,
         context,
@@ -32,24 +33,27 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
         path_matches,
         fn conn ->
           GearAction.with_logging_and_metrics_reporting(conn, helper_modules, fn ->
-            run_gear_action_within_separate_process(conn, controller, action)
+            run_gear_action_within_separate_process(conn, controller, action, timeout)
           end)
         end
       )
     end)
   end
 
-  defp with_route(
-         %HelperModules{router: router},
-         %GReq{method: method} = req,
-         context,
-         receiver_gear,
-         path_info,
-         f
-       ) do
+  defunp with_route(
+           %HelperModules{router: router},
+           %GReq{method: method} = req,
+           context :: v[Context.t()],
+           receiver_gear :: v[GearName.t()],
+           path_info :: v[PathInfo.t()],
+           f :: (module, atom, PathInfo.t(), GearActionTimeout.t() -> GRes.t())
+         ) :: GRes.t() do
     case router.__gear_route__(method, path_info) do
-      {controller, action, path_matches, _} -> f.(controller, action, path_matches)
-      nil -> with_conn(req, context, receiver_gear, nil, path_info, %{}, &GearError.no_route/1)
+      {controller, action, path_matches, _, timeout} ->
+        f.(controller, action, path_matches, timeout)
+
+      nil ->
+        with_conn(req, context, receiver_gear, nil, path_info, %{}, &GearError.no_route/1)
     end
   end
 
@@ -73,7 +77,8 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
   defunp run_gear_action_within_separate_process(
            conn :: v[Conn.t()],
            controller :: v[module],
-           action :: v[atom]
+           action :: v[atom],
+           timeout :: v[GearActionTimeout.t()]
          ) :: Conn.t() do
     # Gear's controller action is executed within a separate process
     # in order to (1) introduce timeout and (2) handle errors in a clean way.
@@ -81,7 +86,7 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
 
     GearTask.exec_wait(
       mfa,
-      Env.gear_action_timeout(),
+      timeout,
       &CoreConn.run_before_send(&1, conn),
       fn
         {:exit, :killed}, stacktrace ->

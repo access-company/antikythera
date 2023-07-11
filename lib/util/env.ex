@@ -105,7 +105,7 @@ defmodule Antikythera.Env do
                            "#{@gear_action_timeout_default}"
                        )
   @doc """
-  Timeout (in milli-seconds) for gear actions.
+  Default timeout (in milli-seconds) for gear actions.
 
   This can be configurable by specifying `"GEAR_ACTION_TIMEOUT"` environment variable when compiling antikythera.
   Defaults to `#{@gear_action_timeout_default}`.

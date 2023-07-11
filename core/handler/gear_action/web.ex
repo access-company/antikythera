@@ -4,7 +4,7 @@ use Croma
 
 defmodule AntikytheraCore.Handler.GearAction.Web do
   alias Croma.Result, as: R
-  alias Antikythera.{GearName, PathInfo, Conn}
+  alias Antikythera.{GearName, PathInfo, Conn, GearActionTimeout}
   alias Antikythera.Http.{Method, QueryParams, Body}
   alias Antikythera.Request.PathMatches
   alias Antikythera.Context.GearEntryPoint
@@ -36,7 +36,7 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
       path_info = CowboyReq.path_info(req1)
       helper_modules = GearModule.request_helper_modules(gear_name)
 
-      {entry_point, path_matches, ws?} <-
+      {entry_point, path_matches, ws?, timeout} <-
         find_route(req1, gear_name, method, path_info, helper_modules)
 
       routing_info = {gear_name, entry_point, method, path_info, path_matches}
@@ -45,7 +45,9 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
       {req2, body_pair} <-
         CowboyReq.request_body_pair(req1, routing_info, qparams, helper_modules)
 
-      pure(run_action_with_conn(req2, routing_info, qparams, body_pair, helper_modules, ws?))
+      pure(
+        run_action_with_conn(req2, routing_info, qparams, body_pair, helper_modules, ws?, timeout)
+      )
     end
     |> case do
       # protocol upgrade to websocket
@@ -65,8 +67,8 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            %HelperModules{router: router}
          ) :: R.t({GearEntryPoint.t(), PathMatches.t(), boolean}) do
     case router.__web_route__(method, path_info) do
-      {controller, action, path_matches, websocket?} ->
-        {:ok, {{controller, action}, path_matches, websocket?}}
+      {controller, action, path_matches, websocket?, timeout} ->
+        {:ok, {{controller, action}, path_matches, websocket?, timeout}}
 
       nil ->
         {:error,
@@ -85,11 +87,15 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            qparams :: v[QueryParams.t()],
            body_pair :: {binary, Body.t()},
            helper_modules :: v[HelperModules.t()],
-           websocket? :: v[boolean]
+           websocket? :: v[boolean],
+           timeout :: v[GearActionTimeout.t()]
          ) :: :cowboy_req.req() | {:cowboy_req.req(), WebsocketState.t()} do
     case websocket? do
-      true -> run_action_with_conn_ws(req, routing_info, qparams, body_pair, helper_modules)
-      false -> run_action_with_conn_http(req, routing_info, qparams, body_pair, helper_modules)
+      true ->
+        run_action_with_conn_ws(req, routing_info, qparams, body_pair, helper_modules, timeout)
+
+      false ->
+        run_action_with_conn_http(req, routing_info, qparams, body_pair, helper_modules, timeout)
     end
   end
 
@@ -98,11 +104,12 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            {gear_name, entry_point, _, _, _} = routing_info :: CowboyReq.routing_info(),
            qparams :: v[QueryParams.t()],
            body_pair :: {binary, Body.t()},
-           helper_modules :: v[HelperModules.t()]
+           helper_modules :: v[HelperModules.t()],
+           timeout :: v[GearActionTimeout.t()]
          ) :: :cowboy_req.req() do
     CowboyReq.with_conn(req, routing_info, qparams, body_pair, fn conn ->
       GearAction.with_logging_and_metrics_reporting(conn, helper_modules, fn ->
-        run_action_with_executor(conn, gear_name, entry_point, helper_modules)
+        run_action_with_executor(conn, gear_name, entry_point, helper_modules, timeout)
       end)
     end)
   end
@@ -112,13 +119,14 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            {gear_name, entry_point, _, _, _} = routing_info :: CowboyReq.routing_info(),
            qparams :: v[QueryParams.t()],
            body_pair :: {binary, Body.t()},
-           helper_modules :: v[HelperModules.t()]
+           helper_modules :: v[HelperModules.t()],
+           timeout :: v[GearActionTimeout.t()]
          ) :: :cowboy_req.req() | {:cowboy_req.req(), WebsocketState.t()} do
     conn1 = CoreConn.make_from_cowboy_req(req, routing_info, qparams, body_pair)
     ContextHelper.set(conn1)
 
     GearAction.with_logging_and_metrics_reporting(conn1, helper_modules, fn ->
-      case run_action_with_executor(conn1, gear_name, entry_point, helper_modules) do
+      case run_action_with_executor(conn1, gear_name, entry_point, helper_modules, timeout) do
         # Fill the status code with "101 Upgrade" in order to correctly report response metrics
         conn2 = %Conn{status: nil} -> %Conn{conn2 | status: 101}
         conn2 -> conn2
@@ -139,10 +147,11 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            conn1 :: v[Conn.t()],
            gear_name :: v[GearName.t()],
            entry_point :: v[GearEntryPoint.t()],
-           helper_modules :: v[HelperModules.t()]
+           helper_modules :: v[HelperModules.t()],
+           timeout :: v[GearActionTimeout.t()]
          ) :: Conn.t() do
     ExecutorPoolHelper.with_executor(conn1, gear_name, helper_modules, fn pid, conn2 ->
-      ActionRunner.run(pid, conn2, entry_point)
+      ActionRunner.run(pid, conn2, entry_point, timeout)
     end)
   end
 

@@ -35,3 +35,5 @@
 ## [Testing](https://hexdocs.pm/antikythera/testing.html)
 
 ## [What gear implementations must not do](https://hexdocs.pm/antikythera/must_nots.html)
+
+## [Limitations](https://hexdocs.pm/antikythera/limitations.html)
