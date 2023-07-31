@@ -95,9 +95,7 @@ defmodule Antikythera.Aws.CloudfrontSignedUrl do
             private_key :: v[String.t()]
           ) :: [{String.t(), String.t()}] do
     policy_statement =
-      ~s/{"Statement":[{"Resource":"#{encoded_url}","Condition":{"DateLessThan":{"AWS:EpochTime":#{
-        expires_in_seconds
-      }}}}]}/
+      ~s/{"Statement":[{"Resource":"#{encoded_url}","Condition":{"DateLessThan":{"AWS:EpochTime":#{expires_in_seconds}}}}]}/
 
     signature = create_signature(policy_statement, private_key)
 
@@ -146,9 +144,7 @@ defmodule Antikythera.Aws.CloudfrontSignedUrl do
           ""
       end
 
-    ~s/{"Statement":[{"Resource":"#{encoded_url}","Condition":{"DateLessThan":{"AWS:EpochTime":#{
-      expires_in_seconds
-    }}#{date_greater_than}#{ip_address}}}]}/
+    ~s/{"Statement":[{"Resource":"#{encoded_url}","Condition":{"DateLessThan":{"AWS:EpochTime":#{expires_in_seconds}}#{date_greater_than}#{ip_address}}}]}/
   end
 
   defunpt make_query_params_for_custom_policy(

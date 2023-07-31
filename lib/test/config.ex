@@ -48,14 +48,10 @@ defmodule Antikythera.Test.Config do
 
     case test_mode() do
       :whitebox ->
-        "http://#{CowboyRouting.default_domain(gear_name, :local)}:#{
-          Antikythera.Env.port_to_listen()
-        }"
+        "http://#{CowboyRouting.default_domain(gear_name, :local)}:#{Antikythera.Env.port_to_listen()}"
 
       :blackbox_local ->
-        "http://#{CowboyRouting.default_domain(gear_name, :local)}:#{
-          System.get_env("TEST_PORT") || 8080
-        }"
+        "http://#{CowboyRouting.default_domain(gear_name, :local)}:#{System.get_env("TEST_PORT") || 8080}"
 
       other_env ->
         base_url_for_deployment(gear_name, other_env)

@@ -120,9 +120,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     run_at_str = Time.to_iso_timestamp(run_at)
 
     prefix =
-      "<async_job> module=#{mod_str} job_id=#{job_id} attempt=#{attempts - remaining + 1}th/#{
-        attempts
-      } run_at=#{run_at_str} "
+      "<async_job> module=#{mod_str} job_id=#{job_id} attempt=#{attempts - remaining + 1}th/#{attempts} run_at=#{run_at_str} "
 
     try do
       module.inspect_payload(decoded_payload)

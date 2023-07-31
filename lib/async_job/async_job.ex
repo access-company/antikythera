@@ -60,9 +60,7 @@ defmodule Antikythera.AsyncJob do
 
   `abandon/3` optional callback is called when a job is abandoned after all attempts failed.
   You can put your cleanup logic in this callback when e.g. you use external storage system to store job information.
-  Note that `abandon/3` must finish within `#{
-    div(AsyncJobRunner.abandon_callback_max_duration(), 1_000)
-  }` seconds;
+  Note that `abandon/3` must finish within `#{div(AsyncJobRunner.abandon_callback_max_duration(), 1_000)}` seconds;
   when it takes longer, antikythera stops the execution of `abandon/3` in the middle.
 
   `inspect_payload/1` optional callback is solely for logging purpose.
@@ -102,9 +100,7 @@ defmodule Antikythera.AsyncJob do
       - `{:once, Antikythera.Time.t}`
           - The job is executed at the given time.
             After the job is either successfully completed or abandoned by failure(s), the job is removed from the job queue.
-            The time must be a future time and within #{
-    div(AntikytheraCore.AsyncJob.max_start_time_from_now(), 24 * 60 * 60_000)
-  } days from now.
+            The time must be a future time and within #{div(AntikytheraCore.AsyncJob.max_start_time_from_now(), 24 * 60 * 60_000)} days from now.
       - `{:cron, Antikythera.Cron.t}`
           - The job is repeatedly executed at the given cron schedule.
             After the job is either successfully completed or abandoned by failure(s),
@@ -119,9 +115,7 @@ defmodule Antikythera.AsyncJob do
     A job which has been running for more than `max_duration` is brutally killed and
     if it has remaining attempts it will be retried.
     Defaults to `#{MaxDuration.default()}` (`#{div(MaxDuration.default(), 60_000)}` minutes).
-    If explicitly given it cannot exceed `#{MaxDuration.max()}` (`#{
-    div(MaxDuration.max(), 60_000)
-  }` minutes).
+    If explicitly given it cannot exceed `#{MaxDuration.max()}` (`#{div(MaxDuration.max(), 60_000)}` minutes).
   - `attempts`: A positive integer within `#{Attempts.min()}..#{Attempts.max()}`), up to which antikythera tries to run the job.
     Defaults to `#{Attempts.default()}`.
   - `retry_interval`: A 2-tuple of integer and float to calculate time interval between retries.
