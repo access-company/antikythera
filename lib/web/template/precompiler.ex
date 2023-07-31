@@ -25,7 +25,8 @@ defmodule Antikythera.TemplatePrecompiler do
   defmacro __using__(_) do
     %Macro.Env{file: caller_filepath, module: module} = __CALLER__
     check_caller_module(module)
-    Path.dirname(caller_filepath) |> define_haml_content_funs()
+    haml_content_funs = Path.dirname(caller_filepath) |> define_haml_content_funs()
+    [define_mix_recompile_fun() | haml_content_funs]
   end
 
   defp check_caller_module(mod) do
@@ -115,5 +116,15 @@ defmodule Antikythera.TemplatePrecompiler do
       end
     end)
     |> MapSet.new()
+  end
+
+  defp define_mix_recompile_fun() do
+    quote do
+      @last_modified File.stat!(__ENV__.file) |> Map.get(:mtime)
+
+      def __mix_recompile__?() do
+        File.stat!(__ENV__.file) |> Map.get(:mtime) > @last_modified
+      end
+    end
   end
 end
