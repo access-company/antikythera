@@ -115,9 +115,7 @@ defmodule Antikythera.Router.Impl do
     timeout = Keyword.get(opts, :timeout, GearActionTimeout.default())
 
     unless GearActionTimeout.valid?(timeout) do
-      raise "option `:timeout` must be a positive integer less than or equal to #{
-              GearActionTimeout.max()
-            } but given: #{timeout}"
+      raise "option `:timeout` must be a positive integer less than or equal to #{GearActionTimeout.max()} but given: #{timeout}"
     end
 
     if String.contains?(path_pattern, "/*") do

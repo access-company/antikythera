@@ -148,9 +148,7 @@ defmodule Antikythera.ContextId do
 
   use Croma.SubtypeOfString,
     pattern:
-      ~r/\A(\d{8}-\d{6}\.\d{3}_#{Antikythera.NodeId.pattern_string()}_\d+\.\d+\.\d+|#{
-        @system_context
-      })\z/
+      ~r/\A(\d{8}-\d{6}\.\d{3}_#{Antikythera.NodeId.pattern_string()}_\d+\.\d+\.\d+|#{@system_context})\z/
 end
 
 defmodule Antikythera.ImfFixdate do

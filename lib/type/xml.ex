@@ -145,9 +145,7 @@ defmodule Antikythera.Xml do
     end
 
     def get_and_update(_e, key, _f) do
-      raise ~s[#{inspect(__MODULE__)}.get_and_update/3 only accepts :name, :attributes, :children or "@attribute" as key for updating, got: #{
-              inspect(key)
-            }]
+      raise ~s[#{inspect(__MODULE__)}.get_and_update/3 only accepts :name, :attributes, :children or "@attribute" as key for updating, got: #{inspect(key)}]
     end
 
     defp update_struct_field(%__MODULE__{} = e, :name, new_name) when is_binary(new_name),

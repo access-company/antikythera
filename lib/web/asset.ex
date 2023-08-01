@@ -167,6 +167,12 @@ defmodule Antikythera.Asset do
   defp make_module_body_ast(mapping) do
     quote bind_quoted: [mapping: Macro.escape(mapping)] do
       # file modifications are tracked by `PropagateFileModifications`; `@external_resource` here would be redundant
+      @last_modified File.stat!(__ENV__.file) |> Map.get(:mtime)
+
+      def __mix_recompile__?() do
+        File.stat!(__ENV__.file) |> Map.get(:mtime) > @last_modified
+      end
+
       Enum.each(mapping, fn {path, url} ->
         def url(unquote(path)), do: unquote(url)
       end)

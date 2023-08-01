@@ -81,9 +81,7 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
           logger,
           start_time,
           context_id,
-          "Cannot establish new websocket connection: too many connections in executor pool #{
-            inspect(epool_id)
-          }"
+          "Cannot establish new websocket connection: too many connections in executor pool #{inspect(epool_id)}"
         )
 
         GearError.ws_too_many_connections(conn) |> CoreConn.reply_as_cowboy_res(req)

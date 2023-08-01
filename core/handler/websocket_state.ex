@@ -156,9 +156,7 @@ defmodule AntikytheraCore.Handler.WebsocketState do
            },
            reason :: Websocket.terminate_reason()
          ) :: String.t() do
-    "DISCONNECTED connected_at=#{Time.to_iso_timestamp(start_time)} frames_received=#{
-      frames_received
-    } frames_sent=#{frames_sent} reason=#{inspect(reason)}"
+    "DISCONNECTED connected_at=#{Time.to_iso_timestamp(start_time)} frames_received=#{frames_received} frames_sent=#{frames_sent} reason=#{inspect(reason)}"
   end
 
   for level <- [:info, :error] do

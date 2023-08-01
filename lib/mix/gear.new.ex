@@ -116,9 +116,7 @@ defmodule Mix.Tasks.Antikythera.Gear.New do
 
       {output, _nonzero} ->
         Mix.raise(
-          "Tried to read url of git remote 'origin' for antikythera instance dependency, but encountered the following error:\n#{
-            output
-          }"
+          "Tried to read url of git remote 'origin' for antikythera instance dependency, but encountered the following error:\n#{output}"
         )
     end
   end

@@ -18,9 +18,7 @@ defmodule AntikytheraCore.Cookies do
         rescue
           e in ArgumentError ->
             L.error(
-              ~s(Fail to parse cookie: "#{value}" from "#{req.method} #{req.scheme}://#{req.host}#{
-                req.path
-              }")
+              ~s(Fail to parse cookie: "#{value}" from "#{req.method} #{req.scheme}://#{req.host}#{req.path}")
             )
 
             reraise e, __STACKTRACE__

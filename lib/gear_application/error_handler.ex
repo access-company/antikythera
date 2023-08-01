@@ -43,9 +43,7 @@ defmodule Antikythera.GearApplication.ErrorHandler do
         mod
       else
         IO.puts("""
-        [antikythera] warning: #{mod} exists but some of the error handlers are not defined: #{
-          inspect(not_defined_handlers)
-        };
+        [antikythera] warning: #{mod} exists but some of the error handlers are not defined: #{inspect(not_defined_handlers)};
         [antikythera]   #{mod} is not eligible for a custom error handler module.
         """)
 
