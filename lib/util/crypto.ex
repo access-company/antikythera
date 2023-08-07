@@ -60,7 +60,6 @@ defmodule Antikythera.Crypto do
     alias Croma.Result, as: R
 
     @iv_len 16
-    @auth_tag_len 16
 
     @type key128 :: <<_::_*128>>
 
@@ -71,7 +70,7 @@ defmodule Antikythera.Crypto do
           ) :: binary do
       iv = :crypto.strong_rand_bytes(@iv_len)
       key = key_derivation_fun.(password)
-      {_, encrypted} = :crypto.stream_init(:aes_ctr, key, iv) |> :crypto.stream_encrypt(plain)
+      encrypted = :crypto.crypto_init(:aes_128_ctr, key, iv, true) |> :crypto.crypto_update(plain)
       iv <> encrypted
     end
 
@@ -83,8 +82,7 @@ defmodule Antikythera.Crypto do
       split_16(encrypted)
       |> R.map(fn {iv, enc} ->
         key = key_derivation_fun.(password)
-        {_, plain} = :crypto.stream_init(:aes_ctr, key, iv) |> :crypto.stream_decrypt(enc)
-        plain
+        :crypto.crypto_init(:aes_128_ctr, key, iv, false) |> :crypto.crypto_update(enc)
       end)
     end
 
@@ -98,7 +96,7 @@ defmodule Antikythera.Crypto do
       key = key_derivation_fun.(password)
 
       {encrypted, auth_tag} =
-        :crypto.block_encrypt(:aes_gcm, key, iv, {aad, plain, @auth_tag_len})
+        :crypto.crypto_one_time_aead(:aes_128_gcm, key, iv, plain, aad, true)
 
       iv <> auth_tag <> encrypted
     end
@@ -114,7 +112,7 @@ defmodule Antikythera.Crypto do
         {tag, enc2} <- split_16(enc1)
         key = key_derivation_fun.(password)
 
-        case :crypto.block_decrypt(:aes_gcm, key, iv, {aad, enc2, tag}) do
+        case :crypto.crypto_one_time_aead(:aes_128_gcm, key, iv, enc2, aad, tag, false) do
           :error -> {:error, :decryption_failed}
           plain -> {:ok, plain}
         end
