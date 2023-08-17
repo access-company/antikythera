@@ -83,9 +83,9 @@ defmodule Antikythera.Mixfile do
       {:hackney, "1.18.1", [antikythera_internal: true]},
       # 0.4.2 is broken!
       {:calliope, "0.4.1", [antikythera_internal: true]},
-      {:pool_sup, "0.6.1", [antikythera_internal: true]},
+      {:pool_sup, "0.6.2", [antikythera_internal: true]},
       {:raft_fleet, "0.10.2", [antikythera_internal: true]},
-      {:rafted_value, "0.11.1", [antikythera_internal: true]},
+      {:rafted_value, "0.11.2", [antikythera_internal: true]},
       {:syn, "3.3.0", [antikythera_internal: true]},
       {:fast_xml, "1.1.48", [antikythera_internal: true]},
       {:foretoken, "0.3.0", [antikythera_internal: true]},
@@ -99,14 +99,12 @@ defmodule Antikythera.Mixfile do
 
       # tools
       {:exsync, "0.2.4", [only: :dev]},
-      # 0.23.0 requires Elixir 1.10 or later
-      {:ex_doc, "0.22.2", [only: :dev, runtime: false]},
-      {:dialyxir, "1.2.0", [only: :dev, runtime: false]},
+      {:ex_doc, "0.29.4", [only: :dev, runtime: false]},
+      {:dialyxir, "1.3.0", [only: :dev, runtime: false]},
       {:credo, "1.6.7", [only: :dev, runtime: false]},
       {:mix_test_watch, "1.1.0", [only: :dev, runtime: false]},
       {:meck, "0.9.2", [only: :test]},
-      # 0.13.0 requires hackney ~> 1.16
-      {:excoveralls, "0.12.0", [only: :test]},
+      {:excoveralls, "0.16.1", [only: :test]},
       {:stream_data, "0.5.0", [only: :test]},
       # as a websocket client implementation to use during test (including upgrade_compatibility_test)
       # 1.4.0 requires OTP 21 or later
@@ -139,15 +137,15 @@ defmodule Antikythera.Mixfile do
       # credo
       {:bunt, "0.2.1", [indirect: true, only: :dev]},
       # ex_doc
-      {:earmark, "1.4.10", [indirect: true, only: :dev]},
-      # earmark
-      {:earmark_parser, "1.4.10", [indirect: true, only: :dev]},
+      {:earmark_parser, "1.4.33", [indirect: true, only: :dev]},
       # ex_doc
-      {:makeup_elixir, "0.14.1", [indirect: true, only: :dev]},
+      {:makeup_elixir, "0.16.1", [indirect: true, only: :dev]},
+      # ex_doc
+      {:makeup_erlang, "0.1.2", [indirect: true, only: :dev]},
       # makeup_elixir
-      {:makeup, "1.0.3", [indirect: true, only: :dev]},
+      {:makeup, "1.1.0", [indirect: true, only: :dev]},
       # makeup
-      {:nimble_parsec, "0.6.0", [indirect: true, only: :dev]},
+      {:nimble_parsec, "1.3.1", [indirect: true, only: :dev]},
       # credo, exsync and mix_test_watch
       {:file_system, "0.2.10", [indirect: true, only: :dev]},
       # dialyxir
