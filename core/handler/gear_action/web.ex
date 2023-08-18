@@ -169,6 +169,7 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
     case frame do
       :ping -> {:ok, ws_state}
       :pong -> {:ok, ws_state}
+      {ping_or_pong, _payload} when ping_or_pong in [:ping, :pong] -> {:ok, ws_state}
       _ -> WebsocketState.handle_client_message(ws_state, frame)
     end
   end
