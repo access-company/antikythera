@@ -37,7 +37,7 @@ defmodule Antikythera.Crypto do
     To make an AES key (which is 128bit length) from a given password, the functions by default use MD5 hash algorithm.
     If you need to increase computational cost of key derivation and make attacks such as dictionary attacks more difficult,
     you may pass your own key derivation function.
-    To implement your key derivation function you can use `:pbkdf2` library.
+    To implement your key derivation function you can use `:crypto` module.
 
     ## Transparent handling of initialization vector
 
