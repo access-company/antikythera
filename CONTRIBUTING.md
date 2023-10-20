@@ -20,7 +20,7 @@ All of them are helpful! Follow the guidelines provided here.
 - Make sure you are using latest antikythera with latest supported Erlang/Elixir version.
     - Refresh dependencies if dependency/compile related error occurred:
 
-      ```
+      ```shell
       mix deps.clean
       mix deps.update --all
       mix deps.get
@@ -84,7 +84,7 @@ All of them are helpful! Follow the guidelines provided here.
 
 - Fork this repository and setup antikythera project:
 
-  ```
+  ```shell
   cd path/to/antikythera/
   mix deps.get
   mix test
@@ -118,7 +118,7 @@ All of them are helpful! Follow the guidelines provided here.
 - Since these are separate projects, you will likely write tests using `testgear` as a separate step from implementing features in antikythera.
 - Fork `testgear` repository and setup like the following:
 
-  ```
+  ```shell
   $ cd path/to/testgear/
   $ export ANTIKYTHERA_INSTANCE_DEP='{:antikythera_instance_example, [git: "git@github.com:access-company/antikythera_instance_example.git"]}'
   $ mix deps.get

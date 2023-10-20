@@ -17,7 +17,7 @@
 
 - Information about incoming web requests is automatically logged, as in the following format:
 
-  ```
+  ```text
   2016-01-26T00:40:22.557+00:00 [info] context=20160126-004022.557_ip-172-31-5-176_0.684.0 GET /path?query=params from=xxx.xxx.xxx.xxx START encoding=gzip, deflate, sdch
   2016-01-26T00:40:22.567+00:00 [info] context=20160126-004022.557_ip-172-31-5-176_0.684.0 GET /path?query=params from=xxx.xxx.xxx.xxx END status=200 time=10ms
   ```
@@ -27,7 +27,7 @@
     - `encoding` field is the value of `accept-encoding` request header. This field is shown mainly to check whether the client uses gzip/deflate compression.
 - On start/end of [async job](https://hexdocs.pm/antikythera/async_job.html) executions the following logs are generated:
 
-  ```
+  ```text
   2016-08-06T09:17:24.043+00:00 [info] context=20160806-091724.043_ip-172-31-22-164_0.662.0 <async_job> module=Testgear.TestAsyncJob job_id=P97tnfACMEivaKW-3zey attempt=1th/3 run_at=2016-08-06T09:17:24.042+00:00 START
   2016-08-06T09:17:24.144+00:00 [info] context=20160806-091724.043_ip-172-31-22-164_0.662.0 <async_job> module=Testgear.TestAsyncJob job_id=P97tnfACMEivaKW-3zey attempt=1th/3 run_at=2016-08-06T09:17:24.042+00:00 END status=success time=71ms
   ```
@@ -42,7 +42,7 @@
       See documentation for `Antikythera.AsyncJob` for detail.
 - Also websocket connected/disconnected events are logged:
 
-  ```
+  ```text
   2016-11-09T04:47:19.089+00:00 [info] context=20161109-044719.089_ip-172-31-15-109_0.1164.0 <websocket> CONNECTED
   2016-11-09T04:47:19.831+00:00 [info] context=20161109-044719.089_ip-172-31-15-109_0.1164.0 <websocket> DISCONNECTED connected_at=2016-11-09T04:47:19.089+00:00 frames_received=0 frames_sent=0
   ```

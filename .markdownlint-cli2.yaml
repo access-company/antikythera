@@ -9,7 +9,6 @@ config:
   MD025: false
   MD033:
     allowed_elements: ['br', 'pre'] # line break inside a table cell
-  MD040: false # temporal
   MD051: false # work around Japanese link-fragments
 ignores:
   - '**/node_modules'

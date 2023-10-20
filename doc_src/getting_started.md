@@ -6,7 +6,7 @@
     - **Documentation about this part is in preparation. Please be patient!**
     - If you don't have one yet, you can start by using [`antikythera_instance_example`](https://github.com/access-company/antikythera_instance_example).
 
-      ```
+      ```shell
       $ git clone https://github.com/access-company/antikythera_instance_example.git
       $ cd antikythera_instance_example
       $ mix deps.get
@@ -18,7 +18,7 @@
 - Now you can generate your own gear project using your antikythera instance.
     - From local clone of your antikythera instance:
 
-      ```
+      ```shell
       $ mix antikythera.gear.new ~/path/to/my_gear
       $ cd ~/path/to/my_gear
       # In order for versioning utility of antikythera to work, git repository and an initial commit are necessary.
