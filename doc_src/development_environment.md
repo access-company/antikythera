@@ -39,7 +39,6 @@
               symlink to `.tool-versions` is automatically created.
         - `$ asdf install`
 
-
 ### Shell history in `iex`
 
 - Although `iex` is able to remember commands executed in previous sessions, the feature is not enabled by default.

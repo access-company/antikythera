@@ -1,0 +1,16 @@
+config:
+  default: true
+  MD004: # list bullet
+    style: 'dash'
+  MD007:
+    indent: 4
+  MD013: false # line length
+  MD024: false # Multiple headings with the same content
+  MD025: false
+  MD033:
+    allowed_elements: ['br', 'pre'] # line break inside a table cell
+  MD040: false # temporal
+  MD051: false # work around Japanese link-fragments
+ignores:
+  - '**/node_modules'
+  - 'deps'

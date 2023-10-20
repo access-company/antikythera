@@ -58,7 +58,6 @@
 - If you have any gear dependencies, you should also update them periodically,
   e.g. `$ mix deps.update antikythera_instance_name gear_a gear_b`.
 
-
 ## Tools
 
 - Some development/test libraries are useful and recommended to include in your antikythera instance.
