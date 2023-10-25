@@ -89,7 +89,7 @@ defmodule Antikythera.Mixfile do
       {:syn, "3.3.0", [antikythera_internal: true]},
       {:fast_xml, "1.1.48", [antikythera_internal: true]},
       {:foretoken, "0.3.0", [antikythera_internal: true]},
-      {:recon, "2.5.3", [antikythera_internal: true]},
+      {:recon, "2.5.4", [antikythera_internal: true]},
 
       # The following libraries are used by both antikythera itself and gears.
       {:poison, "4.0.1"},
@@ -98,14 +98,14 @@ defmodule Antikythera.Mixfile do
       {:croma, "0.10.2"},
 
       # tools
-      {:exsync, "0.2.4", [only: :dev]},
+      {:exsync, "0.3.0", [only: :dev]},
       {:ex_doc, "0.29.4", [only: :dev, runtime: false]},
-      {:dialyxir, "1.3.0", [only: :dev, runtime: false]},
-      {:credo, "1.6.7", [only: :dev, runtime: false]},
-      {:mix_test_watch, "1.1.0", [only: :dev, runtime: false]},
+      {:dialyxir, "1.4.2", [only: :dev, runtime: false]},
+      {:credo, "1.7.1", [only: :dev, runtime: false]},
+      {:mix_test_watch, "1.1.1", [only: :dev, runtime: false]},
       {:meck, "0.9.2", [only: :test]},
-      {:excoveralls, "0.16.1", [only: :test]},
-      {:stream_data, "0.5.0", [only: :test]},
+      {:excoveralls, "0.17.1", [only: :test]},
+      {:stream_data, "0.6.0", [only: :test]},
       # as a websocket client implementation to use during test (including upgrade_compatibility_test)
       # 1.4.0 requires OTP 21 or later
       {:websocket_client, "1.3.0", [only: :test]},
@@ -116,7 +116,7 @@ defmodule Antikythera.Mixfile do
       # hackney
       {:certifi, "2.9.0", [indirect: true]},
       # hackney
-      {:ssl_verify_fun, "1.1.6", [indirect: true]},
+      {:ssl_verify_fun, "1.1.7", [indirect: true]},
       # hackney
       {:idna, "6.1.1", [indirect: true]},
       # hackney
@@ -134,7 +134,7 @@ defmodule Antikythera.Mixfile do
       # credo
       {:bunt, "0.2.1", [indirect: true, only: :dev]},
       # ex_doc
-      {:earmark_parser, "1.4.33", [indirect: true, only: :dev]},
+      {:earmark_parser, "1.4.37", [indirect: true, only: :dev]},
       # ex_doc
       {:makeup_elixir, "0.16.1", [indirect: true, only: :dev]},
       # ex_doc
