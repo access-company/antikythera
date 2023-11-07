@@ -156,7 +156,6 @@ All of them are helpful! Follow the guidelines provided here.
         - `$ mix docs`
             - Make sure you don't add warnings or errors.
     - If reviewers deemed the Pull Request is not self-reviewed well, it CAN be rejected.
-
 - When you are confident on your branch, push it to your fork repository, then open Pull Request.
     - Pull Request title can be just branch name, or summarized description.
     - Make sure the Pull Request and the issue are mutually linked.
