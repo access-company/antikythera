@@ -142,8 +142,19 @@ All of them are helpful! Follow the guidelines provided here.
         - Make sure your code fit in existing antikythera code.
     - Provide sufficient `@moduledoc`, `@doc` and `@typedoc`, especially if it is publicly available.
     - If your code contains workaround or hacky solution, put an explanation comments.
-    - Check typo and format the code.(`$ mix format`)
-    - Run the Dialyzer (`$ mix dialyzer`) and fix any errors reported.
+    - Run the following commands and fix errors or apply the fixes:
+        - `$ mix format`
+        - `$ mix compile`
+        - `$ mix dialyzer`
+        - `$ mix credo -a --strict`
+            - Make sure you don't add warnings or errors.
+        - `$ mix test`
+        - `$ TEST_MODE=blackbox_local mix test`
+        - `$ mix antikythera_local.upgrade_compatibility_test`
+        - `$ mix antikythera_local.version_upgrade_test`
+        - `$ markdownlint-cli2 --fix "**/*.md"`
+        - `$ mix docs`
+            - Make sure you don't add warnings or errors.
     - If reviewers deemed the Pull Request is not self-reviewed well, it CAN be rejected.
 - When you are confident on your branch, push it to your fork repository, then open Pull Request.
     - Pull Request title can be just branch name, or summarized description.
