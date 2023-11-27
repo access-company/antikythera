@@ -140,7 +140,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
       if status != 0 do
         if File.exists?("package-lock.json") || File.exists?("npm-shrinkwrap.json") do
           # Some vulnerabilities were found. So we check the audit level.
-          if Regex.match?(~r/\tcritical\t/, output) do
+          if Regex.match?(~r/Severity: critical/, output) do
             raise "One or more critical packages are found: #{status}"
           end
         else
