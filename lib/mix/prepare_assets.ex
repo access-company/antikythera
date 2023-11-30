@@ -7,16 +7,13 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   @moduledoc """
   #{@shortdoc}.
 
-  This mix task is called right before compilations of the gear in antikythera's auto-deploy script.
+  This mix task must be called before compilations of the gear if you need asset preparation.
   It ensures all static assets of your gear reside in `priv/static/` directory before compilations of `YourGear.Asset` module.
-  Assets in `priv/static/` directory will then be uploaded to cloud storage for serving via CDN.
-  See `Antikythera.Asset` for details.
+  Assets in `priv/static/` directory must be uploaded to cloud storage by `mix antikythera_core.upload_new_asset_versions` for serving via CDN if you run the gear on cloud.
+  See `Antikythera.Asset` and `Mix.Tasks.AntikytheraCore.UploadNewAssetVersions` for details.
 
   If your gear uses some kind of preprocessing tools to generate asset files (JS, CSS, etc.),
   you have to set up the supported asset preparation method described in the next section.
-
-  Normally you do not have to invoke this mix task when you locally develop your assets.
-  Though you may do so in order to confirm asset preparation is working as you intended.
 
   This mix task invokes the preprocessing tools with `ANTIKYTHERA_COMPILE_ENV` environment variable
   (see also `Antikythera.Env`).
@@ -24,7 +21,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
 
   ## Supported Asset Preparation Method
 
-  Asset preparation process is split into two steps: package installation step and build step.
+  Asset preparation process is split into 3 steps: package installation step, auditing step and build step.
   If any part of the preparation process resulted in failure (non-zero exit code),
   the whole task will abort and thus auto-deploy will fail.
 
@@ -36,6 +33,10 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
   ### Package Installation
 
   Use [`yarn`](https://yarnpkg.com/en/) if `yarn.lock` file exists, otherwise use `npm install`.
+
+  ### Auditing the packages
+
+  Run `yarn audit` or `npm audit` and abort if one or more critical packages found.
 
   ### Build using [npm-scripts](https://docs.npmjs.com/misc/scripts)
 
