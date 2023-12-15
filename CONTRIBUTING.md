@@ -91,7 +91,7 @@ All of them are helpful! Follow the guidelines provided here.
   ```
 
 - After you have made sure that you can run antikythera tests, check out a feature branch from `master` branch.
-    - Antikythera and its related projects use [GitHub-flow](https://scottchacon.com/2011/08/31/github-flow.html);
+    - Antikythera and its related projects use [GitHub-flow](https://scottchacon.com/2011/08/31/github-flow/);
       anything on `master` are automatically tested (though it is not actually "deployed" to somewhere).
     - For branch name and commit messages, look up recent branches/commits and follow their conventions
       (be sufficiently descriptive and simple).
