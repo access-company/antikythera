@@ -5,10 +5,11 @@ which are exposed to antikythera instance administrators and/or gear developers.
 
 ---
 
-- Next minor version release:
+- 0.5.0:
     - Change backend of `mix antikythera_core.generate_release` from `relx` to `mix release`.
         - This requires manual addition of configs for `mix release` and renaming of related environment variables.
     - Upgrade Elixir to v1.11 series.
+    - Responses that should not have a body, such as 204, now raise an error if a non-empty body is given.
 - 0.4.0:
     - Add a new callback named `health_check_grace_period_in_seconds/0` to `AntikytheraEal.ClusterConfiguration.Behaviour`.
 - 0.3.0:
