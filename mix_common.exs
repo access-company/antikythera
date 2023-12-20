@@ -234,6 +234,7 @@ defmodule Antikythera.GearProject do
 
   - (required) `:antikythera_instance_dep` : Dependency on the antikythera instance which this gear belongs to.
   - (optional) `:source_url`               : If given it's used as both `source_url` (and also `homepage_url`).
+  - (optional) `:docs`                     : If given it's used to `:docs` in addition to the default `:docs` options for gears.
 
   The following private functions are used by this module and thus mandatory.
 
@@ -269,6 +270,7 @@ defmodule Antikythera.GearProject do
       @antikythera_instance_deps      @antikythera_instance_project[:deps]
       @antikythera_instance_compilers @antikythera_instance_project[:extra_compilers] |> List.wrap()
       @source_url                     Keyword.get(opts, :source_url)
+      @docs                           Keyword.get(opts, :docs, [])
       Antikythera.GearProject.load_antikythera_instance_mix_config_file!(@antikythera_instance_name)
 
       # Deliberately undocumented option; only used by special gears (mostly for testing or administrative purposes)
@@ -284,7 +286,7 @@ defmodule Antikythera.GearProject do
           compilers:        [:ensure_gear_dependencies, :gettext, :propagate_file_modifications] ++ Mix.compilers() ++ [:gear_static_analysis] ++ @antikythera_instance_compilers,
           start_permanent:  false,
           deps:             deps(),
-          docs:             [output: "exdoc"],
+          docs:             @docs ++ [output: "exdoc"],
           antikythera_gear: [
             instance_dep:                      @antikythera_instance_dep,
             gear_deps:                         gear_deps(),
