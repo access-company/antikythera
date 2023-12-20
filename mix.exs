@@ -38,10 +38,14 @@ defmodule Antikythera.Mixfile do
 
   @github_url "https://github.com/access-company/antikythera"
 
+  # Rewrite the followings to the new version when you release a new version.
+  @project_version Antikythera.MixCommon.version_with_last_commit_info("0.5.1")
+  @doc_version "master"
+
   def project() do
     [
       app: :antikythera,
-      version: Antikythera.MixCommon.version_with_last_commit_info("0.5.1"),
+      version: @project_version,
       elixirc_paths: elixirc_paths(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -205,7 +209,8 @@ defmodule Antikythera.Mixfile do
         "Antikythera Instance Administration":
           Path.wildcard("doc_src/instance_administrators/*.md"),
         "Gear Development": Path.wildcard("doc_src/gear_developers/*.md")
-      ]
+      ],
+      source_ref: @doc_version
     ]
   end
 end
