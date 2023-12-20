@@ -205,7 +205,8 @@ defmodule Antikythera.Mixfile do
         "Antikythera Instance Administration":
           Path.wildcard("doc_src/instance_administrators/*.md"),
         "Gear Development": Path.wildcard("doc_src/gear_developers/*.md")
-      ]
+      ],
+      source_ref: "master"
     ]
   end
 end
