@@ -39,8 +39,8 @@ defmodule Antikythera.Mixfile do
   @github_url "https://github.com/access-company/antikythera"
 
   # Rewrite the followings to the new version when you release a new version.
-  @project_version "0.5.1"
-  @doc_version "0.5.1"
+  @project_version Antikythera.MixCommon.version_with_last_commit_info("0.5.2")
+  @doc_version "master"
 
   def project() do
     [
