@@ -11,17 +11,23 @@
 defmodule Antikythera.MixCommon do
   def common_project_settings() do
     [
-      elixir:                "~> 1.11",
-      elixirc_options:       [warnings_as_errors: true],
-      build_path:            build_path(),
-      build_embedded:        Mix.env() == :prod,
-      test_coverage:         [tool: ExCoveralls],
-      preferred_cli_env:     [coveralls: :test, "coveralls.detail": :test, "coveralls.html": :test, "antikythera_local.upgrade_compatibility_test": :test],
-      xref:                  [exclude: [EEx, EEx.Engine]], # Suppress undefined application warnings
+      elixir: "~> 1.11",
+      elixirc_options: [warnings_as_errors: true],
+      build_path: build_path(),
+      build_embedded: Mix.env() == :prod,
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.html": :test,
+        "antikythera_local.upgrade_compatibility_test": :test
+      ],
+      # Suppress undefined application warnings
+      xref: [exclude: [EEx, EEx.Engine]],
 
       # Avoid inclusion of consolidated protocol information in the core PLT file also in Elixir 1.11+.
       # Since the release build have not used protocol consolidation, this setting does not affect performance in release.
-      consolidate_protocols: false,
+      consolidate_protocols: false
     ]
   end
 
@@ -41,7 +47,10 @@ defmodule Antikythera.MixCommon do
   end
 
   defp dep_available_in_env?(dep, env) do
-    extract_dep_options(dep) |> Keyword.get(:only, [:dev, :test, :prod]) |> List.wrap() |> Enum.member?(env)
+    extract_dep_options(dep)
+    |> Keyword.get(:only, [:dev, :test, :prod])
+    |> List.wrap()
+    |> Enum.member?(env)
   end
 
   defp dep_used_at_runtime?(dep) do
@@ -56,9 +65,9 @@ defmodule Antikythera.MixCommon do
     extract_dep_options(dep) |> Keyword.get(:antikythera_internal, false)
   end
 
-  defp extract_dep_options({_name, _ver, opts})             , do: opts
+  defp extract_dep_options({_name, _ver, opts}), do: opts
   defp extract_dep_options({_name, opts}) when is_list(opts), do: opts
-  defp extract_dep_options(_)                               , do: []
+  defp extract_dep_options(_), do: []
 
   #
   # runtime dependencies (`applications` field in .app file)
@@ -70,7 +79,9 @@ defmodule Antikythera.MixCommon do
       |> Enum.filter(&dep_used_at_runtime?/1)
       |> Enum.reject(&dep_indirect?/1)
       |> Enum.map(&elem(&1, 0))
-    runtime_applications_from_deps ++ special_antikythera_internal_applications() ++ applications_required_in_dev_for_dialyzer()
+
+    runtime_applications_from_deps ++
+      special_antikythera_internal_applications() ++ applications_required_in_dev_for_dialyzer()
   end
 
   def gear_runtime_dependency_applications(deps) do
@@ -81,28 +92,38 @@ defmodule Antikythera.MixCommon do
       |> Enum.reject(&dep_indirect?/1)
       |> Enum.reject(&dep_antikythera_internal?/1)
       |> Enum.map(&elem(&1, 0))
+
     runtime_applications_from_deps ++ applications_required_in_dev_for_dialyzer()
   end
 
   defp special_antikythera_internal_applications() do
     [
-      :sasl,     # To use :release_handler
-      :inets,    # To use :httpd_util
+      # To use :release_handler
+      :sasl,
+      # To use :httpd_util
+      :inets,
       :crypto,
       :mnesia,
       :logger,
-      :p1_utils, # :iconv does not declare this as a runtime dependency; we have to explicitly add this
+      # :iconv does not declare this as a runtime dependency; we have to explicitly add this
+      :p1_utils
     ]
   end
 
   defp applications_required_in_dev_for_dialyzer() do
     case Mix.env() do
-      :dev -> [
-        :mix,     # Suppress warning about Mix.Task behaviour
-        :eex,     # Only used during compilation, suppress warning about EEx.Engine behaviour
-        :ex_unit, # Suppress warnings about calling ExUnit functions in Antikythera.Test.*
-      ]
-      _ -> []
+      :dev ->
+        [
+          # Suppress warning about Mix.Task behaviour
+          :mix,
+          # Only used during compilation, suppress warning about EEx.Engine behaviour
+          :eex,
+          # Suppress warnings about calling ExUnit functions in Antikythera.Test.*
+          :ex_unit
+        ]
+
+      _ ->
+        []
     end
   end
 
@@ -110,13 +131,17 @@ defmodule Antikythera.MixCommon do
   # util
   #
   def version_with_last_commit_info(major_minor_patch) do
-    {git_log_output, 0}      = System.cmd("git", ["log", "-1", "--format=%cd", "--date=raw"])
+    {git_log_output, 0} = System.cmd("git", ["log", "-1", "--format=%cd", "--date=raw"])
     [seconds_str, _timezone] = String.split(git_log_output)
-    seconds_since_epoch      = String.to_integer(seconds_str)
-    time_as_tuple            = {div(seconds_since_epoch, 1_000_000), rem(seconds_since_epoch, 1_000_000), 0}
+    seconds_since_epoch = String.to_integer(seconds_str)
+    time_as_tuple = {div(seconds_since_epoch, 1_000_000), rem(seconds_since_epoch, 1_000_000), 0}
     {{y, mo, d}, {h, mi, s}} = :calendar.now_to_universal_time(time_as_tuple)
-    last_commit_time         = :io_lib.format('~4..0w~2..0w~2..0w~2..0w~2..0w~2..0w', [y, mo, d, h, mi, s]) |> List.to_string()
-    {last_commit_sha1, 0}    = System.cmd("git", ["rev-parse", "HEAD"])
+
+    last_commit_time =
+      :io_lib.format('~4..0w~2..0w~2..0w~2..0w~2..0w~2..0w', [y, mo, d, h, mi, s])
+      |> List.to_string()
+
+    {last_commit_sha1, 0} = System.cmd("git", ["rev-parse", "HEAD"])
     major_minor_patch <> "-" <> last_commit_time <> "+" <> String.trim(last_commit_sha1)
   end
 end
@@ -167,7 +192,7 @@ defmodule Antikythera.MixConfig do
       if Version.match?(System.version(), "~> 1.11") do
         [
           # To suppress progress reports during start-up in development environments
-          level: (if Mix.env() == :prod, do: :info, else: :notice)
+          level: if(Mix.env() == :prod, do: :info, else: :notice)
         ]
       else
         [
@@ -179,24 +204,25 @@ defmodule Antikythera.MixConfig do
     [
       # Logger configurations.
       sasl: [
-        sasl_error_logger: false, # SASL logs are handled by :logger
+        # SASL logs are handled by :logger
+        sasl_error_logger: false
       ],
-
-      logger: [
-        utc_log:             true,
-        handle_sasl_reports: true,
-        backends:            [:console, AntikytheraCore.Alert.LoggerBackend],
-        console: [
-          format:   "$dateT$time+00:00 [$level$levelpad] $metadata$message\n",
-          metadata: [:module],
-        ],
-      ] ++ logger_configs_for_compatibility,
+      logger:
+        [
+          utc_log: true,
+          handle_sasl_reports: true,
+          backends: [:console, AntikytheraCore.Alert.LoggerBackend],
+          console: [
+            format: "$dateT$time+00:00 [$level$levelpad] $metadata$message\n",
+            metadata: [:module]
+          ]
+        ] ++ logger_configs_for_compatibility,
 
       # Persist Raft logs & snapshots for async job queues.
       raft_fleet: [
         rafted_value_config_maker: AntikytheraCore.AsyncJob.RaftedValueConfigMaker,
-        per_member_options_maker:  AntikytheraCore.AsyncJob.RaftPerMemberOptionsMaker,
-      ],
+        per_member_options_maker: AntikytheraCore.AsyncJob.RaftPerMemberOptionsMaker
+      ]
     ]
   end
 
@@ -204,11 +230,12 @@ defmodule Antikythera.MixConfig do
     # (compile-time configuration) Disable croma's runtime validations
     # when running as a "deployment" (see also `:deployments` in `config.exs` file).
     local? = System.get_env("ANTIKYTHERA_COMPILE_ENV") in [nil, "local"]
+
     [
       croma: [
         defun_generate_validation: local?,
-        debug_assert:              local?,
-      ],
+        debug_assert: local?
+      ]
     ]
   end
 
@@ -217,8 +244,8 @@ defmodule Antikythera.MixConfig do
     if Mix.env() == :dev do
       [
         exsync: [
-          extra_extensions: [".haml"],
-        ],
+          extra_extensions: [".haml"]
+        ]
       ]
     else
       []
@@ -264,34 +291,45 @@ defmodule Antikythera.GearProject do
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
-      @antikythera_instance_dep       Keyword.fetch!(opts, :antikythera_instance_dep)
-      @antikythera_instance_name      elem(@antikythera_instance_dep, 0)
-      @antikythera_instance_project   Antikythera.GearProject.get_antikythera_instance_project_settings!(@antikythera_instance_name)
-      @antikythera_instance_deps      @antikythera_instance_project[:deps]
-      @antikythera_instance_compilers @antikythera_instance_project[:extra_compilers] |> List.wrap()
-      @source_url                     Keyword.get(opts, :source_url)
-      @docs                           Keyword.get(opts, :docs, [])
-      Antikythera.GearProject.load_antikythera_instance_mix_config_file!(@antikythera_instance_name)
+      @antikythera_instance_dep Keyword.fetch!(opts, :antikythera_instance_dep)
+      @antikythera_instance_name elem(@antikythera_instance_dep, 0)
+      @antikythera_instance_project Antikythera.GearProject.get_antikythera_instance_project_settings!(
+                                      @antikythera_instance_name
+                                    )
+      @antikythera_instance_deps @antikythera_instance_project[:deps]
+      @antikythera_instance_compilers @antikythera_instance_project[:extra_compilers]
+                                      |> List.wrap()
+      @source_url Keyword.get(opts, :source_url)
+      @docs Keyword.get(opts, :docs, [])
+      Antikythera.GearProject.load_antikythera_instance_mix_config_file!(
+        @antikythera_instance_name
+      )
 
       # Deliberately undocumented option; only used by special gears (mostly for testing or administrative purposes)
-      @use_antikythera_internal_modules? Keyword.get(opts, :use_antikythera_internal_modules?, false)
+      @use_antikythera_internal_modules? Keyword.get(
+                                           opts,
+                                           :use_antikythera_internal_modules?,
+                                           false
+                                         )
 
       use Mix.Project
 
       def project() do
         [
-          app:              gear_name(),
-          version:          Antikythera.MixCommon.version_with_last_commit_info(version()),
-          elixirc_paths:    ["lib", "web"],
-          compilers:        [:ensure_gear_dependencies, :gettext, :propagate_file_modifications] ++ Mix.compilers() ++ [:gear_static_analysis] ++ @antikythera_instance_compilers,
-          start_permanent:  false,
-          deps:             deps(),
-          docs:             @docs ++ [output: "exdoc"],
+          app: gear_name(),
+          version: Antikythera.MixCommon.version_with_last_commit_info(version()),
+          elixirc_paths: ["lib", "web"],
+          compilers:
+            [:ensure_gear_dependencies, :gettext, :propagate_file_modifications] ++
+              Mix.compilers() ++ [:gear_static_analysis] ++ @antikythera_instance_compilers,
+          start_permanent: false,
+          deps: deps(),
+          docs: @docs ++ [output: "exdoc"],
           antikythera_gear: [
-            instance_dep:                      @antikythera_instance_dep,
-            gear_deps:                         gear_deps(),
-            use_antikythera_internal_modules?: @use_antikythera_internal_modules?,
-          ],
+            instance_dep: @antikythera_instance_dep,
+            gear_deps: gear_deps(),
+            use_antikythera_internal_modules?: @use_antikythera_internal_modules?
+          ]
         ] ++ urls() ++ Antikythera.MixCommon.common_project_settings()
       end
 
@@ -303,13 +341,19 @@ defmodule Antikythera.GearProject do
       end
 
       def application() do
-        gear_application_module_name    = gear_name() |> Atom.to_string() |> Macro.camelize()
-        gear_application_module         = Module.concat([gear_application_module_name])
-        runtime_dependency_applications = Antikythera.MixCommon.gear_runtime_dependency_applications(@antikythera_instance_deps)
-        gear_dependency_names           = Enum.map(gear_deps(), &elem(&1, 0))
+        gear_application_module_name = gear_name() |> Atom.to_string() |> Macro.camelize()
+        gear_application_module = Module.concat([gear_application_module_name])
+
+        runtime_dependency_applications =
+          Antikythera.MixCommon.gear_runtime_dependency_applications(@antikythera_instance_deps)
+
+        gear_dependency_names = Enum.map(gear_deps(), &elem(&1, 0))
+
         [
-          mod:          {gear_application_module, []},
-          applications: [@antikythera_instance_name] ++ runtime_dependency_applications ++ gear_dependency_names,
+          mod: {gear_application_module, []},
+          applications:
+            [@antikythera_instance_name] ++
+              runtime_dependency_applications ++ gear_dependency_names
         ]
       end
 
