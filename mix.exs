@@ -99,7 +99,7 @@ defmodule Antikythera.Mixfile do
       {:poison, "4.0.1"},
       {:jason, "1.2.2"},
       {:gettext, "0.17.1"},
-      {:croma, "0.10.2"},
+      {:croma, "0.11.3"},
 
       # tools
       {:exsync, "0.3.0", [only: :dev]},
