@@ -1,4 +1,4 @@
-# Copyright(c) 2015-2023 ACCESS CO., LTD. All rights reserved.
+# Copyright(c) 2015-2024 ACCESS CO., LTD. All rights reserved.
 
 # `Module.concat` is safe because mix task runs in a separate process.
 # credo:disable-for-this-file Credo.Check.Warning.UnsafeToAtom

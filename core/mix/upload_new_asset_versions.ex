@@ -1,4 +1,4 @@
-# Copyright(c) 2015-2023 ACCESS CO., LTD. All rights reserved.
+# Copyright(c) 2015-2024 ACCESS CO., LTD. All rights reserved.
 
 defmodule Mix.Tasks.AntikytheraCore.UploadNewAssetVersions do
   @shortdoc "Uploads assets to asset storage so that they can be delivered via CDN"
