@@ -321,7 +321,8 @@ defmodule Antikythera.GearProject do
           elixirc_paths: ["lib", "web"],
           compilers:
             [:ensure_gear_dependencies, :gettext, :propagate_file_modifications] ++
-              Mix.compilers() ++ [:gear_static_analysis] ++ @antikythera_instance_compilers,
+              Mix.compilers() ++
+              [:croma, :gear_static_analysis] ++ @antikythera_instance_compilers,
           start_permanent: false,
           deps: deps(),
           docs: @docs ++ [output: "exdoc"],
