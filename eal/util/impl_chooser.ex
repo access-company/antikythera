@@ -1,4 +1,4 @@
-# Copyright(c) 2015-2023 ACCESS CO., LTD. All rights reserved.
+# Copyright(c) 2015-2024 ACCESS CO., LTD. All rights reserved.
 
 defmodule AntikytheraEal.ImplChooser do
   defmacro __using__(_) do
