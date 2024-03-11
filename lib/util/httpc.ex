@@ -52,6 +52,7 @@ defmodule Antikythera.Httpc do
   - `:max_redirect` - An integer denoting the maximum number of redirects to follow if `follow_redirect: true` is given.
   - `:skip_body_decompression` - By default gzip-compressed body is automatically decompressed (i.e. defaults to `false`).
     Pass `skip_body_decompression: true` if compressed body is what you need.
+  - `:connect_options` - TCP/IP options supported by the `gen_tcp` erlang module.
   """
 
   require AntikytheraCore.Logger, as: L
@@ -363,6 +364,9 @@ defmodule Antikythera.Httpc do
 
     :max_redirect, max ->
       {:max_redirect, max}
+
+    :connect_options, connect_options ->
+      {:connect_options, connect_options}
 
     # :skip_body_decompression is used in processing response body, not here
     _, _ ->
