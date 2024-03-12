@@ -53,6 +53,7 @@ defmodule Antikythera.Httpc do
   - `:skip_body_decompression` - By default gzip-compressed body is automatically decompressed (i.e. defaults to `false`).
     Pass `skip_body_decompression: true` if compressed body is what you need.
   - `:connect_options` - TCP/IP options supported by the `gen_tcp` erlang module.
+    Currently, only IP address family is supported.
   """
 
   require AntikytheraCore.Logger, as: L
@@ -366,11 +367,15 @@ defmodule Antikythera.Httpc do
       {:max_redirect, max}
 
     :connect_options, connect_options ->
-      {:connect_options, connect_options}
+      {:connect_options, Enum.filter(connect_options, &sanitize_hackney_connect_option/1)}
 
     # :skip_body_decompression is used in processing response body, not here
     _, _ ->
       nil
+  end
+
+  defunpt sanitize_hackney_connect_option(option :: :gen_tcp.connect_option()) :: v[boolean] do
+    option in [:inet, :inet6, :local]
   end
 
   defunpt encode_path(path :: String.t()) :: String.t() do

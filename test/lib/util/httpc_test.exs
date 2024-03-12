@@ -53,4 +53,11 @@ defmodule Antikythera.HttpcTest do
     actual = Httpc.post("http://example.com", {:json, %{t: wrong_time}}, %{})
     assert actual == expect
   end
+
+  test "sanitize_hackney_connect_option/1 should accept only IP address family" do
+    assert Httpc.sanitize_hackney_connect_option(:inet)
+    assert Httpc.sanitize_hackney_connect_option(:inet6)
+    assert Httpc.sanitize_hackney_connect_option(:local)
+    refute Httpc.sanitize_hackney_connect_option({:fd, 0})
+  end
 end
