@@ -367,14 +367,14 @@ defmodule Antikythera.Httpc do
       {:max_redirect, max}
 
     :connect_options, connect_options ->
-      {:connect_options, Enum.filter(connect_options, &sanitize_hackney_connect_option/1)}
+      {:connect_options, Enum.filter(connect_options, &filter_hackney_connect_option/1)}
 
     # :skip_body_decompression is used in processing response body, not here
     _, _ ->
       nil
   end
 
-  defunpt sanitize_hackney_connect_option(option :: :gen_tcp.connect_option()) :: v[boolean] do
+  defunpt filter_hackney_connect_option(option :: :gen_tcp.connect_option()) :: v[boolean] do
     option in [:inet, :inet6, :local]
   end
 
