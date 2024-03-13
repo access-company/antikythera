@@ -57,7 +57,7 @@ defmodule Antikythera.HttpcTest do
   test "filter_hackney_connect_option/1 should accept only IP address family" do
     assert Httpc.filter_hackney_connect_option(:inet)
     assert Httpc.filter_hackney_connect_option(:inet6)
-    assert Httpc.filter_hackney_connect_option(:local)
+    refute Httpc.filter_hackney_connect_option(:local)
     refute Httpc.filter_hackney_connect_option({:fd, 0})
   end
 end

@@ -52,8 +52,9 @@ defmodule Antikythera.Httpc do
   - `:max_redirect` - An integer denoting the maximum number of redirects to follow if `follow_redirect: true` is given.
   - `:skip_body_decompression` - By default gzip-compressed body is automatically decompressed (i.e. defaults to `false`).
     Pass `skip_body_decompression: true` if compressed body is what you need.
-  - `:connect_options` - TCP/IP options supported by the `gen_tcp` erlang module.
-    Currently, only IP address family is supported.
+  - `:connect_options` - Subset of TCP/IP options supported by the `gen_tcp` erlang module.
+    Currently, the following options are supported:
+      - `:inet | :inet6` - Specify the address family to use for the connection.
   """
 
   require AntikytheraCore.Logger, as: L
@@ -375,7 +376,7 @@ defmodule Antikythera.Httpc do
   end
 
   defunpt filter_hackney_connect_option(option :: :gen_tcp.connect_option()) :: v[boolean] do
-    option in [:inet, :inet6, :local]
+    option in [:inet, :inet6]
   end
 
   defunpt encode_path(path :: String.t()) :: String.t() do
