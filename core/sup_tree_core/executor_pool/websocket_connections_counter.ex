@@ -99,7 +99,8 @@ defmodule AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter do
   defunp gradually_terminate_ws_connections(counter_pid :: v[pid]) :: :ok do
     # In addition to per-connection delays, for each exec pool we introduce random delay before starting termination
     # in order not to create many timers at once.
-    # Note that all connections will be terminated within (approximately) 40 minutes (`@random_wait_time_max + @deadline_to_kill_all_connections`).
+    # Note that all connections will be terminated within (approximately) 40 minutes
+    # (`@random_wait_time_max + @deadline_to_kill_all_connections`).
     :timer.sleep(:rand.uniform(@random_wait_time_max))
 
     case Process.info(counter_pid, :monitors) do
