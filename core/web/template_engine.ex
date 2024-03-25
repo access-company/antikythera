@@ -40,19 +40,10 @@ defmodule AntikytheraCore.TemplateEngine do
     {:__block__, [], Enum.reverse([{:safe, q} | dynamic])}
   end
 
-  # TODO: Remove after requiring Elixir 1.12+
-  if Version.match?(System.version(), "~> 1.12") do
-    @impl true
-    def handle_text(state, _meta, text) do
-      %{iodata: iodata} = state
-      %{state | iodata: [text | iodata]}
-    end
-  else
-    @impl true
-    def handle_text(state, text) do
-      %{iodata: iodata} = state
-      %{state | iodata: [text | iodata]}
-    end
+  @impl true
+  def handle_text(state, _meta, text) do
+    %{iodata: iodata} = state
+    %{state | iodata: [text | iodata]}
   end
 
   @impl true
