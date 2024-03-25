@@ -20,11 +20,11 @@ defmodule AntikytheraCore.ConnTest do
 
   describe "validate/1" do
     test "should return :ok for status which can have body" do
-      conn = make_fake_conn(200, "body")
-      assert Conn.validate(conn) == :ok
+      conn1 = make_fake_conn(200, "body")
+      assert Conn.validate(conn1) == :ok
 
-      conn = make_fake_conn(200, "")
-      assert Conn.validate(conn) == :ok
+      conn2 = make_fake_conn(200, "")
+      assert Conn.validate(conn2) == :ok
     end
 
     test "should return :ok for status which must not have body if body is empty" do
