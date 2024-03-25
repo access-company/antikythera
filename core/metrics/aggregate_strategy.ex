@@ -36,6 +36,7 @@ defmodule AntikytheraCore.Metrics.AggregateStrategy do
   all_behaviour_impl_names =
     Enum.map(all_behaviour_impl_modules, fn mod ->
       # during compilation, no problem
+      # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
       Module.split(mod) |> List.last() |> Macro.underscore() |> String.to_atom()
     end)
 

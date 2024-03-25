@@ -72,6 +72,7 @@ defmodule AntikytheraCore.Config.Gear do
          ] do
     CorePath.list_modified_files(CorePath.gear_config_dir(), last_checked_at)
     # generate atom from trusted data source
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     |> Enum.map(fn path -> Path.basename(path) |> String.to_atom() end)
   end
 
@@ -128,10 +129,10 @@ defmodule AntikytheraCore.Config.Gear do
     System.get_env()
     |> Enum.filter(fn {k, _} -> String.ends_with?(k, "_CONFIG_JSON") end)
     |> Enum.each(fn {key, json} ->
+      gear_name_in_env_var_name = String.replace_suffix(key, "_CONFIG_JSON", "")
       # Only in dev/test environment, no problem
-      gear_name =
-        String.replace_suffix(key, "_CONFIG_JSON", "") |> String.downcase() |> String.to_atom()
-
+      # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
+      gear_name = gear_name_in_env_var_name |> String.downcase() |> String.to_atom()
       config = %__MODULE__{default() | kv: Poison.decode!(json)}
       write(gear_name, config)
     end)
