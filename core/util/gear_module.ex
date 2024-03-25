@@ -12,9 +12,7 @@ defmodule AntikytheraCore.GearModule do
 
   defun error_handler(gear_name :: v[GearName.t()]) :: nil | module do
     gear_app_module = camelize_gear_name(gear_name) |> List.wrap() |> Module.safe_concat()
-
-    # workaround dialyzer warning "Guard test is_map(_@1::atom()) can never succeed" by using `apply`
-    apply(gear_app_module, :error_handler_module, [])
+    gear_app_module.error_handler_module()
   end
 
   defun error_handler_unsafe(gear_name :: v[GearName.t()]) :: module do
