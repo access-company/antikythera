@@ -41,18 +41,10 @@ defmodule AntikytheraCore.Version.Gear do
           # Croma defines modules (e.g. `Elixir.Croma.TypeGen.Nilable.Antikythera.Email`) automatically in the gear.
           # As a result, some modules which have the same name are defined in two or more gears.
           # We should avoid loading these modules twice.
-          if !auto_generated_module?(mod) do
-            {:module, _} = :code.load_file(mod)
+          if auto_generated_module?(mod) do
+            load_module_if_needed!(mod)
           else
-            if !:erlang.module_loaded(mod) do
-              case :code.load_file(mod) do
-                {:module, _} -> :ok
-                # When three or more same-name modules are loaded at the same time,
-                # `:code.load_file(mod)` returns `:not_purged`. We can safely ignore the error in that case.
-                {:error, :not_purged} -> :ok
-                {:error, reason} -> raise "Failed to load '#{mod}': #{reason}"
-              end
-            end
+            {:module, _} = :code.load_file(mod)
           end
         end)
 
@@ -72,6 +64,18 @@ defmodule AntikytheraCore.Version.Gear do
 
   defunpt auto_generated_module?(mod :: atom) :: boolean do
     Atom.to_string(mod) |> String.starts_with?("Elixir.Croma.TypeGen.")
+  end
+
+  defunp load_module_if_needed!(mod :: v[module]) :: :ok | nil do
+    unless :erlang.module_loaded(mod) do
+      case :code.load_file(mod) do
+        {:module, _} -> :ok
+        # When three or more same-name modules are loaded at the same time,
+        # `:code.load_file(mod)` returns `:not_purged`. We can safely ignore the error in that case.
+        {:error, :not_purged} -> :ok
+        {:error, reason} -> raise "Failed to load '#{mod}': #{reason}"
+      end
+    end
   end
 
   defunp add_code_path(ebin_dir :: Path.t(), f :: (() -> any)) :: any do
