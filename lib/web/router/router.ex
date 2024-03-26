@@ -225,6 +225,8 @@ defmodule Antikythera.Router do
     end
   end
 
+  # This function should not be called other than from macros in this module
+  @doc false
   def fully_qualified_controller_module(router_module, controller, opts) do
     if opts[:websocket?] do
       controller
@@ -236,6 +238,7 @@ defmodule Antikythera.Router do
         Macro.expand(controller, __ENV__)
       ]
       # Executed during compilation; `Module.concat/1` causes no problem
+      # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
       |> Module.concat()
     end
   end

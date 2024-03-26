@@ -19,7 +19,8 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
   alias AntikytheraCore.ExecutorPool.ActionRunner
   alias AntikytheraCore.GearLog.ContextHelper
 
-  # @behaviour :cowboy_handler # This line results in "conflicting behaviours - callback init/2 required by both 'cowboy_websocket' and 'cowboy_handler'"
+  # This line results in "conflicting behaviours - callback init/2 required by both 'cowboy_websocket' and 'cowboy_handler'"
+  # @behaviour :cowboy_handler
   @behaviour :cowboy_websocket
 
   @type http_reply :: {:ok, :cowboy_req.req(), nil}
