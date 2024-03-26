@@ -30,32 +30,39 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   defp find_issues_in_file(ex_file_path) do
     File.read!(ex_file_path)
     |> Code.string_to_quoted!()
-    |> Macro.prewalk([], fn
-      {:defmodule, meta, [{:__aliases__, _, atoms}, [do: body]]}, acc ->
-        {issue_or_nil, tool?} =
-          check_toplevel_module_name(Module.concat(atoms), meta, ex_file_path)
-
-        check_module_body(body, List.wrap(issue_or_nil) ++ acc, ex_file_path, tool?)
-
-      {:defimpl, meta,
-       [{:__aliases__, _, protocol_atoms}, [for: {:__aliases__, _, mod_atoms}], [do: body]]},
-      acc ->
-        issue_or_nil =
-          check_defimpl(
-            Module.concat(protocol_atoms),
-            Module.concat(mod_atoms),
-            meta,
-            ex_file_path
-          )
-
-        check_module_body(body, List.wrap(issue_or_nil) ++ acc, ex_file_path, false)
-
-      n, acc ->
-        {n, acc}
-    end)
+    |> Macro.prewalk([], &check_module_implementation(&1, &2, ex_file_path))
     |> elem(1)
     |> Enum.reverse()
   end
+
+  defp check_module_implementation(
+         {:defmodule, meta, [{:__aliases__, _, atoms}, [do: body]]},
+         acc,
+         ex_file_path
+       ) do
+    {issue_or_nil, tool?} = check_toplevel_module_name(Module.concat(atoms), meta, ex_file_path)
+
+    check_module_body(body, List.wrap(issue_or_nil) ++ acc, ex_file_path, tool?)
+  end
+
+  defp check_module_implementation(
+         {:defimpl, meta,
+          [{:__aliases__, _, protocol_atoms}, [for: {:__aliases__, _, mod_atoms}], [do: body]]},
+         acc,
+         ex_file_path
+       ) do
+    issue_or_nil =
+      check_defimpl(
+        Module.concat(protocol_atoms),
+        Module.concat(mod_atoms),
+        meta,
+        ex_file_path
+      )
+
+    check_module_body(body, List.wrap(issue_or_nil) ++ acc, ex_file_path, false)
+  end
+
+  defp check_module_implementation(n, acc, _ex_file_path), do: {n, acc}
 
   defp check_toplevel_module_name(mod, meta, file) do
     # Compare module name prefix as String.t, in order not to be confused by the difference between e.g. `Mix` and `:Mix`.
