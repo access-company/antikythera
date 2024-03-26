@@ -3,6 +3,8 @@
 # `Module.concat` is safe because mix task runs in a separate process.
 # credo:disable-for-this-file Credo.Check.Warning.UnsafeToAtom
 
+use Croma
+
 defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   @moduledoc """
   Statically checks issues in gear's source code.
@@ -27,7 +29,9 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
     |> report()
   end
 
-  defp find_issues_in_file(ex_file_path) do
+  @type issue_t :: {:warning | :error, Path.t(), Macro.metadata(), String.t()}
+
+  defunpt find_issues_in_file(ex_file_path :: Path.t()) :: [issue_t] do
     File.read!(ex_file_path)
     |> Code.string_to_quoted!()
     |> Macro.prewalk([], &check_module_implementation(&1, &2, ex_file_path))
