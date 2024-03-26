@@ -331,17 +331,7 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   defp report(issues) do
     mod_name = Module.split(__MODULE__) |> List.last()
     prefix = "[#{mod_name}]"
-
-    Enum.each(issues, fn
-      {:warning, file, meta, msg} ->
-        IO.puts("#{prefix} #{file}:#{meta[:line]} WARNING #{msg}")
-
-      {:error, file, meta, msg} ->
-        IO.puts(
-          IO.ANSI.red() <> "#{prefix} #{file}:#{meta[:line]} ERROR #{msg}" <> IO.ANSI.reset()
-        )
-    end)
-
+    print_issues(issues, prefix)
     {warnings, errors} = Enum.split_with(issues, &match?({:warning, _, _, _}, &1))
     n_warnings = length(warnings)
     n_errors = length(errors)
@@ -358,5 +348,17 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
       true ->
         {:ok, []}
     end
+  end
+
+  defp print_issues(issues, prefix) do
+    Enum.each(issues, fn
+      {:warning, file, meta, msg} ->
+        IO.puts("#{prefix} #{file}:#{meta[:line]} WARNING #{msg}")
+
+      {:error, file, meta, msg} ->
+        IO.puts(
+          IO.ANSI.red() <> "#{prefix} #{file}:#{meta[:line]} ERROR #{msg}" <> IO.ANSI.reset()
+        )
+    end)
   end
 end
