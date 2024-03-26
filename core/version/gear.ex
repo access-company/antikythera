@@ -62,7 +62,7 @@ defmodule AntikytheraCore.Version.Gear do
     end)
   end
 
-  defunpt auto_generated_module?(mod :: atom) :: boolean do
+  defunpt auto_generated_module?(mod :: v[module]) :: v[boolean] do
     Atom.to_string(mod) |> String.starts_with?("Elixir.Croma.TypeGen.")
   end
 
