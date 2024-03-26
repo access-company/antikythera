@@ -66,8 +66,10 @@ defmodule AntikytheraCore.Version.Gear do
     Atom.to_string(mod) |> String.starts_with?("Elixir.Croma.TypeGen.")
   end
 
-  defunp load_module_if_needed!(mod :: v[module]) :: :ok | nil do
-    unless :erlang.module_loaded(mod) do
+  defunp load_module_if_needed!(mod :: v[module]) :: :ok do
+    if :erlang.module_loaded(mod) do
+      :ok
+    else
       case :code.load_file(mod) do
         {:module, _} -> :ok
         # When three or more same-name modules are loaded at the same time,
