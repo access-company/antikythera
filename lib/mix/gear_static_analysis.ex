@@ -109,41 +109,46 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
     {nil, issues ++ acc}
   end
 
-  defp check_ast_node(n, file, tool?) do
-    case n do
-      {:defimpl, meta,
-       [{:__aliases__, _, protocol_atoms}, [for: {:__aliases__, _, mod_atoms}], [do: _block]]} ->
-        # We don't have to check `defimpl` without `for:`, as the enclosing module's name is enforced to be properly prefixed by gear name.
-        check_defimpl(Module.concat(protocol_atoms), Module.concat(mod_atoms), meta, file)
-
-      {:use, meta, [{:__aliases__, _, atoms} | kw]} ->
-        with_concatenated_module_atom(atoms, fn mod ->
-          check_use_within_module(mod, kw, meta, file, tool?)
-        end)
-
-      {{:., _, [{:__aliases__, _, atoms}, fun]}, meta, args} ->
-        with_concatenated_module_atom(atoms, fn mod ->
-          check_remote_call(mod, fun, args, meta, file, tool?)
-        end)
-
-      {{:., _, [erlang_mod, fun]}, meta, args} ->
-        check_remote_call(erlang_mod, fun, args, meta, file, tool?)
-
-      {:__aliases__, meta, atoms} ->
-        with_concatenated_module_atom(atoms, fn mod ->
-          check_module(mod, meta, file, tool?)
-        end)
-
-      {fun, meta, args} when is_atom(fun) and is_list(args) ->
-        check_local_call(fun, args, meta, file, tool?)
-
-      atom when is_atom(atom) ->
-        check_atom(atom, file)
-
-      _ ->
-        nil
-    end
+  defp check_ast_node(
+         {:defimpl, meta,
+          [{:__aliases__, _, protocol_atoms}, [for: {:__aliases__, _, mod_atoms}], [do: _block]]},
+         file,
+         _tool?
+       ) do
+    check_defimpl(Module.concat(protocol_atoms), Module.concat(mod_atoms), meta, file)
   end
+
+  defp check_ast_node({:use, meta, [{:__aliases__, _, atoms} | kw]}, file, tool?) do
+    with_concatenated_module_atom(atoms, fn mod ->
+      check_use_within_module(mod, kw, meta, file, tool?)
+    end)
+  end
+
+  defp check_ast_node({{:., _, [{:__aliases__, _, atoms}, fun]}, meta, args}, file, tool?) do
+    with_concatenated_module_atom(atoms, fn mod ->
+      check_remote_call(mod, fun, args, meta, file, tool?)
+    end)
+  end
+
+  defp check_ast_node({{:., _, [erlang_mod, fun]}, meta, args}, file, tool?) do
+    check_remote_call(erlang_mod, fun, args, meta, file, tool?)
+  end
+
+  defp check_ast_node({:__aliases__, meta, atoms}, file, tool?) do
+    with_concatenated_module_atom(atoms, fn mod ->
+      check_module(mod, meta, file, tool?)
+    end)
+  end
+
+  defp check_ast_node({fun, meta, args}, file, tool?) when is_atom(fun) and is_list(args) do
+    check_local_call(fun, args, meta, file, tool?)
+  end
+
+  defp check_ast_node(atom, file, _tool?) when is_atom(atom) do
+    check_atom(atom, file)
+  end
+
+  defp check_ast_node(_, _, _), do: nil
 
   defp with_concatenated_module_atom(atoms, f) do
     # exclude module aliases such as `__MODULE__.Foo` by returning `nil`
