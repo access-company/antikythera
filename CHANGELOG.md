@@ -5,6 +5,8 @@ which are exposed to antikythera instance administrators and/or gear developers.
 
 ---
 
+- Next minor version release:
+    - Upgrade Elixir to v1.13 series.
 - 0.5.0:
     - Change backend of `mix antikythera_core.generate_release` from `relx` to `mix release`.
         - This requires manual addition of configs for `mix release` and renaming of related environment variables.

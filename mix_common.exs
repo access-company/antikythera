@@ -11,7 +11,7 @@
 defmodule Antikythera.MixCommon do
   def common_project_settings() do
     [
-      elixir: "~> 1.11",
+      elixir: "~> 1.13",
       elixirc_options: [warnings_as_errors: true],
       build_path: build_path(),
       build_embedded: Mix.env() == :prod,
@@ -187,36 +187,23 @@ defmodule Antikythera.MixConfig do
   end
 
   defp default_configs() do
-    # TODO: Remove after requiring Elixir 1.11+
-    logger_configs_for_compatibility =
-      if Version.match?(System.version(), "~> 1.11") do
-        [
-          # To suppress progress reports during start-up in development environments
-          level: if(Mix.env() == :prod, do: :info, else: :notice)
-        ]
-      else
-        [
-          level: :info,
-          translators: [{AntikytheraCore.ErlangLogTranslator, :translate}]
-        ]
-      end
-
     [
       # Logger configurations.
       sasl: [
         # SASL logs are handled by :logger
         sasl_error_logger: false
       ],
-      logger:
-        [
-          utc_log: true,
-          handle_sasl_reports: true,
-          backends: [:console, AntikytheraCore.Alert.LoggerBackend],
-          console: [
-            format: "$dateT$time+00:00 [$level$levelpad] $metadata$message\n",
-            metadata: [:module]
-          ]
-        ] ++ logger_configs_for_compatibility,
+      logger: [
+        utc_log: true,
+        handle_sasl_reports: true,
+        backends: [:console, AntikytheraCore.Alert.LoggerBackend],
+        console: [
+          format: "$dateT$time+00:00 [$level$levelpad] $metadata$message\n",
+          metadata: [:module]
+        ],
+        # To suppress progress reports during start-up in development environments
+        level: if(Mix.env() == :prod, do: :info, else: :notice)
+      ],
 
       # Persist Raft logs & snapshots for async job queues.
       raft_fleet: [
