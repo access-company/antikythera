@@ -3,6 +3,8 @@
 # `Module.concat` is safe because mix task runs in a separate process.
 # credo:disable-for-this-file Credo.Check.Warning.UnsafeToAtom
 
+use Croma
+
 defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   @moduledoc """
   Statically checks issues in gear's source code.
@@ -27,35 +29,44 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
     |> report()
   end
 
-  defp find_issues_in_file(ex_file_path) do
+  @type issue_t :: {:warning | :error, Path.t(), Macro.metadata(), String.t()}
+
+  defunpt find_issues_in_file(ex_file_path :: Path.t()) :: [issue_t] do
     File.read!(ex_file_path)
     |> Code.string_to_quoted!()
-    |> Macro.prewalk([], fn
-      {:defmodule, meta, [{:__aliases__, _, atoms}, [do: body]]}, acc ->
-        {issue_or_nil, tool?} =
-          check_toplevel_module_name(Module.concat(atoms), meta, ex_file_path)
-
-        check_module_body(body, List.wrap(issue_or_nil) ++ acc, ex_file_path, tool?)
-
-      {:defimpl, meta,
-       [{:__aliases__, _, protocol_atoms}, [for: {:__aliases__, _, mod_atoms}], [do: body]]},
-      acc ->
-        issue_or_nil =
-          check_defimpl(
-            Module.concat(protocol_atoms),
-            Module.concat(mod_atoms),
-            meta,
-            ex_file_path
-          )
-
-        check_module_body(body, List.wrap(issue_or_nil) ++ acc, ex_file_path, false)
-
-      n, acc ->
-        {n, acc}
-    end)
+    |> Macro.prewalk([], &check_module_implementation(&1, &2, ex_file_path))
     |> elem(1)
     |> Enum.reverse()
   end
+
+  defp check_module_implementation(
+         {:defmodule, meta, [{:__aliases__, _, atoms}, [do: body]]},
+         acc,
+         ex_file_path
+       ) do
+    {issue_or_nil, tool?} = check_toplevel_module_name(Module.concat(atoms), meta, ex_file_path)
+
+    check_module_body(body, List.wrap(issue_or_nil) ++ acc, ex_file_path, tool?)
+  end
+
+  defp check_module_implementation(
+         {:defimpl, meta,
+          [{:__aliases__, _, protocol_atoms}, [for: {:__aliases__, _, mod_atoms}], [do: body]]},
+         acc,
+         ex_file_path
+       ) do
+    issue_or_nil =
+      check_defimpl(
+        Module.concat(protocol_atoms),
+        Module.concat(mod_atoms),
+        meta,
+        ex_file_path
+      )
+
+    check_module_body(body, List.wrap(issue_or_nil) ++ acc, ex_file_path, false)
+  end
+
+  defp check_module_implementation(n, acc, _ex_file_path), do: {n, acc}
 
   defp check_toplevel_module_name(mod, meta, file) do
     # Compare module name prefix as String.t, in order not to be confused by the difference between e.g. `Mix` and `:Mix`.
@@ -109,41 +120,46 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
     {nil, issues ++ acc}
   end
 
-  defp check_ast_node(n, file, tool?) do
-    case n do
-      {:defimpl, meta,
-       [{:__aliases__, _, protocol_atoms}, [for: {:__aliases__, _, mod_atoms}], [do: _block]]} ->
-        # We don't have to check `defimpl` without `for:`, as the enclosing module's name is enforced to be properly prefixed by gear name.
-        check_defimpl(Module.concat(protocol_atoms), Module.concat(mod_atoms), meta, file)
-
-      {:use, meta, [{:__aliases__, _, atoms} | kw]} ->
-        with_concatenated_module_atom(atoms, fn mod ->
-          check_use_within_module(mod, kw, meta, file, tool?)
-        end)
-
-      {{:., _, [{:__aliases__, _, atoms}, fun]}, meta, args} ->
-        with_concatenated_module_atom(atoms, fn mod ->
-          check_remote_call(mod, fun, args, meta, file, tool?)
-        end)
-
-      {{:., _, [erlang_mod, fun]}, meta, args} ->
-        check_remote_call(erlang_mod, fun, args, meta, file, tool?)
-
-      {:__aliases__, meta, atoms} ->
-        with_concatenated_module_atom(atoms, fn mod ->
-          check_module(mod, meta, file, tool?)
-        end)
-
-      {fun, meta, args} when is_atom(fun) and is_list(args) ->
-        check_local_call(fun, args, meta, file, tool?)
-
-      atom when is_atom(atom) ->
-        check_atom(atom, file)
-
-      _ ->
-        nil
-    end
+  defp check_ast_node(
+         {:defimpl, meta,
+          [{:__aliases__, _, protocol_atoms}, [for: {:__aliases__, _, mod_atoms}], [do: _block]]},
+         file,
+         _tool?
+       ) do
+    check_defimpl(Module.concat(protocol_atoms), Module.concat(mod_atoms), meta, file)
   end
+
+  defp check_ast_node({:use, meta, [{:__aliases__, _, atoms} | kw]}, file, tool?) do
+    with_concatenated_module_atom(atoms, fn mod ->
+      check_use_within_module(mod, kw, meta, file, tool?)
+    end)
+  end
+
+  defp check_ast_node({{:., _, [{:__aliases__, _, atoms}, fun]}, meta, args}, file, tool?) do
+    with_concatenated_module_atom(atoms, fn mod ->
+      check_remote_call(mod, fun, args, meta, file, tool?)
+    end)
+  end
+
+  defp check_ast_node({{:., _, [erlang_mod, fun]}, meta, args}, file, tool?) do
+    check_remote_call(erlang_mod, fun, args, meta, file, tool?)
+  end
+
+  defp check_ast_node({:__aliases__, meta, atoms}, file, tool?) do
+    with_concatenated_module_atom(atoms, fn mod ->
+      check_module(mod, meta, file, tool?)
+    end)
+  end
+
+  defp check_ast_node({fun, meta, args}, file, tool?) when is_atom(fun) and is_list(args) do
+    check_local_call(fun, args, meta, file, tool?)
+  end
+
+  defp check_ast_node(atom, file, _tool?) when is_atom(atom) do
+    check_atom(atom, file)
+  end
+
+  defp check_ast_node(_, _, _), do: nil
 
   defp with_concatenated_module_atom(atoms, f) do
     # exclude module aliases such as `__MODULE__.Foo` by returning `nil`
@@ -319,17 +335,7 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
   defp report(issues) do
     mod_name = Module.split(__MODULE__) |> List.last()
     prefix = "[#{mod_name}]"
-
-    Enum.each(issues, fn
-      {:warning, file, meta, msg} ->
-        IO.puts("#{prefix} #{file}:#{meta[:line]} WARNING #{msg}")
-
-      {:error, file, meta, msg} ->
-        IO.puts(
-          IO.ANSI.red() <> "#{prefix} #{file}:#{meta[:line]} ERROR #{msg}" <> IO.ANSI.reset()
-        )
-    end)
-
+    print_issues(issues, prefix)
     {warnings, errors} = Enum.split_with(issues, &match?({:warning, _, _, _}, &1))
     n_warnings = length(warnings)
     n_errors = length(errors)
@@ -346,5 +352,17 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysis do
       true ->
         {:ok, []}
     end
+  end
+
+  defp print_issues(issues, prefix) do
+    Enum.each(issues, fn
+      {:warning, file, meta, msg} ->
+        IO.puts("#{prefix} #{file}:#{meta[:line]} WARNING #{msg}")
+
+      {:error, file, meta, msg} ->
+        IO.puts(
+          IO.ANSI.red() <> "#{prefix} #{file}:#{meta[:line]} ERROR #{msg}" <> IO.ANSI.reset()
+        )
+    end)
   end
 end
