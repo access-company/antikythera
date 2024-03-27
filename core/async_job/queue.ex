@@ -361,48 +361,31 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     %__MODULE__{q | brokers_waiting: remove_brokers_by_node(brokers, pid)}
   end
 
-  defp cancel_job(
-         %__MODULE__{
-           jobs: jobs,
-           index_waiting: index_waiting,
-           index_runnable: index_runnable,
-           index_running: index_running
-         } = q,
-         job_id
-       ) do
+  defunp cancel_job(
+           %__MODULE__{jobs: jobs} = q :: v[t],
+           job_id :: v[Id.t()]
+         ) :: {:ok | {:error, :not_found}, t} do
     case Map.pop(jobs, job_id) do
       {nil, _} ->
         {{:error, :not_found}, q}
 
       {{_, t, state}, new_jobs} ->
         job_key = {t, job_id}
-
-        q2 =
-          case state do
-            :waiting ->
-              %__MODULE__{
-                q
-                | jobs: new_jobs,
-                  index_waiting: :gb_sets.delete(job_key, index_waiting)
-              }
-
-            :runnable ->
-              %__MODULE__{
-                q
-                | jobs: new_jobs,
-                  index_runnable: :gb_sets.delete(job_key, index_runnable)
-              }
-
-            :running ->
-              %__MODULE__{
-                q
-                | jobs: new_jobs,
-                  index_running: :gb_sets.delete(job_key, index_running)
-              }
-          end
-
+        q2 = cancel_job_impl(state, %__MODULE__{q | jobs: new_jobs}, job_key)
         {:ok, q2}
     end
+  end
+
+  defp cancel_job_impl(:waiting, %__MODULE__{index_waiting: index_waiting} = q, job_key) do
+    %__MODULE__{q | index_waiting: :gb_sets.delete(job_key, index_waiting)}
+  end
+
+  defp cancel_job_impl(:runnable, %__MODULE__{index_runnable: index_runnable} = q, job_key) do
+    %__MODULE__{q | index_runnable: :gb_sets.delete(job_key, index_runnable)}
+  end
+
+  defp cancel_job_impl(:running, %__MODULE__{index_running: index_running} = q, job_key) do
+    %__MODULE__{q | index_running: :gb_sets.delete(job_key, index_running)}
   end
 
   defp metrics(%__MODULE__{
