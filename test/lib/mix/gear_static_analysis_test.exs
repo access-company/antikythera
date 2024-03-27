@@ -9,7 +9,7 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysisTest do
     on_exit(fn -> :meck.unload(Mix.Project) end)
   end
 
-  defp make_tmp_ex_file_path(%{tmp_dir: tmp_dir} = _context) do
+  defp name_ex_file_path_for_test(%{tmp_dir: tmp_dir} = _context) do
     ex_file_path = Path.join(tmp_dir, "test.ex")
     [ex_file_path: ex_file_path]
   end
@@ -18,7 +18,7 @@ defmodule Mix.Tasks.Compile.GearStaticAnalysisTest do
   describe "find_issues_in_file/1" do
     @describetag :tmp_dir
 
-    setup :make_tmp_ex_file_path
+    setup :name_ex_file_path_for_test
 
     test "should detect naming module which is not prefixed with the gear name", %{
       ex_file_path: ex_file_path
