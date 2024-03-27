@@ -240,32 +240,22 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     end
   end
 
-  defp fetch(
-         %__MODULE__{
-           index_waiting: index_waiting,
-           index_runnable: index_runnable,
-           brokers_waiting: bs_waiting
-         } = q,
-         broker,
-         now_millis
-       ) do
+  defunp fetch(
+           %__MODULE__{brokers_waiting: bs_waiting} = q :: v[t],
+           broker :: v[Croma.Pid.t()],
+           now_millis :: v[pos_integer]
+         ) :: {{JobKey.t(), AsyncJob.t()} | nil, t} do
     # to avoid duplication, first remove the fetching broker's pid
     bs_waiting2 = remove_brokers_by_node(bs_waiting, broker)
+    q_with_bs_waiting2 = %__MODULE__{q | brokers_waiting: bs_waiting2}
 
-    case take_smallest_with_earlier_timestamp(index_runnable, now_millis) do
-      nil ->
-        case take_smallest_with_earlier_timestamp(index_waiting, now_millis) do
-          nil ->
-            {nil, %__MODULE__{q | brokers_waiting: [broker | bs_waiting2]}}
-
-          {{_, job_id}, index_waiting2} ->
-            %__MODULE__{q | index_waiting: index_waiting2, brokers_waiting: bs_waiting2}
-            |> lock_and_return_job(job_id, now_millis)
-        end
-
-      {{_, job_id}, index_runnable2} ->
-        %__MODULE__{q | index_runnable: index_runnable2, brokers_waiting: bs_waiting2}
-        |> lock_and_return_job(job_id, now_millis)
+    with nil <- fetch_job_with_lock_from_runnable(q_with_bs_waiting2, now_millis),
+         nil <- fetch_job_with_lock_from_waiting(q_with_bs_waiting2, now_millis) do
+      {nil,
+       %__MODULE__{
+         q_with_bs_waiting2
+         | brokers_waiting: [broker | q_with_bs_waiting2.brokers_waiting]
+       }}
     end
   end
 
@@ -275,6 +265,26 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     # - stale broker pid before restart (since exactly 1 broker exists per node, pid with the same node must already be dead)
     n = node(target_broker)
     Enum.reject(bs, fn b -> node(b) == n end)
+  end
+
+  defunp fetch_job_with_lock_from_runnable(
+           %__MODULE__{index_runnable: index_runnable} = q :: v[t],
+           now_millis :: v[pos_integer]
+         ) :: {{JobKey.t(), AsyncJob.t()}, t} | nil do
+    with {{_, job_id}, index_runnable2} <-
+           take_smallest_with_earlier_timestamp(index_runnable, now_millis) do
+      lock_and_return_job(%__MODULE__{q | index_runnable: index_runnable2}, job_id, now_millis)
+    end
+  end
+
+  defunp fetch_job_with_lock_from_waiting(
+           %__MODULE__{index_waiting: index_waiting} = q :: v[t],
+           now_millis :: v[pos_integer]
+         ) :: {{JobKey.t(), AsyncJob.t()}, t} | nil do
+    with {{_, job_id}, index_waiting2} <-
+           take_smallest_with_earlier_timestamp(index_waiting, now_millis) do
+      lock_and_return_job(%__MODULE__{q | index_waiting: index_waiting2}, job_id, now_millis)
+    end
   end
 
   defp lock_and_return_job(
