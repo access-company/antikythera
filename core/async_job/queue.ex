@@ -189,16 +189,15 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     |> move_now_runnable_jobs_impl(now_millis)
   end
 
-  defp move_now_runnable_jobs_impl(
-         %__MODULE__{
-           jobs: jobs,
-           index_waiting: index_waiting,
-           index_runnable: index_runnable,
-           brokers_waiting: brokers_waiting,
-           brokers_to_notify: brokers_to_notify
-         } = q,
-         now_millis
-       ) do
+  defunp move_now_runnable_jobs_impl(
+           %__MODULE__{
+             jobs: jobs,
+             index_waiting: index_waiting,
+             index_runnable: index_runnable,
+             brokers_waiting: brokers_waiting
+           } = q :: v[t],
+           now_millis :: v[pos_integer]
+         ) :: v[t] do
     case take_smallest_with_earlier_timestamp(index_waiting, now_millis) do
       nil ->
         q
@@ -214,15 +213,16 @@ defmodule AntikytheraCore.AsyncJob.Queue do
             index_runnable: index_runnable2
         }
 
-        case brokers_waiting do
-          [] ->
-            q2
-
-          [b | bs] ->
-            %__MODULE__{q2 | brokers_waiting: bs, brokers_to_notify: [b | brokers_to_notify]}
-        end
+        brokers_waiting
+        |> move_waiting_broker_to_be_notified(q2)
         |> move_now_runnable_jobs_impl(now_millis)
     end
+  end
+
+  defp move_waiting_broker_to_be_notified([], q), do: q
+
+  defp move_waiting_broker_to_be_notified([b | bs], q) do
+    %__MODULE__{q | brokers_waiting: bs, brokers_to_notify: [b | q.brokers_to_notify]}
   end
 
   defp insert(
