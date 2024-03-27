@@ -120,50 +120,53 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     |> move_jobs_running_too_long(now_millis)
   end
 
-  defp move_jobs_running_too_long(
-         %__MODULE__{
-           jobs: jobs,
-           index_waiting: index_waiting,
-           index_running: index_running,
-           abandoned_jobs: abandoned_jobs
-         } = q,
-         now_millis
-       ) do
+  defunp move_jobs_running_too_long(
+           %__MODULE__{index_running: index_running} = q :: v[t],
+           now_millis :: v[pos_integer]
+         ) :: v[t] do
     threshold_time = now_millis - MaxDuration.max()
 
     case take_smallest_with_earlier_timestamp(index_running, threshold_time) do
       nil ->
         q
 
-      {{_, job_id} = job_key, index_running2} ->
-        {j1, t, :running} = Map.fetch!(jobs, job_id)
-
-        case j1.remaining_attempts do
-          1 ->
-            jobs2 = Map.delete(jobs, job_id)
-            abandoned_jobs2 = [{job_id, j1} | abandoned_jobs]
-
-            %__MODULE__{
-              q
-              | jobs: jobs2,
-                index_running: index_running2,
-                abandoned_jobs: abandoned_jobs2
-            }
-            |> requeue_if_recurring(j1, job_id, now_millis)
-
-          remaining ->
-            j2 = %AsyncJob{j1 | remaining_attempts: remaining - 1}
-            jobs2 = Map.put(jobs, job_id, {j2, t, :waiting})
-            index_waiting2 = :gb_sets.add(job_key, index_waiting)
-
-            %__MODULE__{
-              q
-              | jobs: jobs2,
-                index_waiting: index_waiting2,
-                index_running: index_running2
-            }
-        end
+      {job_key, index_running2} ->
+        %__MODULE__{q | index_running: index_running2}
+        |> abandon_job_or_requeue_for_retry(job_key, now_millis)
         |> move_jobs_running_too_long(threshold_time)
+    end
+  end
+
+  defunp abandon_job_or_requeue_for_retry(
+           %__MODULE__{
+             jobs: jobs,
+             index_waiting: index_waiting,
+             abandoned_jobs: abandoned_jobs
+           } = q :: v[t],
+           {_, job_id} = job_key :: v[JobKey.t()],
+           now_millis :: v[pos_integer]
+         ) :: v[t] do
+    case Map.get_and_update!(jobs, job_id, &try_update_job_triplet_for_retry/1) do
+      {{%AsyncJob{remaining_attempts: 1} = job, _, :running}, cleaned_jobs} ->
+        %__MODULE__{
+          q
+          | jobs: cleaned_jobs,
+            abandoned_jobs: [{job_id, job} | abandoned_jobs]
+        }
+        |> requeue_if_recurring(job, job_id, now_millis)
+
+      {{_, _, :running}, updated_jobs} ->
+        index_waiting2 = :gb_sets.add(job_key, index_waiting)
+        %__MODULE__{q | jobs: updated_jobs, index_waiting: index_waiting2}
+    end
+  end
+
+  defunp try_update_job_triplet_for_retry(
+           {job, time, :running} = current :: v[JobsMap.Triplet.t()]
+         ) :: {JobsMap.Triplet.t(), JobsMap.Triplet.t()} | :pop do
+    case job.remaining_attempts do
+      1 -> :pop
+      remaining -> {current, {%AsyncJob{job | remaining_attempts: remaining - 1}, time, :waiting}}
     end
   end
 
@@ -186,16 +189,15 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     |> move_now_runnable_jobs_impl(now_millis)
   end
 
-  defp move_now_runnable_jobs_impl(
-         %__MODULE__{
-           jobs: jobs,
-           index_waiting: index_waiting,
-           index_runnable: index_runnable,
-           brokers_waiting: brokers_waiting,
-           brokers_to_notify: brokers_to_notify
-         } = q,
-         now_millis
-       ) do
+  defunp move_now_runnable_jobs_impl(
+           %__MODULE__{
+             jobs: jobs,
+             index_waiting: index_waiting,
+             index_runnable: index_runnable,
+             brokers_waiting: brokers_waiting
+           } = q :: v[t],
+           now_millis :: v[pos_integer]
+         ) :: v[t] do
     case take_smallest_with_earlier_timestamp(index_waiting, now_millis) do
       nil ->
         q
@@ -211,15 +213,16 @@ defmodule AntikytheraCore.AsyncJob.Queue do
             index_runnable: index_runnable2
         }
 
-        case brokers_waiting do
-          [] ->
-            q2
-
-          [b | bs] ->
-            %__MODULE__{q2 | brokers_waiting: bs, brokers_to_notify: [b | brokers_to_notify]}
-        end
+        brokers_waiting
+        |> move_waiting_broker_to_be_notified(q2)
         |> move_now_runnable_jobs_impl(now_millis)
     end
+  end
+
+  defp move_waiting_broker_to_be_notified([], q), do: q
+
+  defp move_waiting_broker_to_be_notified([b | bs], q) do
+    %__MODULE__{q | brokers_waiting: bs, brokers_to_notify: [b | q.brokers_to_notify]}
   end
 
   defp insert(
@@ -240,32 +243,22 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     end
   end
 
-  defp fetch(
-         %__MODULE__{
-           index_waiting: index_waiting,
-           index_runnable: index_runnable,
-           brokers_waiting: bs_waiting
-         } = q,
-         broker,
-         now_millis
-       ) do
+  defunp fetch(
+           %__MODULE__{brokers_waiting: bs_waiting} = q :: v[t],
+           broker :: v[Croma.Pid.t()],
+           now_millis :: v[pos_integer]
+         ) :: {{JobKey.t(), AsyncJob.t()} | nil, t} do
     # to avoid duplication, first remove the fetching broker's pid
     bs_waiting2 = remove_brokers_by_node(bs_waiting, broker)
+    q_with_bs_waiting2 = %__MODULE__{q | brokers_waiting: bs_waiting2}
 
-    case take_smallest_with_earlier_timestamp(index_runnable, now_millis) do
-      nil ->
-        case take_smallest_with_earlier_timestamp(index_waiting, now_millis) do
-          nil ->
-            {nil, %__MODULE__{q | brokers_waiting: [broker | bs_waiting2]}}
-
-          {{_, job_id}, index_waiting2} ->
-            %__MODULE__{q | index_waiting: index_waiting2, brokers_waiting: bs_waiting2}
-            |> lock_and_return_job(job_id, now_millis)
-        end
-
-      {{_, job_id}, index_runnable2} ->
-        %__MODULE__{q | index_runnable: index_runnable2, brokers_waiting: bs_waiting2}
-        |> lock_and_return_job(job_id, now_millis)
+    with nil <- fetch_job_with_lock_from_runnable(q_with_bs_waiting2, now_millis),
+         nil <- fetch_job_with_lock_from_waiting(q_with_bs_waiting2, now_millis) do
+      {nil,
+       %__MODULE__{
+         q_with_bs_waiting2
+         | brokers_waiting: [broker | q_with_bs_waiting2.brokers_waiting]
+       }}
     end
   end
 
@@ -275,6 +268,26 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     # - stale broker pid before restart (since exactly 1 broker exists per node, pid with the same node must already be dead)
     n = node(target_broker)
     Enum.reject(bs, fn b -> node(b) == n end)
+  end
+
+  defunp fetch_job_with_lock_from_runnable(
+           %__MODULE__{index_runnable: index_runnable} = q :: v[t],
+           now_millis :: v[pos_integer]
+         ) :: {{JobKey.t(), AsyncJob.t()}, t} | nil do
+    with {{_, job_id}, index_runnable2} <-
+           take_smallest_with_earlier_timestamp(index_runnable, now_millis) do
+      lock_and_return_job(%__MODULE__{q | index_runnable: index_runnable2}, job_id, now_millis)
+    end
+  end
+
+  defunp fetch_job_with_lock_from_waiting(
+           %__MODULE__{index_waiting: index_waiting} = q :: v[t],
+           now_millis :: v[pos_integer]
+         ) :: {{JobKey.t(), AsyncJob.t()}, t} | nil do
+    with {{_, job_id}, index_waiting2} <-
+           take_smallest_with_earlier_timestamp(index_waiting, now_millis) do
+      lock_and_return_job(%__MODULE__{q | index_waiting: index_waiting2}, job_id, now_millis)
+    end
   end
 
   defp lock_and_return_job(
@@ -348,48 +361,31 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     %__MODULE__{q | brokers_waiting: remove_brokers_by_node(brokers, pid)}
   end
 
-  defp cancel_job(
-         %__MODULE__{
-           jobs: jobs,
-           index_waiting: index_waiting,
-           index_runnable: index_runnable,
-           index_running: index_running
-         } = q,
-         job_id
-       ) do
+  defunp cancel_job(
+           %__MODULE__{jobs: jobs} = q :: v[t],
+           job_id :: v[Id.t()]
+         ) :: {:ok | {:error, :not_found}, t} do
     case Map.pop(jobs, job_id) do
       {nil, _} ->
         {{:error, :not_found}, q}
 
       {{_, t, state}, new_jobs} ->
         job_key = {t, job_id}
-
-        q2 =
-          case state do
-            :waiting ->
-              %__MODULE__{
-                q
-                | jobs: new_jobs,
-                  index_waiting: :gb_sets.delete(job_key, index_waiting)
-              }
-
-            :runnable ->
-              %__MODULE__{
-                q
-                | jobs: new_jobs,
-                  index_runnable: :gb_sets.delete(job_key, index_runnable)
-              }
-
-            :running ->
-              %__MODULE__{
-                q
-                | jobs: new_jobs,
-                  index_running: :gb_sets.delete(job_key, index_running)
-              }
-          end
-
+        q2 = cancel_job_impl(state, %__MODULE__{q | jobs: new_jobs}, job_key)
         {:ok, q2}
     end
+  end
+
+  defp cancel_job_impl(:waiting, %__MODULE__{index_waiting: index_waiting} = q, job_key) do
+    %__MODULE__{q | index_waiting: :gb_sets.delete(job_key, index_waiting)}
+  end
+
+  defp cancel_job_impl(:runnable, %__MODULE__{index_runnable: index_runnable} = q, job_key) do
+    %__MODULE__{q | index_runnable: :gb_sets.delete(job_key, index_runnable)}
+  end
+
+  defp cancel_job_impl(:running, %__MODULE__{index_running: index_running} = q, job_key) do
+    %__MODULE__{q | index_running: :gb_sets.delete(job_key, index_running)}
   end
 
   defp metrics(%__MODULE__{
