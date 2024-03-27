@@ -120,50 +120,53 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     |> move_jobs_running_too_long(now_millis)
   end
 
-  defp move_jobs_running_too_long(
-         %__MODULE__{
-           jobs: jobs,
-           index_waiting: index_waiting,
-           index_running: index_running,
-           abandoned_jobs: abandoned_jobs
-         } = q,
-         now_millis
-       ) do
+  defunp move_jobs_running_too_long(
+           %__MODULE__{index_running: index_running} = q :: v[t],
+           now_millis :: v[pos_integer]
+         ) :: v[t] do
     threshold_time = now_millis - MaxDuration.max()
 
     case take_smallest_with_earlier_timestamp(index_running, threshold_time) do
       nil ->
         q
 
-      {{_, job_id} = job_key, index_running2} ->
-        {j1, t, :running} = Map.fetch!(jobs, job_id)
-
-        case j1.remaining_attempts do
-          1 ->
-            jobs2 = Map.delete(jobs, job_id)
-            abandoned_jobs2 = [{job_id, j1} | abandoned_jobs]
-
-            %__MODULE__{
-              q
-              | jobs: jobs2,
-                index_running: index_running2,
-                abandoned_jobs: abandoned_jobs2
-            }
-            |> requeue_if_recurring(j1, job_id, now_millis)
-
-          remaining ->
-            j2 = %AsyncJob{j1 | remaining_attempts: remaining - 1}
-            jobs2 = Map.put(jobs, job_id, {j2, t, :waiting})
-            index_waiting2 = :gb_sets.add(job_key, index_waiting)
-
-            %__MODULE__{
-              q
-              | jobs: jobs2,
-                index_waiting: index_waiting2,
-                index_running: index_running2
-            }
-        end
+      {job_key, index_running2} ->
+        %__MODULE__{q | index_running: index_running2}
+        |> abandon_job_or_requeue_for_retry(job_key, now_millis)
         |> move_jobs_running_too_long(threshold_time)
+    end
+  end
+
+  defunp abandon_job_or_requeue_for_retry(
+           %__MODULE__{
+             jobs: jobs,
+             index_waiting: index_waiting,
+             abandoned_jobs: abandoned_jobs
+           } = q :: v[t],
+           {_, job_id} = job_key :: v[JobKey.t()],
+           now_millis :: v[pos_integer]
+         ) :: v[t] do
+    case Map.get_and_update!(jobs, job_id, &try_update_job_triplet_for_retry/1) do
+      {{%AsyncJob{remaining_attempts: 1} = job, _, :running}, cleaned_jobs} ->
+        %__MODULE__{
+          q
+          | jobs: cleaned_jobs,
+            abandoned_jobs: [{job_id, job} | abandoned_jobs]
+        }
+        |> requeue_if_recurring(job, job_id, now_millis)
+
+      {{_, _, :running}, updated_jobs} ->
+        index_waiting2 = :gb_sets.add(job_key, index_waiting)
+        %__MODULE__{q | jobs: updated_jobs, index_waiting: index_waiting2}
+    end
+  end
+
+  defunp try_update_job_triplet_for_retry(
+           {job, time, :running} = current :: v[JobsMap.Triplet.t()]
+         ) :: {JobsMap.Triplet.t(), JobsMap.Triplet.t()} | :pop do
+    case job.remaining_attempts do
+      1 -> :pop
+      remaining -> {current, {%AsyncJob{job | remaining_attempts: remaining - 1}, time, :waiting}}
     end
   end
 
