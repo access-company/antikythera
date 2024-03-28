@@ -91,7 +91,9 @@ defmodule AntikytheraCore.SystemMetricsReporter do
   end
 
   defp log_too_many_messages_processes() do
-    with [_ | _] = infos <- get_recon_infos_for_too_many_messages(@log_message_queue_length) do
+    infos = get_recon_infos_for_too_many_messages(@log_message_queue_length)
+
+    if infos != [] do
       L.error(
         "There are process(es) with more than or equal to #{@log_message_queue_length} messages."
       )
