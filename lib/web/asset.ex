@@ -135,14 +135,6 @@ defmodule Antikythera.Asset do
     end
   end
 
-  # serve assets using :cowboy_static (make path-only URL)
-  defp try_make_url_fn_from_static_prefix(gear_name) do
-    case static_prefix(gear_name) do
-      nil -> nil
-      prefix -> fn path -> "#{prefix}/#{path}" end
-    end
-  end
-
   # serve assets using something like webpack-dev-server
   defp try_make_url_fn_from_base_url_during_development(opts) do
     case Keyword.get(opts, :base_url_during_development) do
@@ -152,6 +144,14 @@ defmodule Antikythera.Asset do
       base_url ->
         normalized_base_url = String.replace_suffix(base_url, "/", "")
         fn path -> "#{normalized_base_url}/#{path}" end
+    end
+  end
+
+  # serve assets using :cowboy_static (make path-only URL)
+  defp try_make_url_fn_from_static_prefix(gear_name) do
+    case static_prefix(gear_name) do
+      nil -> nil
+      prefix -> fn path -> "#{prefix}/#{path}" end
     end
   end
 
