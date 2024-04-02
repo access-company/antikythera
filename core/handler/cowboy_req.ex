@@ -34,6 +34,8 @@ defmodule AntikytheraCore.Handler.CowboyReq do
         # Avoid `String.last/1` as it takes O(length_of_string)
         case binary_part(encoded_path_string, len - 1, 1) do
           # append "" due to trailing '/'; See also: `GearAction.split_path_to_segments/1`
+          # The number of path components is not expected to be too large.
+          # credo:disable-for-next-line Credo.Check.Refactor.AppendSingleItem
           "/" -> decoded_path_info ++ [""]
           _ -> decoded_path_info
         end

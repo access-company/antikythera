@@ -21,11 +21,16 @@ defmodule Antikythera.Router.Impl do
     check_route_definitions(routing_source)
     routes_by_method = Enum.group_by(routing_source, fn {method, _, _, _, _} -> method end)
 
-    Enum.flat_map(routes_by_method, fn {method, routes} ->
-      Enum.map(routes, fn {_, path_pattern, controller, action, opts} ->
-        route_to_clause(router_module, from, method, path_pattern, controller, action, opts)
+    clauses =
+      Enum.flat_map(routes_by_method, fn {method, routes} ->
+        Enum.map(routes, fn {_, path_pattern, controller, action, opts} ->
+          route_to_clause(router_module, from, method, path_pattern, controller, action, opts)
+        end)
       end)
-    end) ++ [default_clause(from)]
+
+    # This is compile time and not expected to be too long.
+    # credo:disable-for-next-line Credo.Check.Refactor.AppendSingleItem
+    clauses ++ [default_clause(from)]
   end
 
   defunp check_route_definitions(routing_source :: [route_entry]) :: :ok do
@@ -143,6 +148,8 @@ defmodule Antikythera.Router.Impl do
     else
       # For each route without wildcard, we define two clauses to match request paths with and without trailing '/'
       path_info_arg_expr = make_path_info_arg_expr_nowildcard(router_module, path_pattern)
+      # This is compile time and not expected to be too long.
+      # credo:disable-for-next-line Credo.Check.Refactor.AppendSingleItem
       path_info_arg_expr2 = path_info_arg_expr ++ [""]
       path_matches_expr = make_path_matches_expr_nowildcard(path_info_arg_expr)
 
@@ -217,23 +224,25 @@ defmodule Antikythera.Router.Impl do
 
   defunp make_path_matches_expr_nowildcard(path_info_arg_expr :: v[[String.t() | Macro.t()]]) ::
            Keyword.t(Macro.t()) do
-    Enum.map(path_info_arg_expr, fn
-      {name, _, _} = v -> {name, v}
-      _ -> nil
+    Enum.flat_map(path_info_arg_expr, fn
+      {name, _, _} = v -> [{name, v}]
+      _ -> []
     end)
-    |> Enum.reject(&is_nil/1)
   end
 
   defunp make_path_matches_expr_wildcard(
            path_info_arg_expr_nowildcard :: v[[String.t() | Macro.t()]]
          ) :: Keyword.t(Macro.t()) do
-    {name, _, _} = var = List.last(path_info_arg_expr_nowildcard)
+    {{name, _, _} = var, path_info_arg_expr_nowildcard_without_last} =
+      List.pop_at(path_info_arg_expr_nowildcard, -1)
+
     wildcard_pair = {name, quote(do: Enum.join(unquote(var), "/"))}
 
     path_matches_expr_without_last =
-      Enum.slice(path_info_arg_expr_nowildcard, 0, length(path_info_arg_expr_nowildcard) - 1)
-      |> make_path_matches_expr_nowildcard
+      make_path_matches_expr_nowildcard(path_info_arg_expr_nowildcard_without_last)
 
+    # This is compile time and not expected to be too long.
+    # credo:disable-for-next-line Credo.Check.Refactor.AppendSingleItem
     path_matches_expr_without_last ++ [wildcard_pair]
   end
 

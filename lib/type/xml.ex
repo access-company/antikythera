@@ -292,7 +292,10 @@ defmodule Antikythera.Xml do
   defp interleave_whitespaces(children, level, false) do
     child_indent = {:xmlcdata, "\n" <> String.duplicate(@indent_unit, level + 1)}
     close_tag_indent = {:xmlcdata, "\n" <> String.duplicate(@indent_unit, level)}
-    Enum.flat_map(children, &[child_indent, &1]) ++ [close_tag_indent]
+
+    children
+    |> Enum.reverse()
+    |> Enum.reduce([close_tag_indent], fn child, acc -> [child_indent, child | acc] end)
   end
 
   R.define_bang_version_of(decode: 1, decode: 2)

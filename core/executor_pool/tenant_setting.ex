@@ -14,8 +14,8 @@ defmodule AntikytheraCore.ExecutorPool.TenantSetting do
   setting_keys = EPoolSetting.default() |> Map.from_struct() |> Map.keys()
 
   fields =
-    Enum.map(setting_keys, fn k -> {k, Croma.NonNegInteger} end) ++
-      [gears: Croma.TypeGen.list_of(GearName)]
+    [gears: Croma.TypeGen.list_of(GearName)] ++
+      Enum.map(setting_keys, fn k -> {k, Croma.NonNegInteger} end)
 
   use Croma.Struct, recursive_new?: true, fields: fields
 
