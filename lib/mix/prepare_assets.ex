@@ -127,24 +127,32 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
 
   defp audit_vulnerability(env) do
     if File.exists?("yarn.lock") do
-      # > The exit code will be a mask of the severities.
-      # > 16 for CRITICAL
-      # https://yarnpkg.com/lang/en/docs/cli/audit/
-      {_, status, _} = run_command("yarn", ["audit", "--level", "critical"], env)
-
-      if status >= 16 do
-        raise "One or more critical packages are found: #{status}"
-      end
+      audit_vulnerability_with_yarn(env)
     else
-      {_, status, _} = run_command("npm", ["audit", "--audit-level", "critical"], env)
+      audit_vulnerability_with_npm(env)
+    end
+  end
 
-      if status != 0 do
-        if File.exists?("package-lock.json") || File.exists?("npm-shrinkwrap.json") do
-          raise "One or more critical packages are found: #{status}"
-        else
-          # Failure due to missing lock file.
-          raise "No lock file is found."
-        end
+  defp audit_vulnerability_with_yarn(env) do
+    # > The exit code will be a mask of the severities.
+    # > 16 for CRITICAL
+    # https://yarnpkg.com/lang/en/docs/cli/audit/
+    {_, status, _} = run_command("yarn", ["audit", "--level", "critical"], env)
+
+    if status >= 16 do
+      raise "One or more critical packages are found: #{status}"
+    end
+  end
+
+  defp audit_vulnerability_with_npm(env) do
+    {_, status, _} = run_command("npm", ["audit", "--audit-level", "critical"], env)
+
+    if status != 0 do
+      if File.exists?("package-lock.json") || File.exists?("npm-shrinkwrap.json") do
+        raise "One or more critical packages are found: #{status}"
+      else
+        # Failure due to missing lock file.
+        raise "No lock file is found."
       end
     end
   end

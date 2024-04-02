@@ -124,22 +124,34 @@ defmodule Antikythera.Asset do
       # serve assets using CDN (:cowboy_static may be available but it's not related to the URL mapping we are creating)
       &url_cloud(&1, gear_name)
     else
-      case Keyword.get(opts, :base_url_during_development) do
+      case try_make_url_fn_from_base_url_during_development(opts) ||
+             try_make_url_fn_from_static_prefix(gear_name) do
         nil ->
-          case static_prefix(gear_name) do
-            nil ->
-              raise "neither Router's `static_prefix` nor `:base_url_during_development` are given, cannot make asset download URL"
+          raise "neither Router's `static_prefix` nor `:base_url_during_development` are given, cannot make asset download URL"
 
-            prefix ->
-              # serve assets using :cowboy_static (make path-only URL)
-              fn path -> "#{prefix}/#{path}" end
-          end
-
-        base_url0 ->
-          # serve assets using something like webpack-dev-server
-          base_url = String.replace_suffix(base_url0, "/", "")
-          fn path -> "#{base_url}/#{path}" end
+        url_fn ->
+          url_fn
       end
+    end
+  end
+
+  # serve assets using something like webpack-dev-server
+  defp try_make_url_fn_from_base_url_during_development(opts) do
+    case Keyword.get(opts, :base_url_during_development) do
+      nil ->
+        nil
+
+      base_url ->
+        normalized_base_url = String.replace_suffix(base_url, "/", "")
+        fn path -> "#{normalized_base_url}/#{path}" end
+    end
+  end
+
+  # serve assets using :cowboy_static (make path-only URL)
+  defp try_make_url_fn_from_static_prefix(gear_name) do
+    case static_prefix(gear_name) do
+      nil -> nil
+      prefix -> fn path -> "#{prefix}/#{path}" end
     end
   end
 
