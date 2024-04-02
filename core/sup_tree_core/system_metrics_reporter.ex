@@ -91,19 +91,20 @@ defmodule AntikytheraCore.SystemMetricsReporter do
   end
 
   defp log_too_many_messages_processes() do
-    infos = get_recon_infos_for_too_many_messages(@log_message_queue_length)
+    process_details = list_details_of_too_many_messages_processes(@log_message_queue_length)
 
-    if infos != [] do
+    if process_details != [] do
       L.error(
         "There are process(es) with more than or equal to #{@log_message_queue_length} messages."
       )
 
-      Enum.each(infos, &(&1 |> inspect() |> L.error()))
+      Enum.each(process_details, &(&1 |> inspect() |> L.error()))
     end
   end
 
-  defunpt get_recon_infos_for_too_many_messages(message_queue_len_threshold :: v[non_neg_integer]) ::
-            v[list] do
+  defunpt list_details_of_too_many_messages_processes(
+            message_queue_len_threshold :: v[non_neg_integer]
+          ) :: v[list] do
     ps = :recon.proc_count(:message_queue_len, 5)
     [{_pid, top_len, _info} | _] = ps
 
