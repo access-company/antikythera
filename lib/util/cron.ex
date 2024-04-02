@@ -204,29 +204,22 @@ defmodule Antikythera.Cron do
   defp beginning_of_next_minute(t), do: Time.truncate_to_minute(t) |> Time.shift_minutes(1)
   defp beginning_of_next_day(t), do: Time.truncate_to_day(t) |> Time.shift_days(1)
 
-  defp find_matching_date(
-         %__MODULE__{day_of_month: dom, day_of_week: dow, month: month} = cron,
-         ymd
-       ) do
-    case {dom, dow, month} do
-      {:*, :*, :*} ->
-        ymd
+  defp find_matching_date(%__MODULE__{day_of_month: :*, day_of_week: :*, month: :*}, ymd), do: ymd
 
-      {:*, :*, _} ->
-        find_matching_month(cron, ymd)
+  defp find_matching_date(%__MODULE__{day_of_month: :*, day_of_week: :*} = cron, ymd),
+    do: find_matching_month(cron, ymd)
 
-      {_, :*, _} ->
-        find_matching_date_by_day_of_month(cron, ymd)
+  defp find_matching_date(%__MODULE__{day_of_week: :*} = cron, ymd),
+    do: find_matching_date_by_day_of_month(cron, ymd)
 
-      {:*, _, _} ->
-        find_matching_date_by_day_of_week(cron, ymd)
+  defp find_matching_date(%__MODULE__{day_of_month: :*} = cron, ymd),
+    do: find_matching_date_by_day_of_week(cron, ymd)
 
-      {_, _, _} ->
-        min(
-          find_matching_date_by_day_of_month(cron, ymd),
-          find_matching_date_by_day_of_week(cron, ymd)
-        )
-    end
+  defp find_matching_date(%__MODULE__{} = cron, ymd) do
+    min(
+      find_matching_date_by_day_of_month(cron, ymd),
+      find_matching_date_by_day_of_week(cron, ymd)
+    )
   end
 
   defp find_matching_date_by_day_of_month(%__MODULE__{day_of_month: day_of_month} = cron, ymd) do
