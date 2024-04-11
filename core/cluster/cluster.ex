@@ -7,7 +7,7 @@ defmodule AntikytheraCore.Cluster do
   require AntikytheraCore.Logger, as: L
   alias AntikytheraEal.ClusterConfiguration
 
-  defun connect_to_other_nodes_on_start() :: R.t(boolean) do
+  defun connect_to_other_nodes_on_start() :: R.t(integer) do
     ClusterConfiguration.running_hosts()
     |> R.map(&connect_to_other_nodes/1)
   end
