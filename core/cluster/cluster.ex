@@ -24,6 +24,7 @@ defmodule AntikytheraCore.Cluster do
     # The following `String.to_atom` is inevitable; fortunately number of nodes is not too many.
     # Note that the following naming scheme of erlang nodes must be set by `RELEASE_NODE`,
     # which is an environment variable used by `mix release` (see also `rel/env.sh.eex`).
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     nodename = String.to_atom("antikythera@" <> host)
 
     case Node.connect(nodename) do
