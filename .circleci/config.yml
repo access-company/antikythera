@@ -122,6 +122,27 @@ jobs:
           key: asdf_directory-{{ .Branch }}-{{ .Revision }}
           paths:
             - /usr/local/asdf
+  antikythera_static_analysis:
+    <<: *container_config
+    working_directory: /tmp/antikythera
+    steps:
+      - *install_prerequisites
+      - *restore_asdf_directory
+      - *enable_asdf_and_elixir
+      - restore_cache:
+          keys:
+            - antikythera-repo-static-analysis-{{ .Branch }}-{{ .Revision }}
+            - antikythera-repo-static-analysis-{{ .Branch }}-
+      - checkout
+      - run: mix deps.get
+      - run: mix credo -a --strict
+      - run: mix dialyzer
+      - run: rm -rf tmp/
+      - save_cache:
+          key: antikythera-repo-static-analysis-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .
+            - ~/.cache
   antikythera_whitebox_test:
     <<: *container_config
     working_directory: /tmp/antikythera
@@ -328,14 +349,19 @@ workflows:
   antikythera:
     jobs:
       - prepare_elixir
+      - antikythera_static_analysis:
+          requires:
+            - prepare_elixir
       - antikythera_whitebox_test:
           requires:
             - prepare_elixir
       - update_antikythera_instance_example:
           requires:
+            - antikythera_static_analysis
             - antikythera_whitebox_test
       - prepare_testgear:
           requires:
+            - antikythera_static_analysis
             - antikythera_whitebox_test
       - upgrade_compatibility_test:
           requires:
