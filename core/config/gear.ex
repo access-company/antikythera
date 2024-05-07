@@ -22,7 +22,6 @@ defmodule AntikytheraCore.Config.Gear do
   end
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       kv: Croma.Map,
       domains: CustomDomainList,

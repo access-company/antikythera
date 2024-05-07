@@ -37,7 +37,6 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
 
   defmodule State do
     use Croma.Struct,
-      recursive_new?: true,
       fields: [
         phase: Phase,
         pool_name: Croma.Atom,

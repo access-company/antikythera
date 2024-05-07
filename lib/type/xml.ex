@@ -98,7 +98,6 @@ defmodule Antikythera.Xml do
 
   defmodule Element do
     use Croma.Struct,
-      recursive_new?: true,
       fields: [
         name: Croma.String,
         attributes: Croma.Map,

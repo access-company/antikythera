@@ -30,7 +30,6 @@ defmodule AntikytheraCore.ErrorCountsAccumulator do
     end
 
     use Croma.Struct,
-      recursive_new?: true,
       fields: [
         now_minute: Time,
         counts: CountByMinuteByApp

@@ -17,7 +17,6 @@ defmodule Antikythera.Context do
   end
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       start_time: Time,
       context_id: ContextId,

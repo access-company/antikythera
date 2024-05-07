@@ -12,7 +12,6 @@ defmodule AntikytheraCore.Handler.WebsocketState do
   alias AntikytheraCore.{MetricsUploader, GearProcess}
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       conn: Conn,
       ws_module: Croma.Atom,

@@ -17,7 +17,6 @@ defmodule AntikytheraCore.AsyncJob do
   def max_start_time_from_now(), do: @max_start_time_from_now
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       gear_name: GearName,
       module: Croma.Atom,

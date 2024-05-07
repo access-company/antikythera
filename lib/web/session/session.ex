@@ -18,7 +18,6 @@ defmodule Antikythera.Session do
   end
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       state: Antikythera.Session.State,
       id: Croma.TypeGen.nilable(Croma.String),

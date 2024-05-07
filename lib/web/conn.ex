@@ -25,7 +25,6 @@ defmodule Antikythera.Request do
   end
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       method: Http.Method,
       path_info: Antikythera.PathInfo,
@@ -60,7 +59,6 @@ defmodule Antikythera.Conn do
   end
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       request: Request,
       context: Context,

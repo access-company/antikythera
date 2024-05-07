@@ -10,7 +10,6 @@ defmodule AntikytheraCore.Alert.HandlerState do
   alias AntikytheraCore.Alert.Message
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       handler_module: Croma.Atom,
       otp_app_name: Croma.Atom,

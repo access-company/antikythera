@@ -7,7 +7,6 @@ defmodule Antikythera.G2gRequest do
   alias Antikythera.EncodedPath
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       method: Http.Method,
       path: EncodedPath,
@@ -38,7 +37,6 @@ end
 
 defmodule Antikythera.G2gResponse do
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       status: Http.Status.Int,
       headers: Http.Headers,

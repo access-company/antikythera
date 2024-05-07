@@ -25,7 +25,6 @@ defmodule AntikytheraCore.GearLog.Writer do
 
   defmodule State do
     use Croma.Struct,
-      recursive_new?: true,
       fields: [
         log_state: LogRotation.State,
         min_level: Level,

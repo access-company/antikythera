@@ -43,7 +43,6 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       jobs: JobsMap,
       index_waiting: SecondaryIndex,

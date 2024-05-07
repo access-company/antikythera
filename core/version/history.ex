@@ -36,7 +36,6 @@ defmodule AntikytheraCore.Version.History do
     alias Croma.TypeGen, as: TG
 
     use Croma.Struct,
-      recursive_new?: true,
       fields: [
         version: VersionStr,
         canary_target_hosts: TG.nilable(TG.list_of(Croma.String)),

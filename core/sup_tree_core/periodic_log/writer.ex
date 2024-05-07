@@ -16,7 +16,6 @@ defmodule AntikytheraCore.PeriodicLog.Writer do
 
   defmodule State do
     use Croma.Struct,
-      recursive_new?: true,
       fields: [
         log_state: LogRotation.State,
         build_mod: Croma.Atom,

@@ -104,7 +104,6 @@ defmodule Antikythera.Httpc do
     """
 
     use Croma.Struct,
-      recursive_new?: true,
       fields: [
         status: Status.Int,
         body: Croma.Binary,
