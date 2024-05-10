@@ -25,7 +25,6 @@ defmodule AntikytheraCore.TmpdirTracker do
     end
 
     use Croma.Struct,
-      recursive_new?: true,
       fields: [
         gear_tmp_dir: Croma.String,
         map: Map

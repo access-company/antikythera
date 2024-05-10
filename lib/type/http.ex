@@ -39,7 +39,6 @@ defmodule Antikythera.Http do
     alias Croma.TypeGen
 
     use Croma.Struct,
-      recursive_new?: true,
       fields: [
         value: Croma.String,
         path: TypeGen.nilable(Antikythera.EncodedPath),

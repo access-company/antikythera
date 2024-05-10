@@ -8,7 +8,6 @@ defmodule AntikytheraCore.ExecutorPool.Setting do
   alias AntikytheraCore.ExecutorPool.WsConnectionsCapping
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       n_pools_a: Croma.NonNegInteger,
       pool_size_a: Croma.NonNegInteger,

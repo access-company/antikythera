@@ -11,7 +11,6 @@ defmodule AntikytheraCore.GearLog.LogRotation do
 
   defmodule State do
     use Croma.Struct,
-      recursive_new?: true,
       fields: [
         # FileHandle.t
         file_handle: Croma.Tuple,

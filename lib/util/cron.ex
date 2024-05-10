@@ -71,7 +71,6 @@ defmodule Antikythera.Cron do
   alias Antikythera.Cron.{Minute, Hour, DayOfMonth, Month, DayOfWeek}
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       minute: Minute,
       hour: Hour,

@@ -5,7 +5,6 @@ use Croma
 defmodule AntikytheraEal.AlertMailer do
   defmodule Mail do
     use Croma.Struct,
-      recursive_new?: true,
       fields: [
         from: Croma.String,
         to: Croma.TypeGen.list_of(Croma.String),

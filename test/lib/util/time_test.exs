@@ -104,7 +104,7 @@ defmodule Antikythera.TimeTest do
   end
 
   defmodule S do
-    use Croma.Struct, recursive_new?: true, fields: [time: Time]
+    use Croma.Struct, fields: [time: Time]
   end
 
   test "should be deserialized directly to Antikythera.Time.t, when used as field type of Croma.Struct" do

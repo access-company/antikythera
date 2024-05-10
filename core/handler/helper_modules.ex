@@ -2,7 +2,6 @@
 
 defmodule AntikytheraCore.Handler.HelperModules do
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       top: Croma.Atom,
       router: Croma.Atom,

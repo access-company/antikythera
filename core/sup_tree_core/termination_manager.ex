@@ -27,7 +27,6 @@ defmodule AntikytheraCore.TerminationManager do
     alias AntikytheraCore.VersionUpgradeTaskQueue
 
     use Croma.Struct,
-      recursive_new?: true,
       fields: [
         in_service?: Croma.Boolean,
         log_flushed?: Croma.Boolean,

@@ -69,7 +69,6 @@ defmodule Antikythera.AsyncJob.Metadata do
   alias Antikythera.AsyncJob.{Id, Attempts, MaxDuration, RetryInterval}
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       id: Id,
       run_at: Time,
@@ -89,7 +88,6 @@ defmodule Antikythera.AsyncJob.Status do
   alias Antikythera.AsyncJob.{Id, Schedule, Attempts, MaxDuration, RetryInterval, StateLabel}
 
   use Croma.Struct,
-    recursive_new?: true,
     fields: [
       id: Id,
       gear_name: GearName,
