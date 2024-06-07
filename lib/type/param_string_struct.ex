@@ -139,21 +139,14 @@ defmodule Antikythera.ParamStringStruct do
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
-      fields =
-        Keyword.fetch!(opts, :fields)
-        |> Enum.map(fn
-          {field_name, {mod, preprocessor}} = field
-          when is_atom(field_name) and is_atom(mod) and is_function(preprocessor, 1) ->
-            field
+      opts_with_default_preprocessor =
+        Keyword.put(
+          opts,
+          :default_preprocessor,
+          &Antikythera.ParamStringStruct.Preprocessor.default/1
+        )
 
-          {field_name, mod} = field when is_atom(field_name) and is_atom(mod) ->
-            case Preprocessor.default(mod) do
-              {:ok, preprocessor} -> {field_name, {mod, preprocessor}}
-              {:error, :no_default_preprocessor} -> field
-            end
-        end)
-
-      use Antikythera.BaseParamStruct, fields: fields
+      use Antikythera.BaseParamStruct, opts_with_default_preprocessor
     end
   end
 end
