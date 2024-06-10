@@ -61,4 +61,63 @@ defmodule Antikythera.BodyJsonStructTest do
                ]}} = TestStruct1.from_params(params)
     end
   end
+
+  defmodule TestStruct2 do
+    defmodule TestList do
+      use Antikythera.BodyJsonList, elem_module: Croma.PosInteger
+    end
+
+    defmodule TestMap do
+      use Antikythera.BodyJsonMap, value_module: Croma.PosInteger
+    end
+
+    use Antikythera.BodyJsonStruct,
+      fields: [
+        param_list: TestList,
+        param_map: TestMap
+      ]
+  end
+
+  describe "from_params/1 of a struct based on BodyJsonStruct with lists and maps" do
+    test "should return :ok with a struct if all the fields are valid" do
+      params = %{
+        "param_list" => [1, 2, 3],
+        "param_map" => %{"a" => 1, "b" => 2, "c" => 3}
+      }
+
+      assert {:ok,
+              %TestStruct2{param_list: [1, 2, 3], param_map: %{"a" => 1, "b" => 2, "c" => 3}}} =
+               TestStruct2.from_params(params)
+    end
+
+    test "should return invalid value error when an element of a list is invalid" do
+      params = %{
+        "param_list" => [1, 0, 3],
+        "param_map" => %{"a" => 1, "b" => 2, "c" => 3}
+      }
+
+      assert {:error,
+              {:invalid_value,
+               [
+                 TestStruct2,
+                 {TestStruct2.TestList, :param_list},
+                 Croma.PosInteger
+               ]}} = TestStruct2.from_params(params)
+    end
+
+    test "should return invalid value error when a value of a map is invalid" do
+      params = %{
+        "param_list" => [1, 2, 3],
+        "param_map" => %{"a" => 1, "b" => 0, "c" => 3}
+      }
+
+      assert {:error,
+              {:invalid_value,
+               [
+                 TestStruct2,
+                 {TestStruct2.TestMap, :param_map},
+                 Croma.PosInteger
+               ]}} = TestStruct2.from_params(params)
+    end
+  end
 end
