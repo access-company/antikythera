@@ -7,16 +7,16 @@ defmodule Antikythera.BaseParamStruct do
   *TBD*
   """
 
-  @type json_value_t ::
+  @type json_value_t() ::
           boolean()
           | number()
           | String.t()
           | list(json_value_t())
           | %{required(String.t()) => json_value_t()}
 
-  @type params_t :: %{required(atom() | String.t()) => json_value_t()}
-  @type validate_error_reason_t :: :invalid_value | :value_missing
-  @type validate_error_t :: {validate_error_reason_t(), list(module() | {module(), atom()})}
+  @type params_t() :: %{required(atom() | String.t()) => json_value_t()}
+  @type validate_error_reason_t() :: :invalid_value | :value_missing
+  @type validate_error_t() :: {validate_error_reason_t(), list(module() | {module(), atom()})}
 
   @typep validatable_t() :: term()
   @type preprocessor_t() ::
@@ -228,20 +228,24 @@ defmodule Antikythera.BaseParamStruct do
       use Croma
       use Croma.Struct, fields: fields
 
-      defun from_params(params :: Antikythera.BaseParamStruct.params_t()) :: Croma.Result.t(t()) do
-        Antikythera.BaseParamStruct.preprocess_params(
-          __MODULE__,
-          @base_param_struct_fields_with_preprocessors,
-          params
-        )
-        |> Croma.Result.bind(&new/1)
-        |> Croma.Result.map_error(
-          &Antikythera.BaseParamStruct.treat_invalid_missing_value_as_value_missing_error(
+      defun from_params(params :: term()) :: Croma.Result.t(t()) do
+        params when is_map(params) ->
+          Antikythera.BaseParamStruct.preprocess_params(
             __MODULE__,
-            params,
-            &1
+            @base_param_struct_fields_with_preprocessors,
+            params
           )
-        )
+          |> Croma.Result.bind(&new/1)
+          |> Croma.Result.map_error(
+            &Antikythera.BaseParamStruct.treat_invalid_missing_value_as_value_missing_error(
+              __MODULE__,
+              params,
+              &1
+            )
+          )
+
+        _ ->
+          {:error, {:invalid_value, [__MODULE__]}}
       end
 
       defun from_params!(params :: Antikythera.BaseParamStruct.params_t()) :: t() do
@@ -249,25 +253,23 @@ defmodule Antikythera.BaseParamStruct do
       end
 
       # Override
-      defun new(dict :: term()) :: Croma.Result.t(t()) do
+      def new(dict) do
         Antikythera.BaseParamStruct.new_impl(__MODULE__, @base_param_struct_fields, dict)
       end
 
       # Override
-      defun update(s :: t(), dict :: term()) :: Croma.Result.t(t()) do
+      def update(s, dict) do
         Antikythera.BaseParamStruct.update_impl(s, __MODULE__, @base_param_struct_fields, dict)
       end
 
       # Override
-      defun valid?(value :: term()) :: boolean() do
-        %__MODULE__{} = s ->
-          Enum.all?(@base_param_struct_fields, fn {field_name, mod} ->
-            Map.fetch!(s, field_name) |> Antikythera.BaseParamStruct.valid_field?(mod)
-          end)
-
-        _ ->
-          false
+      def valid?(%__MODULE__{} = s) do
+        Enum.all?(@base_param_struct_fields, fn {field_name, mod} ->
+          Map.fetch!(s, field_name) |> Antikythera.BaseParamStruct.valid_field?(mod)
+        end)
       end
+
+      def valid?(_), do: false
 
       defoverridable from_params: 1, from_params!: 1, new: 1, update: 2, valid?: 1
     end

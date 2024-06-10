@@ -55,6 +55,38 @@ defmodule AntikytheraCore.Handler.GearError do
     )
   end
 
+  defun parameter_validation_error(
+          conn :: v[Conn.t()],
+          parameter_type :: Antikythera.Plug.ParamsValidator.parameter_type_t(),
+          reason :: Antikythera.BaseParamStruct.validate_error_t()
+        ) :: Conn.t() do
+    invoke_error_handler(
+      conn,
+      fn mod -> mod.parameter_validation_error(conn, parameter_type, reason) end,
+      fn ->
+        resp_body = create_default_parameter_validation_error_message(parameter_type, reason)
+        %Conn{conn | status: 400, resp_body: resp_body}
+      end
+    )
+  end
+
+  defunp create_default_parameter_validation_error_message(
+           parameter_type :: Antikythera.Plug.ParamsValidator.parameter_type_t(),
+           {error_reason, mods} :: Antikythera.BaseParamStruct.validate_error_t()
+         ) :: String.t() do
+    field_path =
+      Enum.flat_map(mods, fn
+        {_mod, field_name} -> [field_name]
+        _mod -> []
+      end)
+      |> Enum.join(".")
+
+    error_reason_message =
+      Atom.to_string(error_reason) |> String.capitalize() |> String.replace("_", " ")
+
+    "ParameterValidationError: #{error_reason_message}#{if field_path != "", do: " at #{field_path}"} of #{parameter_type}"
+  end
+
   defunp invoke_error_handler(
            conn :: v[Conn.t()],
            invoke_fn :: (module -> Conn.t()),
