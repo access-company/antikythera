@@ -34,6 +34,7 @@ Please be aware of that, and stay tuned for further additions!
 ## Basic architecture
 
 ![Antikythera Architecture](assets/AntikytheraArchitecture.png)
+![Antikythera Architecture](assets/AntikytheraArchitecture.drawio.png)
 
 - We refer to each antikythera cluster as an **"antikythera instance"**,
   and each web service running within an antikythera instance as a **"gear"**.
