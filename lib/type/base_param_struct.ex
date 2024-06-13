@@ -21,9 +21,11 @@ defmodule Antikythera.BaseParamStruct do
   @typep validatable_t() :: term()
   @type preprocessor_t() ::
           (nil | json_value_t() -> Croma.Result.t(validatable_t()) | validatable_t())
+  @type default_value_opt_t() :: Croma.Result.t(term(), :no_default_value)
+  @type field_with_attr_t() :: {atom(), module(), preprocessor_t(), default_value_opt_t()}
 
   @doc false
-  defun compute_default_value(mod :: v[module()]) :: Croma.Result.t(term(), :no_default_value) do
+  defun compute_default_value(mod :: v[module()]) :: default_value_opt_t() do
     try do
       {:ok, mod.default()}
     rescue
@@ -34,14 +36,14 @@ defmodule Antikythera.BaseParamStruct do
   @doc false
   defun preprocess_params(
           struct_mod :: v[module()],
-          fields_with_pps :: list({atom(), module(), preprocessor_t()}),
+          fields_with_attrs :: list(field_with_attr_t()),
           params :: params_t()
         ) :: Croma.Result.t(%{required(atom()) => term()}, validate_error_t()) do
-    Enum.reduce_while(fields_with_pps, {:ok, %{}}, fn {field_name, _mod, _preprocessor} =
-                                                        field_with_pp,
-                                                      {:ok, preprocessed} ->
-      get_param(params, field_name)
-      |> preprocess_param(field_with_pp)
+    Enum.reduce_while(fields_with_attrs, {:ok, %{}}, fn {field_name, mod, preprocessor,
+                                                         default_value_opt},
+                                                        {:ok, preprocessed} ->
+      get_param(params, field_name, mod, default_value_opt)
+      |> Croma.Result.bind(&preprocess_param(&1, field_name, mod, preprocessor))
       |> case do
         {:ok, v} -> {:cont, {:ok, Map.put(preprocessed, field_name, v)}}
         {:error, {reason, mods}} -> {:halt, {:error, {reason, [struct_mod | mods]}}}
@@ -49,12 +51,35 @@ defmodule Antikythera.BaseParamStruct do
     end)
   end
 
+  defunp get_param(
+           params :: params_t(),
+           field_name :: atom(),
+           mod :: module(),
+           default_value_opt :: default_value_opt_t()
+         ) :: Croma.Result.t(nil | json_value_t(), validate_error_t()) do
+    field_name_str = Atom.to_string(field_name)
+
+    cond do
+      Map.has_key?(params, field_name) ->
+        {:ok, params[field_name]}
+
+      Map.has_key?(params, field_name_str) ->
+        {:ok, params[field_name_str]}
+
+      true ->
+        case default_value_opt do
+          {:ok, default_value} -> {:ok, default_value}
+          {:error, :no_default_value} -> {:error, {:value_missing, [{mod, field_name}]}}
+        end
+    end
+  end
+
   defunp preprocess_param(
            param :: nil | json_value_t(),
-           {field_name, mod, preprocessor} :: {atom(), module(), preprocessor_t()}
+           field_name :: atom(),
+           mod :: module(),
+           preprocessor :: preprocessor_t()
          ) :: Croma.Result.t(validatable_t(), validate_error_t()) do
-    error_reason = if is_nil(param), do: :value_missing, else: :invalid_value
-
     try do
       case preprocessor.(param) do
         {:ok, v} ->
@@ -64,38 +89,27 @@ defmodule Antikythera.BaseParamStruct do
           {:error, {reason, [{mod, field_name} | mods]}}
 
         {:error, _} ->
-          {:error, {error_reason, [{mod, field_name}]}}
+          {:error, {:invalid_value, [{mod, field_name}]}}
 
         v ->
           {:ok, v}
       end
     rescue
-      _error -> {:error, {error_reason, [{mod, field_name}]}}
-    end
-  end
-
-  defunp get_param(params :: params_t(), field_name :: atom()) :: nil | json_value_t() do
-    field_name_str = Atom.to_string(field_name)
-
-    cond do
-      Map.has_key?(params, field_name) -> params[field_name]
-      Map.has_key?(params, field_name_str) -> params[field_name_str]
-      true -> nil
+      _error -> {:error, {:invalid_value, [{mod, field_name}]}}
     end
   end
 
   @doc false
   defun new_impl(
           struct_mod :: module(),
-          fields_with_default_values ::
-            list({atom(), module(), Croma.Result.t(term(), :no_default_value)}),
+          fields_with_attrs :: list(field_with_attr_t()),
           dict :: term()
         ) ::
           Croma.Result.t(struct(), validate_error_t()) do
-    struct_mod, fields_with_default_values, dict
-    when is_atom(struct_mod) and is_list(fields_with_default_values) and
+    struct_mod, fields_with_attrs, dict
+    when is_atom(struct_mod) and is_list(fields_with_attrs) and
            (is_list(dict) or is_map(dict)) ->
-      Enum.map(fields_with_default_values, fn {field_name, mod, default_value_opt} ->
+      Enum.map(fields_with_attrs, fn {field_name, mod, _preprocessor, default_value_opt} ->
         fetch_and_validate_field(dict, field_name, mod, default_value_opt)
       end)
       |> Croma.Result.sequence()
@@ -117,8 +131,7 @@ defmodule Antikythera.BaseParamStruct do
              list({atom() | String.t(), term()}) | %{required(atom() | String.t()) => term()},
            field_name :: v[atom()],
            mod :: v[module()],
-           default_value_opt :: Croma.Result.t(term(), :no_default_value) \\ {:error,
-            :no_default_value}
+           default_value_opt :: default_value_opt_t() \\ {:error, :no_default_value}
          ) :: Croma.Result.t({atom(), term()}, validate_error_t()) do
     case fetch_from_dict(dict, field_name) do
       {:ok, value} ->
@@ -226,33 +239,31 @@ defmodule Antikythera.BaseParamStruct do
       default_pp =
         Keyword.get(opts, :default_preprocessor, fn _ -> {:error, :no_default_preprocessor} end)
 
-      fields_with_preprocessors =
+      fields_with_attrs =
         Keyword.fetch!(opts, :fields)
         |> Enum.map(fn
           {field_name, {mod, preprocessor}}
           when is_atom(field_name) and is_atom(mod) and is_function(preprocessor, 1) ->
-            {field_name, mod, preprocessor}
+            {field_name, mod, preprocessor,
+             Antikythera.BaseParamStruct.compute_default_value(mod)}
 
           {field_name, mod} when is_atom(field_name) and is_atom(mod) ->
-            case default_pp.(mod) do
-              {:ok, preprocessor} -> {field_name, mod, preprocessor}
-              {:error, :no_default_preprocessor} -> {field_name, mod, &Function.identity/1}
-            end
+            default_pp =
+              case default_pp.(mod) do
+                {:ok, preprocessor} -> preprocessor
+                {:error, :no_default_preprocessor} -> &Function.identity/1
+              end
+
+            {field_name, mod, default_pp, Antikythera.BaseParamStruct.compute_default_value(mod)}
         end)
 
       fields =
-        Enum.map(fields_with_preprocessors, fn {field_name, mod, _preprocessor} ->
+        Enum.map(fields_with_attrs, fn {field_name, mod, _preprocessor, _default_value_opt} ->
           {field_name, mod}
         end)
 
-      fields_with_default_values =
-        Enum.map(fields, fn {field_name, mod} ->
-          {field_name, mod, Antikythera.BaseParamStruct.compute_default_value(mod)}
-        end)
-
       @base_param_struct_fields fields
-      @base_param_struct_fields_with_preprocessors fields_with_preprocessors
-      @base_param_struct_fields_with_default_values fields_with_default_values
+      @base_param_struct_fields_with_attrs fields_with_attrs
 
       use Croma
       use Croma.Struct, fields: fields
@@ -261,7 +272,7 @@ defmodule Antikythera.BaseParamStruct do
         params when is_map(params) ->
           Antikythera.BaseParamStruct.preprocess_params(
             __MODULE__,
-            @base_param_struct_fields_with_preprocessors,
+            @base_param_struct_fields_with_attrs,
             params
           )
           |> Croma.Result.bind(&new/1)
@@ -285,7 +296,7 @@ defmodule Antikythera.BaseParamStruct do
       def new(dict) do
         Antikythera.BaseParamStruct.new_impl(
           __MODULE__,
-          @base_param_struct_fields_with_default_values,
+          @base_param_struct_fields_with_attrs,
           dict
         )
       end
