@@ -100,12 +100,23 @@ defmodule Antikythera.BaseParamStructTest do
       }
 
       Map.keys(valid_params)
+      |> Enum.reject(&(&1 == :param_nilable))
       |> Enum.each(fn field ->
         params = Map.delete(valid_params, field)
 
         assert {:error, {:value_missing, [TestStruct1, {_type, ^field}]}} =
                  TestStruct1.new(params)
       end)
+    end
+
+    test "should return :ok with a struct if a field is missing but it is nilable" do
+      assert {:ok, %TestStruct1{param_nilable: nil}} =
+               TestStruct1.new(%{
+                 param_croma_builtin: 1,
+                 param_datetime_related: ~D[1970-01-01],
+                 param_with_throwable_preprocessor: 1,
+                 param_with_result_preprocessor: 1
+               })
     end
   end
 
