@@ -364,4 +364,200 @@ defmodule Antikythera.BaseParamStructTest do
       end)
     end
   end
+
+  defmodule TestStruct2 do
+    use BaseParamStruct,
+      accept_case: :snake,
+      fields: [paramNamedWithMultipleWords: Croma.PosInteger]
+  end
+
+  describe "new/1 of a struct module based on BaseParamStruct with accept_case: :snake" do
+    test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its snake case" do
+      assert {:ok, %TestStruct2{paramNamedWithMultipleWords: 1}} =
+               TestStruct2.new(%{paramNamedWithMultipleWords: 1})
+
+      assert {:ok, %TestStruct2{paramNamedWithMultipleWords: 1}} =
+               TestStruct2.new(%{param_named_with_multiple_words: 1})
+    end
+
+    test "should return value missing error if the field name is not acceptable" do
+      assert {:error,
+              {:value_missing, [TestStruct2, {Croma.PosInteger, :paramNamedWithMultipleWords}]}} =
+               TestStruct2.new(%{ParamNamedWithMultipleWords: 1})
+
+      assert {:error,
+              {:value_missing, [TestStruct2, {Croma.PosInteger, :paramNamedWithMultipleWords}]}} =
+               TestStruct2.new(%{PARAM_NAMED_WITH_MULTIPLE_WORDS: 1})
+    end
+  end
+
+  describe "from_params/1 of a struct module based on BaseParamStruct with accept_case: :snake" do
+    test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its snake case" do
+      assert {:ok, %TestStruct2{paramNamedWithMultipleWords: 1}} =
+               TestStruct2.from_params(%{"paramNamedWithMultipleWords" => 1})
+
+      assert {:ok, %TestStruct2{paramNamedWithMultipleWords: 1}} =
+               TestStruct2.from_params(%{"param_named_with_multiple_words" => 1})
+    end
+
+    test "should return value missing error if the field name is not acceptable" do
+      assert {:error,
+              {:value_missing, [TestStruct2, {Croma.PosInteger, :paramNamedWithMultipleWords}]}} =
+               TestStruct2.from_params(%{"ParamNamedWithMultipleWords" => 1})
+
+      assert {:error,
+              {:value_missing, [TestStruct2, {Croma.PosInteger, :paramNamedWithMultipleWords}]}} =
+               TestStruct2.from_params(%{"PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1})
+    end
+  end
+
+  defmodule TestStruct3 do
+    use BaseParamStruct,
+      accept_case: :upper_camel,
+      fields: [param_named_with_multiple_words: Croma.PosInteger]
+  end
+
+  describe "new/1 of a struct module based on BaseParamStruct with accept_case: :upper_camel" do
+    test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its upper camel case" do
+      assert {:ok, %TestStruct3{param_named_with_multiple_words: 1}} =
+               TestStruct3.new(%{param_named_with_multiple_words: 1})
+
+      assert {:ok, %TestStruct3{param_named_with_multiple_words: 1}} =
+               TestStruct3.new(%{ParamNamedWithMultipleWords: 1})
+    end
+
+    test "should return value missing error if the field name is not acceptable" do
+      assert {:error,
+              {:value_missing,
+               [TestStruct3, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
+               TestStruct3.new(%{paramNamedWithMultipleWords: 1})
+
+      assert {:error,
+              {:value_missing,
+               [TestStruct3, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
+               TestStruct3.new(%{PARAM_NAMED_WITH_MULTIPLE_WORDS: 1})
+    end
+  end
+
+  describe "from_params/1 of a struct module based on BaseParamStruct with accept_case: :upper_camel" do
+    test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its upper camel case" do
+      assert {:ok, %TestStruct3{param_named_with_multiple_words: 1}} =
+               TestStruct3.from_params(%{"param_named_with_multiple_words" => 1})
+
+      assert {:ok, %TestStruct3{param_named_with_multiple_words: 1}} =
+               TestStruct3.from_params(%{"ParamNamedWithMultipleWords" => 1})
+    end
+
+    test "should return value missing error if the field name is not acceptable" do
+      assert {:error,
+              {:value_missing,
+               [TestStruct3, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
+               TestStruct3.from_params(%{"paramNamedWithMultipleWords" => 1})
+
+      assert {:error,
+              {:value_missing,
+               [TestStruct3, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
+               TestStruct3.from_params(%{"PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1})
+    end
+  end
+
+  defmodule TestStruct4 do
+    use BaseParamStruct,
+      accept_case: :lower_camel,
+      fields: [param_named_with_multiple_words: Croma.PosInteger]
+  end
+
+  describe "new/1 of a struct module based on BaseParamStruct with accept_case: :lower_camel" do
+    test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its lower camel case" do
+      assert {:ok, %TestStruct4{param_named_with_multiple_words: 1}} =
+               TestStruct4.new(%{param_named_with_multiple_words: 1})
+
+      assert {:ok, %TestStruct4{param_named_with_multiple_words: 1}} =
+               TestStruct4.new(%{paramNamedWithMultipleWords: 1})
+    end
+
+    test "should return value missing error if the field name is not acceptable" do
+      assert {:error,
+              {:value_missing,
+               [TestStruct4, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
+               TestStruct4.new(%{ParamNamedWithMultipleWords: 1})
+
+      assert {:error,
+              {:value_missing,
+               [TestStruct4, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
+               TestStruct4.new(%{PARAM_NAMED_WITH_MULTIPLE_WORDS: 1})
+    end
+  end
+
+  describe "from_params/1 of a struct module based on BaseParamStruct with accept_case: :lower_camel" do
+    test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its lower camel case" do
+      assert {:ok, %TestStruct4{param_named_with_multiple_words: 1}} =
+               TestStruct4.from_params(%{"param_named_with_multiple_words" => 1})
+
+      assert {:ok, %TestStruct4{param_named_with_multiple_words: 1}} =
+               TestStruct4.from_params(%{"paramNamedWithMultipleWords" => 1})
+    end
+
+    test "should return value missing error if the field name is not acceptable" do
+      assert {:error,
+              {:value_missing,
+               [TestStruct4, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
+               TestStruct4.from_params(%{"ParamNamedWithMultipleWords" => 1})
+
+      assert {:error,
+              {:value_missing,
+               [TestStruct4, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
+               TestStruct4.from_params(%{"PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1})
+    end
+  end
+
+  defmodule TestStruct5 do
+    use BaseParamStruct,
+      accept_case: :capital,
+      fields: [param_named_with_multiple_words: Croma.PosInteger]
+  end
+
+  describe "new/1 of a struct module based on BaseParamStruct with accept_case: :capital" do
+    test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its capital case" do
+      assert {:ok, %TestStruct5{param_named_with_multiple_words: 1}} =
+               TestStruct5.new(%{param_named_with_multiple_words: 1})
+
+      assert {:ok, %TestStruct5{param_named_with_multiple_words: 1}} =
+               TestStruct5.new(%{PARAM_NAMED_WITH_MULTIPLE_WORDS: 1})
+    end
+
+    test "should return value missing error if the field name is not acceptable" do
+      assert {:error,
+              {:value_missing,
+               [TestStruct5, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
+               TestStruct5.new(%{ParamNamedWithMultipleWords: 1})
+
+      assert {:error,
+              {:value_missing,
+               [TestStruct5, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
+               TestStruct5.new(%{paramNamedWithMultipleWords: 1})
+    end
+  end
+
+  describe "from_params/1 of a struct module based on BaseParamStruct with accept_case: :capital" do
+    test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its capital case" do
+      assert {:ok, %TestStruct5{param_named_with_multiple_words: 1}} =
+               TestStruct5.from_params(%{"param_named_with_multiple_words" => 1})
+
+      assert {:ok, %TestStruct5{param_named_with_multiple_words: 1}} =
+               TestStruct5.from_params(%{"PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1})
+    end
+
+    test "should return value missing error if the field name is not acceptable" do
+      assert {:error,
+              {:value_missing,
+               [TestStruct5, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
+               TestStruct5.from_params(%{"ParamNamedWithMultipleWords" => 1})
+
+      assert {:error,
+              {:value_missing,
+               [TestStruct5, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
+               TestStruct5.from_params(%{paramNamedWithMultipleWords: 1})
+    end
+  end
 end

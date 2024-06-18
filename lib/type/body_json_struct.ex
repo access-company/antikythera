@@ -4,7 +4,9 @@ use Croma
 
 defmodule Antikythera.BodyJsonStruct do
   @moduledoc """
-  *TBD*
+  Module to define a struct that represents the JSON body of a request.
+
+  This module is intended to be used for parameter validation (see `Antikythera.Plug.ParamsValidator`).
   """
 
   alias Antikythera.BaseParamStruct
