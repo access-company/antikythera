@@ -313,31 +313,35 @@ defmodule Antikythera.BaseParamStruct do
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
       default_pp =
-        Keyword.get(opts, :default_preprocessor, fn _ -> {:error, :no_default_preprocessor} end)
+        Keyword.get(opts, :default_preprocessor, fn _mod -> {:error, :no_default_preprocessor} end)
 
       fields_with_attrs =
         Keyword.fetch!(opts, :fields)
         |> Enum.map(fn
+          {field_name, {mod, preprocessor, [default: default_value]}}
+          when is_atom(field_name) and is_atom(mod) and is_function(preprocessor, 1) ->
+            {field_name, mod, preprocessor, {:ok, default_value}}
+
           {field_name, {mod, preprocessor}}
           when is_atom(field_name) and is_atom(mod) and is_function(preprocessor, 1) ->
-            {field_name,
-             Antikythera.BaseParamStruct.compute_accepted_field_names(
-               field_name,
-               opts[:accept_case]
-             ), mod, preprocessor, Antikythera.BaseParamStruct.compute_default_value(mod)}
+            {field_name, mod, preprocessor,
+             Antikythera.BaseParamStruct.compute_default_value(mod)}
+
+          {field_name, {mod, [default: default_value]}}
+          when is_atom(field_name) and is_atom(mod) ->
+            {field_name, mod, Croma.Result.get(default_pp.(mod), &Function.identity/1),
+             {:ok, default_value}}
 
           {field_name, mod} when is_atom(field_name) and is_atom(mod) ->
-            default_pp =
-              case default_pp.(mod) do
-                {:ok, preprocessor} -> preprocessor
-                {:error, :no_default_preprocessor} -> &Function.identity/1
-              end
-
-            {field_name,
-             Antikythera.BaseParamStruct.compute_accepted_field_names(
-               field_name,
-               opts[:accept_case]
-             ), mod, default_pp, Antikythera.BaseParamStruct.compute_default_value(mod)}
+            {field_name, mod, Croma.Result.get(default_pp.(mod), &Function.identity/1),
+             Antikythera.BaseParamStruct.compute_default_value(mod)}
+        end)
+        |> Enum.map(fn {field_name, mod, preprocessor, default_value_opt} ->
+          {field_name,
+           Antikythera.BaseParamStruct.compute_accepted_field_names(
+             field_name,
+             opts[:accept_case]
+           ), mod, preprocessor, default_value_opt}
         end)
 
       fields =

@@ -560,4 +560,67 @@ defmodule Antikythera.BaseParamStructTest do
                TestStruct5.from_params(%{paramNamedWithMultipleWords: 1})
     end
   end
+
+  defmodule TestStruct6 do
+    defmodule IntegerWithDefaultValue do
+      use Croma.SubtypeOfInt, min: 1, default: 1_000
+    end
+
+    use BaseParamStruct,
+      fields: [
+        param_default_by_mod: IntegerWithDefaultValue,
+        param_default_by_val: {Croma.Integer, [default: 2_000]},
+        param_pp_default_by_val: {Date, &Date.from_iso8601/1, [default: ~D[2001-01-01]]}
+      ]
+  end
+
+  describe "new/1 of a struct module based on BaseParamStruct with default values" do
+    test "should return :ok with a struct if all fields are valid" do
+      assert {:ok,
+              %TestStruct6{
+                param_default_by_mod: 1,
+                param_default_by_val: 2,
+                param_pp_default_by_val: ~D[1970-01-01]
+              }} =
+               TestStruct6.new(%{
+                 param_default_by_mod: 1,
+                 param_default_by_val: 2,
+                 param_pp_default_by_val: ~D[1970-01-01]
+               })
+    end
+
+    test "should return :ok with a struct if a field which has a default value is missing" do
+      assert {:ok,
+              %TestStruct6{
+                param_default_by_mod: 1_000,
+                param_default_by_val: 2_000,
+                param_pp_default_by_val: ~D[2001-01-01]
+              }} = TestStruct6.new(%{})
+    end
+  end
+
+  describe "from_params/1 of a struct module based on BaseParamStruct with default values" do
+    test "should return :ok with a struct if all fields are valid" do
+      assert {:ok,
+              %TestStruct6{
+                param_default_by_mod: 1,
+                param_default_by_val: 2,
+                param_pp_default_by_val: ~D[1970-01-01]
+              }} =
+               TestStruct6.from_params(%{
+                 "param_default_by_mod" => 1,
+                 "param_default_by_val" => 2,
+                 "param_pp_default_by_val" => "1970-01-01"
+               })
+    end
+
+    test "should return :ok with a struct if a field which has a default value is missing" do
+      assert {:ok,
+              %TestStruct6{
+                param_default_by_mod: 1_000,
+                param_default_by_val: 2_000,
+                param_pp_default_by_val: ~D[2001-01-01]
+              }} = TestStruct6.from_params(%{})
+    end
+  end
 end
