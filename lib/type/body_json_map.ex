@@ -4,7 +4,43 @@ use Croma
 
 defmodule Antikythera.BodyJsonMap do
   @moduledoc """
-  *TBD*
+  Module for defining a JSON object as a map with a preprocessor function.
+
+  This module is designed for request body validation (see `Antikythera.Plug.ParamsValidator` and `Antikythera.BodyJsonStruct`).
+  You can define a type-safe map with a preprocessor function.
+
+  ## Usage
+
+  To define a JSON object as a map with a preprocessor function, `use` this module in a module.
+
+      defmodule DateMap do
+        use Antikythera.BodyJsonMap, value_module: {Date, &Date.to_iso8601/1}
+      end
+
+  You can use it for request body validation in a controller module, as shown below.
+
+      defmodule MyBody do
+        use Antikythera.BodyJsonStruct, fields: [dates: DateMap]
+      end
+
+      plug Antikythera.Plug.ParamsValidator, :validate, body: MyBody
+
+  When a request with the following JSON body is sent to the controller, it is validated by `MyBody`.
+  Every value in the `dates` field is converted to an `Date` struct by the `Date.to_iso8601/1` preprocessor.
+
+      {
+        "dates": {
+          "date1": "1970-01-01",
+          "date2": "1970-01-02",
+          "date3": "1970-01-03"
+        }
+      }
+
+  ## Options
+
+  - `value_module`: The module that defines the type of each value in the map. It must either have a `valid?/1` function or be a struct with a preprocessor function.
+  - `min_size`: The minimum size of the map. If not specified, there is no minimum size.
+  - `max_size`: The maximum size of the map. If not specified, there is no maximum size.
   """
   alias Antikythera.BaseParamStruct
   alias Antikythera.BodyJsonStruct

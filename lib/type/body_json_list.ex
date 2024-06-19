@@ -4,7 +4,39 @@ use Croma
 
 defmodule Antikythera.BodyJsonList do
   @moduledoc """
-  *TBD*
+  Module for defining a list of JSON objects with a preprocessor function.
+
+  This module is designed for request body validation (see `Antikythera.Plug.ParamsValidator` and `Antikythera.BodyJsonStruct`).
+  You can define a type-safe list with a preprocessor function.
+
+  ## Usage
+
+  To define a list of JSON objects with a preprocessor function, `use` this module in a module.
+
+      defmodule Dates do
+        use Antikythera.BodyJsonList, elem_module: {Date, &Date.to_iso8601/1}
+      end
+
+  You can use it for request body validation in a controller module, as shown below.
+
+      defmodule MyBody do
+        use Antikythera.BodyJsonStruct, fields: [dates: Dates]
+      end
+
+      plug Antikythera.Plug.ParamsValidator, :validate, body: MyBody
+
+  When a request with the following JSON body is sent to the controller, it is validated by `MyBody`.
+  Every element in the `dates` field is converted to an `Date` struct by the `Date.to_iso8601/1` preprocessor.
+
+      {
+        "dates": ["1970-01-01", "1970-01-02", "1970-01-03"]
+      }
+
+  ## Options
+
+  - `elem_module`: The module that defines the type of each element in the list. It must either have a `valid?/1` function or be a struct with a preprocessor function.
+  - `min_length`: The minimum length of the list. If not specified, there is no minimum length.
+  - `max_length`: The maximum length of the list. If not specified, there is no maximum length.
   """
 
   alias Antikythera.BaseParamStruct

@@ -4,11 +4,106 @@ use Croma
 
 defmodule Antikythera.ParamStringStruct do
   @moduledoc """
-  *TBD*
+  Module to define a struct that represents a string parameter.
+
+  This module is designed for parameter validation (see `Antikythera.Plug.ParamsValidator`).
+
+  ## Usage
+
+  To define a struct that represents a string parameter, `use` this module in a module.
+  Each field in the struct is defined by the `:fields` option, as shown below.
+
+      defmodule MyQueryParams1 do
+        defmodule Limit do
+          use Croma.SubtypeOfInt, min: 1, max: 1_000
+        end
+
+        use Antikythera.ParamStringStruct,
+          fields: [
+            item_id: Croma.PosInteger,
+            since: DateTime,
+            limit: {Limit, &String.to_integer/1}
+          ]
+      end
+
+  The type of each field must be one of
+
+  - Croma built-in types, such as `Croma.PosInteger`,
+  - DateTime-related types: `Date`, `DateTime`, `NaiveDateTime`, and `Time`,
+  - nilable types, such as `Croma.TypeGen.Nilable(Croma.PosInteger)`, or
+  - module or struct with a preprocessor function, such as `Limit` in the example above.
+
+  When defining a field with a preprocessor, the argument type must be a string or `nil`, and the result must be one of
+
+  - a preprocessed value, or
+  - a tuple `{:ok, preprocessed_value}` or `{:error, error_reason}`.
+
+  Note that the parameter is always a string, so you need to convert it to the desired type in the preprocessor if you would like to use user-defined types.
+
+  Now you can validate string parameters using the struct in a controller module.
+  The example below shows the validation of query parameters using `MyQueryParams1`.
+
+      use Croma
+
+      defmodule YourGear.Controller.Example do
+        use Antikythera.Controller
+
+        plug Antikythera.Plug.ParamsValidator, :validate, query_params: MyQueryParams1
+
+        defun some_action(%Conn{assigns: %{validated: validated}} = conn) :: Conn.t() do
+          # You can access the validated query parameters as a `MyQueryParams1` struct via `validated.query_params`.
+          # ...
+        end
+      end
+
+  When a request with the following query parameters is sent to the controller, it is validated by `MyQueryParams1`.
+  Each parameter is converted to the specified type by the preprocessor.
+
+      /example?item_id=123&since=2025-01-01T00:00:00Z&limit=100
+
+  You can also validate path parameters(`:path_matches`), headers, and cookies in the same way.
+
+  ### Optional field and default value
+
+  You can define an optional field using `Croma.TypeGen.nilable/1`.
+  If an optional field is not included in the request, it is set to `nil`.
+
+  By setting the `:default` option, you can set a default value when the parameter field is not included in the request.
+
+      defmodule MyQueryParams2 do
+        use Antikythera.ParamStringStruct,
+          fields: [
+            q: Croma.TypeGen.nilable(Croma.String),
+            date: {Date, [default: ~D[1970-01-01]]}
+          ]
+      end
+
+      plug Antikythera.Plug.ParamsValidator, :validate, query_params: MyQueryParams2
+
+  In the example above, the request without any query parameters is allowed; `q` is set to `nil`, and `date` is set to `~D[1970-01-01]`.
+
+  ### Naming convention
+
+  By default, the field name in the struct is the same as the parameter key.
+  You can specify a different key name scheme using the `:accept_case` option, which is the same as that of `Croma.Struct`.
+
+      defmodule MyQueryParams3 do
+        use Antikythera.ParamStringStruct,
+          accept_case: :lower_camel,
+          fields: [
+            item_id: Croma.PosInteger  # The parameter key name "itemId" is also accepted.
+          ]
+      end
+
+  ## Limitations
+
+  The preprocessor must be specified as a capture form like `&module.function/1`.
   """
 
   defmodule Preprocessor do
-    @moduledoc false
+    @moduledoc """
+    Preprocessors for string parameters.
+    """
 
     @type t :: (nil | String.t() -> Croma.Result.t() | term())
 
@@ -67,7 +162,9 @@ defmodule Antikythera.ParamStringStruct do
       end
     end
 
-    @doc false
+    @doc """
+    Converts a string to a boolean value.
+    """
     defun to_boolean(s :: nil | String.t()) :: boolean() do
       "true" -> true
       "false" -> false
@@ -75,7 +172,9 @@ defmodule Antikythera.ParamStringStruct do
       nil -> raise ArgumentError, "String expected, but got nil"
     end
 
-    @doc false
+    @doc """
+    Converts a string to a number.
+    """
     defun to_number(s :: nil | String.t()) :: number() do
       s when is_binary(s) ->
         try do
@@ -94,7 +193,9 @@ defmodule Antikythera.ParamStringStruct do
       nil -> raise ArgumentError, "String expected, but got nil"
     end
 
-    @doc false
+    @doc """
+    Converts a string to a DateTime struct.
+    """
     defun to_datetime(s :: nil | String.t()) :: DateTime.t() do
       {:ok, dt, _tz_offset} = DateTime.from_iso8601(s)
       dt

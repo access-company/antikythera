@@ -4,7 +4,12 @@ use Croma
 
 defmodule Antikythera.BaseParamStruct do
   @moduledoc """
-  *TBD*
+  Module to define a struct that represents abstract parameters.
+
+  This module is a base module of `Antikythera.ParamStringStruct` and `Antikythera.BodyJsonStruct`.
+  See their respective module documents for details.
+
+  It is not recommended to use this module directly from gears.
   """
 
   @type json_value_t() ::
