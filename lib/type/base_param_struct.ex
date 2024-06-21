@@ -17,19 +17,19 @@ defmodule Antikythera.BaseParamStruct do
           | number()
           | String.t()
           | list(json_value_t())
-          | %{required(String.t()) => json_value_t()}
+          | %{String.t() => json_value_t()}
 
-  @type params_t() :: %{required(atom() | String.t()) => json_value_t()}
+  @type params_t() :: %{(atom() | String.t()) => json_value_t()}
   @type validate_error_reason_t() :: :invalid_value | :value_missing
   @type validate_error_t() :: {validate_error_reason_t(), list(module() | {module(), atom()})}
 
   @typep validatable_t() :: term()
-  @type preprocessor_t() ::
-          (nil | json_value_t() -> Croma.Result.t(validatable_t()) | validatable_t())
-  @type accept_case_t() :: :snake | :lower_camel | :upper_camel | :capital
-  @type default_value_opt_t() :: Croma.Result.t(term(), :no_default_value)
-  @type field_with_attr_t() ::
-          {atom(), [atom()], module(), preprocessor_t(), default_value_opt_t()}
+  @typep preprocessor_t() ::
+           (nil | json_value_t() -> Croma.Result.t(validatable_t()) | validatable_t())
+  @typep accept_case_t() :: :snake | :lower_camel | :upper_camel | :capital
+  @typep default_value_opt_t() :: Croma.Result.t(term(), :no_default_value)
+  @typep field_with_attr_t() ::
+           {atom(), [atom()], module(), preprocessor_t(), default_value_opt_t()}
 
   @doc false
   defun compute_default_value(mod :: v[module()]) :: default_value_opt_t() do
@@ -59,15 +59,12 @@ defmodule Antikythera.BaseParamStruct do
       # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
       converted_field_name = Atom.to_string(field_name) |> converter.() |> String.to_atom()
       Enum.uniq([field_name, converted_field_name])
-
-    field_name, _ when is_atom(field_name) ->
-      raise ":accept_case option must be one of :snake, :lower_camel, :upper_camel, or :capital"
   end
 
   defunp lower_camelize(s :: v[String.t()]) :: v[String.t()] do
     case Macro.camelize(s) do
       "" -> ""
-      <<c>> <> rest -> String.downcase(<<c>>) <> rest
+      <<c::utf8>> <> rest -> String.downcase(<<c>>) <> rest
     end
   end
 
@@ -105,14 +102,13 @@ defmodule Antikythera.BaseParamStruct do
            mod :: module(),
            default_value_opt :: default_value_opt_t()
          ) :: Croma.Result.t(nil | json_value_t(), validate_error_t()) | {:default, term()} do
-    _params, field_name, [], mod, default_value_opt when is_atom(mod) and is_atom(field_name) ->
-      case default_value_opt do
-        {:ok, default_value} -> {:default, default_value}
-        {:error, :no_default_value} -> {:error, {:value_missing, [{mod, field_name}]}}
-      end
+    _params, _field_name, [], _mod, {:ok, default_value} ->
+      {:default, default_value}
 
-    params, field_name, [accepted_field_name | rest], mod, default_value_opt
-    when is_atom(mod) and is_atom(field_name) and is_atom(accepted_field_name) ->
+    _params, field_name, [], mod, {:error, :no_default_value} ->
+      {:error, {:value_missing, [{mod, field_name}]}}
+
+    params, field_name, [accepted_field_name | rest], mod, default_value_opt ->
       case try_get_param(params, accepted_field_name) do
         {:ok, value} -> {:ok, value}
         {:error, :no_value} -> get_param(params, field_name, rest, mod, default_value_opt)
@@ -124,14 +120,9 @@ defmodule Antikythera.BaseParamStruct do
     field_name_str = Atom.to_string(field_name)
 
     cond do
-      Map.has_key?(params, field_name) ->
-        {:ok, params[field_name]}
-
-      Map.has_key?(params, field_name_str) ->
-        {:ok, params[field_name_str]}
-
-      true ->
-        {:error, :no_value}
+      is_map_key(params, field_name) -> {:ok, params[field_name]}
+      is_map_key(params, field_name_str) -> {:ok, params[field_name_str]}
+      true -> {:error, :no_value}
     end
   end
 
@@ -167,9 +158,7 @@ defmodule Antikythera.BaseParamStruct do
           dict :: term()
         ) ::
           Croma.Result.t(struct(), validate_error_t()) do
-    struct_mod, fields_with_attrs, dict
-    when is_atom(struct_mod) and is_list(fields_with_attrs) and
-           (is_list(dict) or is_map(dict)) ->
+    struct_mod, fields_with_attrs, dict when is_list(dict) or is_map(dict) ->
       Enum.map(fields_with_attrs, fn {field_name, accepted_field_names, mod, _preprocessor,
                                       default_value_opt} ->
         fetch_and_validate_field(dict, field_name, accepted_field_names, mod, default_value_opt)
@@ -184,7 +173,7 @@ defmodule Antikythera.BaseParamStruct do
           {:error, {reason, [struct_mod | mods]}}
       end
 
-    struct_mod, _, _ when is_atom(struct_mod) ->
+    struct_mod, _, _ ->
       {:error, {:invalid_value, [struct_mod]}}
   end
 
@@ -223,7 +212,7 @@ defmodule Antikythera.BaseParamStruct do
     _dict, _key, [] ->
       :error
 
-    dict, key, [accepted_key | rest] when is_atom(accepted_key) ->
+    dict, key, [accepted_key | rest] ->
       case try_fetch_from_dict(dict, accepted_key) do
         {:ok, value} -> {:ok, value}
         :error -> fetch_from_dict(dict, key, rest)
@@ -231,8 +220,7 @@ defmodule Antikythera.BaseParamStruct do
   end
 
   defunp try_fetch_from_dict(
-           dict ::
-             list({atom() | String.t(), term()}) | %{required(atom() | String.t()) => term()},
+           dict :: list({atom() | String.t(), term()}) | %{(atom() | String.t()) => term()},
            key :: atom()
          ) :: {:ok, term()} | :error do
     dict, key when is_list(dict) ->
@@ -276,7 +264,7 @@ defmodule Antikythera.BaseParamStruct do
         ) ::
           Croma.Result.t(struct(), validate_error_t()) do
     s, struct_mod, fields, dict
-    when is_atom(struct_mod) and is_struct(s, struct_mod) and (is_list(dict) or is_map(dict)) ->
+    when is_struct(s, struct_mod) and (is_list(dict) or is_map(dict)) ->
       Enum.map(fields, fn {field_name, accept_field_names, mod} ->
         fetch_and_validate_field(dict, field_name, accept_field_names, mod)
       end)
@@ -291,32 +279,16 @@ defmodule Antikythera.BaseParamStruct do
           {:error, {reason, [struct_mod | mods]}}
       end
 
-    s, struct_mod, _, _ when is_struct(s, struct_mod) and is_atom(struct_mod) ->
+    s, struct_mod, _, _ when is_struct(s, struct_mod) ->
       {:error, {:invalid_value, [struct_mod]}}
-  end
-
-  @doc false
-  defun treat_invalid_missing_value_as_value_missing_error(
-          struct_mod :: module(),
-          params :: params_t(),
-          error :: validate_error_t()
-        ) :: validate_error_t() do
-    struct_mod, params, {:invalid_value, [mod, {_type_mod, field_name} | _] = mods}
-    when struct_mod == mod ->
-      field_name_str = Atom.to_string(field_name)
-
-      if Map.has_key?(params, field_name) or Map.has_key?(params, field_name_str) do
-        {:invalid_value, mods}
-      else
-        {:value_missing, mods}
-      end
-
-    _, _, error ->
-      error
   end
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
+      if opts[:accept_case] not in [nil, :snake, :lower_camel, :upper_camel, :capital] do
+        raise ":accept_case option must be one of :snake, :lower_camel, :upper_camel, or :capital"
+      end
+
       default_pp =
         Keyword.get(opts, :default_preprocessor, fn _mod -> {:error, :no_default_preprocessor} end)
 
@@ -383,7 +355,7 @@ defmodule Antikythera.BaseParamStruct do
           {:error, {:invalid_value, [__MODULE__]}}
       end
 
-      defun from_params!(params :: Antikythera.BaseParamStruct.params_t()) :: t() do
+      defun from_params!(params :: term()) :: t() do
         from_params(params) |> Croma.Result.get!()
       end
 
