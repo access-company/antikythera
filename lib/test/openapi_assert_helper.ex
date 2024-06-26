@@ -575,7 +575,6 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
         responses
         |> Map.keys()
         |> Enum.find(fn key ->
-          # credo:disable-for-next-line Credo.Check.Refactor.AppendSingleItem
           key in (200..207 |> Enum.map(&to_string/1))
         end)
 
@@ -670,7 +669,6 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
       api_error =
         asserter.api["responses"]
         |> Enum.find(fn {key, _} ->
-          # credo:disable-for-next-line Credo.Check.Refactor.AppendSingleItem
           api_status = String.to_integer(key)
           api_status >= 400 && api_status == status
         end)
