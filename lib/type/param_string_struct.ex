@@ -123,7 +123,7 @@ defmodule Antikythera.ParamStringStruct do
 
     @doc false
     defun default(mod :: v[module()]) :: Croma.Result.t(t()) do
-      # The default preprocessors are defined as a capture form, which can be used in module attributes.
+      # The default preprocessors are defined as a capture form `&Mod.fun/arity`, which can be used in module attributes.
       case Module.split(mod) do
         # Preprocessors for Croma built-in types
         ["Croma", "Boolean"] ->
@@ -217,6 +217,10 @@ defmodule Antikythera.ParamStringStruct do
 
     @doc false
     defun generate_nilable_preprocessor(original_pp :: t(), original_mod :: v[module()]) :: t() do
+      # This function internally generates a new module with a preprocessor for a specified nilable type.
+      # The reason for creating a new module is to satisfy the limitation of module attributes.
+      # In order to be used in module attributes, the function must be in the form of `&Mod.fun/arity`.
+
       # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
       nilable_pp_mod = Module.concat([__MODULE__, Nilable, original_mod])
 
