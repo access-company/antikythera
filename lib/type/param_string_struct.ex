@@ -123,7 +123,6 @@ defmodule Antikythera.ParamStringStruct do
 
     @doc false
     defun default(mod :: v[module()]) :: Croma.Result.t(t()) do
-      # The default preprocessors are defined as a capture form, which can be used in module attributes.
       case Module.split(mod) do
         # Preprocessors for Croma built-in types
         ["Croma", "Boolean"] ->
@@ -169,7 +168,12 @@ defmodule Antikythera.ParamStringStruct do
 
           original_mod
           |> default()
-          |> Croma.Result.map(&generate_nilable_preprocessor(&1, original_mod))
+          |> Croma.Result.map(fn pp ->
+            fn
+              nil -> nil
+              s -> pp.(s)
+            end
+          end)
 
         _ ->
           {:error, :no_default_preprocessor}
@@ -213,42 +217,6 @@ defmodule Antikythera.ParamStringStruct do
     defun to_datetime(s :: nil | String.t()) :: DateTime.t() do
       {:ok, dt, _tz_offset} = DateTime.from_iso8601(s)
       dt
-    end
-
-    @doc false
-    defun generate_nilable_preprocessor(original_pp :: t(), original_mod :: v[module()]) :: t() do
-      # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
-      nilable_pp_mod = Module.concat([__MODULE__, Nilable, original_mod])
-
-      nilable_pp_body =
-        quote do
-          @spec parse(nil | String.t()) :: nil | unquote(original_mod).t()
-          def parse(nil), do: nil
-          def parse(s), do: unquote(original_pp).(s)
-        end
-
-      :ok = ensure_module_defined(nilable_pp_mod, nilable_pp_body, Macro.Env.location(__ENV__))
-
-      &nilable_pp_mod.parse/1
-    end
-
-    defunp ensure_module_defined(
-             mod :: v[module()],
-             body :: term(),
-             location :: Macro.Env.t() | keyword()
-           ) :: :ok do
-      if :code.which(mod) == :non_existing do
-        case Agent.start(fn -> nil end, name: mod) do
-          {:ok, _pid} ->
-            Module.create(mod, body, location)
-            :ok
-
-          {:error, _already_started} ->
-            :ok
-        end
-      else
-        :ok
-      end
     end
   end
 
