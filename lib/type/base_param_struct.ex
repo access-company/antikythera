@@ -29,7 +29,7 @@ defmodule Antikythera.BaseParamStruct do
   @typep accept_case_t() :: :snake | :lower_camel | :upper_camel | :capital
   @typep default_value_opt_t() :: Croma.Result.t(term(), :no_default_value)
   @typep field_with_attr_t() ::
-           {atom(), [atom()], module(), nil | preprocessor_t(), default_value_opt_t()}
+           {atom(), [atom()], module(), preprocessor_t(), default_value_opt_t()}
 
   @doc false
   defun compute_default_value(mod :: v[module()]) :: default_value_opt_t() do
@@ -72,16 +72,13 @@ defmodule Antikythera.BaseParamStruct do
   defun preprocess_params(
           struct_mod :: v[module()],
           fields_with_attrs :: list(field_with_attr_t()),
-          params :: params_t(),
-          default_pp :: (module() -> preprocessor_t())
+          params :: params_t()
         ) :: Croma.Result.t(%{required(atom()) => term()}, validate_error_t()) do
     Enum.map(fields_with_attrs, fn {field_name, accepted_field_names, mod, preprocessor,
                                     default_value_opt} ->
       case get_param(params, field_name, accepted_field_names, mod, default_value_opt) do
         {:ok, param} ->
-          pp = if is_nil(preprocessor), do: default_pp.(mod), else: preprocessor
-
-          preprocess_param(param, field_name, mod, pp)
+          preprocess_param(param, field_name, mod, preprocessor)
           |> Croma.Result.map(&{field_name, &1})
 
         {:default, default_value} ->
@@ -286,23 +283,14 @@ defmodule Antikythera.BaseParamStruct do
       {:error, {:invalid_value, [struct_mod]}}
   end
 
-  defmodule Preprocessor do
-    @moduledoc false
-
-    def default(_mod), do: {:error, :no_default_preprocessor}
-  end
-
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
       if opts[:accept_case] not in [nil, :snake, :lower_camel, :upper_camel, :capital] do
         raise ":accept_case option must be one of :snake, :lower_camel, :upper_camel, or :capital"
       end
 
-      @default_pp Keyword.get(
-                    opts,
-                    :default_preprocessor,
-                    &Antikythera.BaseParamStruct.Preprocessor.default/1
-                  )
+      default_pp =
+        Keyword.get(opts, :default_preprocessor, fn _mod -> {:error, :no_default_preprocessor} end)
 
       fields_with_attrs =
         Keyword.fetch!(opts, :fields)
@@ -318,10 +306,12 @@ defmodule Antikythera.BaseParamStruct do
 
           {field_name, {mod, [default: default_value]}}
           when is_atom(field_name) and is_atom(mod) ->
-            {field_name, mod, nil, {:ok, default_value}}
+            {field_name, mod, Croma.Result.get(default_pp.(mod), &Function.identity/1),
+             {:ok, default_value}}
 
           {field_name, mod} when is_atom(field_name) and is_atom(mod) ->
-            {field_name, mod, nil, Antikythera.BaseParamStruct.compute_default_value(mod)}
+            {field_name, mod, Croma.Result.get(default_pp.(mod), &Function.identity/1),
+             Antikythera.BaseParamStruct.compute_default_value(mod)}
         end)
         |> Enum.map(fn {field_name, mod, preprocessor, default_value_opt} ->
           {field_name,
@@ -357,8 +347,7 @@ defmodule Antikythera.BaseParamStruct do
           Antikythera.BaseParamStruct.preprocess_params(
             __MODULE__,
             @base_param_struct_fields_with_attrs,
-            params,
-            fn mod -> @default_pp.(mod) |> Croma.Result.get(&Function.identity/1) end
+            params
           )
           |> Croma.Result.bind(&new/1)
 
