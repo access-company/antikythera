@@ -37,7 +37,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
 
   Functions in this module check the followings in the request parameter:
   - whether required parameters exist in `query`/`header`/`cookie`
-  - whether parameters in `query`/`header`/`cookie` exit in the OpenAPI documents
+  - whether parameters in `query`/`header`/`cookie` exist in the OpenAPI documents
 
   **Note that `path` isn't supported.**
   **Note that these won't check schema in the parameters.**
