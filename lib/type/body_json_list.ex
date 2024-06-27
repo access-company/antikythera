@@ -4,14 +4,14 @@ use Croma
 
 defmodule Antikythera.BodyJsonList do
   @moduledoc """
-  Module for defining a list of JSON objects with a preprocessor function.
+  Module for defining a list of JSON values with a preprocessor function.
 
   This module is designed for request body validation (see `Antikythera.Plug.ParamsValidator` and `Antikythera.BodyJsonStruct`).
   You can define a type-safe list with a preprocessor function.
 
   ## Usage
 
-  To define a list of JSON objects with a preprocessor function, `use` this module in a module.
+  To define a list of JSON values with a preprocessor function, `use` this module in a module.
 
       defmodule Dates do
         use Antikythera.BodyJsonList, elem_module: {Date, &Date.to_iso8601/1}
