@@ -151,20 +151,20 @@ defmodule Antikythera.BodyJsonList do
       @max max
       cond do
         is_nil(@min) and is_nil(@max) ->
-          defguardp valid_length?(_len) when true
+          defguardp is_valid_length(_len) when true
 
         is_nil(@min) ->
-          defguardp valid_length?(len) when len <= @max
+          defguardp is_valid_length(len) when len <= @max
 
         is_nil(@max) ->
-          defguardp valid_length?(len) when @min <= len
+          defguardp is_valid_length(len) when @min <= len
 
         true ->
-          defguardp valid_length?(len) when @min <= len and len <= @max
+          defguardp is_valid_length(len) when @min <= len and len <= @max
       end
 
       defun valid?(value :: term) :: boolean do
-        l when is_list(l) and valid_length?(length(l)) ->
+        l when is_list(l) and is_valid_length(length(l)) ->
           Enum.all?(l, fn v -> Antikythera.BodyJsonList.valid_field?(v, @mod) end)
 
         _ ->
@@ -172,7 +172,7 @@ defmodule Antikythera.BodyJsonList do
       end
 
       defun new(value :: term) :: R.t(t()) do
-        l when is_list(l) and valid_length?(length(l)) ->
+        l when is_list(l) and is_valid_length(length(l)) ->
           Antikythera.BodyJsonList.new_impl(__MODULE__, @mod, l)
 
         _ ->

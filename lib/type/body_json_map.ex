@@ -147,20 +147,20 @@ defmodule Antikythera.BodyJsonMap do
       @max max
       cond do
         is_nil(@min) and is_nil(@max) ->
-          defguardp valid_size?(_size) when true
+          defguardp is_valid_size(_size) when true
 
         is_nil(@min) ->
-          defguardp valid_size?(size) when size <= @max
+          defguardp is_valid_size(size) when size <= @max
 
         is_nil(@max) ->
-          defguardp valid_size?(size) when @min <= size
+          defguardp is_valid_size(size) when @min <= size
 
         true ->
-          defguardp valid_size?(size) when @min <= size and size <= @max
+          defguardp is_valid_size(size) when @min <= size and size <= @max
       end
 
       defun valid?(value :: term) :: boolean do
-        m when is_map(m) and valid_size?(map_size(m)) ->
+        m when is_map(m) and is_valid_size(map_size(m)) ->
           Enum.all?(m, fn {k, v} ->
             is_binary(k) and Antikythera.BodyJsonMap.valid_field?(v, @mod)
           end)
@@ -170,7 +170,7 @@ defmodule Antikythera.BodyJsonMap do
       end
 
       defun new(value :: term) :: R.t(t()) do
-        m when is_map(m) and valid_size?(map_size(m)) ->
+        m when is_map(m) and is_valid_size(map_size(m)) ->
           Antikythera.BodyJsonMap.new_impl(__MODULE__, @mod, m)
 
         _ ->
