@@ -12,46 +12,46 @@ defmodule AntikytheraCore.BaseParamStruct do
 
   alias Croma.Result, as: R
 
-  @type json_value_t() ::
-          boolean()
-          | number()
+  @type json_value_t ::
+          boolean
+          | number
           | String.t()
-          | list(json_value_t())
-          | %{String.t() => json_value_t()}
+          | [json_value_t]
+          | %{String.t() => json_value_t}
 
-  @type params_t() :: %{(atom() | String.t()) => json_value_t()}
-  @type validate_error_reason_t() :: :invalid_value | :value_missing
-  @type validate_error_t() :: {validate_error_reason_t(), list(module() | {module(), atom()})}
+  @type params_t :: %{(atom | String.t()) => json_value_t}
+  @type validate_error_reason_t :: :invalid_value | :value_missing
+  @type validate_error_t :: {validate_error_reason_t, [module | {module, atom}]}
 
-  @typep validatable_t() :: term()
-  @typep preprocessor_t() :: (nil | json_value_t() -> R.t(validatable_t()) | validatable_t())
-  @typep accept_case_t() :: :snake | :lower_camel | :upper_camel | :capital
-  @typep default_value_opt_t() :: R.t(term(), :no_default_value)
-  @typep field_option_t() :: {:default, term()}
-  @typep mod_with_options_t() ::
-           module()
-           | {module(), preprocessor_t()}
-           | {module(), [field_option_t()]}
-           | {module(), preprocessor_t(), [field_option_t()]}
-  @typep field_t() :: {atom(), mod_with_options_t()}
-  @typep field_with_attr_t() ::
-           {atom(), [atom()], module(), preprocessor_t(), default_value_opt_t()}
+  @typep validatable_t :: term
+  @typep preprocessor_t :: (nil | json_value_t -> R.t(validatable_t) | validatable_t)
+  @typep accept_case_t :: :snake | :lower_camel | :upper_camel | :capital
+  @typep default_value_opt_t :: R.t(term, :no_default_value)
+  @typep field_option_t :: {:default, term}
+  @typep mod_with_options_t ::
+           module
+           | {module, preprocessor_t}
+           | {module, [field_option_t]}
+           | {module, preprocessor_t, [field_option_t]}
+  @typep field_t :: {atom, mod_with_options_t}
+  @typep field_with_attr_t ::
+           {atom, [atom], module, preprocessor_t, default_value_opt_t}
 
   @doc false
   defun attach_attributes_to_field(
-          {field_name, mod_with_options} :: field_t(),
-          accept_case :: nil | accept_case_t(),
-          default_pp :: (module() -> R.t(term(), :no_default_preprocessor))
-        ) :: field_with_attr_t() do
+          {field_name, mod_with_options} :: field_t,
+          accept_case :: nil | accept_case_t,
+          default_pp :: (module -> R.t(term, :no_default_preprocessor))
+        ) :: field_with_attr_t do
     accepted_field_names = compute_accepted_field_names(field_name, accept_case)
     {mod, preprocessor, default_value_opt} = extract_mod_and_options(mod_with_options, default_pp)
     {field_name, accepted_field_names, mod, preprocessor, default_value_opt}
   end
 
   defunp extract_mod_and_options(
-           mod_with_options :: mod_with_options_t(),
-           default_pp :: (module() -> R.t(term(), :no_default_preprocessor))
-         ) :: {module(), preprocessor_t(), default_value_opt_t()} do
+           mod_with_options :: mod_with_options_t,
+           default_pp :: (module -> R.t(term, :no_default_preprocessor))
+         ) :: {module, preprocessor_t, default_value_opt_t} do
     {mod, preprocessor, [default: default_value]}, _default_pp
     when is_atom(mod) and is_function(preprocessor, 1) ->
       {mod, preprocessor, {:ok, default_value}}
@@ -66,7 +66,7 @@ defmodule AntikytheraCore.BaseParamStruct do
       {mod, R.get(default_pp.(mod), &Function.identity/1), compute_default_value(mod)}
   end
 
-  defunp compute_default_value(mod :: v[module()]) :: default_value_opt_t() do
+  defunp compute_default_value(mod :: v[module]) :: default_value_opt_t do
     try do
       {:ok, mod.default()}
     rescue
@@ -74,8 +74,9 @@ defmodule AntikytheraCore.BaseParamStruct do
     end
   end
 
-  defunp compute_accepted_field_names(field_name :: atom(), accept_case :: nil | accept_case_t()) ::
-           list(atom()) do
+  defunp compute_accepted_field_names(field_name :: atom, accept_case :: nil | accept_case_t) :: [
+           atom
+         ] do
     field_name, nil when is_atom(field_name) ->
       [field_name]
 
@@ -103,10 +104,10 @@ defmodule AntikytheraCore.BaseParamStruct do
 
   @doc false
   defun preprocess_params(
-          struct_mod :: v[module()],
-          fields_with_attrs :: v[list(field_with_attr_t())],
-          params :: params_t()
-        ) :: R.t(%{required(atom()) => term()}, validate_error_t()) do
+          struct_mod :: v[module],
+          fields_with_attrs :: v[[field_with_attr_t]],
+          params :: params_t
+        ) :: R.t(%{atom => term}, validate_error_t) do
     Enum.map(fields_with_attrs, fn {field_name, accepted_field_names, mod, preprocessor,
                                     default_value_opt} ->
       case get_param(params, field_name, accepted_field_names, mod, default_value_opt) do
@@ -129,12 +130,12 @@ defmodule AntikytheraCore.BaseParamStruct do
   end
 
   defunp get_param(
-           params :: params_t(),
-           field_name :: atom(),
-           accepted_field_names :: [atom()],
-           mod :: module(),
-           default_value_opt :: default_value_opt_t()
-         ) :: R.t(nil | json_value_t(), validate_error_t()) | {:default, term()} do
+           params :: params_t,
+           field_name :: atom,
+           accepted_field_names :: [atom],
+           mod :: module,
+           default_value_opt :: default_value_opt_t
+         ) :: R.t(nil | json_value_t, validate_error_t) | {:default, term} do
     _params, _field_name, [], _mod, {:ok, default_value} ->
       {:default, default_value}
 
@@ -148,8 +149,8 @@ defmodule AntikytheraCore.BaseParamStruct do
       end
   end
 
-  defunp try_get_param(params :: params_t(), field_name :: v[atom()]) ::
-           R.t(nil | json_value_t(), :no_value) do
+  defunp try_get_param(params :: params_t, field_name :: v[atom]) ::
+           R.t(nil | json_value_t, :no_value) do
     field_name_str = Atom.to_string(field_name)
 
     cond do
@@ -160,11 +161,11 @@ defmodule AntikytheraCore.BaseParamStruct do
   end
 
   defunp preprocess_param(
-           param :: nil | json_value_t(),
-           field_name :: v[atom()],
-           mod :: v[module()],
-           preprocessor :: preprocessor_t()
-         ) :: R.t(validatable_t(), validate_error_t()) do
+           param :: nil | json_value_t,
+           field_name :: v[atom],
+           mod :: v[module],
+           preprocessor :: preprocessor_t
+         ) :: R.t(validatable_t, validate_error_t) do
     try do
       case preprocessor.(param) do
         {:ok, v} ->
@@ -186,10 +187,10 @@ defmodule AntikytheraCore.BaseParamStruct do
 
   @doc false
   defun new_impl(
-          struct_mod :: module(),
-          fields_with_attrs :: list(field_with_attr_t()),
-          dict :: term()
-        ) :: R.t(struct(), validate_error_t()) do
+          struct_mod :: module,
+          fields_with_attrs :: [field_with_attr_t],
+          dict :: term
+        ) :: R.t(struct, validate_error_t) do
     struct_mod, fields_with_attrs, dict when is_list(dict) or is_map(dict) ->
       Enum.map(fields_with_attrs, fn {field_name, accepted_field_names, mod, _preprocessor,
                                       default_value_opt} ->
@@ -210,13 +211,12 @@ defmodule AntikytheraCore.BaseParamStruct do
   end
 
   defunp fetch_and_validate_field(
-           dict ::
-             v[list({atom() | String.t(), term()}) | %{required(atom() | String.t()) => term()}],
-           field_name :: v[atom()],
-           accepted_field_names :: v[[atom()]],
-           mod :: v[module()],
-           default_value_opt :: default_value_opt_t() \\ {:error, :no_default_value}
-         ) :: R.t({atom(), term()}, validate_error_t()) do
+           dict :: v[[{atom | String.t(), term}] | %{(atom | String.t()) => term}],
+           field_name :: v[atom],
+           accepted_field_names :: v[[atom]],
+           mod :: v[module],
+           default_value_opt :: default_value_opt_t \\ {:error, :no_default_value}
+         ) :: R.t({atom, term}, validate_error_t) do
     case fetch_from_dict(dict, field_name, accepted_field_names) do
       {:ok, value} ->
         case validate_field(value, mod) do
@@ -236,11 +236,10 @@ defmodule AntikytheraCore.BaseParamStruct do
   end
 
   defunp fetch_from_dict(
-           dict ::
-             list({atom() | String.t(), term()}) | %{required(atom() | String.t()) => term()},
-           key :: atom(),
-           accepted_keys :: [atom()]
-         ) :: {:ok, term()} | :error do
+           dict :: [{atom | String.t(), term}] | %{(atom | String.t()) => term},
+           key :: atom,
+           accepted_keys :: [atom]
+         ) :: {:ok, term} | :error do
     _dict, _key, [] ->
       :error
 
@@ -252,9 +251,9 @@ defmodule AntikytheraCore.BaseParamStruct do
   end
 
   defunp try_fetch_from_dict(
-           dict :: list({atom() | String.t(), term()}) | %{(atom() | String.t()) => term()},
-           key :: atom()
-         ) :: {:ok, term()} | :error do
+           dict :: [{atom | String.t(), term}] | %{(atom | String.t()) => term},
+           key :: atom
+         ) :: {:ok, term} | :error do
     dict, key when is_list(dict) ->
       key_str = Atom.to_string(key)
 
@@ -270,12 +269,12 @@ defmodule AntikytheraCore.BaseParamStruct do
       end
   end
 
-  defunp validate_field(value :: term(), mod :: v[module()]) :: R.t(term(), validate_error_t()) do
+  defunp validate_field(value :: term, mod :: v[module]) :: R.t(term, validate_error_t) do
     if valid_field?(value, mod), do: {:ok, value}, else: {:error, {:invalid_value, [mod]}}
   end
 
   @doc false
-  defun valid_field?(value :: term(), mod :: v[module()]) :: boolean() do
+  defun valid_field?(value :: term, mod :: v[module]) :: boolean do
     if :code.get_mode() == :interactive do
       true = Code.ensure_loaded?(mod)
     end
@@ -288,11 +287,11 @@ defmodule AntikytheraCore.BaseParamStruct do
 
   @doc false
   defun update_impl(
-          s :: struct(),
-          struct_mod :: module(),
-          fields :: [{atom(), [atom()], module()}],
-          dict :: term()
-        ) :: R.t(struct(), validate_error_t()) do
+          s :: struct,
+          struct_mod :: module,
+          fields :: [{atom, [atom], module}],
+          dict :: term
+        ) :: R.t(struct, validate_error_t) do
     s, struct_mod, fields, dict
     when is_struct(s, struct_mod) and (is_list(dict) or is_map(dict)) ->
       Enum.map(fields, fn {field_name, accept_field_names, mod} ->
@@ -353,7 +352,7 @@ defmodule AntikytheraCore.BaseParamStruct do
       use Croma
       use Croma.Struct, opts_for_croma_struct
 
-      defun from_params(params :: term()) :: R.t(t()) do
+      defun from_params(params :: term) :: R.t(t()) do
         params when is_map(params) ->
           AntikytheraCore.BaseParamStruct.preprocess_params(
             __MODULE__,
@@ -366,7 +365,7 @@ defmodule AntikytheraCore.BaseParamStruct do
           {:error, {:invalid_value, [__MODULE__]}}
       end
 
-      defun from_params!(params :: term()) :: t() do
+      defun from_params!(params :: term) :: t() do
         from_params(params) |> R.get!()
       end
 

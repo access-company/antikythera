@@ -60,11 +60,11 @@ defmodule Antikythera.BodyJsonMap do
 
   @doc false
   defun preprocess_params(
-          map_mod :: v[module()],
-          value_mod :: v[module()],
+          map_mod :: v[module],
+          value_mod :: v[module],
           preprocessor :: BodyJsonStruct.Preprocessor.t(),
-          params :: v[map()]
-        ) :: R.t(map(), BaseParamStruct.validate_error_t()) do
+          params :: v[map]
+        ) :: R.t(map, BaseParamStruct.validate_error_t()) do
     Enum.map(params, fn {k, v} ->
       preprocess_value(v, value_mod, preprocessor) |> R.map(&{k, &1})
     end)
@@ -77,9 +77,9 @@ defmodule Antikythera.BodyJsonMap do
 
   defunp preprocess_value(
            value :: BaseParamStruct.json_value_t(),
-           mod :: v[module()],
+           mod :: v[module],
            preprocessor :: BodyJsonStruct.Preprocessor.t()
-         ) :: R.t(term(), BaseParamStruct.validate_error_t()) do
+         ) :: R.t(term, BaseParamStruct.validate_error_t()) do
     try do
       case preprocessor.(value) do
         {:ok, v} ->
@@ -101,8 +101,8 @@ defmodule Antikythera.BodyJsonMap do
   end
 
   @doc false
-  defun new_impl(map_mod :: v[module()], value_mod :: v[module()], value :: v[map()]) ::
-          R.t(map(), BaseParamStruct.validate_error_t()) do
+  defun new_impl(map_mod :: v[module], value_mod :: v[module], value :: v[map]) ::
+          R.t(map, BaseParamStruct.validate_error_t()) do
     Enum.map(value, fn
       {k, v} when is_binary(k) -> validate_field(v, value_mod) |> R.map(&{k, &1})
       _ -> {:error, {:invalid_value, []}}
@@ -118,8 +118,8 @@ defmodule Antikythera.BodyJsonMap do
     end
   end
 
-  defunp validate_field(value :: term(), mod :: v[module()]) ::
-           R.t(term(), BaseParamStruct.validate_error_t()) do
+  defunp validate_field(value :: term, mod :: v[module]) ::
+           R.t(term, BaseParamStruct.validate_error_t()) do
     if valid_field?(value, mod), do: {:ok, value}, else: {:error, {:invalid_value, [mod]}}
   end
 
@@ -141,7 +141,7 @@ defmodule Antikythera.BodyJsonMap do
       @mod mod
       @preprocessor preprocessor
 
-      @type t :: %{required(String.t()) => @mod.t()}
+      @type t :: %{String.t() => @mod.t()}
 
       @min min
       @max max
@@ -159,7 +159,7 @@ defmodule Antikythera.BodyJsonMap do
           defguardp valid_size?(size) when @min <= size and size <= @max
       end
 
-      defun valid?(value :: term()) :: boolean() do
+      defun valid?(value :: term) :: boolean do
         m when is_map(m) and valid_size?(map_size(m)) ->
           Enum.all?(m, fn {k, v} ->
             is_binary(k) and Antikythera.BodyJsonMap.valid_field?(v, @mod)
@@ -169,7 +169,7 @@ defmodule Antikythera.BodyJsonMap do
           false
       end
 
-      defun new(value :: term()) :: R.t(t()) do
+      defun new(value :: term) :: R.t(t()) do
         m when is_map(m) and valid_size?(map_size(m)) ->
           Antikythera.BodyJsonMap.new_impl(__MODULE__, @mod, m)
 
@@ -177,11 +177,11 @@ defmodule Antikythera.BodyJsonMap do
           {:error, {:invalid_value, [__MODULE__]}}
       end
 
-      defun new!(value :: term()) :: t() do
+      defun new!(value :: term) :: t() do
         new(value) |> R.get!()
       end
 
-      defun from_params(params :: term()) :: R.t(t()) do
+      defun from_params(params :: term) :: R.t(t()) do
         m when is_map(m) ->
           Antikythera.BodyJsonMap.preprocess_params(__MODULE__, @mod, @preprocessor, m)
           |> R.bind(&new/1)
@@ -190,16 +190,16 @@ defmodule Antikythera.BodyJsonMap do
           {:error, {:invalid_value, [__MODULE__]}}
       end
 
-      defun from_params!(params :: term()) :: t() do
+      defun from_params!(params :: term) :: t() do
         from_params(params) |> R.get!()
       end
 
       unless is_nil(@min) do
-        defun min_size() :: non_neg_integer(), do: @min
+        defun min_size() :: non_neg_integer, do: @min
       end
 
       unless is_nil(@max) do
-        defun max_size() :: non_neg_integer(), do: @max
+        defun max_size() :: non_neg_integer, do: @max
       end
     end
   end

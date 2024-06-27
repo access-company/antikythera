@@ -141,10 +141,10 @@ defmodule Antikythera.BodyJsonStruct do
   defmodule Preprocessor do
     @moduledoc false
 
-    @type t :: (nil | BaseParamStruct.json_value_t() -> Croma.Result.t() | term())
+    @type t :: (nil | BaseParamStruct.json_value_t() -> Croma.Result.t() | term)
 
     @doc false
-    defun default(mod :: v[module()]) :: Croma.Result.t(t()) do
+    defun default(mod :: v[module]) :: Croma.Result.t(t()) do
       if :code.get_mode() == :interactive do
         true = Code.ensure_loaded?(mod)
       end

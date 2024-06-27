@@ -15,7 +15,7 @@ defmodule AntikytheraCore.BaseParamStructTest do
         param_with_result_preprocessor: {Croma.PosInteger, &__MODULE__.to_integer/1}
       ]
 
-    defun to_integer(v :: v[String.t()]) :: Croma.Result.t(integer()) do
+    defun to_integer(v :: v[String.t()]) :: Croma.Result.t(integer) do
       Croma.Result.try(fn -> String.to_integer(v) end)
     end
   end

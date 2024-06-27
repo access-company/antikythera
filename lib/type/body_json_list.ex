@@ -56,11 +56,11 @@ defmodule Antikythera.BodyJsonList do
 
   @doc false
   defun preprocess_params(
-          list_mod :: v[module()],
-          elem_mod :: v[module()],
+          list_mod :: v[module],
+          elem_mod :: v[module],
           preprocessor :: BodyJsonStruct.Preprocessor.t(),
-          params :: v[list()]
-        ) :: R.t(list(), BaseParamStruct.validate_error_t()) do
+          params :: v[list]
+        ) :: R.t(list, BaseParamStruct.validate_error_t()) do
     Enum.map(params, fn elem -> preprocess_elem(elem, elem_mod, preprocessor) end)
     |> R.sequence()
     |> R.map_error(fn {reason, mods} -> {reason, [list_mod | mods]} end)
@@ -68,9 +68,9 @@ defmodule Antikythera.BodyJsonList do
 
   defunp preprocess_elem(
            elem :: BaseParamStruct.json_value_t(),
-           mod :: v[module()],
+           mod :: v[module],
            preprocessor :: BodyJsonStruct.Preprocessor.t()
-         ) :: R.t(term(), BaseParamStruct.validate_error_t()) do
+         ) :: R.t(term, BaseParamStruct.validate_error_t()) do
     try do
       case preprocessor.(elem) do
         {:ok, v} ->
@@ -92,8 +92,8 @@ defmodule Antikythera.BodyJsonList do
   end
 
   @doc false
-  defun new_impl(list_mod :: v[module()], elem_mod :: v[module()], value :: v[list()]) ::
-          R.t(list(), BaseParamStruct.validate_error_t()) do
+  defun new_impl(list_mod :: v[module], elem_mod :: v[module], value :: v[list]) ::
+          R.t(list, BaseParamStruct.validate_error_t()) do
     Enum.map(value, fn v -> validate_field(v, elem_mod) end)
     |> R.sequence()
     |> case do
@@ -106,8 +106,8 @@ defmodule Antikythera.BodyJsonList do
     end
   end
 
-  defunp validate_field(value :: term(), mod :: v[module()]) ::
-           R.t(term(), BaseParamStruct.validate_error_t()) do
+  defunp validate_field(value :: term, mod :: v[module]) ::
+           R.t(term, BaseParamStruct.validate_error_t()) do
     if valid_field?(value, mod), do: {:ok, value}, else: {:error, {:invalid_value, [mod]}}
   end
 
@@ -116,9 +116,9 @@ defmodule Antikythera.BodyJsonList do
 
   @doc false
   defun extract_preprocessor_or_default(
-          mod :: {module(), BodyJsonStruct.Preprocessor.t()} | module(),
+          mod :: {module, BodyJsonStruct.Preprocessor.t()} | module,
           default :: BodyJsonStruct.Preprocessor.t()
-        ) :: {module(), BodyJsonStruct.Preprocessor.t()} do
+        ) :: {module, BodyJsonStruct.Preprocessor.t()} do
     {mod, preprocessor} = mod_with_preprocessor, _default
     when is_atom(mod) and is_function(preprocessor, 1) ->
       mod_with_preprocessor
@@ -163,7 +163,7 @@ defmodule Antikythera.BodyJsonList do
           defguardp valid_length?(len) when @min <= len and len <= @max
       end
 
-      defun valid?(value :: term()) :: boolean() do
+      defun valid?(value :: term) :: boolean do
         l when is_list(l) and valid_length?(length(l)) ->
           Enum.all?(l, fn v -> Antikythera.BodyJsonList.valid_field?(v, @mod) end)
 
@@ -171,7 +171,7 @@ defmodule Antikythera.BodyJsonList do
           false
       end
 
-      defun new(value :: term()) :: R.t(t()) do
+      defun new(value :: term) :: R.t(t()) do
         l when is_list(l) and valid_length?(length(l)) ->
           Antikythera.BodyJsonList.new_impl(__MODULE__, @mod, l)
 
@@ -179,11 +179,11 @@ defmodule Antikythera.BodyJsonList do
           {:error, {:invalid_value, [__MODULE__]}}
       end
 
-      defun new!(value :: term()) :: t() do
+      defun new!(value :: term) :: t() do
         new(value) |> R.get!()
       end
 
-      defun from_params(params :: term()) :: R.t(t()) do
+      defun from_params(params :: term) :: R.t(t()) do
         params when is_list(params) ->
           Antikythera.BodyJsonList.preprocess_params(__MODULE__, @mod, @preprocessor, params)
           |> R.bind(&new/1)
@@ -192,16 +192,16 @@ defmodule Antikythera.BodyJsonList do
           {:error, {:invalid_value, [__MODULE__]}}
       end
 
-      defun from_params!(params :: term()) :: t() do
+      defun from_params!(params :: term) :: t() do
         from_params(params) |> R.get!()
       end
 
       unless is_nil(@min) do
-        defun min_length() :: non_neg_integer(), do: @min
+        defun min_length() :: non_neg_integer, do: @min
       end
 
       unless is_nil(@max) do
-        defun max_length() :: non_neg_integer(), do: @max
+        defun max_length() :: non_neg_integer, do: @max
       end
     end
   end

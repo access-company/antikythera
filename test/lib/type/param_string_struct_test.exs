@@ -6,7 +6,7 @@ defmodule Antikythera.ParamStringStructTest do
   use Croma.TestCase
   use ExUnitProperties
 
-  defunp croma_builtins_with_generators() :: list({module(), (() -> StreamData.t(term()))}) do
+  defunp croma_builtins_with_generators() :: v[[{module, (() -> StreamData.t(term))}]] do
     [
       {Croma.Boolean, fn -> boolean() end},
       {Croma.Float, fn -> float() end},

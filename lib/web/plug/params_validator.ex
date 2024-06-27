@@ -47,9 +47,9 @@ defmodule Antikythera.Plug.ParamsValidator do
   alias Antikythera.Conn
 
   @type parameter_type_t :: :path_matches | :query_params | :body | :headers | :cookies
-  @type validate_option_t :: {parameter_type_t(), module()}
+  @type validate_option_t :: {parameter_type_t, module}
 
-  defun validate(conn :: v[Conn.t()], opts :: list(validate_option_t())) :: v[Conn.t()] do
+  defun validate(conn :: v[Conn.t()], opts :: v[[validate_option_t]]) :: v[Conn.t()] do
     :ok = validate_plug_options(opts)
 
     conn
@@ -61,7 +61,7 @@ defmodule Antikythera.Plug.ParamsValidator do
     |> validate_cookies(opts[:cookies])
   end
 
-  defunp validate_plug_options(opts :: v[list(validate_option_t())]) :: :ok do
+  defunp validate_plug_options(opts :: v[[validate_option_t]]) :: :ok do
     Enum.reduce_while(opts, {:ok, []}, fn {param_type, mod}, {:ok, validated_param_types} ->
       if :code.get_mode() == :interactive do
         true = Code.ensure_loaded?(mod)
@@ -109,7 +109,7 @@ defmodule Antikythera.Plug.ParamsValidator do
 
   for param_type <- [:path_matches, :query_params, :body, :headers, :cookies] do
     # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
-    defunp unquote(:"validate_#{param_type}")(conn :: Conn.t(), validator :: nil | module()) ::
+    defunp unquote(:"validate_#{param_type}")(conn :: Conn.t(), validator :: nil | module) ::
              Conn.t() do
       conn, nil ->
         conn
@@ -123,8 +123,8 @@ defmodule Antikythera.Plug.ParamsValidator do
 
   defunp validate_params(
            conn :: v[Conn.t()],
-           param_type :: parameter_type_t(),
-           validator :: v[module()],
+           param_type :: parameter_type_t,
+           validator :: v[module],
            params :: AntikytheraCore.BaseParamStruct.params_t()
          ) :: v[Conn.t()] do
     case validator.from_params(params) do
