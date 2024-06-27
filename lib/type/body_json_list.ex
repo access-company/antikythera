@@ -115,18 +115,16 @@ defmodule Antikythera.BodyJsonList do
   defdelegate valid_field?(value, mod), to: BaseParamStruct
 
   @doc false
-  defun extract_preprocessor_or_default(
-          mod :: {module, BodyJsonStruct.Preprocessor.t()} | module,
-          default :: BodyJsonStruct.Preprocessor.t()
-        ) :: {module, BodyJsonStruct.Preprocessor.t()} do
-    {mod, preprocessor} = mod_with_preprocessor, _default
+  defun extract_preprocessor_or_default(mod :: {module, BodyJsonStruct.Preprocessor.t()} | module) ::
+          {module, BodyJsonStruct.Preprocessor.t()} do
+    {mod, preprocessor} = mod_with_preprocessor
     when is_atom(mod) and is_function(preprocessor, 1) ->
       mod_with_preprocessor
 
-    mod, default when is_atom(mod) ->
+    mod when is_atom(mod) ->
       case BodyJsonStruct.Preprocessor.default(mod) do
         {:ok, preprocessor} -> {mod, preprocessor}
-        {:error, :no_default_preprocessor} -> {mod, default}
+        {:error, :no_default_preprocessor} -> {mod, &Function.identity/1}
       end
   end
 
@@ -136,11 +134,7 @@ defmodule Antikythera.BodyJsonList do
             min: opts[:min_length],
             max: opts[:max_length]
           ] do
-      {mod, preprocessor} =
-        Antikythera.BodyJsonList.extract_preprocessor_or_default(
-          elem_module,
-          &Function.identity/1
-        )
+      {mod, preprocessor} = Antikythera.BodyJsonList.extract_preprocessor_or_default(elem_module)
 
       @mod mod
       @preprocessor preprocessor

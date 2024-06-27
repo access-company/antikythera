@@ -132,11 +132,7 @@ defmodule Antikythera.BodyJsonMap do
             min: opts[:min_size],
             max: opts[:max_size]
           ] do
-      {mod, preprocessor} =
-        Antikythera.BodyJsonList.extract_preprocessor_or_default(
-          value_module,
-          &Function.identity/1
-        )
+      {mod, preprocessor} = Antikythera.BodyJsonList.extract_preprocessor_or_default(value_module)
 
       @mod mod
       @preprocessor preprocessor
