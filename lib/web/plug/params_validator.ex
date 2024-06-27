@@ -10,24 +10,31 @@ defmodule Antikythera.Plug.ParamsValidator do
 
   First, generate parameter validation models using `Antikythera.ParamStringStruct` or `Antikythera.BodyJsonStruct`.
 
-      defmodule MyQueryParams do
-        use Antikythera.ParamStringStruct,
-          fields: [
-            item_id: Croma.PosInteger
-          ]
-      end
+  ```elixir
+  defmodule MyQueryParams do
+    use Antikythera.ParamStringStruct,
+      fields: [
+        item_id: Croma.PosInteger
+      ]
+  end
+  ```
 
   Then, you can install this plug to validate parameters, as shown below.
 
-      plug Antikythera.Plug.ParamsValidator, :validate, query_params: MyQueryParams
+  ```elixir
+  plug Antikythera.Plug.ParamsValidator, :validate, query_params: MyQueryParams
+  ```
 
-  In the controller function, you can access the validated parameters as follows.
+  In the controller function, you can access the validated parameters via `conn.assigns.validated`.
+  For example, to access the validated query parameters, use the following code.
 
-      defun index(conn :: v[Conn.t()]) :: Conn.t() do
-        %MyQueryParams{item_id: item_id} = conn.assigns.validated.query_params
+  ```elixir
+  defun index(conn :: v[Conn.t()]) :: Conn.t() do
+    %MyQueryParams{item_id: item_id} = conn.assigns.validated.query_params
 
-        # Use item_id
-      end
+    # Use item_id
+  end
+  ```
 
   ## Supported parameter types
 
@@ -41,7 +48,9 @@ defmodule Antikythera.Plug.ParamsValidator do
 
   Multiple parameter types can be validated at once.
 
-      plug Antikythera.Plug.ParamsValidator, :validate, path_matches: MyPathParams, body: MyBody
+  ```elixir
+  plug Antikythera.Plug.ParamsValidator, :validate, path_matches: MyPathParams, body: MyBody
+  ```
   """
 
   alias Antikythera.Conn

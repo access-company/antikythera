@@ -7,20 +7,23 @@ defmodule Antikythera.BodyJsonStruct do
   Module to define a struct that represents the JSON body of a request.
 
   This module is designed for request body validation (see `Antikythera.Plug.ParamsValidator`).
+  If you are looking for a module for validation of other parameters, see `Antikythera.ParamStringStruct`.
 
   ## Usage
 
   To define a struct that represents the JSON body of a request, `use` this module in a module.
   Each field in the struct is defined by the `:fields` option, as shown below.
 
-      defmodule MyBody1 do
-        use Antikythera.BodyJsonStruct,
-          fields: [
-            item_id: Croma.PosInteger,
-            tags: Croma.TypeGen.list_of(Croma.String),
-            expires_at: {DateTime, &Antikythera.ParamStringStruct.Preprocessor.to_datetime/1}
-          ]
-      end
+  ```elixir
+  defmodule MyBody1 do
+    use Antikythera.BodyJsonStruct,
+      fields: [
+        item_id: Croma.PosInteger,
+        tags: Croma.TypeGen.list_of(Croma.String),
+        expires_at: {DateTime, &Antikythera.ParamStringStruct.Preprocessor.to_datetime/1}
+      ]
+  end
+  ```
 
   The type of each field must be one of
 
@@ -35,27 +38,31 @@ defmodule Antikythera.BodyJsonStruct do
 
   Now you can validate a JSON request body using the struct in a controller module.
 
-      use Croma
+  ```elixir
+  use Croma
 
-      defmodule YourGear.Controller.Example do
-        use Antikythera.Controller
+  defmodule YourGear.Controller.Example do
+    use Antikythera.Controller
 
-        plug Antikythera.Plug.ParamsValidator, :validate, body: MyBody1
+    plug Antikythera.Plug.ParamsValidator, :validate, body: MyBody1
 
-        defun some_action(%Conn{assigns: %{validated: validated}} = conn) :: Conn.t() do
-          # You can access the validated JSON body as a `MyBody1` struct via `validated.body`.
-          # ...
-        end
-      end
+    defun some_action(%Conn{assigns: %{validated: validated}} = conn) :: Conn.t() do
+      # You can access the validated JSON body as a `MyBody1` struct via `validated.body`.
+      # ...
+    end
+  end
+  ```
 
   When a request with the following JSON body is sent to the controller, it is validated by `MyBody1`.
   The `expires_at` field is converted to a `DateTime` struct by the `Antikythera.ParamStringStruct.Preprocessor.to_datetime/1` preprocessor.
 
-      {
-        "item_id": 123,
-        "tags": ["tag1", "tag2"],
-        "expires_at": "2025-01-01T00:00:00Z"
-      }
+  ```json
+  {
+    "item_id": 123,
+    "tags": ["tag1", "tag2"],
+    "expires_at": "2025-01-01T00:00:00Z"
+  }
+  ```
 
   ### Exported functions
 
@@ -75,31 +82,35 @@ defmodule Antikythera.BodyJsonStruct do
 
   You can define a nested struct using another struct as a field type without a preprocessor.
 
-      defmodule MyBody2 do
-        defmodule GeoLocation do
-          use Antikythera.BodyJsonStruct,
-            fields: [
-              latitude: Croma.Float,
-              longitude: Croma.Float
-            ]
-        end
+  ```elixir
+  defmodule MyBody2 do
+    defmodule GeoLocation do
+      use Antikythera.BodyJsonStruct,
+        fields: [
+          latitude: Croma.Float,
+          longitude: Croma.Float
+        ]
+    end
 
-        use Antikythera.BodyJsonStruct,
-          fields: [
-            item_id: Croma.PosInteger,
-            location: GeoLocation
-          ]
-      end
+    use Antikythera.BodyJsonStruct,
+      fields: [
+        item_id: Croma.PosInteger,
+        location: GeoLocation
+      ]
+  end
+  ```
 
   In the example above, `MyBody2` allows the following JSON body and the `location` field is converted to a `GeoLocation` struct.
 
-      {
-        "item_id": 123,
-        "location": {
-          "latitude": 35.699793,
-          "longitude": 139.774113
-        }
-      }
+  ```json
+  {
+    "item_id": 123,
+    "location": {
+      "latitude": 35.699793,
+      "longitude": 139.774113
+    }
+  }
+  ```
 
   ### Optional field and default value
 
@@ -108,13 +119,15 @@ defmodule Antikythera.BodyJsonStruct do
 
   By setting the `:default` option, you can set a default value when the field is missing in the JSON body.
 
-      defmodule MyBody3 do
-        use Antikythera.BodyJsonStruct,
-          fields: [
-            timezone: {Croma.String, [default: "UTC"]},
-            date: {Date, &Date.from_iso8601/1, [default: ~D[1970-01-01]]}
-          ]
-      end
+  ```elixir
+  defmodule MyBody3 do
+    use Antikythera.BodyJsonStruct,
+      fields: [
+        timezone: {Croma.String, [default: "UTC"]},
+        date: {Date, &Date.from_iso8601/1, [default: ~D[1970-01-01]]}
+      ]
+  end
+  ```
 
   In the example above, `MyBody3` allows the empty JSON object body `{}`, with each field set to the default value.
 
@@ -123,17 +136,19 @@ defmodule Antikythera.BodyJsonStruct do
   By default, the field name in the struct and the key name in the JSON body are the same.
   You can specify a different key name scheme using the `:accept_case` option, which is the same as that of `Croma.Struct`.
 
-      defmodule MyBody4 do
-        use Antikythera.BodyJsonStruct,
-          accept_case: :lower_camel,
-          fields: [
-            long_name_field: Croma.String  # The key name "longNameField" is also accepted in the JSON body.
-          ]
-      end
+  ```elixir
+  defmodule MyBody4 do
+    use Antikythera.BodyJsonStruct,
+      accept_case: :lower_camel,
+      fields: [
+        long_name_field: Croma.String  # The key name "longNameField" is also accepted in the JSON body.
+      ]
+  end
+  ```
 
   ## Limitations
 
-  The preprocessor must be specified as a capture form like `&module.function/1`.
+  The preprocessor must be a captured named function like `&module.function/1` to be used in module attributes internally.
   """
 
   defmacro __using__(opts) do

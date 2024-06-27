@@ -7,24 +7,27 @@ defmodule Antikythera.ParamStringStruct do
   Module to define a struct that represents a string parameter.
 
   This module is designed for parameter validation (see `Antikythera.Plug.ParamsValidator`).
+  If you are looking for a module for validation of JSON request bodies, see `Antikythera.BodyJsonStruct`.
 
   ## Usage
 
   To define a struct that represents a string parameter, `use` this module in a module.
   Each field in the struct is defined by the `:fields` option, as shown below.
 
-      defmodule MyQueryParams1 do
-        defmodule Limit do
-          use Croma.SubtypeOfInt, min: 1, max: 1_000
-        end
+  ```elixir
+  defmodule MyQueryParams1 do
+    defmodule Limit do
+      use Croma.SubtypeOfInt, min: 1, max: 1_000
+    end
 
-        use Antikythera.ParamStringStruct,
-          fields: [
-            item_id: Croma.PosInteger,
-            since: DateTime,
-            limit: {Limit, &String.to_integer/1}
-          ]
-      end
+    use Antikythera.ParamStringStruct,
+      fields: [
+        item_id: Croma.PosInteger,
+        since: DateTime,
+        limit: {Limit, &String.to_integer/1}
+      ]
+  end
+  ```
 
   The type of each field must be one of
 
@@ -43,23 +46,27 @@ defmodule Antikythera.ParamStringStruct do
   Now you can validate string parameters using the struct in a controller module.
   The example below shows the validation of query parameters using `MyQueryParams1`.
 
-      use Croma
+  ```elixir
+  use Croma
 
-      defmodule YourGear.Controller.Example do
-        use Antikythera.Controller
+  defmodule YourGear.Controller.Example do
+    use Antikythera.Controller
 
-        plug Antikythera.Plug.ParamsValidator, :validate, query_params: MyQueryParams1
+    plug Antikythera.Plug.ParamsValidator, :validate, query_params: MyQueryParams1
 
-        defun some_action(%Conn{assigns: %{validated: validated}} = conn) :: Conn.t() do
-          # You can access the validated query parameters as a `MyQueryParams1` struct via `validated.query_params`.
-          # ...
-        end
-      end
+    defun some_action(%Conn{assigns: %{validated: validated}} = conn) :: Conn.t() do
+      # You can access the validated query parameters as a `MyQueryParams1` struct via `validated.query_params`.
+      # ...
+    end
+  end
+  ```
 
   When a request with the following query parameters is sent to the controller, it is validated by `MyQueryParams1`.
   Each parameter is converted to the specified type by the preprocessor.
 
-      /example?item_id=123&since=2025-01-01T00:00:00Z&limit=100
+  ```
+  /example?item_id=123&since=2025-01-01T00:00:00Z&limit=100
+  ```
 
   You can also validate path parameters(`:path_matches`), headers, and cookies in the same way.
 
@@ -84,15 +91,17 @@ defmodule Antikythera.ParamStringStruct do
 
   By setting the `:default` option, you can set a default value when the parameter field is not included in the request.
 
-      defmodule MyQueryParams2 do
-        use Antikythera.ParamStringStruct,
-          fields: [
-            q: Croma.TypeGen.nilable(Croma.String),
-            date: {Date, [default: ~D[1970-01-01]]}
-          ]
-      end
+  ```elixir
+  defmodule MyQueryParams2 do
+    use Antikythera.ParamStringStruct,
+      fields: [
+        q: Croma.TypeGen.nilable(Croma.String),
+        date: {Date, [default: ~D[1970-01-01]]}
+      ]
+  end
 
-      plug Antikythera.Plug.ParamsValidator, :validate, query_params: MyQueryParams2
+  plug Antikythera.Plug.ParamsValidator, :validate, query_params: MyQueryParams2
+  ```
 
   In the example above, the request without any query parameters is allowed; `q` is set to `nil`, and `date` is set to `~D[1970-01-01]`.
 
@@ -101,17 +110,19 @@ defmodule Antikythera.ParamStringStruct do
   By default, the field name in the struct is the same as the parameter key.
   You can specify a different key name scheme using the `:accept_case` option, which is the same as that of `Croma.Struct`.
 
-      defmodule MyQueryParams3 do
-        use Antikythera.ParamStringStruct,
-          accept_case: :lower_camel,
-          fields: [
-            item_id: Croma.PosInteger  # The parameter key name "itemId" is also accepted.
-          ]
-      end
+  ```elixir
+  defmodule MyQueryParams3 do
+    use Antikythera.ParamStringStruct,
+      accept_case: :lower_camel,
+      fields: [
+        item_id: Croma.PosInteger  # The parameter key name "itemId" is also accepted.
+      ]
+  end
+  ```
 
   ## Limitations
 
-  The preprocessor must be specified as a capture form like `&module.function/1`.
+  The preprocessor must be a captured named function like `&Module.function/arity` to be used in module attributes internally.
   """
 
   defmodule Preprocessor do
