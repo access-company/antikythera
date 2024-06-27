@@ -6,7 +6,7 @@ defmodule Antikythera.BodyJsonMap do
   @moduledoc """
   Module for defining a JSON object as a map with a preprocessor function.
 
-  This module is designed for request body validation (see `Antikythera.Plug.ParamsValidator` and `Antikythera.BodyJsonStruct`).
+  This module is designed for request body validation (see `Antikythera.Plug.ParamsValidator` and `Antikythera.BodyJsonCommon`).
   You can define a type-safe map with a preprocessor function.
 
   ## Usage
@@ -20,7 +20,7 @@ defmodule Antikythera.BodyJsonMap do
   You can use it for request body validation in a controller module, as shown below.
 
       defmodule MyBody do
-        use Antikythera.BodyJsonStruct, fields: [dates: DateMap]
+        use Antikythera.BodyJsonCommon, fields: [dates: DateMap]
       end
 
       plug Antikythera.Plug.ParamsValidator, :validate, body: MyBody
@@ -56,13 +56,13 @@ defmodule Antikythera.BodyJsonMap do
   """
   alias Croma.Result, as: R
   alias AntikytheraCore.BaseParamStruct
-  alias Antikythera.BodyJsonStruct
+  alias AntikytheraCore.BodyJsonCommon
 
   @doc false
   defun preprocess_params(
           map_mod :: v[module],
           value_mod :: v[module],
-          preprocessor :: BodyJsonStruct.Preprocessor.t(),
+          preprocessor :: BodyJsonCommon.Preprocessor.t(),
           params :: v[map]
         ) :: R.t(map, BaseParamStruct.validate_error_t()) do
     Enum.map(params, fn {k, v} ->
@@ -78,7 +78,7 @@ defmodule Antikythera.BodyJsonMap do
   defunp preprocess_value(
            value :: BaseParamStruct.json_value_t(),
            mod :: v[module],
-           preprocessor :: BodyJsonStruct.Preprocessor.t()
+           preprocessor :: BodyJsonCommon.Preprocessor.t()
          ) :: R.t(term, BaseParamStruct.validate_error_t()) do
     try do
       case preprocessor.(value) do
@@ -132,7 +132,8 @@ defmodule Antikythera.BodyJsonMap do
             min: opts[:min_size],
             max: opts[:max_size]
           ] do
-      {mod, preprocessor} = Antikythera.BodyJsonList.extract_preprocessor_or_default(value_module)
+      {mod, preprocessor} =
+        AntikytheraCore.BodyJsonCommon.extract_preprocessor_or_default(value_module)
 
       @mod mod
       @preprocessor preprocessor

@@ -6,7 +6,7 @@ defmodule Antikythera.BodyJsonList do
   @moduledoc """
   Module for defining a list of JSON values with a preprocessor function.
 
-  This module is designed for request body validation (see `Antikythera.Plug.ParamsValidator` and `Antikythera.BodyJsonStruct`).
+  This module is designed for request body validation (see `Antikythera.Plug.ParamsValidator` and `Antikythera.BodyJsonCommon`).
   You can define a type-safe list with a preprocessor function.
 
   ## Usage
@@ -20,7 +20,7 @@ defmodule Antikythera.BodyJsonList do
   You can use it for request body validation in a controller module, as shown below.
 
       defmodule MyBody do
-        use Antikythera.BodyJsonStruct, fields: [dates: Dates]
+        use Antikythera.BodyJsonCommon, fields: [dates: Dates]
       end
 
       plug Antikythera.Plug.ParamsValidator, :validate, body: MyBody
@@ -52,13 +52,13 @@ defmodule Antikythera.BodyJsonList do
   """
   alias Croma.Result, as: R
   alias AntikytheraCore.BaseParamStruct
-  alias Antikythera.BodyJsonStruct
+  alias AntikytheraCore.BodyJsonCommon
 
   @doc false
   defun preprocess_params(
           list_mod :: v[module],
           elem_mod :: v[module],
-          preprocessor :: BodyJsonStruct.Preprocessor.t(),
+          preprocessor :: BodyJsonCommon.Preprocessor.t(),
           params :: v[list]
         ) :: R.t(list, BaseParamStruct.validate_error_t()) do
     Enum.map(params, fn elem -> preprocess_elem(elem, elem_mod, preprocessor) end)
@@ -69,7 +69,7 @@ defmodule Antikythera.BodyJsonList do
   defunp preprocess_elem(
            elem :: BaseParamStruct.json_value_t(),
            mod :: v[module],
-           preprocessor :: BodyJsonStruct.Preprocessor.t()
+           preprocessor :: BodyJsonCommon.Preprocessor.t()
          ) :: R.t(term, BaseParamStruct.validate_error_t()) do
     try do
       case preprocessor.(elem) do
@@ -114,27 +114,14 @@ defmodule Antikythera.BodyJsonList do
   @doc false
   defdelegate valid_field?(value, mod), to: BaseParamStruct
 
-  @doc false
-  defun extract_preprocessor_or_default(mod :: {module, BodyJsonStruct.Preprocessor.t()} | module) ::
-          {module, BodyJsonStruct.Preprocessor.t()} do
-    {mod, preprocessor} = mod_with_preprocessor
-    when is_atom(mod) and is_function(preprocessor, 1) ->
-      mod_with_preprocessor
-
-    mod when is_atom(mod) ->
-      case BodyJsonStruct.Preprocessor.default(mod) do
-        {:ok, preprocessor} -> {mod, preprocessor}
-        {:error, :no_default_preprocessor} -> {mod, &Function.identity/1}
-      end
-  end
-
   defmacro __using__(opts) do
     quote bind_quoted: [
             elem_module: opts[:elem_module],
             min: opts[:min_length],
             max: opts[:max_length]
           ] do
-      {mod, preprocessor} = Antikythera.BodyJsonList.extract_preprocessor_or_default(elem_module)
+      {mod, preprocessor} =
+        AntikytheraCore.BodyJsonCommon.extract_preprocessor_or_default(elem_module)
 
       @mod mod
       @preprocessor preprocessor
