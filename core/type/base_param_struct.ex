@@ -27,11 +27,46 @@ defmodule AntikytheraCore.BaseParamStruct do
   @typep preprocessor_t() :: (nil | json_value_t() -> R.t(validatable_t()) | validatable_t())
   @typep accept_case_t() :: :snake | :lower_camel | :upper_camel | :capital
   @typep default_value_opt_t() :: R.t(term(), :no_default_value)
+  @typep field_option_t() :: {:default, term()}
+  @typep mod_with_options_t() ::
+           module()
+           | {module(), preprocessor_t()}
+           | {module(), [field_option_t()]}
+           | {module(), preprocessor_t(), [field_option_t()]}
+  @typep field_t() :: {atom(), mod_with_options_t()}
   @typep field_with_attr_t() ::
            {atom(), [atom()], module(), preprocessor_t(), default_value_opt_t()}
 
   @doc false
-  defun compute_default_value(mod :: v[module()]) :: default_value_opt_t() do
+  defun attach_attributes_to_field(
+          {field_name, mod_with_options} :: field_t(),
+          accept_case :: nil | accept_case_t(),
+          default_pp :: (module() -> R.t(term(), :no_default_preprocessor))
+        ) :: field_with_attr_t() do
+    accepted_field_names = compute_accepted_field_names(field_name, accept_case)
+    {mod, preprocessor, default_value_opt} = extract_mod_and_options(mod_with_options, default_pp)
+    {field_name, accepted_field_names, mod, preprocessor, default_value_opt}
+  end
+
+  defunp extract_mod_and_options(
+           mod_with_options :: mod_with_options_t(),
+           default_pp :: (module() -> R.t(term(), :no_default_preprocessor))
+         ) :: {module(), preprocessor_t(), default_value_opt_t()} do
+    {mod, preprocessor, [default: default_value]}, _default_pp
+    when is_atom(mod) and is_function(preprocessor, 1) ->
+      {mod, preprocessor, {:ok, default_value}}
+
+    {mod, preprocessor}, _default_pp when is_atom(mod) and is_function(preprocessor, 1) ->
+      {mod, preprocessor, compute_default_value(mod)}
+
+    {mod, [default: default_value]}, default_pp when is_atom(mod) ->
+      {mod, R.get(default_pp.(mod), &Function.identity/1), {:ok, default_value}}
+
+    mod, default_pp when is_atom(mod) ->
+      {mod, R.get(default_pp.(mod), &Function.identity/1), compute_default_value(mod)}
+  end
+
+  defunp compute_default_value(mod :: v[module()]) :: default_value_opt_t() do
     try do
       {:ok, mod.default()}
     rescue
@@ -39,9 +74,8 @@ defmodule AntikytheraCore.BaseParamStruct do
     end
   end
 
-  @doc false
-  defun compute_accepted_field_names(field_name :: atom(), accept_case :: nil | accept_case_t()) ::
-          list(atom()) do
+  defunp compute_accepted_field_names(field_name :: atom(), accept_case :: nil | accept_case_t()) ::
+           list(atom()) do
     field_name, nil when is_atom(field_name) ->
       [field_name]
 
@@ -290,31 +324,13 @@ defmodule AntikytheraCore.BaseParamStruct do
 
       fields_with_attrs =
         Keyword.fetch!(opts, :fields)
-        |> Enum.map(fn
-          {field_name, {mod, preprocessor, [default: default_value]}}
-          when is_atom(field_name) and is_atom(mod) and is_function(preprocessor, 1) ->
-            {field_name, mod, preprocessor, {:ok, default_value}}
-
-          {field_name, {mod, preprocessor}}
-          when is_atom(field_name) and is_atom(mod) and is_function(preprocessor, 1) ->
-            {field_name, mod, preprocessor,
-             AntikytheraCore.BaseParamStruct.compute_default_value(mod)}
-
-          {field_name, {mod, [default: default_value]}}
-          when is_atom(field_name) and is_atom(mod) ->
-            {field_name, mod, R.get(default_pp.(mod), &Function.identity/1), {:ok, default_value}}
-
-          {field_name, mod} when is_atom(field_name) and is_atom(mod) ->
-            {field_name, mod, R.get(default_pp.(mod), &Function.identity/1),
-             AntikytheraCore.BaseParamStruct.compute_default_value(mod)}
-        end)
-        |> Enum.map(fn {field_name, mod, preprocessor, default_value_opt} ->
-          {field_name,
-           AntikytheraCore.BaseParamStruct.compute_accepted_field_names(
-             field_name,
-             opts[:accept_case]
-           ), mod, preprocessor, default_value_opt}
-        end)
+        |> Enum.map(
+          &AntikytheraCore.BaseParamStruct.attach_attributes_to_field(
+            &1,
+            opts[:accept_case],
+            default_pp
+          )
+        )
 
       fields =
         Enum.map(fields_with_attrs, fn {field_name, _field_names, mod, _preprocessor,
