@@ -61,7 +61,7 @@ defmodule Antikythera.Plug.ParamsValidator do
     |> validate_cookies(opts[:cookies])
   end
 
-  defunp validate_plug_options(opts :: list(validate_option_t())) :: :ok do
+  defunp validate_plug_options(opts :: v[list(validate_option_t())]) :: :ok do
     Enum.reduce_while(opts, {:ok, []}, fn {param_type, mod}, {:ok, validated_param_types} ->
       if :code.get_mode() == :interactive do
         true = Code.ensure_loaded?(mod)

@@ -56,10 +56,10 @@ defmodule Antikythera.BodyJsonList do
 
   @doc false
   defun preprocess_params(
-          list_mod :: module(),
-          elem_mod :: module(),
+          list_mod :: v[module()],
+          elem_mod :: v[module()],
           preprocessor :: BodyJsonStruct.Preprocessor.t(),
-          params :: list()
+          params :: v[list()]
         ) :: Croma.Result.t(list(), BaseParamStruct.validate_error_t()) do
     Enum.map(params, fn elem -> preprocess_elem(elem, elem_mod, preprocessor) end)
     |> Croma.Result.sequence()
@@ -68,7 +68,7 @@ defmodule Antikythera.BodyJsonList do
 
   defunp preprocess_elem(
            elem :: BaseParamStruct.json_value_t(),
-           mod :: module(),
+           mod :: v[module()],
            preprocessor :: BodyJsonStruct.Preprocessor.t()
          ) :: Croma.Result.t(term(), BaseParamStruct.validate_error_t()) do
     try do
@@ -92,7 +92,7 @@ defmodule Antikythera.BodyJsonList do
   end
 
   @doc false
-  defun new_impl(list_mod :: module(), elem_mod :: module(), value :: list()) ::
+  defun new_impl(list_mod :: v[module()], elem_mod :: v[module()], value :: v[list()]) ::
           Croma.Result.t(list(), BaseParamStruct.validate_error_t()) do
     Enum.map(value, fn v -> validate_field(v, elem_mod) end)
     |> Croma.Result.sequence()

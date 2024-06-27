@@ -71,7 +71,7 @@ defmodule Antikythera.BaseParamStruct do
   @doc false
   defun preprocess_params(
           struct_mod :: v[module()],
-          fields_with_attrs :: list(field_with_attr_t()),
+          fields_with_attrs :: v[list(field_with_attr_t())],
           params :: params_t()
         ) :: Croma.Result.t(%{required(atom()) => term()}, validate_error_t()) do
     Enum.map(fields_with_attrs, fn {field_name, accepted_field_names, mod, preprocessor,
@@ -115,7 +115,7 @@ defmodule Antikythera.BaseParamStruct do
       end
   end
 
-  defunp try_get_param(params :: params_t(), field_name :: atom()) ::
+  defunp try_get_param(params :: params_t(), field_name :: v[atom()]) ::
            Croma.Result.t(nil | json_value_t(), :no_value) do
     field_name_str = Atom.to_string(field_name)
 
@@ -128,8 +128,8 @@ defmodule Antikythera.BaseParamStruct do
 
   defunp preprocess_param(
            param :: nil | json_value_t(),
-           field_name :: atom(),
-           mod :: module(),
+           field_name :: v[atom()],
+           mod :: v[module()],
            preprocessor :: preprocessor_t()
          ) :: Croma.Result.t(validatable_t(), validate_error_t()) do
     try do
@@ -179,7 +179,7 @@ defmodule Antikythera.BaseParamStruct do
 
   defunp fetch_and_validate_field(
            dict ::
-             list({atom() | String.t(), term()}) | %{required(atom() | String.t()) => term()},
+             v[list({atom() | String.t(), term()}) | %{required(atom() | String.t()) => term()}],
            field_name :: v[atom()],
            accepted_field_names :: v[[atom()]],
            mod :: v[module()],

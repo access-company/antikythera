@@ -59,10 +59,10 @@ defmodule Antikythera.BodyJsonMap do
 
   @doc false
   defun preprocess_params(
-          map_mod :: module(),
-          value_mod :: module(),
+          map_mod :: v[module()],
+          value_mod :: v[module()],
           preprocessor :: BodyJsonStruct.Preprocessor.t(),
-          params :: map()
+          params :: v[map()]
         ) ::
           Croma.Result.t(map(), BaseParamStruct.validate_error_t()) do
     Enum.map(params, fn {k, v} ->
@@ -77,7 +77,7 @@ defmodule Antikythera.BodyJsonMap do
 
   defunp preprocess_value(
            value :: BaseParamStruct.json_value_t(),
-           mod :: module(),
+           mod :: v[module()],
            preprocessor :: BodyJsonStruct.Preprocessor.t()
          ) ::
            Croma.Result.t(term(), BaseParamStruct.validate_error_t()) do
@@ -102,7 +102,7 @@ defmodule Antikythera.BodyJsonMap do
   end
 
   @doc false
-  defun new_impl(map_mod :: module(), value_mod :: module(), value :: map()) ::
+  defun new_impl(map_mod :: v[module()], value_mod :: v[module()], value :: v[map()]) ::
           Croma.Result.t(map(), BaseParamStruct.validate_error_t()) do
     Enum.map(value, fn
       {k, v} when is_binary(k) -> validate_field(v, value_mod) |> Croma.Result.map(&{k, &1})
@@ -119,7 +119,7 @@ defmodule Antikythera.BodyJsonMap do
     end
   end
 
-  defunp validate_field(value :: term(), mod :: module()) ::
+  defunp validate_field(value :: term(), mod :: v[module()]) ::
            Croma.Result.t(term(), BaseParamStruct.validate_error_t()) do
     if valid_field?(value, mod), do: {:ok, value}, else: {:error, {:invalid_value, [mod]}}
   end
