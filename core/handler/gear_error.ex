@@ -58,7 +58,7 @@ defmodule AntikytheraCore.Handler.GearError do
   defun parameter_validation_error(
           conn :: v[Conn.t()],
           parameter_type :: Antikythera.Plug.ParamsValidator.parameter_type_t(),
-          reason :: Antikythera.BaseParamStruct.validate_error_t()
+          reason :: AntikytheraCore.BaseParamStruct.validate_error_t()
         ) :: v[Conn.t()] do
     invoke_error_handler(
       conn,
@@ -72,7 +72,7 @@ defmodule AntikytheraCore.Handler.GearError do
 
   defunp create_default_parameter_validation_error_message(
            parameter_type :: Antikythera.Plug.ParamsValidator.parameter_type_t(),
-           {error_reason, mods} :: Antikythera.BaseParamStruct.validate_error_t()
+           {error_reason, mods} :: AntikytheraCore.BaseParamStruct.validate_error_t()
          ) :: v[String.t()] do
     field_path =
       Enum.flat_map(mods, fn

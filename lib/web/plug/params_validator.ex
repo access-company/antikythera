@@ -125,7 +125,7 @@ defmodule Antikythera.Plug.ParamsValidator do
            conn :: v[Conn.t()],
            param_type :: parameter_type_t(),
            validator :: v[module()],
-           params :: Antikythera.BaseParamStruct.params_t()
+           params :: AntikytheraCore.BaseParamStruct.params_t()
          ) :: v[Conn.t()] do
     case validator.from_params(params) do
       {:ok, validated_params} ->

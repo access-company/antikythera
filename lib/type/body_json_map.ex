@@ -54,7 +54,7 @@ defmodule Antikythera.BodyJsonMap do
   - `min_size`: The minimum size of the map. If not specified, there is no minimum size.
   - `max_size`: The maximum size of the map. If not specified, there is no maximum size.
   """
-  alias Antikythera.BaseParamStruct
+  alias AntikytheraCore.BaseParamStruct
   alias Antikythera.BodyJsonStruct
 
   @doc false

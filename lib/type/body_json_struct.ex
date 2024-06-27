@@ -136,7 +136,7 @@ defmodule Antikythera.BodyJsonStruct do
   The preprocessor must be specified as a capture form like `&module.function/1`.
   """
 
-  alias Antikythera.BaseParamStruct
+  alias AntikytheraCore.BaseParamStruct
 
   defmodule Preprocessor do
     @moduledoc false
@@ -166,7 +166,7 @@ defmodule Antikythera.BodyJsonStruct do
           &Antikythera.BodyJsonStruct.Preprocessor.default/1
         )
 
-      use Antikythera.BaseParamStruct, opts_with_default_preprocessor
+      use AntikytheraCore.BaseParamStruct, opts_with_default_preprocessor
     end
   end
 end

@@ -265,7 +265,7 @@ defmodule Antikythera.ParamStringStruct do
           &Antikythera.ParamStringStruct.Preprocessor.default/1
         )
 
-      use Antikythera.BaseParamStruct, opts_with_default_preprocessor
+      use AntikytheraCore.BaseParamStruct, opts_with_default_preprocessor
     end
   end
 end

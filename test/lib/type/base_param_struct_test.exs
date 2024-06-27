@@ -2,7 +2,7 @@
 
 use Croma
 
-defmodule Antikythera.BaseParamStructTest do
+defmodule AntikytheraCore.BaseParamStructTest do
   use Croma.TestCase
 
   defmodule TestStruct1 do

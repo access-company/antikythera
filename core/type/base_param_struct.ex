@@ -2,14 +2,12 @@
 
 use Croma
 
-defmodule Antikythera.BaseParamStruct do
+defmodule AntikytheraCore.BaseParamStruct do
   @moduledoc """
   Module to define a struct that represents abstract parameters.
 
   This module is a base module of `Antikythera.ParamStringStruct` and `Antikythera.BodyJsonStruct`.
   See their respective module documents for details.
-
-  It is not recommended to use this module directly from gears.
   """
 
   @type json_value_t() ::
@@ -302,7 +300,7 @@ defmodule Antikythera.BaseParamStruct do
           {field_name, {mod, preprocessor}}
           when is_atom(field_name) and is_atom(mod) and is_function(preprocessor, 1) ->
             {field_name, mod, preprocessor,
-             Antikythera.BaseParamStruct.compute_default_value(mod)}
+             AntikytheraCore.BaseParamStruct.compute_default_value(mod)}
 
           {field_name, {mod, [default: default_value]}}
           when is_atom(field_name) and is_atom(mod) ->
@@ -311,11 +309,11 @@ defmodule Antikythera.BaseParamStruct do
 
           {field_name, mod} when is_atom(field_name) and is_atom(mod) ->
             {field_name, mod, Croma.Result.get(default_pp.(mod), &Function.identity/1),
-             Antikythera.BaseParamStruct.compute_default_value(mod)}
+             AntikytheraCore.BaseParamStruct.compute_default_value(mod)}
         end)
         |> Enum.map(fn {field_name, mod, preprocessor, default_value_opt} ->
           {field_name,
-           Antikythera.BaseParamStruct.compute_accepted_field_names(
+           AntikytheraCore.BaseParamStruct.compute_accepted_field_names(
              field_name,
              opts[:accept_case]
            ), mod, preprocessor, default_value_opt}
@@ -344,7 +342,7 @@ defmodule Antikythera.BaseParamStruct do
 
       defun from_params(params :: term()) :: Croma.Result.t(t()) do
         params when is_map(params) ->
-          Antikythera.BaseParamStruct.preprocess_params(
+          AntikytheraCore.BaseParamStruct.preprocess_params(
             __MODULE__,
             @base_param_struct_fields_with_attrs,
             params
@@ -361,7 +359,7 @@ defmodule Antikythera.BaseParamStruct do
 
       # Override
       def new(dict) do
-        Antikythera.BaseParamStruct.new_impl(
+        AntikytheraCore.BaseParamStruct.new_impl(
           __MODULE__,
           @base_param_struct_fields_with_attrs,
           dict
@@ -370,7 +368,7 @@ defmodule Antikythera.BaseParamStruct do
 
       # Override
       def update(s, dict) do
-        Antikythera.BaseParamStruct.update_impl(
+        AntikytheraCore.BaseParamStruct.update_impl(
           s,
           __MODULE__,
           @base_param_struct_fields_with_accept_fields,
@@ -381,7 +379,7 @@ defmodule Antikythera.BaseParamStruct do
       # Override
       def valid?(%__MODULE__{} = s) do
         Enum.all?(@base_param_struct_fields, fn {field_name, mod} ->
-          Map.fetch!(s, field_name) |> Antikythera.BaseParamStruct.valid_field?(mod)
+          Map.fetch!(s, field_name) |> AntikytheraCore.BaseParamStruct.valid_field?(mod)
         end)
       end
 

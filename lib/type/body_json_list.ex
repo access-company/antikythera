@@ -51,7 +51,7 @@ defmodule Antikythera.BodyJsonList do
   - `max_length`: The maximum length of the list. If not specified, there is no maximum length.
   """
 
-  alias Antikythera.BaseParamStruct
+  alias AntikytheraCore.BaseParamStruct
   alias Antikythera.BodyJsonStruct
 
   @doc false
