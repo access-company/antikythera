@@ -70,7 +70,7 @@ defmodule Antikythera.BodyJsonMap do
     end)
     |> R.sequence()
     |> case do
-      {:ok, kv_list} -> {:ok, Enum.into(kv_list, %{})}
+      {:ok, kv_list} -> {:ok, Map.new(kv_list)}
       {:error, {reason, mods}} -> {:error, {reason, [map_mod | mods]}}
     end
   end
@@ -110,7 +110,7 @@ defmodule Antikythera.BodyJsonMap do
     |> R.sequence()
     |> case do
       {:ok, kv_list} ->
-        {:ok, Enum.into(kv_list, %{})}
+        {:ok, Map.new(kv_list)}
 
       {:error, {reason, mods}}
       when reason in [:invalid_value, :value_missing] and is_list(mods) ->

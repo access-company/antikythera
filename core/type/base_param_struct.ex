@@ -123,7 +123,7 @@ defmodule AntikytheraCore.BaseParamStruct do
     end)
     |> R.sequence()
     |> case do
-      {:ok, kvs} -> {:ok, Enum.into(kvs, %{})}
+      {:ok, kvs} -> {:ok, Map.new(kvs)}
       {:error, {reason, mods}} -> {:error, {reason, [struct_mod | mods]}}
     end
   end
