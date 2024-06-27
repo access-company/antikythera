@@ -50,7 +50,7 @@ defmodule Antikythera.BodyJsonList do
   - `min_length`: The minimum length of the list. If not specified, there is no minimum length.
   - `max_length`: The maximum length of the list. If not specified, there is no maximum length.
   """
-
+  alias Croma.Result, as: R
   alias AntikytheraCore.BaseParamStruct
   alias Antikythera.BodyJsonStruct
 
@@ -60,17 +60,17 @@ defmodule Antikythera.BodyJsonList do
           elem_mod :: v[module()],
           preprocessor :: BodyJsonStruct.Preprocessor.t(),
           params :: v[list()]
-        ) :: Croma.Result.t(list(), BaseParamStruct.validate_error_t()) do
+        ) :: R.t(list(), BaseParamStruct.validate_error_t()) do
     Enum.map(params, fn elem -> preprocess_elem(elem, elem_mod, preprocessor) end)
-    |> Croma.Result.sequence()
-    |> Croma.Result.map_error(fn {reason, mods} -> {reason, [list_mod | mods]} end)
+    |> R.sequence()
+    |> R.map_error(fn {reason, mods} -> {reason, [list_mod | mods]} end)
   end
 
   defunp preprocess_elem(
            elem :: BaseParamStruct.json_value_t(),
            mod :: v[module()],
            preprocessor :: BodyJsonStruct.Preprocessor.t()
-         ) :: Croma.Result.t(term(), BaseParamStruct.validate_error_t()) do
+         ) :: R.t(term(), BaseParamStruct.validate_error_t()) do
     try do
       case preprocessor.(elem) do
         {:ok, v} ->
@@ -93,9 +93,9 @@ defmodule Antikythera.BodyJsonList do
 
   @doc false
   defun new_impl(list_mod :: v[module()], elem_mod :: v[module()], value :: v[list()]) ::
-          Croma.Result.t(list(), BaseParamStruct.validate_error_t()) do
+          R.t(list(), BaseParamStruct.validate_error_t()) do
     Enum.map(value, fn v -> validate_field(v, elem_mod) end)
-    |> Croma.Result.sequence()
+    |> R.sequence()
     |> case do
       {:ok, _} = result ->
         result
@@ -107,7 +107,7 @@ defmodule Antikythera.BodyJsonList do
   end
 
   defunp validate_field(value :: term(), mod :: v[module()]) ::
-           Croma.Result.t(term(), BaseParamStruct.validate_error_t()) do
+           R.t(term(), BaseParamStruct.validate_error_t()) do
     if valid_field?(value, mod), do: {:ok, value}, else: {:error, {:invalid_value, [mod]}}
   end
 
@@ -171,7 +171,7 @@ defmodule Antikythera.BodyJsonList do
           false
       end
 
-      defun new(value :: term()) :: Croma.Result.t(t()) do
+      defun new(value :: term()) :: R.t(t()) do
         l when is_list(l) and valid_length?(length(l)) ->
           Antikythera.BodyJsonList.new_impl(__MODULE__, @mod, l)
 
@@ -180,20 +180,20 @@ defmodule Antikythera.BodyJsonList do
       end
 
       defun new!(value :: term()) :: t() do
-        new(value) |> Croma.Result.get!()
+        new(value) |> R.get!()
       end
 
-      defun from_params(params :: term()) :: Croma.Result.t(t()) do
+      defun from_params(params :: term()) :: R.t(t()) do
         params when is_list(params) ->
           Antikythera.BodyJsonList.preprocess_params(__MODULE__, @mod, @preprocessor, params)
-          |> Croma.Result.bind(&new/1)
+          |> R.bind(&new/1)
 
         _ ->
           {:error, {:invalid_value, [__MODULE__]}}
       end
 
       defun from_params!(params :: term()) :: t() do
-        from_params(params) |> Croma.Result.get!()
+        from_params(params) |> R.get!()
       end
 
       unless is_nil(@min) do

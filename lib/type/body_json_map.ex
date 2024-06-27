@@ -54,6 +54,7 @@ defmodule Antikythera.BodyJsonMap do
   - `min_size`: The minimum size of the map. If not specified, there is no minimum size.
   - `max_size`: The maximum size of the map. If not specified, there is no maximum size.
   """
+  alias Croma.Result, as: R
   alias AntikytheraCore.BaseParamStruct
   alias Antikythera.BodyJsonStruct
 
@@ -63,12 +64,11 @@ defmodule Antikythera.BodyJsonMap do
           value_mod :: v[module()],
           preprocessor :: BodyJsonStruct.Preprocessor.t(),
           params :: v[map()]
-        ) ::
-          Croma.Result.t(map(), BaseParamStruct.validate_error_t()) do
+        ) :: R.t(map(), BaseParamStruct.validate_error_t()) do
     Enum.map(params, fn {k, v} ->
-      preprocess_value(v, value_mod, preprocessor) |> Croma.Result.map(&{k, &1})
+      preprocess_value(v, value_mod, preprocessor) |> R.map(&{k, &1})
     end)
-    |> Croma.Result.sequence()
+    |> R.sequence()
     |> case do
       {:ok, kv_list} -> {:ok, Enum.into(kv_list, %{})}
       {:error, {reason, mods}} -> {:error, {reason, [map_mod | mods]}}
@@ -79,8 +79,7 @@ defmodule Antikythera.BodyJsonMap do
            value :: BaseParamStruct.json_value_t(),
            mod :: v[module()],
            preprocessor :: BodyJsonStruct.Preprocessor.t()
-         ) ::
-           Croma.Result.t(term(), BaseParamStruct.validate_error_t()) do
+         ) :: R.t(term(), BaseParamStruct.validate_error_t()) do
     try do
       case preprocessor.(value) do
         {:ok, v} ->
@@ -103,12 +102,12 @@ defmodule Antikythera.BodyJsonMap do
 
   @doc false
   defun new_impl(map_mod :: v[module()], value_mod :: v[module()], value :: v[map()]) ::
-          Croma.Result.t(map(), BaseParamStruct.validate_error_t()) do
+          R.t(map(), BaseParamStruct.validate_error_t()) do
     Enum.map(value, fn
-      {k, v} when is_binary(k) -> validate_field(v, value_mod) |> Croma.Result.map(&{k, &1})
+      {k, v} when is_binary(k) -> validate_field(v, value_mod) |> R.map(&{k, &1})
       _ -> {:error, {:invalid_value, []}}
     end)
-    |> Croma.Result.sequence()
+    |> R.sequence()
     |> case do
       {:ok, kv_list} ->
         {:ok, Enum.into(kv_list, %{})}
@@ -120,7 +119,7 @@ defmodule Antikythera.BodyJsonMap do
   end
 
   defunp validate_field(value :: term(), mod :: v[module()]) ::
-           Croma.Result.t(term(), BaseParamStruct.validate_error_t()) do
+           R.t(term(), BaseParamStruct.validate_error_t()) do
     if valid_field?(value, mod), do: {:ok, value}, else: {:error, {:invalid_value, [mod]}}
   end
 
@@ -170,7 +169,7 @@ defmodule Antikythera.BodyJsonMap do
           false
       end
 
-      defun new(value :: term()) :: Croma.Result.t(t()) do
+      defun new(value :: term()) :: R.t(t()) do
         m when is_map(m) and valid_size?(map_size(m)) ->
           Antikythera.BodyJsonMap.new_impl(__MODULE__, @mod, m)
 
@@ -179,20 +178,20 @@ defmodule Antikythera.BodyJsonMap do
       end
 
       defun new!(value :: term()) :: t() do
-        new(value) |> Croma.Result.get!()
+        new(value) |> R.get!()
       end
 
-      defun from_params(params :: term()) :: Croma.Result.t(t()) do
+      defun from_params(params :: term()) :: R.t(t()) do
         m when is_map(m) ->
           Antikythera.BodyJsonMap.preprocess_params(__MODULE__, @mod, @preprocessor, m)
-          |> Croma.Result.bind(&new/1)
+          |> R.bind(&new/1)
 
         _ ->
           {:error, {:invalid_value, [__MODULE__]}}
       end
 
       defun from_params!(params :: term()) :: t() do
-        from_params(params) |> Croma.Result.get!()
+        from_params(params) |> R.get!()
       end
 
       unless is_nil(@min) do
