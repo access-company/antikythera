@@ -100,6 +100,7 @@ defmodule Antikythera.Mixfile do
       {:jason, "1.2.2"},
       {:gettext, "0.17.1"},
       {:croma, "0.11.3"},
+      {:ex_json_schema, "0.7.4"},
 
       # tools
       {:exsync, "0.3.0", [only: :dev]},
@@ -110,6 +111,7 @@ defmodule Antikythera.Mixfile do
       {:meck, "0.9.2", [only: :test]},
       {:excoveralls, "0.17.1", [only: :test]},
       {:stream_data, "0.6.0", [only: :test]},
+      {:yaml_elixir, "2.9.0", [only: :test]},
       # as a websocket client implementation to use during test (including upgrade_compatibility_test)
       # 1.4.0 requires OTP 21 or later
       {:websocket_client, "1.3.0", [only: :test]},
@@ -150,7 +152,9 @@ defmodule Antikythera.Mixfile do
       # credo, exsync and mix_test_watch
       {:file_system, "0.2.10", [indirect: true, only: :dev]},
       # dialyxir
-      {:erlex, "0.2.6", [indirect: true, only: :dev]}
+      {:erlex, "0.2.6", [indirect: true, only: :dev]},
+      # yaml_elixir
+      {:yamerl, "0.10.0", [indirect: true, only: :test]}
     ]
   end
 
