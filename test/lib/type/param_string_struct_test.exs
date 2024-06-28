@@ -100,7 +100,7 @@ defmodule Antikythera.ParamStringStructTest do
     end
   end
 
-  defmodule TestStruct1 do
+  defmodule TestParamStringStruct do
     use ParamStringStruct,
       fields: [
         param_boolean: Croma.Boolean,
@@ -136,7 +136,7 @@ defmodule Antikythera.ParamStringStructTest do
       }
 
       assert {:ok,
-              %TestStruct1{
+              %TestParamStringStruct{
                 param_boolean: true,
                 param_float: 1.0,
                 param_integer: 1,
@@ -149,7 +149,7 @@ defmodule Antikythera.ParamStringStructTest do
                 param_datetime: ~U[2024-01-31T15:00:00Z],
                 param_naive_datetime: ~N[2024-02-01T00:00:00],
                 param_time: ~T[00:00:00]
-              }} = TestStruct1.from_params(params)
+              }} = TestParamStringStruct.from_params(params)
     end
 
     test "should return invalid value error if a parameter is invalid" do
@@ -187,8 +187,8 @@ defmodule Antikythera.ParamStringStructTest do
 
           field_name_atom = String.to_existing_atom(field_name)
 
-          assert {:error, {:invalid_value, [TestStruct1, {_type, ^field_name_atom}]}} =
-                   TestStruct1.from_params(params)
+          assert {:error, {:invalid_value, [TestParamStringStruct, {_type, ^field_name_atom}]}} =
+                   TestParamStringStruct.from_params(params)
         end)
       end)
     end
@@ -228,8 +228,8 @@ defmodule Antikythera.ParamStringStructTest do
 
         field_name_atom = String.to_existing_atom(field_name)
 
-        assert {:error, {:value_missing, [TestStruct1, {_type, ^field_name_atom}]}} =
-                 TestStruct1.from_params(params)
+        assert {:error, {:value_missing, [TestParamStringStruct, {_type, ^field_name_atom}]}} =
+                 TestParamStringStruct.from_params(params)
       end)
     end
   end

@@ -5,7 +5,7 @@ use Croma
 defmodule Antikythera.BodyJsonStructTest do
   use Croma.TestCase
 
-  defmodule TestStruct1 do
+  defmodule TestStructOfNestedStructField do
     defmodule NestedStruct do
       use BodyJsonStruct,
         fields: [
@@ -27,8 +27,10 @@ defmodule Antikythera.BodyJsonStructTest do
         }
       }
 
-      assert {:ok, %TestStruct1{param_object: %TestStruct1.NestedStruct{param_pos_int: 1}}} =
-               TestStruct1.from_params(params)
+      assert {:ok,
+              %TestStructOfNestedStructField{
+                param_object: %TestStructOfNestedStructField.NestedStruct{param_pos_int: 1}
+              }} = TestStructOfNestedStructField.from_params(params)
     end
 
     test "should return invalid value error when a field of a nested struct is invalid" do
@@ -41,10 +43,10 @@ defmodule Antikythera.BodyJsonStructTest do
       assert {:error,
               {:invalid_value,
                [
-                 TestStruct1,
-                 {TestStruct1.NestedStruct, :param_object},
+                 TestStructOfNestedStructField,
+                 {TestStructOfNestedStructField.NestedStruct, :param_object},
                  {Croma.PosInteger, :param_pos_int}
-               ]}} = TestStruct1.from_params(params)
+               ]}} = TestStructOfNestedStructField.from_params(params)
     end
 
     test "should return value missing error when a field of a nested struct is missing" do
@@ -55,14 +57,14 @@ defmodule Antikythera.BodyJsonStructTest do
       assert {:error,
               {:value_missing,
                [
-                 TestStruct1,
-                 {TestStruct1.NestedStruct, :param_object},
+                 TestStructOfNestedStructField,
+                 {TestStructOfNestedStructField.NestedStruct, :param_object},
                  {Croma.PosInteger, :param_pos_int}
-               ]}} = TestStruct1.from_params(params)
+               ]}} = TestStructOfNestedStructField.from_params(params)
     end
   end
 
-  defmodule TestStruct2 do
+  defmodule TestStructOfListAndMap do
     defmodule TestList do
       use Antikythera.BodyJsonList, elem_module: Croma.PosInteger
     end
@@ -86,8 +88,10 @@ defmodule Antikythera.BodyJsonStructTest do
       }
 
       assert {:ok,
-              %TestStruct2{param_list: [1, 2, 3], param_map: %{"a" => 1, "b" => 2, "c" => 3}}} =
-               TestStruct2.from_params(params)
+              %TestStructOfListAndMap{
+                param_list: [1, 2, 3],
+                param_map: %{"a" => 1, "b" => 2, "c" => 3}
+              }} = TestStructOfListAndMap.from_params(params)
     end
 
     test "should return invalid value error when an element of a list is invalid" do
@@ -99,10 +103,10 @@ defmodule Antikythera.BodyJsonStructTest do
       assert {:error,
               {:invalid_value,
                [
-                 TestStruct2,
-                 {TestStruct2.TestList, :param_list},
+                 TestStructOfListAndMap,
+                 {TestStructOfListAndMap.TestList, :param_list},
                  Croma.PosInteger
-               ]}} = TestStruct2.from_params(params)
+               ]}} = TestStructOfListAndMap.from_params(params)
     end
 
     test "should return invalid value error when a value of a map is invalid" do
@@ -114,10 +118,10 @@ defmodule Antikythera.BodyJsonStructTest do
       assert {:error,
               {:invalid_value,
                [
-                 TestStruct2,
-                 {TestStruct2.TestMap, :param_map},
+                 TestStructOfListAndMap,
+                 {TestStructOfListAndMap.TestMap, :param_map},
                  Croma.PosInteger
-               ]}} = TestStruct2.from_params(params)
+               ]}} = TestStructOfListAndMap.from_params(params)
     end
   end
 end

@@ -3,9 +3,10 @@
 use Croma
 
 defmodule AntikytheraCore.BaseParamStructTest do
+  alias AntikytheraCore.BaseParamStructTest.TestStructOfVariousFieldTypes
   use Croma.TestCase
 
-  defmodule TestStruct1 do
+  defmodule TestStructOfVariousFieldTypes do
     use BaseParamStruct,
       fields: [
         param_croma_builtin: Croma.PosInteger,
@@ -20,44 +21,43 @@ defmodule AntikytheraCore.BaseParamStructTest do
     end
   end
 
+  @valid_fields_for_test_struct_of_various_field_types_1 %{
+    param_croma_builtin: 1,
+    param_datetime_related: ~D[1970-01-01],
+    param_nilable: 1,
+    param_with_throwable_preprocessor: 1,
+    param_with_result_preprocessor: 1
+  }
+  @valid_fields_for_test_struct_of_various_field_types_2 %{
+    param_croma_builtin: 1,
+    param_datetime_related: ~D[1970-01-01],
+    param_nilable: nil,
+    param_with_throwable_preprocessor: 1,
+    param_with_result_preprocessor: 1
+  }
+  @valid_params_for_test_struct_of_various_field_types_1 %{
+    "param_croma_builtin" => 1,
+    "param_datetime_related" => ~D[1970-01-01],
+    "param_nilable" => 1,
+    "param_with_throwable_preprocessor" => "1",
+    "param_with_result_preprocessor" => "1"
+  }
+  @valid_params_for_test_struct_of_various_field_types_2 %{
+    "param_croma_builtin" => 1,
+    "param_datetime_related" => ~D[1970-01-01],
+    "param_with_throwable_preprocessor" => "1",
+    "param_with_result_preprocessor" => "1"
+  }
+
   describe "new/1 of a struct module based on BaseParamStruct" do
     test "should return :ok with a struct if all fields are valid" do
       [
-        {
-          %TestStruct1{
-            param_croma_builtin: 1,
-            param_datetime_related: ~D[1970-01-01],
-            param_nilable: 1,
-            param_with_throwable_preprocessor: 1,
-            param_with_result_preprocessor: 1
-          },
-          %{
-            param_croma_builtin: 1,
-            param_datetime_related: ~D[1970-01-01],
-            param_nilable: 1,
-            param_with_throwable_preprocessor: 1,
-            param_with_result_preprocessor: 1
-          }
-        },
-        {
-          %TestStruct1{
-            param_croma_builtin: 1,
-            param_datetime_related: ~D[1970-01-01],
-            param_nilable: nil,
-            param_with_throwable_preprocessor: 1,
-            param_with_result_preprocessor: 1
-          },
-          %{
-            param_croma_builtin: 1,
-            param_datetime_related: ~D[1970-01-01],
-            param_nilable: nil,
-            param_with_throwable_preprocessor: 1,
-            param_with_result_preprocessor: 1
-          }
-        }
+        @valid_fields_for_test_struct_of_various_field_types_1,
+        @valid_fields_for_test_struct_of_various_field_types_2
       ]
-      |> Enum.each(fn {expected_struct, valid_params} ->
-        assert {:ok, ^expected_struct} = TestStruct1.new(valid_params)
+      |> Enum.each(fn valid_fields ->
+        expected_struct = struct(TestStructOfVariousFieldTypes, valid_fields)
+        assert {:ok, ^expected_struct} = TestStructOfVariousFieldTypes.new(valid_fields)
       end)
     end
 
@@ -73,45 +73,32 @@ defmodule AntikytheraCore.BaseParamStructTest do
         Enum.each(invalid_values, fn invalid_value ->
           params =
             Map.put(
-              %{
-                param_croma_builtin: 1,
-                param_datetime_related: ~D[1970-01-01],
-                param_nilable: 1,
-                param_with_throwable_preprocessor: 1,
-                param_with_result_preprocessor: 1
-              },
+              @valid_fields_for_test_struct_of_various_field_types_1,
               field,
               invalid_value
             )
 
-          assert {:error, {:invalid_value, [TestStruct1, {_type, ^field}]}} =
-                   TestStruct1.new(params)
+          assert {:error, {:invalid_value, [TestStructOfVariousFieldTypes, {_type, ^field}]}} =
+                   TestStructOfVariousFieldTypes.new(params)
         end)
       end)
     end
 
     test "should return value missing error if a field is missing" do
-      valid_params = %{
-        param_croma_builtin: 1,
-        param_datetime_related: ~D[1970-01-01],
-        param_nilable: 1,
-        param_with_throwable_preprocessor: 1,
-        param_with_result_preprocessor: 1
-      }
-
-      Map.keys(valid_params)
+      Map.keys(@valid_fields_for_test_struct_of_various_field_types_1)
+      # Reject the param_nilable field because it allows empty value
       |> Enum.reject(&(&1 == :param_nilable))
       |> Enum.each(fn field ->
-        params = Map.delete(valid_params, field)
+        params = Map.delete(@valid_fields_for_test_struct_of_various_field_types_1, field)
 
-        assert {:error, {:value_missing, [TestStruct1, {_type, ^field}]}} =
-                 TestStruct1.new(params)
+        assert {:error, {:value_missing, [TestStructOfVariousFieldTypes, {_type, ^field}]}} =
+                 TestStructOfVariousFieldTypes.new(params)
       end)
     end
 
     test "should return :ok with a struct if a field is missing but it is nilable" do
-      assert {:ok, %TestStruct1{param_nilable: nil}} =
-               TestStruct1.new(%{
+      assert {:ok, %TestStructOfVariousFieldTypes{param_nilable: nil}} =
+               TestStructOfVariousFieldTypes.new(%{
                  param_croma_builtin: 1,
                  param_datetime_related: ~D[1970-01-01],
                  param_with_throwable_preprocessor: 1,
@@ -124,39 +111,22 @@ defmodule AntikytheraCore.BaseParamStructTest do
     test "should return :ok with a struct if all fields are valid" do
       [
         {
-          %TestStruct1{
-            param_croma_builtin: 1,
-            param_datetime_related: ~D[1970-01-01],
-            param_nilable: 1,
-            param_with_throwable_preprocessor: 1,
-            param_with_result_preprocessor: 1
-          },
-          %{
-            "param_croma_builtin" => 1,
-            "param_datetime_related" => ~D[1970-01-01],
-            "param_nilable" => 1,
-            "param_with_throwable_preprocessor" => "1",
-            "param_with_result_preprocessor" => "1"
-          }
+          struct(
+            TestStructOfVariousFieldTypes,
+            @valid_fields_for_test_struct_of_various_field_types_1
+          ),
+          @valid_params_for_test_struct_of_various_field_types_1
         },
         {
-          %TestStruct1{
-            param_croma_builtin: 1,
-            param_datetime_related: ~D[1970-01-01],
-            param_nilable: nil,
-            param_with_throwable_preprocessor: 1,
-            param_with_result_preprocessor: 1
-          },
-          %{
-            "param_croma_builtin" => 1,
-            "param_datetime_related" => ~D[1970-01-01],
-            "param_with_throwable_preprocessor" => "1",
-            "param_with_result_preprocessor" => "1"
-          }
+          struct(
+            TestStructOfVariousFieldTypes,
+            @valid_fields_for_test_struct_of_various_field_types_2
+          ),
+          @valid_params_for_test_struct_of_various_field_types_2
         }
       ]
       |> Enum.each(fn {expected_struct, valid_params} ->
-        assert {:ok, ^expected_struct} = TestStruct1.from_params(valid_params)
+        assert {:ok, ^expected_struct} = TestStructOfVariousFieldTypes.from_params(valid_params)
       end)
     end
 
@@ -172,41 +142,27 @@ defmodule AntikytheraCore.BaseParamStructTest do
         Enum.each(invalid_values, fn invalid_value ->
           params =
             Map.put(
-              %{
-                "param_croma_builtin" => 1,
-                "param_datetime_related" => ~D[1970-01-01],
-                "param_nilable" => 1,
-                "param_with_throwable_preprocessor" => "1",
-                "param_with_result_preprocessor" => "1"
-              },
+              @valid_params_for_test_struct_of_various_field_types_1,
               Atom.to_string(field),
               invalid_value
             )
 
-          assert {:error, {:invalid_value, [TestStruct1, {_type, ^field}]}} =
-                   TestStruct1.from_params(params)
+          assert {:error, {:invalid_value, [TestStructOfVariousFieldTypes, {_type, ^field}]}} =
+                   TestStructOfVariousFieldTypes.from_params(params)
         end)
       end)
     end
 
     test "should return value missing error if a field is missing" do
-      valid_params = %{
-        "param_croma_builtin" => 1,
-        "param_datetime_related" => ~D[1970-01-01],
-        "param_nilable" => 1,
-        "param_with_throwable_preprocessor" => "1",
-        "param_with_result_preprocessor" => "1"
-      }
-
-      Map.keys(valid_params)
+      Map.keys(@valid_params_for_test_struct_of_various_field_types_1)
       # Reject the param_nilable field because it allows empty value
       |> Enum.reject(&(&1 == "param_nilable"))
       |> Enum.each(fn field ->
-        params = Map.delete(valid_params, field)
+        params = Map.delete(@valid_params_for_test_struct_of_various_field_types_1, field)
         field_atom = String.to_existing_atom(field)
 
-        assert {:error, {:value_missing, [TestStruct1, {_type, ^field_atom}]}} =
-                 TestStruct1.from_params(params)
+        assert {:error, {:value_missing, [TestStructOfVariousFieldTypes, {_type, ^field_atom}]}} =
+                 TestStructOfVariousFieldTypes.from_params(params)
       end)
     end
   end
@@ -215,7 +171,7 @@ defmodule AntikytheraCore.BaseParamStructTest do
     test "should return :ok and an updated struct if all given fields are valid" do
       [
         {
-          %TestStruct1{
+          %TestStructOfVariousFieldTypes{
             param_croma_builtin: 2,
             param_datetime_related: ~D[1970-01-01],
             param_nilable: 1,
@@ -227,7 +183,7 @@ defmodule AntikytheraCore.BaseParamStructTest do
           }
         },
         {
-          %TestStruct1{
+          %TestStructOfVariousFieldTypes{
             param_croma_builtin: 1,
             param_datetime_related: ~D[1970-01-02],
             param_nilable: 1,
@@ -239,7 +195,7 @@ defmodule AntikytheraCore.BaseParamStructTest do
           }
         },
         {
-          %TestStruct1{
+          %TestStructOfVariousFieldTypes{
             param_croma_builtin: 1,
             param_datetime_related: ~D[1970-01-01],
             param_nilable: nil,
@@ -251,7 +207,7 @@ defmodule AntikytheraCore.BaseParamStructTest do
           }
         },
         {
-          %TestStruct1{
+          %TestStructOfVariousFieldTypes{
             param_croma_builtin: 1,
             param_datetime_related: ~D[1970-01-01],
             param_nilable: 1,
@@ -263,7 +219,7 @@ defmodule AntikytheraCore.BaseParamStructTest do
           }
         },
         {
-          %TestStruct1{
+          %TestStructOfVariousFieldTypes{
             param_croma_builtin: 1,
             param_datetime_related: ~D[1970-01-01],
             param_nilable: 1,
@@ -277,8 +233,8 @@ defmodule AntikytheraCore.BaseParamStructTest do
       ]
       |> Enum.each(fn {expected_struct, valid_params} ->
         assert {:ok, ^expected_struct} =
-                 TestStruct1.update(
-                   %TestStruct1{
+                 TestStructOfVariousFieldTypes.update(
+                   %TestStructOfVariousFieldTypes{
                      param_croma_builtin: 1,
                      param_datetime_related: ~D[1970-01-01],
                      param_nilable: 1,
@@ -300,9 +256,9 @@ defmodule AntikytheraCore.BaseParamStructTest do
       ]
       |> Enum.each(fn {field, invalid_values} ->
         Enum.each(invalid_values, fn invalid_value ->
-          assert {:error, {:invalid_value, [TestStruct1, {_type, ^field}]}} =
-                   TestStruct1.update(
-                     %TestStruct1{
+          assert {:error, {:invalid_value, [TestStructOfVariousFieldTypes, {_type, ^field}]}} =
+                   TestStructOfVariousFieldTypes.update(
+                     %TestStructOfVariousFieldTypes{
                        param_croma_builtin: 1,
                        param_datetime_related: ~D[1970-01-01],
                        param_nilable: 1,
@@ -319,23 +275,17 @@ defmodule AntikytheraCore.BaseParamStructTest do
   describe "valid?/1 of a struct module based on BaseParamStruct" do
     test "should return true if all fields are valid" do
       [
-        %TestStruct1{
-          param_croma_builtin: 1,
-          param_datetime_related: ~D[1970-01-01],
-          param_nilable: 1,
-          param_with_throwable_preprocessor: 1,
-          param_with_result_preprocessor: 1
-        },
-        %TestStruct1{
-          param_croma_builtin: 1,
-          param_datetime_related: ~D[1970-01-01],
-          param_nilable: nil,
-          param_with_throwable_preprocessor: 1,
-          param_with_result_preprocessor: 1
-        }
+        struct(
+          TestStructOfVariousFieldTypes,
+          @valid_fields_for_test_struct_of_various_field_types_1
+        ),
+        struct(
+          TestStructOfVariousFieldTypes,
+          @valid_fields_for_test_struct_of_various_field_types_2
+        )
       ]
       |> Enum.each(fn valid_struct ->
-        assert TestStruct1.valid?(valid_struct)
+        assert TestStructOfVariousFieldTypes.valid?(valid_struct)
       end)
     end
 
@@ -350,22 +300,19 @@ defmodule AntikytheraCore.BaseParamStructTest do
       |> Enum.each(fn {field, invalid_values} ->
         Enum.each(invalid_values, fn invalid_value ->
           invalid_struct =
-            %TestStruct1{
-              param_croma_builtin: 1,
-              param_datetime_related: ~D[1970-01-01],
-              param_nilable: 1,
-              param_with_throwable_preprocessor: 1,
-              param_with_result_preprocessor: 1
-            }
+            struct(
+              TestStructOfVariousFieldTypes,
+              @valid_fields_for_test_struct_of_various_field_types_1
+            )
             |> Map.put(field, invalid_value)
 
-          refute TestStruct1.valid?(invalid_struct)
+          refute TestStructOfVariousFieldTypes.valid?(invalid_struct)
         end)
       end)
     end
   end
 
-  defmodule TestStruct2 do
+  defmodule TestStructWithAcceptCaseSnake do
     use BaseParamStruct,
       accept_case: :snake,
       fields: [paramNamedWithMultipleWords: Croma.PosInteger]
@@ -373,45 +320,49 @@ defmodule AntikytheraCore.BaseParamStructTest do
 
   describe "new/1 of a struct module based on BaseParamStruct with accept_case: :snake" do
     test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its snake case" do
-      assert {:ok, %TestStruct2{paramNamedWithMultipleWords: 1}} =
-               TestStruct2.new(%{paramNamedWithMultipleWords: 1})
+      assert {:ok, %TestStructWithAcceptCaseSnake{paramNamedWithMultipleWords: 1}} =
+               TestStructWithAcceptCaseSnake.new(%{paramNamedWithMultipleWords: 1})
 
-      assert {:ok, %TestStruct2{paramNamedWithMultipleWords: 1}} =
-               TestStruct2.new(%{param_named_with_multiple_words: 1})
+      assert {:ok, %TestStructWithAcceptCaseSnake{paramNamedWithMultipleWords: 1}} =
+               TestStructWithAcceptCaseSnake.new(%{param_named_with_multiple_words: 1})
     end
 
     test "should return value missing error if the field name is not acceptable" do
       assert {:error,
-              {:value_missing, [TestStruct2, {Croma.PosInteger, :paramNamedWithMultipleWords}]}} =
-               TestStruct2.new(%{ParamNamedWithMultipleWords: 1})
+              {:value_missing,
+               [TestStructWithAcceptCaseSnake, {Croma.PosInteger, :paramNamedWithMultipleWords}]}} =
+               TestStructWithAcceptCaseSnake.new(%{ParamNamedWithMultipleWords: 1})
 
       assert {:error,
-              {:value_missing, [TestStruct2, {Croma.PosInteger, :paramNamedWithMultipleWords}]}} =
-               TestStruct2.new(%{PARAM_NAMED_WITH_MULTIPLE_WORDS: 1})
+              {:value_missing,
+               [TestStructWithAcceptCaseSnake, {Croma.PosInteger, :paramNamedWithMultipleWords}]}} =
+               TestStructWithAcceptCaseSnake.new(%{PARAM_NAMED_WITH_MULTIPLE_WORDS: 1})
     end
   end
 
   describe "from_params/1 of a struct module based on BaseParamStruct with accept_case: :snake" do
     test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its snake case" do
-      assert {:ok, %TestStruct2{paramNamedWithMultipleWords: 1}} =
-               TestStruct2.from_params(%{"paramNamedWithMultipleWords" => 1})
+      assert {:ok, %TestStructWithAcceptCaseSnake{paramNamedWithMultipleWords: 1}} =
+               TestStructWithAcceptCaseSnake.from_params(%{"paramNamedWithMultipleWords" => 1})
 
-      assert {:ok, %TestStruct2{paramNamedWithMultipleWords: 1}} =
-               TestStruct2.from_params(%{"param_named_with_multiple_words" => 1})
+      assert {:ok, %TestStructWithAcceptCaseSnake{paramNamedWithMultipleWords: 1}} =
+               TestStructWithAcceptCaseSnake.from_params(%{"param_named_with_multiple_words" => 1})
     end
 
     test "should return value missing error if the field name is not acceptable" do
       assert {:error,
-              {:value_missing, [TestStruct2, {Croma.PosInteger, :paramNamedWithMultipleWords}]}} =
-               TestStruct2.from_params(%{"ParamNamedWithMultipleWords" => 1})
+              {:value_missing,
+               [TestStructWithAcceptCaseSnake, {Croma.PosInteger, :paramNamedWithMultipleWords}]}} =
+               TestStructWithAcceptCaseSnake.from_params(%{"ParamNamedWithMultipleWords" => 1})
 
       assert {:error,
-              {:value_missing, [TestStruct2, {Croma.PosInteger, :paramNamedWithMultipleWords}]}} =
-               TestStruct2.from_params(%{"PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1})
+              {:value_missing,
+               [TestStructWithAcceptCaseSnake, {Croma.PosInteger, :paramNamedWithMultipleWords}]}} =
+               TestStructWithAcceptCaseSnake.from_params(%{"PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1})
     end
   end
 
-  defmodule TestStruct3 do
+  defmodule TestStructWithAcceptCaseUpperCamel do
     use BaseParamStruct,
       accept_case: :upper_camel,
       fields: [param_named_with_multiple_words: Croma.PosInteger]
@@ -419,49 +370,67 @@ defmodule AntikytheraCore.BaseParamStructTest do
 
   describe "new/1 of a struct module based on BaseParamStruct with accept_case: :upper_camel" do
     test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its upper camel case" do
-      assert {:ok, %TestStruct3{param_named_with_multiple_words: 1}} =
-               TestStruct3.new(%{param_named_with_multiple_words: 1})
+      assert {:ok, %TestStructWithAcceptCaseUpperCamel{param_named_with_multiple_words: 1}} =
+               TestStructWithAcceptCaseUpperCamel.new(%{param_named_with_multiple_words: 1})
 
-      assert {:ok, %TestStruct3{param_named_with_multiple_words: 1}} =
-               TestStruct3.new(%{ParamNamedWithMultipleWords: 1})
+      assert {:ok, %TestStructWithAcceptCaseUpperCamel{param_named_with_multiple_words: 1}} =
+               TestStructWithAcceptCaseUpperCamel.new(%{ParamNamedWithMultipleWords: 1})
     end
 
     test "should return value missing error if the field name is not acceptable" do
       assert {:error,
               {:value_missing,
-               [TestStruct3, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
-               TestStruct3.new(%{paramNamedWithMultipleWords: 1})
+               [
+                 TestStructWithAcceptCaseUpperCamel,
+                 {Croma.PosInteger, :param_named_with_multiple_words}
+               ]}} = TestStructWithAcceptCaseUpperCamel.new(%{paramNamedWithMultipleWords: 1})
 
       assert {:error,
               {:value_missing,
-               [TestStruct3, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
-               TestStruct3.new(%{PARAM_NAMED_WITH_MULTIPLE_WORDS: 1})
+               [
+                 TestStructWithAcceptCaseUpperCamel,
+                 {Croma.PosInteger, :param_named_with_multiple_words}
+               ]}} = TestStructWithAcceptCaseUpperCamel.new(%{PARAM_NAMED_WITH_MULTIPLE_WORDS: 1})
     end
   end
 
   describe "from_params/1 of a struct module based on BaseParamStruct with accept_case: :upper_camel" do
     test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its upper camel case" do
-      assert {:ok, %TestStruct3{param_named_with_multiple_words: 1}} =
-               TestStruct3.from_params(%{"param_named_with_multiple_words" => 1})
+      assert {:ok, %TestStructWithAcceptCaseUpperCamel{param_named_with_multiple_words: 1}} =
+               TestStructWithAcceptCaseUpperCamel.from_params(%{
+                 "param_named_with_multiple_words" => 1
+               })
 
-      assert {:ok, %TestStruct3{param_named_with_multiple_words: 1}} =
-               TestStruct3.from_params(%{"ParamNamedWithMultipleWords" => 1})
+      assert {:ok, %TestStructWithAcceptCaseUpperCamel{param_named_with_multiple_words: 1}} =
+               TestStructWithAcceptCaseUpperCamel.from_params(%{
+                 "ParamNamedWithMultipleWords" => 1
+               })
     end
 
     test "should return value missing error if the field name is not acceptable" do
       assert {:error,
               {:value_missing,
-               [TestStruct3, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
-               TestStruct3.from_params(%{"paramNamedWithMultipleWords" => 1})
+               [
+                 TestStructWithAcceptCaseUpperCamel,
+                 {Croma.PosInteger, :param_named_with_multiple_words}
+               ]}} =
+               TestStructWithAcceptCaseUpperCamel.from_params(%{
+                 "paramNamedWithMultipleWords" => 1
+               })
 
       assert {:error,
               {:value_missing,
-               [TestStruct3, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
-               TestStruct3.from_params(%{"PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1})
+               [
+                 TestStructWithAcceptCaseUpperCamel,
+                 {Croma.PosInteger, :param_named_with_multiple_words}
+               ]}} =
+               TestStructWithAcceptCaseUpperCamel.from_params(%{
+                 "PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1
+               })
     end
   end
 
-  defmodule TestStruct4 do
+  defmodule TestStructWithAcceptCaseLowerCamel do
     use BaseParamStruct,
       accept_case: :lower_camel,
       fields: [param_named_with_multiple_words: Croma.PosInteger]
@@ -469,49 +438,67 @@ defmodule AntikytheraCore.BaseParamStructTest do
 
   describe "new/1 of a struct module based on BaseParamStruct with accept_case: :lower_camel" do
     test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its lower camel case" do
-      assert {:ok, %TestStruct4{param_named_with_multiple_words: 1}} =
-               TestStruct4.new(%{param_named_with_multiple_words: 1})
+      assert {:ok, %TestStructWithAcceptCaseLowerCamel{param_named_with_multiple_words: 1}} =
+               TestStructWithAcceptCaseLowerCamel.new(%{param_named_with_multiple_words: 1})
 
-      assert {:ok, %TestStruct4{param_named_with_multiple_words: 1}} =
-               TestStruct4.new(%{paramNamedWithMultipleWords: 1})
+      assert {:ok, %TestStructWithAcceptCaseLowerCamel{param_named_with_multiple_words: 1}} =
+               TestStructWithAcceptCaseLowerCamel.new(%{paramNamedWithMultipleWords: 1})
     end
 
     test "should return value missing error if the field name is not acceptable" do
       assert {:error,
               {:value_missing,
-               [TestStruct4, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
-               TestStruct4.new(%{ParamNamedWithMultipleWords: 1})
+               [
+                 TestStructWithAcceptCaseLowerCamel,
+                 {Croma.PosInteger, :param_named_with_multiple_words}
+               ]}} = TestStructWithAcceptCaseLowerCamel.new(%{ParamNamedWithMultipleWords: 1})
 
       assert {:error,
               {:value_missing,
-               [TestStruct4, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
-               TestStruct4.new(%{PARAM_NAMED_WITH_MULTIPLE_WORDS: 1})
+               [
+                 TestStructWithAcceptCaseLowerCamel,
+                 {Croma.PosInteger, :param_named_with_multiple_words}
+               ]}} = TestStructWithAcceptCaseLowerCamel.new(%{PARAM_NAMED_WITH_MULTIPLE_WORDS: 1})
     end
   end
 
   describe "from_params/1 of a struct module based on BaseParamStruct with accept_case: :lower_camel" do
     test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its lower camel case" do
-      assert {:ok, %TestStruct4{param_named_with_multiple_words: 1}} =
-               TestStruct4.from_params(%{"param_named_with_multiple_words" => 1})
+      assert {:ok, %TestStructWithAcceptCaseLowerCamel{param_named_with_multiple_words: 1}} =
+               TestStructWithAcceptCaseLowerCamel.from_params(%{
+                 "param_named_with_multiple_words" => 1
+               })
 
-      assert {:ok, %TestStruct4{param_named_with_multiple_words: 1}} =
-               TestStruct4.from_params(%{"paramNamedWithMultipleWords" => 1})
+      assert {:ok, %TestStructWithAcceptCaseLowerCamel{param_named_with_multiple_words: 1}} =
+               TestStructWithAcceptCaseLowerCamel.from_params(%{
+                 "paramNamedWithMultipleWords" => 1
+               })
     end
 
     test "should return value missing error if the field name is not acceptable" do
       assert {:error,
               {:value_missing,
-               [TestStruct4, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
-               TestStruct4.from_params(%{"ParamNamedWithMultipleWords" => 1})
+               [
+                 TestStructWithAcceptCaseLowerCamel,
+                 {Croma.PosInteger, :param_named_with_multiple_words}
+               ]}} =
+               TestStructWithAcceptCaseLowerCamel.from_params(%{
+                 "ParamNamedWithMultipleWords" => 1
+               })
 
       assert {:error,
               {:value_missing,
-               [TestStruct4, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
-               TestStruct4.from_params(%{"PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1})
+               [
+                 TestStructWithAcceptCaseLowerCamel,
+                 {Croma.PosInteger, :param_named_with_multiple_words}
+               ]}} =
+               TestStructWithAcceptCaseLowerCamel.from_params(%{
+                 "PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1
+               })
     end
   end
 
-  defmodule TestStruct5 do
+  defmodule TestStructWithAcceptCaseCapital do
     use BaseParamStruct,
       accept_case: :capital,
       fields: [param_named_with_multiple_words: Croma.PosInteger]
@@ -519,49 +506,63 @@ defmodule AntikytheraCore.BaseParamStructTest do
 
   describe "new/1 of a struct module based on BaseParamStruct with accept_case: :capital" do
     test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its capital case" do
-      assert {:ok, %TestStruct5{param_named_with_multiple_words: 1}} =
-               TestStruct5.new(%{param_named_with_multiple_words: 1})
+      assert {:ok, %TestStructWithAcceptCaseCapital{param_named_with_multiple_words: 1}} =
+               TestStructWithAcceptCaseCapital.new(%{param_named_with_multiple_words: 1})
 
-      assert {:ok, %TestStruct5{param_named_with_multiple_words: 1}} =
-               TestStruct5.new(%{PARAM_NAMED_WITH_MULTIPLE_WORDS: 1})
+      assert {:ok, %TestStructWithAcceptCaseCapital{param_named_with_multiple_words: 1}} =
+               TestStructWithAcceptCaseCapital.new(%{PARAM_NAMED_WITH_MULTIPLE_WORDS: 1})
     end
 
     test "should return value missing error if the field name is not acceptable" do
       assert {:error,
               {:value_missing,
-               [TestStruct5, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
-               TestStruct5.new(%{ParamNamedWithMultipleWords: 1})
+               [
+                 TestStructWithAcceptCaseCapital,
+                 {Croma.PosInteger, :param_named_with_multiple_words}
+               ]}} = TestStructWithAcceptCaseCapital.new(%{ParamNamedWithMultipleWords: 1})
 
       assert {:error,
               {:value_missing,
-               [TestStruct5, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
-               TestStruct5.new(%{paramNamedWithMultipleWords: 1})
+               [
+                 TestStructWithAcceptCaseCapital,
+                 {Croma.PosInteger, :param_named_with_multiple_words}
+               ]}} = TestStructWithAcceptCaseCapital.new(%{paramNamedWithMultipleWords: 1})
     end
   end
 
   describe "from_params/1 of a struct module based on BaseParamStruct with accept_case: :capital" do
     test "should return :ok with a struct if all fields are valid and the field name is either the same as the field name in the definition or its capital case" do
-      assert {:ok, %TestStruct5{param_named_with_multiple_words: 1}} =
-               TestStruct5.from_params(%{"param_named_with_multiple_words" => 1})
+      assert {:ok, %TestStructWithAcceptCaseCapital{param_named_with_multiple_words: 1}} =
+               TestStructWithAcceptCaseCapital.from_params(%{
+                 "param_named_with_multiple_words" => 1
+               })
 
-      assert {:ok, %TestStruct5{param_named_with_multiple_words: 1}} =
-               TestStruct5.from_params(%{"PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1})
+      assert {:ok, %TestStructWithAcceptCaseCapital{param_named_with_multiple_words: 1}} =
+               TestStructWithAcceptCaseCapital.from_params(%{
+                 "PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1
+               })
     end
 
     test "should return value missing error if the field name is not acceptable" do
       assert {:error,
               {:value_missing,
-               [TestStruct5, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
-               TestStruct5.from_params(%{"ParamNamedWithMultipleWords" => 1})
+               [
+                 TestStructWithAcceptCaseCapital,
+                 {Croma.PosInteger, :param_named_with_multiple_words}
+               ]}} =
+               TestStructWithAcceptCaseCapital.from_params(%{"ParamNamedWithMultipleWords" => 1})
 
       assert {:error,
               {:value_missing,
-               [TestStruct5, {Croma.PosInteger, :param_named_with_multiple_words}]}} =
-               TestStruct5.from_params(%{paramNamedWithMultipleWords: 1})
+               [
+                 TestStructWithAcceptCaseCapital,
+                 {Croma.PosInteger, :param_named_with_multiple_words}
+               ]}} =
+               TestStructWithAcceptCaseCapital.from_params(%{paramNamedWithMultipleWords: 1})
     end
   end
 
-  defmodule TestStruct6 do
+  defmodule TestStructWithDefaultValue do
     defmodule IntegerWithDefaultValue do
       use Croma.SubtypeOfInt, min: 1, default: 1_000
     end
@@ -577,12 +578,12 @@ defmodule AntikytheraCore.BaseParamStructTest do
   describe "new/1 of a struct module based on BaseParamStruct with default values" do
     test "should return :ok with a struct if all fields are valid" do
       assert {:ok,
-              %TestStruct6{
+              %TestStructWithDefaultValue{
                 param_default_by_mod: 1,
                 param_default_by_val: 2,
                 param_pp_default_by_val: ~D[1970-01-01]
               }} =
-               TestStruct6.new(%{
+               TestStructWithDefaultValue.new(%{
                  param_default_by_mod: 1,
                  param_default_by_val: 2,
                  param_pp_default_by_val: ~D[1970-01-01]
@@ -591,23 +592,23 @@ defmodule AntikytheraCore.BaseParamStructTest do
 
     test "should return :ok with a struct if a field which has a default value is missing" do
       assert {:ok,
-              %TestStruct6{
+              %TestStructWithDefaultValue{
                 param_default_by_mod: 1_000,
                 param_default_by_val: 2_000,
                 param_pp_default_by_val: ~D[2001-01-01]
-              }} = TestStruct6.new(%{})
+              }} = TestStructWithDefaultValue.new(%{})
     end
   end
 
   describe "from_params/1 of a struct module based on BaseParamStruct with default values" do
     test "should return :ok with a struct if all fields are valid" do
       assert {:ok,
-              %TestStruct6{
+              %TestStructWithDefaultValue{
                 param_default_by_mod: 1,
                 param_default_by_val: 2,
                 param_pp_default_by_val: ~D[1970-01-01]
               }} =
-               TestStruct6.from_params(%{
+               TestStructWithDefaultValue.from_params(%{
                  "param_default_by_mod" => 1,
                  "param_default_by_val" => 2,
                  "param_pp_default_by_val" => "1970-01-01"
@@ -616,11 +617,11 @@ defmodule AntikytheraCore.BaseParamStructTest do
 
     test "should return :ok with a struct if a field which has a default value is missing" do
       assert {:ok,
-              %TestStruct6{
+              %TestStructWithDefaultValue{
                 param_default_by_mod: 1_000,
                 param_default_by_val: 2_000,
                 param_pp_default_by_val: ~D[2001-01-01]
-              }} = TestStruct6.from_params(%{})
+              }} = TestStructWithDefaultValue.from_params(%{})
     end
   end
 end
