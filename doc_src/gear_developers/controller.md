@@ -28,6 +28,7 @@
         - `bad_request/1`
         - `bad_executor_pool_id/2` (optional)
         - `ws_too_many_connections/1` (optional)
+        - `parameter_validation_error/3` (optional)
     - These functions must return a `Antikythera.Conn.t` as in regular controller actions.
 - Note that custom error handlers should do as little task as possible to avoid further troubles.
 

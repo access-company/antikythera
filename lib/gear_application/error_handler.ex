@@ -17,6 +17,7 @@ defmodule Antikythera.GearApplication.ErrorHandler do
       - Optional error handlers
           - `bad_executor_pool_id(Antikythera.Conn.t, Antikythera.ExecutorPool.BadIdReason.t) :: Antikythera.Conn.t`
           - `ws_too_many_connections(Antikythera.Conn.t) :: Antikythera.Conn.t` (when your gear uses websocket)
+          - `parameter_validation_error(Antikythera.Conn.t, Antikythera.Plug.ParamsValidator.parameter_type_t, AntikytheraCore.BaseParamStruct.validate_error_t) :: Antikythera.Conn.t` (when your gear uses parameter validation)
 
   This module generates `YourGear.error_handler_module/0` function, which is called by antikythera when handling errors.
   """
