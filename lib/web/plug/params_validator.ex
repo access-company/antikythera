@@ -36,6 +36,21 @@ defmodule Antikythera.Plug.ParamsValidator do
   end
   ```
 
+  ### Validation error handling
+
+  When a validation error occurs, a response with status code 400 like the following is returned without calling the controller function.
+
+  ```text
+  ParameterValidationError: Invalid value at item_id of query_params
+  ```
+
+  The error response can be customized by implementing `YourGear.Controller.Error.parameter_validation_error/3`.
+  See `Antikythera.GearApplication.ErrorHandler` for more information on custom error handlers.
+  The second argument of `parameter_validation_error/3` is an atom representing the parameter type that failed validation.
+  The third argument is a tuple representing the reason for the validation error (see `t:AntikytheraCore.BaseParamStruct.validate_error_t/0`).
+  For example, when the plug above is set and the query parameter `item_id` is not a positive integer, the second argument is `:query_params`
+  and the third argument is `{:invalid_value, [MyQueryParams, {Croma.PosInteger, :item_id}]}`.
+
   ## Supported parameter types
 
   - `:path_matches`: Path parameters
