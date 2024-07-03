@@ -110,16 +110,16 @@ defmodule AntikytheraCore.BaseParamStruct do
         ) :: R.t(%{atom => term}, validate_error_t) do
     Enum.map(fields_with_attrs, fn {field_name, accepted_field_names, mod, preprocessor,
                                     default_value_opt} ->
-      case get_param(params, field_name, accepted_field_names, mod, default_value_opt) do
+      case get_param_by_field_names(params, accepted_field_names) do
         {:ok, param} ->
           preprocess_param(param, field_name, mod, preprocessor)
           |> R.map(&{field_name, &1})
 
-        {:default, default_value} ->
-          {:ok, {field_name, default_value}}
-
-        {:error, error} ->
-          {:error, error}
+        {:error, :no_value} ->
+          case default_value_opt do
+            {:ok, default_value} -> {:ok, {field_name, default_value}}
+            {:error, :no_default_value} -> {:error, {:value_missing, [{mod, field_name}]}}
+          end
       end
     end)
     |> R.sequence()
@@ -129,35 +129,17 @@ defmodule AntikytheraCore.BaseParamStruct do
     end
   end
 
-  defunp get_param(
-           params :: params_t,
-           field_name :: atom,
-           accepted_field_names :: [atom],
-           mod :: module,
-           default_value_opt :: default_value_opt_t
-         ) :: R.t(nil | json_value_t, validate_error_t) | {:default, term} do
-    _params, _field_name, [], _mod, {:ok, default_value} ->
-      {:default, default_value}
+  defun get_param_by_field_names(params :: params_t, field_names :: [atom]) ::
+          R.t(nil | json_value_t, :no_value) do
+    Enum.find_value(field_names, {:error, :no_value}, fn field_name ->
+      field_name_str = Atom.to_string(field_name)
 
-    _params, field_name, [], mod, {:error, :no_default_value} ->
-      {:error, {:value_missing, [{mod, field_name}]}}
-
-    params, field_name, [accepted_field_name | rest], mod, default_value_opt ->
-      case try_get_param(params, accepted_field_name) do
-        {:ok, value} -> {:ok, value}
-        {:error, :no_value} -> get_param(params, field_name, rest, mod, default_value_opt)
+      cond do
+        is_map_key(params, field_name) -> {:ok, params[field_name]}
+        is_map_key(params, field_name_str) -> {:ok, params[field_name_str]}
+        true -> nil
       end
-  end
-
-  defunp try_get_param(params :: params_t, field_name :: v[atom]) ::
-           R.t(nil | json_value_t, :no_value) do
-    field_name_str = Atom.to_string(field_name)
-
-    cond do
-      is_map_key(params, field_name) -> {:ok, params[field_name]}
-      is_map_key(params, field_name_str) -> {:ok, params[field_name_str]}
-      true -> {:error, :no_value}
-    end
+    end)
   end
 
   defunp preprocess_param(
