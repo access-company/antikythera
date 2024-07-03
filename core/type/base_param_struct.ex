@@ -38,29 +38,32 @@ defmodule AntikytheraCore.BaseParamStruct do
   defun attach_attributes_to_field(
           {field_name, mod_with_options} :: field_t,
           accept_case :: nil | accept_case_t,
-          default_pp :: (module -> R.t(term, :no_default_preprocessor))
+          pp_generator :: (module -> R.t(term, :no_default_preprocessor))
         ) :: field_with_attr_t do
     accepted_field_names = compute_accepted_field_names(field_name, accept_case)
-    {mod, preprocessor, default_value_opt} = extract_mod_and_options(mod_with_options, default_pp)
+
+    {mod, preprocessor, default_value_opt} =
+      extract_mod_and_options(mod_with_options, pp_generator)
+
     {field_name, accepted_field_names, mod, preprocessor, default_value_opt}
   end
 
   defunp extract_mod_and_options(
            mod_with_options :: mod_with_options_t,
-           default_pp :: (module -> R.t(term, :no_default_preprocessor))
+           pp_generator :: (module -> R.t(term, :no_default_preprocessor))
          ) :: {module, preprocessor_t, default_value_opt_t} do
-    {mod, preprocessor, [default: default_value]}, _default_pp
+    {mod, preprocessor, [default: default_value]}, _pp_generator
     when is_atom(mod) and is_function(preprocessor, 1) ->
       {mod, preprocessor, {:ok, default_value}}
 
-    {mod, preprocessor}, _default_pp when is_atom(mod) and is_function(preprocessor, 1) ->
+    {mod, preprocessor}, _pp_generator when is_atom(mod) and is_function(preprocessor, 1) ->
       {mod, preprocessor, compute_default_value(mod)}
 
-    {mod, [default: default_value]}, default_pp when is_atom(mod) ->
-      {mod, R.get(default_pp.(mod), &Function.identity/1), {:ok, default_value}}
+    {mod, [default: default_value]}, pp_generator when is_atom(mod) ->
+      {mod, R.get(pp_generator.(mod), &Function.identity/1), {:ok, default_value}}
 
-    mod, default_pp when is_atom(mod) ->
-      {mod, R.get(default_pp.(mod), &Function.identity/1), compute_default_value(mod)}
+    mod, pp_generator when is_atom(mod) ->
+      {mod, R.get(pp_generator.(mod), &Function.identity/1), compute_default_value(mod)}
   end
 
   defunp compute_default_value(mod :: v[module]) :: default_value_opt_t do
@@ -315,8 +318,10 @@ defmodule AntikytheraCore.BaseParamStruct do
         raise ":accept_case option must be one of :snake, :lower_camel, :upper_camel, or :capital"
       end
 
-      default_pp =
-        Keyword.get(opts, :default_preprocessor, fn _mod -> {:error, :no_default_preprocessor} end)
+      pp_generator =
+        Keyword.get(opts, :preprocessor_generator, fn _mod ->
+          {:error, :no_default_preprocessor}
+        end)
 
       fields_with_attrs =
         Keyword.fetch!(opts, :fields)
@@ -324,7 +329,7 @@ defmodule AntikytheraCore.BaseParamStruct do
           &AntikytheraCore.BaseParamStruct.attach_attributes_to_field(
             &1,
             opts[:accept_case],
-            default_pp
+            pp_generator
           )
         )
 

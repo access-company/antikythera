@@ -269,14 +269,14 @@ defmodule Antikythera.ParamStringStruct do
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
-      opts_with_default_preprocessor =
+      opts_with_default_preprocessor_generator =
         Keyword.put(
           opts,
-          :default_preprocessor,
+          :preprocessor_generator,
           &Antikythera.ParamStringStruct.Preprocessor.default/1
         )
 
-      use AntikytheraCore.BaseParamStruct, opts_with_default_preprocessor
+      use AntikytheraCore.BaseParamStruct, opts_with_default_preprocessor_generator
     end
   end
 end
