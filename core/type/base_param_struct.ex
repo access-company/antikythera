@@ -217,7 +217,7 @@ defmodule AntikytheraCore.BaseParamStruct do
            mod :: v[module],
            default_value_opt :: default_value_opt_t \\ {:error, :no_default_value}
          ) :: R.t({atom, term}, validate_error_t) do
-    case fetch_from_dict(dict, field_name, accepted_field_names) do
+    case fetch_from_dict(dict, accepted_field_names) do
       {:ok, value} ->
         case validate_field(value, mod) do
           {:ok, v} ->
@@ -237,16 +237,15 @@ defmodule AntikytheraCore.BaseParamStruct do
 
   defunp fetch_from_dict(
            dict :: [{atom | String.t(), term}] | %{(atom | String.t()) => term},
-           key :: atom,
            accepted_keys :: [atom]
          ) :: {:ok, term} | :error do
-    _dict, _key, [] ->
+    _dict, [] ->
       :error
 
-    dict, key, [accepted_key | rest] ->
+    dict, [accepted_key | rest] ->
       case try_fetch_from_dict(dict, accepted_key) do
         {:ok, value} -> {:ok, value}
-        :error -> fetch_from_dict(dict, key, rest)
+        :error -> fetch_from_dict(dict, rest)
       end
   end
 
