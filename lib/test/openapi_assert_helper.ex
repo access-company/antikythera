@@ -261,7 +261,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
                |> Normalizer.normalize(unquote(allows_null_for_optional))
 
       @doc """
-      Find a API schema from OpenAPI specs.
+      Find an API schema from OpenAPI specs.
 
       - `operation_id`: `oprationId` for the API
 
