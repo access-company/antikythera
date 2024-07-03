@@ -4,10 +4,7 @@ use Croma
 
 defmodule AntikytheraCore.BaseParamStruct do
   @moduledoc """
-  Module to define a struct that represents abstract parameters.
-
-  This module is a base module of `Antikythera.ParamStringStruct` and `Antikythera.BodyJsonStruct`.
-  See their respective module documents for details.
+  Base module to define a struct that represents abstract parameters.
   """
 
   alias Croma.Result, as: R
