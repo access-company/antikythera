@@ -78,7 +78,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
       @doc """
       Send a GET request which should be success.
 
-      - `api_schema`: Schema definition from `__MODULE__.find_api/1`
+      - `api_schema`: Schema definition from `#{__MODULE__}.find_api/1`
 
       Other parameters should be same as `Antikythera.Test.HttpClient.get/3`
       """
