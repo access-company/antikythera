@@ -25,7 +25,7 @@ defmodule Antikythera.Plug.ParamsValidator do
   plug Antikythera.Plug.ParamsValidator, :validate, query_params: MyQueryParams
   ```
 
-  In the controller function, you can access the validated parameters via `conn.assigns.validated`.
+  In the controller function, you can get the validated parameters from their corresponding name in `conn.assigns.validated`.
   For example, to access the validated query parameters, use the following code.
 
   ```elixir
