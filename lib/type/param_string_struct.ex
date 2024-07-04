@@ -42,6 +42,7 @@ defmodule Antikythera.ParamStringStruct do
   - a tuple `{:ok, preprocessed_value}` or `{:error, error_reason}`.
 
   Note that the parameter is always a string, so you need to convert it to the desired type in the preprocessor if you would like to use user-defined types.
+  `Antikythera.StringPreprocessor` provides some useful preprocessor functions which are not defined in the Elixir standard library.
 
   Now you can validate string parameters using the struct in a controller module.
   The example below shows the validation of query parameters using `MyQueryParams1`.
@@ -126,19 +127,18 @@ defmodule Antikythera.ParamStringStruct do
   """
 
   defmodule Preprocessor do
-    @moduledoc """
-    Preprocessors for string parameters.
-    """
+    @moduledoc false
 
     @type t :: (nil | String.t() -> Croma.Result.t() | term)
 
-    @doc false
+    alias Antikythera.StringPreprocessor
+
     defun default(mod :: v[module]) :: Croma.Result.t(t()) do
       # The default preprocessors are defined as a capture form `&Mod.fun/arity`, which can be used in module attributes.
       case Module.split(mod) do
         # Preprocessors for Croma built-in types
         ["Croma", "Boolean"] ->
-          {:ok, &__MODULE__.to_boolean/1}
+          {:ok, &StringPreprocessor.to_boolean/1}
 
         ["Croma", "Float"] ->
           {:ok, &String.to_float/1}
@@ -153,20 +153,20 @@ defmodule Antikythera.ParamStringStruct do
           {:ok, &String.to_integer/1}
 
         ["Croma", "Number"] ->
-          {:ok, &__MODULE__.to_number/1}
+          {:ok, &StringPreprocessor.to_number/1}
 
         ["Croma", "PosInteger"] ->
           {:ok, &String.to_integer/1}
 
         ["Croma", "String"] ->
-          {:ok, &__MODULE__.passthrough_string/1}
+          {:ok, &StringPreprocessor.passthrough_string/1}
 
         # Preprocessors for DateTime-related types
         ["Date"] ->
           {:ok, &Date.from_iso8601/1}
 
         ["DateTime"] ->
-          {:ok, &__MODULE__.to_datetime/1}
+          {:ok, &StringPreprocessor.to_datetime/1}
 
         ["NaiveDateTime"] ->
           {:ok, &NaiveDateTime.from_iso8601/1}
@@ -187,46 +187,6 @@ defmodule Antikythera.ParamStringStruct do
       end
     end
 
-    @doc """
-    Converts a string to a boolean value.
-    """
-    defun to_boolean(s :: nil | String.t()) :: boolean do
-      "true" -> true
-      "false" -> false
-      s when is_binary(s) -> raise ArgumentError, "Invalid boolean value: #{s}"
-      nil -> raise ArgumentError, "String expected, but got nil"
-    end
-
-    @doc """
-    Converts a string to a number.
-    """
-    defun to_number(s :: nil | String.t()) :: number do
-      s when is_binary(s) ->
-        try do
-          String.to_integer(s)
-        rescue
-          ArgumentError -> String.to_float(s)
-        end
-
-      nil ->
-        raise ArgumentError, "String expected, but got nil"
-    end
-
-    @doc false
-    defun passthrough_string(s :: nil | String.t()) :: String.t() do
-      s when is_binary(s) -> s
-      nil -> raise ArgumentError, "String expected, but got nil"
-    end
-
-    @doc """
-    Converts a string to a DateTime struct.
-    """
-    defun to_datetime(s :: nil | String.t()) :: DateTime.t() do
-      {:ok, dt, _tz_offset} = DateTime.from_iso8601(s)
-      dt
-    end
-
-    @doc false
     defun generate_nilable_preprocessor(original_pp :: t(), original_mod :: v[module]) :: t() do
       # This function internally generates a new module with a preprocessor for a specified nilable type.
       # The reason for creating a new module is to satisfy the limitation of module attributes.

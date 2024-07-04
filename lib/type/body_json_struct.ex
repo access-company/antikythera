@@ -20,7 +20,7 @@ defmodule Antikythera.BodyJsonStruct do
       fields: [
         item_id: Croma.PosInteger,
         tags: Croma.TypeGen.list_of(Croma.String),
-        expires_at: {DateTime, &Antikythera.ParamStringStruct.Preprocessor.to_datetime/1}
+        expires_at: {DateTime, &Antikythera.StringPreprocessor.to_datetime/1}
       ]
   end
   ```
@@ -54,7 +54,7 @@ defmodule Antikythera.BodyJsonStruct do
   ```
 
   When a request with the following JSON body is sent to the controller, it is validated by `MyBody1`.
-  The `expires_at` field is converted to a `DateTime` struct by the `Antikythera.ParamStringStruct.Preprocessor.to_datetime/1` preprocessor.
+  The `expires_at` field is converted to a `DateTime` struct by the `Antikythera.StringPreprocessor.to_datetime/1` preprocessor.
 
   ```json
   {
