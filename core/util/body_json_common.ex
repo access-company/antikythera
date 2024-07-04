@@ -8,9 +8,7 @@ defmodule AntikytheraCore.BodyJsonCommon do
   """
 
   defmodule PreprocessorGenerator do
-    @moduledoc """
-    Common preprocessor generator for `Antikythera.BodyJsonStruct`, `Antikythera.BodyJsonMap` and `Antikythera.BodyJsonList`.
-    """
+    @moduledoc false
     @type t :: (nil | AntikytheraCore.BaseParamStruct.json_value_t() -> Croma.Result.t() | term)
 
     defun generate(mod :: v[module]) :: Croma.Result.t(t()) do
