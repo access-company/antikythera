@@ -129,8 +129,8 @@ defmodule AntikytheraCore.BaseParamStruct do
     end
   end
 
-  defun get_param_by_field_names(params :: params_t, field_names :: [atom]) ::
-          R.t(nil | json_value_t, :no_value) do
+  defunp get_param_by_field_names(params :: params_t, field_names :: [atom]) ::
+           R.t(nil | json_value_t, :no_value) do
     Enum.find_value(field_names, {:error, :no_value}, fn field_name ->
       field_name_str = Atom.to_string(field_name)
 

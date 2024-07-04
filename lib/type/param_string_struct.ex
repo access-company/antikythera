@@ -187,7 +187,7 @@ defmodule Antikythera.ParamStringStruct do
       end
     end
 
-    defun generate_nilable_preprocessor(original_pp :: t(), original_mod :: v[module]) :: t() do
+    defunp generate_nilable_preprocessor(original_pp :: t(), original_mod :: v[module]) :: t() do
       # This function internally generates a new module with a preprocessor for a specified nilable type.
       # The reason for creating a new module is to satisfy the limitation of module attributes.
       # In order to be used in module attributes, the function must be in the form of `&Mod.fun/arity`.
