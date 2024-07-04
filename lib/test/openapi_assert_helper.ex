@@ -98,7 +98,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
       @doc """
       Send a PUT request which should be success.
 
-      - `api_schema`: Schema definition from `__MODULE__.find_api/1`
+      - `api_schema`: Schema definition from `#{__MODULE__}.find_api/1`
       - `options`: In addition to `options` for `Antikythera.Test.HttpClient.put_json/4`, you can specify the following:
         - `:ignore_req_fields`: Specifies keys in request body which will not be validated.
 
@@ -122,7 +122,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
       @doc """
       Send a POST request which should be success.
 
-      - `api_schema`: Schema definition from `__MODULE__.find_api/1`
+      - `api_schema`: Schema definition from `#{__MODULE__}.find_api/1`
       - `options`: In addition to `options` for `Antikythera.Test.HttpClient.post_json/4`, you can specify the following:
         - `:ignore_req_fields`: Specifies keys in request body which will not be validated.
 
@@ -146,7 +146,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
       @doc """
       Send a DELETE request which should be success.
 
-      - `api_schema`: Schema definition from `__MODULE__.find_api/1`
+      - `api_schema`: Schema definition from `#{__MODULE__}.find_api/1`
 
       Other parameters should be same as `Antikythera.Test.HttpClient.delete/3`
       """
@@ -166,7 +166,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
       @doc """
       Send a GET request which should be error.
 
-      - `api_schema`: Schema definition from `__MODULE__.find_api/1`
+      - `api_schema`: Schema definition from `#{__MODULE__}.find_api/1`
 
       Other parameters should be same as `Antikythera.Test.HttpClient.get/3`
       """
@@ -185,7 +185,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
       @doc """
       Send a PUT request which should be error.
 
-      - `api_schema`: Schema definition from `__MODULE__.find_api/1`
+      - `api_schema`: Schema definition from `#{__MODULE__}.find_api/1`
       - `options`: In addition to `options` for `Antikythera.Test.HttpClient.put_json/4`, you can specify the following:
         - `:ignore_req_fields`: Specifies keys in request body which will not be validated.
 
@@ -207,7 +207,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
       @doc """
       Send a POST request which should be error.
 
-      - `api_schema`: Schema definition from `__MODULE__.find_api/1`
+      - `api_schema`: Schema definition from `#{__MODULE__}.find_api/1`
       - `options`: In addition to `options` for `Antikythera.Test.HttpClient.post_json/4`, you can specify the following:
         - `:ignore_req_fields`: Specifies keys in request body which will not be validated.
 
@@ -229,7 +229,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
       @doc """
       Send a DELETE request which should be error.
 
-      - `api_schema`: Schema definition from `__MODULE__.find_api/1`
+      - `api_schema`: Schema definition from `#{__MODULE__}.find_api/1`
 
       Other parameters should be same as `Antikythera.Test.HttpClient.delete/3`
       """
