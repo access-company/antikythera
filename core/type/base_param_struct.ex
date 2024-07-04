@@ -57,16 +57,16 @@ defmodule AntikytheraCore.BaseParamStruct do
       {mod, preprocessor, {:ok, default_value}}
 
     {mod, preprocessor}, _pp_generator when is_atom(mod) and is_function(preprocessor, 1) ->
-      {mod, preprocessor, compute_default_value(mod)}
+      {mod, preprocessor, get_default_value_from_module(mod)}
 
     {mod, [default: default_value]}, pp_generator when is_atom(mod) ->
       {mod, R.get(pp_generator.(mod), &Function.identity/1), {:ok, default_value}}
 
     mod, pp_generator when is_atom(mod) ->
-      {mod, R.get(pp_generator.(mod), &Function.identity/1), compute_default_value(mod)}
+      {mod, R.get(pp_generator.(mod), &Function.identity/1), get_default_value_from_module(mod)}
   end
 
-  defunp compute_default_value(mod :: v[module]) :: default_value_opt_t do
+  defunp get_default_value_from_module(mod :: v[module]) :: default_value_opt_t do
     try do
       {:ok, mod.default()}
     rescue
