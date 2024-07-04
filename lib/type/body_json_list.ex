@@ -67,7 +67,7 @@ defmodule Antikythera.BodyJsonList do
   defun preprocess_params(
           list_mod :: v[module],
           elem_mod :: v[module],
-          preprocessor :: BodyJsonCommon.Preprocessor.t(),
+          preprocessor :: BodyJsonCommon.PreprocessorGenerator.t(),
           params :: v[list]
         ) :: R.t(list, BaseParamStruct.validate_error_t()) do
     Enum.map(params, fn elem -> preprocess_elem(elem, elem_mod, preprocessor) end)
@@ -78,7 +78,7 @@ defmodule Antikythera.BodyJsonList do
   defunp preprocess_elem(
            elem :: BaseParamStruct.json_value_t(),
            mod :: v[module],
-           preprocessor :: BodyJsonCommon.Preprocessor.t()
+           preprocessor :: BodyJsonCommon.PreprocessorGenerator.t()
          ) :: R.t(term, BaseParamStruct.validate_error_t()) do
     try do
       case preprocessor.(elem) do
