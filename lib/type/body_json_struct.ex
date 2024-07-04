@@ -157,7 +157,7 @@ defmodule Antikythera.BodyJsonStruct do
         Keyword.put(
           opts,
           :preprocessor_generator,
-          &AntikytheraCore.BodyJsonCommon.Preprocessor.default/1
+          &AntikytheraCore.BodyJsonCommon.PreprocessorGenerator.generate/1
         )
 
       use AntikytheraCore.BaseParamStruct, opts_with_default_preprocessor_generator

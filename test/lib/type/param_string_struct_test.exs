@@ -23,7 +23,7 @@ defmodule Antikythera.ParamStringStructTest do
     property "should convert a string to its corresponding Croma built-in types if the string can be naturally converted" do
       croma_builtins_with_generators()
       |> Enum.each(fn {mod, gen} ->
-        assert {:ok, f} = ParamStringStruct.Preprocessor.default(mod)
+        assert {:ok, f} = ParamStringStruct.PreprocessorGenerator.generate(mod)
 
         check all(v <- gen.()) do
           case f.(to_string(v)) do
@@ -37,7 +37,8 @@ defmodule Antikythera.ParamStringStructTest do
     property "should convert a string to its corresponding nilable Croma built-in types if the string can be naturally converted" do
       croma_builtins_with_generators()
       |> Enum.each(fn {mod, gen} ->
-        assert {:ok, f} = ParamStringStruct.Preprocessor.default(Croma.TypeGen.nilable(mod))
+        assert {:ok, f} =
+                 ParamStringStruct.PreprocessorGenerator.generate(Croma.TypeGen.nilable(mod))
 
         check all(v <- gen.()) do
           case f.(to_string(v)) do
@@ -51,7 +52,8 @@ defmodule Antikythera.ParamStringStructTest do
     test "should accept nil as a nilable Croma built-in type" do
       croma_builtins_with_generators()
       |> Enum.each(fn {mod, _gen} ->
-        assert {:ok, f} = ParamStringStruct.Preprocessor.default(Croma.TypeGen.nilable(mod))
+        assert {:ok, f} =
+                 ParamStringStruct.PreprocessorGenerator.generate(Croma.TypeGen.nilable(mod))
 
         case f.(nil) do
           {:ok, x} -> assert is_nil(x)
@@ -68,7 +70,7 @@ defmodule Antikythera.ParamStringStructTest do
         {Time, [~T[00:00:00], ~T[23:59:59.999999]]}
       ]
       |> Enum.each(fn {mod, valid_values} ->
-        assert {:ok, f} = ParamStringStruct.Preprocessor.default(mod)
+        assert {:ok, f} = ParamStringStruct.PreprocessorGenerator.generate(mod)
 
         Enum.each(valid_values, fn v ->
           case f.(to_string(v)) do
@@ -80,7 +82,7 @@ defmodule Antikythera.ParamStringStructTest do
     end
 
     test "should convert a string to DateTime if the string is in ISO 8601 format with an arbitrary time zone" do
-      assert {:ok, f} = ParamStringStruct.Preprocessor.default(DateTime)
+      assert {:ok, f} = ParamStringStruct.PreprocessorGenerator.generate(DateTime)
 
       case f.("2024-02-01T00:00:00+09:00") do
         {:ok, x} -> assert x === ~U[2024-01-31T15:00:00Z]
@@ -95,7 +97,8 @@ defmodule Antikythera.ParamStringStructTest do
 
       [Time, Croma.TypeGen.nilable(Croma.Atom)]
       |> Enum.each(fn mod ->
-        assert {:error, :no_default_preprocessor} = ParamStringStruct.Preprocessor.default(mod)
+        assert {:error, :no_default_preprocessor} =
+                 ParamStringStruct.PreprocessorGenerator.generate(mod)
       end)
     end
   end

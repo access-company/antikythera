@@ -7,13 +7,13 @@ defmodule AntikytheraCore.BodyJsonCommon do
   Common functions for `Antikythera.BodyJsonStruct`, `Antikythera.BodyJsonMap` and `Antikythera.BodyJsonList`.
   """
 
-  defmodule Preprocessor do
+  defmodule PreprocessorGenerator do
     @moduledoc """
-    Common default preprocessor for `Antikythera.BodyJsonStruct`, `Antikythera.BodyJsonMap` and `Antikythera.BodyJsonList`.
+    Common preprocessor generator for `Antikythera.BodyJsonStruct`, `Antikythera.BodyJsonMap` and `Antikythera.BodyJsonList`.
     """
     @type t :: (nil | AntikytheraCore.BaseParamStruct.json_value_t() -> Croma.Result.t() | term)
 
-    defun default(mod :: v[module]) :: Croma.Result.t(t()) do
+    defun generate(mod :: v[module]) :: Croma.Result.t(t()) do
       if :code.get_mode() == :interactive do
         true = Code.ensure_loaded?(mod)
       end
@@ -28,14 +28,14 @@ defmodule AntikytheraCore.BodyJsonCommon do
 
   @common_default_preprocessor &Function.identity/1
 
-  defun extract_preprocessor_or_default(mod :: {module, Preprocessor.t()} | module) ::
-          {module, Preprocessor.t()} do
+  defun extract_preprocessor_or_default(mod :: {module, PreprocessorGenerator.t()} | module) ::
+          {module, PreprocessorGenerator.t()} do
     {mod, preprocessor} = mod_with_preprocessor
     when is_atom(mod) and is_function(preprocessor, 1) ->
       mod_with_preprocessor
 
     mod when is_atom(mod) ->
-      case Preprocessor.default(mod) do
+      case PreprocessorGenerator.generate(mod) do
         {:ok, preprocessor} -> {mod, preprocessor}
         {:error, :no_default_preprocessor} -> {mod, @common_default_preprocessor}
       end

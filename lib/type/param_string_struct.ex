@@ -126,14 +126,14 @@ defmodule Antikythera.ParamStringStruct do
   The preprocessor must be a captured named function like `&Module.function/arity` to be used in module attributes internally.
   """
 
-  defmodule Preprocessor do
+  defmodule PreprocessorGenerator do
     @moduledoc false
 
     @type t :: (nil | String.t() -> Croma.Result.t() | term)
 
     alias Antikythera.StringPreprocessor
 
-    defun default(mod :: v[module]) :: Croma.Result.t(t()) do
+    defun generate(mod :: v[module]) :: Croma.Result.t(t()) do
       # The default preprocessors are defined as a capture form `&Mod.fun/arity`, which can be used in module attributes.
       case Module.split(mod) do
         # Preprocessors for Croma built-in types
@@ -179,7 +179,7 @@ defmodule Antikythera.ParamStringStruct do
           original_mod = Module.safe_concat(original_mod_split)
 
           original_mod
-          |> default()
+          |> generate()
           |> Croma.Result.map(&generate_nilable_preprocessor(&1, original_mod))
 
         _ ->
@@ -233,7 +233,7 @@ defmodule Antikythera.ParamStringStruct do
         Keyword.put(
           opts,
           :preprocessor_generator,
-          &Antikythera.ParamStringStruct.Preprocessor.default/1
+          &Antikythera.ParamStringStruct.PreprocessorGenerator.generate/1
         )
 
       use AntikytheraCore.BaseParamStruct, opts_with_default_preprocessor_generator
