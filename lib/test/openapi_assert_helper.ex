@@ -447,11 +447,9 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
     end
 
     defunp assert_request_query(asserter :: SchemaAsserter.t(), path :: v[String.t()]) :: :ok do
-      case URI.parse(path) do
-        %{query: query_s} ->
-          query = URI.decode_query(query_s || "")
-          assert_parameters(asserter, "query", query)
-      end
+      %URI{query: query_s} = URI.parse(path)
+      query = URI.decode_query(query_s || "")
+      assert_parameters(asserter, "query", query)
     end
 
     defunp assert_request_header(asserter :: SchemaAsserter.t(), headers :: v[Headers.t()]) :: :ok do
