@@ -552,6 +552,9 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
 
     defunp pick_request_body(asserter :: SchemaAsserter.t()) :: v[map | nil] do
       case asserter.api["requestBody"] do
+        %{"$ref" => "#/components/requestBodies/" <> ref} ->
+          asserter.components["requestBodies"][ref]["content"]["application/json"]["schema"]
+
         %{"content" => %{"application/json" => %{"schema" => schema}}} ->
           schema
 
@@ -576,8 +579,21 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
           key in (200..207 |> Enum.map(&to_string/1))
         end)
 
-      {String.to_integer(success_key),
-       responses[success_key]["content"]["application/json"]["schema"]}
+      {String.to_integer(success_key), pick_response_body(asserter, success_key)}
+    end
+
+    defunp pick_response_body(asserter :: SchemaAsserter.t(), status :: v[String.t()]) ::
+             v[map | nil] do
+      case asserter.api["responses"][status] do
+        %{"$ref" => "#/components/responses/" <> ref} ->
+          asserter.components["responses"][ref]["content"]["application/json"]["schema"]
+
+        %{"content" => %{"application/json" => %{"schema" => schema}}} ->
+          schema
+
+        _ ->
+          nil
+      end
     end
 
     defunp validate_response_body(
@@ -675,8 +691,8 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
         nil ->
           {:error, :status_not_found}
 
-        {_, api_error_body} ->
-          schema = api_error_body["content"]["application/json"]["schema"]
+        {key, _api_error_body} ->
+          schema = pick_response_body(asserter, key)
 
           with_ref_target =
             Map.merge(schema, %{
