@@ -1,11 +1,12 @@
 defmodule <%= gear_name_camel %>.Controller.Api.HelloTest do
   use ExUnit.Case
 
+  @api_schema OpenApiAssert.find_api("hello")
+
   describe "POST /api/hello" do
     test "should return a JSON response" do
-      response = Req.post_json("/api/hello", %{"name" => "John"})
+      response = OpenApiAssert.post_json_for_success(@api_schema, "/api/hello", %{"name" => "John"})
       assert response.status == 200
-      assert response.headers["content-type"] == "application/json"
       body = response.body
       assert %{"message" => "Hello, John!"} = Jason.decode!(body)
     end
