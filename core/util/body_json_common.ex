@@ -13,7 +13,7 @@ defmodule AntikytheraCore.BodyJsonCommon do
 
     defun generate(mod :: v[module]) :: Croma.Result.t(t()) do
       if :code.get_mode() == :interactive do
-        true = Code.ensure_loaded?(mod)
+        Code.ensure_compiled!(mod)
       end
 
       cond do

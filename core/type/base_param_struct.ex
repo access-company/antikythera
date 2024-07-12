@@ -257,7 +257,7 @@ defmodule AntikytheraCore.BaseParamStruct do
   @doc false
   defun valid_field?(value :: term, mod :: v[module]) :: boolean do
     if :code.get_mode() == :interactive do
-      true = Code.ensure_loaded?(mod)
+      Code.ensure_compiled!(mod)
     end
 
     cond do
