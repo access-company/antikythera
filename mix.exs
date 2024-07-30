@@ -100,7 +100,7 @@ defmodule Antikythera.Mixfile do
       {:jason, "1.2.2"},
       {:gettext, "0.17.1"},
       {:croma, "0.11.3"},
-      {:ex_json_schema, "0.7.4"},
+      {:ex_json_schema, "0.10.2"},
 
       # tools
       {:exsync, "0.3.0", [only: :dev]},
@@ -135,6 +135,8 @@ defmodule Antikythera.Mixfile do
       {:unicode_util_compat, "0.7.0", [indirect: true]},
       # fast_xml
       {:p1_utils, "1.0.23", [indirect: true]},
+      # ex_json_schema
+      {:decimal, "2.1.1", [indirect: true]},
 
       # indirect tool deps
       # credo
