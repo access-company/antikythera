@@ -105,7 +105,7 @@ defmodule Antikythera.Mixfile do
       # tools
       {:exsync, "0.3.0", [only: :dev]},
       {:ex_doc, "0.30.9", [only: :dev, runtime: false]},
-      {:dialyxir, "1.4.2", [only: :dev, runtime: false]},
+      {:dialyxir, "1.4.3", [only: :dev, runtime: false]},
       {:credo, "1.7.1", [only: :dev, runtime: false]},
       {:mix_test_watch, "1.1.1", [only: :dev, runtime: false]},
       {:meck, "0.9.2", [only: :test]},
@@ -152,7 +152,7 @@ defmodule Antikythera.Mixfile do
       # credo, exsync and mix_test_watch
       {:file_system, "0.2.10", [indirect: true, only: :dev]},
       # dialyxir
-      {:erlex, "0.2.6", [indirect: true, only: :dev]},
+      {:erlex, "0.2.7", [indirect: true, only: :dev]},
       # yaml_elixir
       {:yamerl, "0.10.0", [indirect: true, only: :test]}
     ]
