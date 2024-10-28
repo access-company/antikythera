@@ -103,15 +103,15 @@ defmodule Antikythera.Mixfile do
       {:ex_json_schema, "0.10.2"},
 
       # tools
-      {:exsync, "0.3.0", [only: :dev]},
-      {:ex_doc, "0.30.9", [only: :dev, runtime: false]},
+      {:exsync, "0.4.1", [only: :dev]},
+      {:ex_doc, "0.33.0", [only: :dev, runtime: false]},
       {:dialyxir, "1.4.3", [only: :dev, runtime: false]},
-      {:credo, "1.7.1", [only: :dev, runtime: false]},
-      {:mix_test_watch, "1.1.1", [only: :dev, runtime: false]},
+      {:credo, "1.7.8", [only: :dev, runtime: false]},
+      {:mix_test_watch, "1.2.0", [only: :dev, runtime: false]},
       {:meck, "0.9.2", [only: :test]},
-      {:excoveralls, "0.17.1", [only: :test]},
-      {:stream_data, "0.6.0", [only: :test]},
-      {:yaml_elixir, "2.9.0", [only: :test]},
+      {:excoveralls, "0.18.3", [only: :test]},
+      {:stream_data, "1.1.1", [only: :test]},
+      {:yaml_elixir, "2.11.0", [only: :test]},
       # as a websocket client implementation to use during test (including upgrade_compatibility_test)
       # 1.4.0 requires OTP 21 or later
       {:websocket_client, "1.3.0", [only: :test]},
@@ -128,8 +128,8 @@ defmodule Antikythera.Mixfile do
       # hackney
       {:metrics, "1.0.1", [indirect: true]},
       # hackney
-      {:mimerl, "1.2.0", [indirect: true]},
-      # certifi
+      {:mimerl, "1.3.0", [indirect: true]},
+      # hackney
       {:parse_trans, "3.3.1", [indirect: true]},
       # idna
       {:unicode_util_compat, "0.7.0", [indirect: true]},
@@ -140,15 +140,15 @@ defmodule Antikythera.Mixfile do
 
       # indirect tool deps
       # credo
-      {:bunt, "0.2.1", [indirect: true, only: :dev]},
+      {:bunt, "1.0.0", [indirect: true, only: :dev]},
       # ex_doc
-      {:earmark_parser, "1.4.37", [indirect: true, only: :dev]},
+      {:earmark_parser, "1.4.41", [indirect: true, only: :dev]},
       # ex_doc
-      {:makeup_elixir, "0.16.1", [indirect: true, only: :dev]},
+      {:makeup_elixir, "0.16.2", [indirect: true, only: :dev]},
       # ex_doc
-      {:makeup_erlang, "0.1.2", [indirect: true, only: :dev]},
+      {:makeup_erlang, "1.0.1", [indirect: true, only: :dev]},
       # makeup_elixir
-      {:makeup, "1.1.0", [indirect: true, only: :dev]},
+      {:makeup, "1.1.2", [indirect: true, only: :dev]},
       # makeup
       {:nimble_parsec, "1.3.1", [indirect: true, only: :dev]},
       # credo, exsync and mix_test_watch
