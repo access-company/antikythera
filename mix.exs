@@ -97,7 +97,7 @@ defmodule Antikythera.Mixfile do
 
       # The following libraries are used by both antikythera itself and gears.
       {:poison, "6.0.0"},
-      {:jason, "1.2.2"},
+      {:jason, "1.4.4"},
       {:gettext, "0.17.1"},
       {:croma, "0.11.3"},
       {:ex_json_schema, "0.10.2"},
@@ -135,7 +135,7 @@ defmodule Antikythera.Mixfile do
       {:unicode_util_compat, "0.7.0", [indirect: true]},
       # fast_xml
       {:p1_utils, "1.0.23", [indirect: true]},
-      # ex_json_schema
+      # jason and ex_json_schema
       {:decimal, "2.1.1", [indirect: true]},
 
       # indirect tool deps
