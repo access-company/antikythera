@@ -91,7 +91,7 @@ defmodule Antikythera.Mixfile do
       {:raft_fleet, "0.10.2", [antikythera_internal: true]},
       {:rafted_value, "0.11.2", [antikythera_internal: true]},
       {:syn, "3.3.0", [antikythera_internal: true]},
-      {:fast_xml, "1.1.48", [antikythera_internal: true]},
+      {:fast_xml, "1.1.53", [antikythera_internal: true]},
       {:foretoken, "0.3.0", [antikythera_internal: true]},
       {:recon, "2.5.4", [antikythera_internal: true]},
 
@@ -134,7 +134,7 @@ defmodule Antikythera.Mixfile do
       # idna
       {:unicode_util_compat, "0.7.0", [indirect: true]},
       # fast_xml
-      {:p1_utils, "1.0.23", [indirect: true]},
+      {:p1_utils, "1.0.26", [indirect: true]},
       # jason and ex_json_schema
       {:decimal, "2.1.1", [indirect: true]},
 
