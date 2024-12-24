@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2024 ACCESS CO., LTD. All rights reserved.
 
-use Bitwise
+import Bitwise
 use Croma
 
 defmodule Antikythera.IpAddress do
