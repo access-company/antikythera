@@ -198,7 +198,7 @@ defmodule Antikythera.MixConfig do
         handle_sasl_reports: true,
         backends: [:console, AntikytheraCore.Alert.LoggerBackend],
         console: [
-          format: "$dateT$time+00:00 [$level$levelpad] $metadata$message\n",
+          format: "$dateT$time+00:00 [$level] $metadata$message\n",
           metadata: [:module]
         ],
         # To suppress progress reports during start-up in development environments
