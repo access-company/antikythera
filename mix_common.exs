@@ -54,7 +54,11 @@ defmodule Antikythera.MixCommon do
   end
 
   defp dep_used_at_runtime?(dep) do
-    extract_dep_options(dep) |> Keyword.get(:runtime, true)
+    options = extract_dep_options(dep)
+    runtime = Keyword.get(options, :runtime, true)
+    name = elem(dep, 0)
+    # `:dialyxir` needs `:dialyzer` app, so run it only on `:dev` environment.
+    runtime or (Mix.env() == :dev and name == :dialyxir)
   end
 
   defp dep_indirect?(dep) do
@@ -138,7 +142,7 @@ defmodule Antikythera.MixCommon do
     {{y, mo, d}, {h, mi, s}} = :calendar.now_to_universal_time(time_as_tuple)
 
     last_commit_time =
-      :io_lib.format('~4..0w~2..0w~2..0w~2..0w~2..0w~2..0w', [y, mo, d, h, mi, s])
+      :io_lib.format(~c"~4..0w~2..0w~2..0w~2..0w~2..0w~2..0w", [y, mo, d, h, mi, s])
       |> List.to_string()
 
     {last_commit_sha1, 0} = System.cmd("git", ["rev-parse", "HEAD"])

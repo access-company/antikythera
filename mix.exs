@@ -86,7 +86,12 @@ defmodule Antikythera.Mixfile do
       {:cowlib, "2.12.1", [antikythera_internal: true]},
       {:hackney, "1.18.1", [antikythera_internal: true]},
       # 0.4.2 is broken!
-      {:calliope, "0.4.1", [antikythera_internal: true]},
+      {:calliope,
+       [
+         git: "git@github.com:aDaikiKamata/calliope.git",
+         ref: "cac791ef6083bb15443a8aa6da302a10dcfbad15",
+         antikythera_internal: true
+       ]},
       {:pool_sup, "0.6.2", [antikythera_internal: true]},
       {:raft_fleet, "0.10.2", [antikythera_internal: true]},
       {:rafted_value, "0.11.2", [antikythera_internal: true]},
@@ -99,7 +104,7 @@ defmodule Antikythera.Mixfile do
       {:poison, "6.0.0"},
       {:jason, "1.4.4"},
       {:gettext, "0.17.1"},
-      {:croma, "0.11.3"},
+      {:croma, git: "https://github.com/aYukiSekiguchi/croma.git", ref: "eb292ea09fa083f93319b7093c21a8eceaf5a800", override: true},
       {:ex_json_schema, "0.10.2"},
 
       # tools

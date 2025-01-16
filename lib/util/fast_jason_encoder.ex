@@ -55,7 +55,7 @@ defmodule Antikythera.FastJasonEncoder do
 
   defunp encode_map(value :: [tuple], opts :: Jason.Encode.opts(), comma :: boolean) :: iodata do
     [], _, _ ->
-      '}'
+      ~c"}"
 
     [{:__struct__, _v} | tail], opts, comma ->
       encode_map(tail, opts, comma)
@@ -68,7 +68,7 @@ defmodule Antikythera.FastJasonEncoder do
   end
 
   defunp encode_list(value :: list, opts :: Jason.Encode.opts(), comma :: boolean) :: iodata do
-    [], _, _ -> ']'
+    [], _, _ -> ~c"]"
     list, opts, true -> [?,, encode_list(list, opts, false)]
     [head | tail], opts, false -> [encode(head, opts) | encode_list(tail, opts, true)]
   end

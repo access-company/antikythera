@@ -18,7 +18,7 @@ defmodule AntikytheraCore.ErlangLogTranslator do
     :skip
   end
 
-  def translate(_min_level, :error, :format, {'Received a MNESIA down event' ++ _, _}) do
+  def translate(_min_level, :error, :format, {~c"Received a MNESIA down event" ++ _, _}) do
     :skip
   end
 

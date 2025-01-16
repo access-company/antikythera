@@ -30,7 +30,7 @@ defmodule AntikytheraCore.Version.Core do
     Artifact.copy_core_release_tgz(version)
 
     with {:ok, version_charlist} <-
-           :release_handler.unpack_release('#{version}/#{Env.antikythera_instance_name()}'),
+           :release_handler.unpack_release(~c"#{version}/#{Env.antikythera_instance_name()}"),
          {:ok, _, _} <- :release_handler.check_install_release(version_charlist, [:purge]),
          {:ok, _, _} <- :release_handler.install_release(version_charlist) do
       # :release_handler.install_release/1 resets envs of Applications to the default ones.

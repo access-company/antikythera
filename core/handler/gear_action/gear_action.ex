@@ -20,7 +20,7 @@ defmodule AntikytheraCore.Handler.GearAction do
   defun with_logging_and_metrics_reporting(
           %Conn{request: %Request{sender: {_web_or_gear, sender_info}}} = conn,
           %HelperModules{metrics_uploader: metrics_uploader} = helper_modules,
-          f :: (() -> Conn.t())
+          f :: (-> Conn.t())
         ) :: Conn.t() do
     {conn2, t_end, processing_time} = with_logging(conn, helper_modules, sender_info, f)
     %Conn{status: status, context: %Context{executor_pool_id: epool_id0}} = conn2
@@ -50,7 +50,7 @@ defmodule AntikytheraCore.Handler.GearAction do
            conn :: v[Conn.t()],
            %HelperModules{logger: logger},
            sender_info :: v[String.t() | GearName.t()],
-           f :: (() -> Conn.t())
+           f :: (-> Conn.t())
          ) :: {Conn.t(), Time.t(), non_neg_integer} do
     %Conn{context: %Context{start_time: t_start, context_id: context_id}} = conn
     log_message_base = "#{CoreConn.request_info(conn)} from=#{sender_info}"

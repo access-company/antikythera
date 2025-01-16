@@ -80,7 +80,7 @@ defmodule AntikytheraCore.Version.Gear do
     end
   end
 
-  defunp add_code_path(ebin_dir :: Path.t(), f :: (() -> any)) :: any do
+  defunp add_code_path(ebin_dir :: Path.t(), f :: (-> any)) :: any do
     dir = ebin_dir |> Path.expand() |> String.to_charlist()
     true = :code.add_pathz(dir)
 

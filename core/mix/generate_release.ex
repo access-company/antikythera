@@ -193,7 +193,7 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
   defp create_RELEASES(%Mix.Release{version: version} = release) do
     releases_dir = String.to_charlist(releases_dir(release))
     rel_file = rel_file_path(release, version)
-    :ok = :release_handler.create_RELEASES('.', releases_dir, rel_file, [])
+    :ok = :release_handler.create_RELEASES(~c".", releases_dir, rel_file, [])
     Mix.shell().info("Generated RELEASES.")
   end
 
@@ -264,7 +264,7 @@ defmodule Mix.Tasks.AntikytheraCore.GenerateRelease do
   defp make_name_for_relup(%Mix.Release{} = release, version) do
     release
     |> rel_file_path(version)
-    |> :filename.rootname('.rel')
+    |> :filename.rootname(~c".rel")
   end
 
   defp lib_dir_for_app(%Mix.Release{path: path}, app, app_version) do

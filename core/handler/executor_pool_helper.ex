@@ -69,7 +69,7 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
           } = conn,
           %{pid: ws_pid} = req :: :cowboy_req.req(),
           %HelperModules{logger: logger},
-          f :: (() -> a)
+          f :: (-> a)
         ) :: :cowboy_req.req() | a
         when a: any do
     case WsCounter.increment(epool_id, ws_pid) do

@@ -22,7 +22,7 @@ defmodule AntikytheraCore.AsyncJob.RateLimit do
 
   defun check_with_retry_for_query(
           queue_name :: v[atom],
-          f :: (() -> a),
+          f :: (-> a),
           attempts :: v[non_neg_integer] \\ 0
         ) :: a
         when a: any do
