@@ -85,8 +85,12 @@ defmodule Antikythera.Mixfile do
       {:cowboy, "2.10.0", [antikythera_internal: true]},
       {:cowlib, "2.12.1", [antikythera_internal: true]},
       {:hackney, "1.18.1", [antikythera_internal: true]},
-      # 0.4.2 is broken!
-      {:calliope, "0.4.1", [antikythera_internal: true]},
+      {:calliope,
+       [
+         git: "git@github.com:access-company/calliope.git",
+         ref: "733b9973b51ab5e4bc70fcae832466867485ecba",
+         antikythera_internal: true
+       ]},
       {:pool_sup, "0.6.2", [antikythera_internal: true]},
       {:raft_fleet, "0.10.2", [antikythera_internal: true]},
       {:rafted_value, "0.11.2", [antikythera_internal: true]},
