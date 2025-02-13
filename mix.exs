@@ -103,7 +103,7 @@ defmodule Antikythera.Mixfile do
       {:poison, "6.0.0"},
       {:jason, "1.4.4"},
       {:gettext, "0.17.1"},
-      {:croma, "0.11.3"},
+      {:croma, "0.12.0"},
       {:ex_json_schema, "0.10.2"},
 
       # tools
