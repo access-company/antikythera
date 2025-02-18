@@ -64,7 +64,7 @@ defmodule AntikytheraCore.Release.Appup do
     }
 
     v2_appup_path = Path.join([v2_dir, "ebin", "#{name}.appup"])
-    file_content_string = :io_lib.fwrite('~p.\n', [file_content]) |> List.to_string()
+    file_content_string = :io_lib.fwrite(~c"~p.\n", [file_content]) |> List.to_string()
     File.write!(v2_appup_path, file_content_string)
   end
 
@@ -88,7 +88,7 @@ defmodule AntikytheraCore.Release.Appup do
         |> Enum.filter(fn {{_, ov}, {_, nv}} -> ov != nv end)
         |> Enum.map(fn {{k, _}, _} -> k end)
 
-      if changed_chunk_names == ['Dbgi'] do
+      if changed_chunk_names == [~c"Dbgi"] do
         IO.puts(
           "#{inspect(module_name)} is excluded from .appup file, because only Dbgi chunk is changed."
         )
