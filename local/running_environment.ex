@@ -179,7 +179,10 @@ defmodule AntikytheraLocal.RunningEnvironment do
       env: @compile_environment_vars
     )
 
-    Cmd.exec_and_output_log!("mix", ["compile"], cd: gear_repo_dir, env: @compile_environment_vars)
+    Cmd.exec_and_output_log!("mix", ["compile"],
+      cd: gear_repo_dir,
+      env: @compile_environment_vars
+    )
 
     Path.join([gear_repo_dir, "_build_local", "prod", "lib", gear_name_str])
   end
