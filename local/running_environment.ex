@@ -152,7 +152,6 @@ defmodule AntikytheraLocal.RunningEnvironment do
 
     :timer.sleep(5000)
     System.cmd("find", ["."], cd: @compiled_gears_dir) |> IO.puts()
-    {_, 0} =
       System.cmd(
         "tar",
         ["-czhf", "#{gear_name_str}-#{version}.tgz", "#{gear_name_str}-#{version}", "--warning=no-file-removed"],
