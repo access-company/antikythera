@@ -56,11 +56,11 @@ references:
   restore_updated_antikythera_instance_example_directory: &restore_updated_antikythera_instance_example_directory
     restore_cache:
       keys:
-        - antikythera_instance_example-updated_repo-{{ .Branch }}
+        - antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   restore_testgear_directory: &restore_testgear_directory
     restore_cache:
       keys:
-        - testgear-repo-{{ .Branch }}
+        - testgear-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   edit_etc_hosts: &edit_etc_hosts
     run:
       name: Add testgear.localhost and <hostname>.local to /etc/hosts
@@ -68,7 +68,7 @@ references:
   restore_updated_testgear_directory: &restore_updated_testgear_directory
     restore_cache:
       keys:
-        - testgear-updated_repo-{{ .Branch }}
+        - testgear-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
 
 jobs:
   prepare_elixir:
@@ -191,7 +191,7 @@ jobs:
             MIX_ENV=test mix compile
             MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
       - save_cache:
-          key: antikythera_instance_example-repo-{{ .Branch }}
+          key: antikythera_instance_example-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - .
             - ~/.cache
@@ -218,7 +218,7 @@ jobs:
             MIX_ENV=test mix compile
             MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
       - save_cache:
-          key: antikythera_instance_example-updated_repo-{{ .Branch }}
+          key: antikythera_instance_example-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - .
             - ~/.cache
@@ -249,7 +249,7 @@ jobs:
             MIX_ENV=test mix compile
             MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
       - save_cache:
-          key: testgear-repo-{{ .Branch }}
+          key: testgear-repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - .
             - ~/.cache
@@ -305,7 +305,7 @@ jobs:
             MIX_ENV=dev mix compile
             MIX_ENV=test mix compile
       - save_cache:
-          key: testgear-updated_repo-{{ .Branch }}
+          key: testgear-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - .
             - ~/.cache
