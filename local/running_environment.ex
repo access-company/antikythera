@@ -153,7 +153,7 @@ defmodule AntikytheraLocal.RunningEnvironment do
     {_, 0} =
       System.cmd(
         "tar",
-        ["-czhf", "#{gear_name_str}-#{version}.tgz", "#{gear_name_str}-#{version}"],
+        ["-czhf", "#{gear_name_str}-#{version}.tgz", "#{gear_name_str}-#{version}", "--warning=no-file-removed"],
         cd: @compiled_gears_dir
       )
 
