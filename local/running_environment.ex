@@ -150,6 +150,7 @@ defmodule AntikytheraLocal.RunningEnvironment do
     if generate_appup?, do: generate_appup(gear_name_str, gear_repo_dir)
     rename_dir!(build_gear_dir, Path.join(@compiled_gears_dir, "#{gear_name_str}-#{version}"))
 
+    :timer.sleep(5000)
     {_, 0} =
       System.cmd(
         "tar",
