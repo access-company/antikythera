@@ -90,7 +90,7 @@ defmodule AntikytheraCore.Handler.GearError do
   defunp invoke_error_handler(
            conn :: v[Conn.t()],
            invoke_fn :: (module -> Conn.t()),
-           default_fn :: (() -> Conn.t())
+           default_fn :: (-> Conn.t())
          ) :: Conn.t() do
     case CoreConn.gear_name(conn) |> GearModule.error_handler() do
       nil ->

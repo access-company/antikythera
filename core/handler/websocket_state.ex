@@ -79,7 +79,7 @@ defmodule AntikytheraCore.Handler.WebsocketState do
   defunp run_callback_and_reply(
            state :: v[t],
            n_received :: v[non_neg_integer],
-           f :: (() -> callback_result)
+           f :: (-> callback_result)
          ) :: callback_result do
     try do
       {:ok, f.()}

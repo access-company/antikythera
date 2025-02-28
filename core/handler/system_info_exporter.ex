@@ -20,7 +20,7 @@ defmodule AntikytheraCore.Handler.SystemInfoExporter do
       :ets.lookup_element(@table_name, @key, 2)
     end
 
-    defun with_valid_token(req :: :cowboy_req.req(), f :: (() -> :cowboy_req.req())) ::
+    defun with_valid_token(req :: :cowboy_req.req(), f :: (-> :cowboy_req.req())) ::
             {:ok, :cowboy_req.req(), nil} do
       valid_token = get()
 

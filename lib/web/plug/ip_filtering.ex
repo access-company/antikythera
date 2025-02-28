@@ -67,7 +67,7 @@ defmodule Antikythera.Plug.IpFiltering do
     defun run_check_on_cloud(
             conn :: v[Conn.t()],
             opts :: Keyword.t(),
-            fun :: (() -> [:inet.ip4_address()])
+            fun :: (-> [:inet.ip4_address()])
           ) :: Conn.t() do
       run_check(conn, opts, fun)
     end
@@ -75,7 +75,7 @@ defmodule Antikythera.Plug.IpFiltering do
     defun run_check_on_cloud(
             conn :: v[Conn.t()],
             _opts :: Keyword.t(),
-            _fun :: (() -> [:inet.ip4_address()])
+            _fun :: (-> [:inet.ip4_address()])
           ) :: Conn.t() do
       # Do nothing
       conn
@@ -88,7 +88,7 @@ defmodule Antikythera.Plug.IpFiltering do
   defun run_check(
           %Conn{request: %Request{sender: sender}} = conn,
           opts :: Keyword.t(term),
-          ip_ranges_fun :: (() -> [:inet.ip_address()])
+          ip_ranges_fun :: (-> [:inet.ip_address()])
         ) :: Conn.t() do
     case sender do
       {:web, ip_str} ->
