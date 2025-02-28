@@ -151,6 +151,7 @@ defmodule AntikytheraLocal.RunningEnvironment do
     rename_dir!(build_gear_dir, Path.join(@compiled_gears_dir, "#{gear_name_str}-#{version}"))
 
     :timer.sleep(5000)
+    System.cmd("find", ["."], cd: @compiled_gears_dir) |> IO.inspect()
     {_, 0} =
       System.cmd(
         "tar",
