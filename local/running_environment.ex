@@ -162,7 +162,7 @@ defmodule AntikytheraLocal.RunningEnvironment do
 
   defp rename_dir!(src, dest) do
     # `File.rename/2` won't work across partitions
-    File.cp_r!(src, dest)
+    File.cp_r!(src, dest, dereference_symlinks: true)
     File.rm_rf!(src)
   end
 
