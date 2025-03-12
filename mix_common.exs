@@ -57,8 +57,16 @@ defmodule Antikythera.MixCommon do
     options = extract_dep_options(dep)
     runtime = Keyword.get(options, :runtime, true)
     name = elem(dep, 0)
-    # `:dialyxir` needs `:dialyzer` app, so run it only on `:dev` environment.
-    runtime or (Mix.env() == :dev and name == :dialyxir)
+
+    runtime_for_dev =
+      if Mix.env() == :dev do
+        # Some mix task commands run app. We allow it for dev.
+        name == :dialyxir or name == :ex_doc
+      else
+        false
+      end
+
+    runtime or runtime_for_dev
   end
 
   defp dep_indirect?(dep) do
