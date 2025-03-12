@@ -11,7 +11,7 @@
 defmodule Antikythera.MixCommon do
   def common_project_settings() do
     [
-      elixir: "~> 1.13",
+      elixir: "~> 1.15",
       elixirc_options: [warnings_as_errors: true],
       build_path: build_path(),
       build_embedded: Mix.env() == :prod,
