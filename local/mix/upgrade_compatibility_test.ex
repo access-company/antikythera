@@ -121,7 +121,10 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
   end
 
   defp clean() do
-    build_dir = Mix.Project.build_path() |> Path.dirname()
+    # This task is called without `ANTIKYTHERA_COMPILE_ENV=local`, but tasks called inside this task are called with it.
+    # So we need to remove the compiled files in the local environment.
+    # See also `Antikythera.MixCommon.build_path/0`
+    build_dir = "_build_local"
     File.rm_rf!(Path.join([build_dir, "prod", "lib"]))
   end
 
