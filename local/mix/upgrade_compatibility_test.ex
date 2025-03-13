@@ -122,8 +122,7 @@ defmodule Mix.Tasks.AntikytheraLocal.UpgradeCompatibilityTest do
 
   defp clean() do
     build_dir = Mix.Project.build_path() |> Path.dirname()
-    File.rm_rf!(Path.join([build_dir, "prod", "lib", "antikythera"]))
-    File.rm_rf!(Path.join([build_dir, "prod", "lib", "#{@antikythera_instance_name}"]))
+    File.rm_rf!(Path.join([build_dir, "prod", "lib"]))
   end
 
   defp run_mix_task(args) do
