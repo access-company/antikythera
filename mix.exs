@@ -84,7 +84,7 @@ defmodule Antikythera.Mixfile do
       # these are considered as implementation details of antikythera and thus must not be used by gear implementations.
       {:cowboy, "2.10.0", [antikythera_internal: true]},
       {:cowlib, "2.12.1", [antikythera_internal: true]},
-      {:hackney, "1.18.1", [antikythera_internal: true]},
+      {:hackney, "1.21.0", [antikythera_internal: true]},
       {:calliope,
        [
          git: "git@github.com:access-company/calliope.git",
@@ -124,7 +124,7 @@ defmodule Antikythera.Mixfile do
       # cowboy
       {:ranch, "1.8.0", [indirect: true]},
       # hackney
-      {:certifi, "2.9.0", [indirect: true]},
+      {:certifi, "2.14.0", [indirect: true]},
       # hackney
       {:ssl_verify_fun, "1.1.7", [indirect: true]},
       # hackney
@@ -134,7 +134,7 @@ defmodule Antikythera.Mixfile do
       # hackney
       {:mimerl, "1.3.0", [indirect: true]},
       # hackney
-      {:parse_trans, "3.3.1", [indirect: true]},
+      {:parse_trans, "3.4.1", [indirect: true]},
       # idna
       {:unicode_util_compat, "0.7.0", [indirect: true]},
       # fast_xml
