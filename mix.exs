@@ -97,7 +97,7 @@ defmodule Antikythera.Mixfile do
       {:syn, "3.3.0", [antikythera_internal: true]},
       {:fast_xml, "1.1.53", [antikythera_internal: true]},
       {:foretoken, "0.3.0", [antikythera_internal: true]},
-      {:recon, "2.5.4", [antikythera_internal: true]},
+      {:recon, "2.5.6", [antikythera_internal: true]},
 
       # The following libraries are used by both antikythera itself and gears.
       {:poison, "6.0.0"},
@@ -140,7 +140,7 @@ defmodule Antikythera.Mixfile do
       # fast_xml
       {:p1_utils, "1.0.26", [indirect: true]},
       # jason and ex_json_schema
-      {:decimal, "2.1.1", [indirect: true]},
+      {:decimal, "2.3.0", [indirect: true]},
 
       # indirect tool deps
       # credo
@@ -154,7 +154,7 @@ defmodule Antikythera.Mixfile do
       # makeup_elixir
       {:makeup, "1.2.1", [indirect: true, only: :dev]},
       # makeup
-      {:nimble_parsec, "1.4.0", [indirect: true, only: :dev]},
+      {:nimble_parsec, "1.4.2", [indirect: true, only: :dev]},
       # credo, exsync and mix_test_watch
       {:file_system, "1.0.1", [indirect: true, only: :dev]},
       # dialyxir
