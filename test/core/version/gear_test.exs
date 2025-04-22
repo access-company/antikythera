@@ -83,6 +83,10 @@ defmodule AntikytheraCore.Version.GearTest do
   test "auto_generated_module?" do
     refute V.auto_generated_module?(Antikythera.Time)
     assert V.auto_generated_module?(Croma.TypeGen.Nilable.Antikythera.Time)
+
+    assert V.auto_generated_module?(
+             Antikythera.ParamStringStruct.PreprocessorGenerator.Nilable.Croma.String
+           )
   end
 
   describe "install_gears_at_startup/1" do

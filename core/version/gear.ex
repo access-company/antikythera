@@ -63,7 +63,11 @@ defmodule AntikytheraCore.Version.Gear do
   end
 
   defunpt auto_generated_module?(mod :: v[module]) :: v[boolean] do
-    Atom.to_string(mod) |> String.starts_with?("Elixir.Croma.TypeGen.")
+    Atom.to_string(mod)
+    |> String.starts_with?([
+      "Elixir.Croma.TypeGen.",
+      "Elixir.Antikythera.ParamStringStruct.PreprocessorGenerator.Nilable."
+    ])
   end
 
   defunp load_module_if_needed!(mod :: v[module]) :: :ok do
