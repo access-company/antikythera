@@ -55,22 +55,26 @@ defmodule AntikytheraCore.Handler.GearAction do
            sender_info :: v[String.t() | GearName.t()],
            f :: (-> Conn.t())
          ) :: {Conn.t(), Time.t(), non_neg_integer} do
-    %GearAction.Context{start_monotonic_time: start_monotonic_time} = context
-    %Conn{context: %Context{start_time: t_start, context_id: context_id}} = conn
+    %GearAction.Context{
+      start_monotonic_time: start_monotonic_time,
+      start_time_for_log: start_time_for_log
+    } = context
+
+    %Conn{context: %Context{context_id: context_id}} = conn
     log_message_base = "#{CoreConn.request_info(conn)} from=#{sender_info}"
 
     headers =
       @http_headers_to_log
       |> Enum.map_join(fn key -> " #{key}=#{Conn.get_req_header(conn, key) || "(none)"}" end)
 
-    Writer.info(logger, t_start, context_id, "#{log_message_base} START#{headers}")
+    Writer.info(logger, start_time_for_log, context_id, "#{log_message_base} START#{headers}")
     %Conn{status: status} = conn2 = f.()
     end_time = EndTime.now()
     processing_time = end_time.monotonic - start_monotonic_time
 
     Writer.info(
       logger,
-      end_time.antikythera_time,
+      end_time.gear_log,
       context_id,
       "#{log_message_base} END status=#{status} time=#{processing_time}ms"
     )

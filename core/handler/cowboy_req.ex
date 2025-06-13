@@ -4,12 +4,13 @@ use Croma
 
 defmodule AntikytheraCore.Handler.CowboyReq do
   alias Croma.Result, as: R
-  alias Antikythera.{Time, GearName, PathInfo, Conn, Context}
+  alias Antikythera.{GearName, PathInfo, Conn, Context}
   alias Antikythera.Http.{Method, QueryParams, Body}
   alias Antikythera.Request.PathMatches
   alias Antikythera.Context.GearEntryPoint
   alias AntikytheraCore.Conn, as: CoreConn
   alias AntikytheraCore.Handler.{GearAction, GearError, BodyParser, HelperModules}
+  alias AntikytheraCore.GearLog
   alias AntikytheraCore.GearLog.{ContextHelper, Writer}
 
   @type result(a) :: {:ok, a} | {:error, :cowboy_req.req()}
@@ -91,7 +92,7 @@ defmodule AntikytheraCore.Handler.CowboyReq do
          ) :: Conn.t() do
     Writer.info(
       logger,
-      Time.now(),
+      GearLog.Time.now(),
       context_id,
       "timeout in receiving request body: something is wrong with the client?"
     )

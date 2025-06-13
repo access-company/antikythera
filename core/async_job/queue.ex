@@ -14,6 +14,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   alias AntikytheraCore.AsyncJob
   alias AntikytheraCore.AsyncJob.{RateLimit, RaftedValueConfigMaker}
   alias AntikytheraCore.ExecutorPool.AsyncJobBroker, as: Broker
+  alias AntikytheraCore.GearLog
 
   @max_jobs 1000
   # just for documentation
@@ -462,7 +463,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
 
       Writer.error(
         logger,
-        Time.now(),
+        GearLog.Time.now(),
         ContextId.system_context(),
         "<async_job> #{message_common}"
       )

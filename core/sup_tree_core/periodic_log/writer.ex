@@ -8,7 +8,8 @@ defmodule AntikytheraCore.PeriodicLog.Writer do
   """
 
   use GenServer
-  alias Antikythera.{Time, ContextId}
+  alias Antikythera.ContextId
+  alias AntikytheraCore.GearLog
   alias AntikytheraCore.GearLog.LogRotation
 
   @interval 1000
@@ -50,7 +51,7 @@ defmodule AntikytheraCore.PeriodicLog.Writer do
       if is_nil(message) do
         %State{state | build_state: next_build_state}
       else
-        log = {Time.now(), :info, ContextId.system_context(), message}
+        log = {GearLog.Time.now(), :info, ContextId.system_context(), message}
         next_log_state = LogRotation.write_log(log_state, log)
         %State{state | log_state: next_log_state, build_state: next_build_state}
       end

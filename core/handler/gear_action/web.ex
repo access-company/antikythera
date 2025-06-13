@@ -136,9 +136,16 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
     end)
     |> case do
       %Conn{status: 101} = conn3 ->
-        ExecutorPoolHelper.increment_ws_count(conn3, req, helper_modules, fn ->
-          {req, WebsocketState.make(conn3, entry_point, helper_modules)}
-        end)
+        ExecutorPoolHelper.increment_ws_count(
+          conn3,
+          context.start_time_for_log,
+          req,
+          helper_modules,
+          fn ->
+            {req,
+             WebsocketState.make(conn3, context.start_time_for_log, entry_point, helper_modules)}
+          end
+        )
 
       conn3 ->
         CoreConn.reply_as_cowboy_res(conn3, req)

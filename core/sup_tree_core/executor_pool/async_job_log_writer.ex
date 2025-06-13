@@ -8,7 +8,8 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobLog.Writer do
   """
 
   use GenServer
-  alias Antikythera.{Time, ContextId}
+  alias Antikythera.ContextId
+  alias AntikytheraCore.GearLog
   alias AntikytheraCore.GearLog.LogRotation
 
   @rotate_interval 24 * 60 * 60 * 1000
@@ -26,7 +27,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobLog.Writer do
 
   @impl true
   def handle_cast(message, state) do
-    log = {Time.now(), :info, ContextId.system_context(), message}
+    log = {GearLog.Time.now(), :info, ContextId.system_context(), message}
     {:noreply, LogRotation.write_log(state, log)}
   end
 
