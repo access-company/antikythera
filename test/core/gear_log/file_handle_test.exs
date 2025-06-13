@@ -3,11 +3,12 @@
 defmodule AntikytheraCore.GearLog.FileHandleTest do
   use Croma.TestCase
   alias Antikythera.Time
+  alias AntikytheraCore.GearLog
 
   @tmp_dir Path.join([__DIR__, "..", "..", "tmp"]) |> Path.expand()
   @log_file_path Path.join([@tmp_dir, "log", "gear.log"]) |> Path.expand()
-  @log_time Time.now()
-  @context_id AntikytheraCore.Context.make_context_id(@log_time)
+  @log_time GearLog.Time.now()
+  @context_id AntikytheraCore.Context.make_context_id(Time.now())
   @gear_log {@log_time, :info, @context_id, "test_log"}
 
   setup do
@@ -22,7 +23,7 @@ defmodule AntikytheraCore.GearLog.FileHandleTest do
       Enum.flat_map(logs, fn {time, level, context_id, message} ->
         String.split(message, "\n", trim: true)
         |> Enum.map(fn line ->
-          Time.to_iso_timestamp(time) <> " [#{level}] context=#{context_id} #{line}"
+          GearLog.Time.to_iso_timestamp(time) <> " [#{level}] context=#{context_id} #{line}"
         end)
       end)
 
@@ -46,7 +47,8 @@ defmodule AntikytheraCore.GearLog.FileHandleTest do
     :timer.sleep(110)
 
     log_msg =
-      {Time.now(), :info, @context_id, "next message after the log file size exceeds limit"}
+      {GearLog.Time.now(), :info, @context_id,
+       "next message after the log file size exceeds limit"}
 
     {:rotated, handle2} = FileHandle.write(handle1, log_msg)
     FileHandle.close(handle2)

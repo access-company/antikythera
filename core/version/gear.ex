@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraCore.Version.Gear do
-  alias Antikythera.{Time, GearName, VersionStr, ContextId}
+  alias Antikythera.{GearName, VersionStr, ContextId}
   alias AntikytheraCore.{Version, GearManager, GearModule, StartupManager, GearLog}
   alias AntikytheraCore.Version.{Artifact, History}
   alias AntikytheraCore.Path, as: CorePath
@@ -117,7 +117,7 @@ defmodule AntikytheraCore.Version.Gear do
 
     GearLog.Writer.info(
       GearModule.logger(gear_name),
-      Time.now(),
+      GearLog.Time.now(),
       ContextId.system_context(),
       message
     )

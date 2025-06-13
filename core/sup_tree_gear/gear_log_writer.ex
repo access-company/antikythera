@@ -13,7 +13,8 @@ defmodule AntikytheraCore.GearLog.Writer do
   """
 
   use GenServer
-  alias Antikythera.{Time, ContextId, GearName}
+  alias Antikythera.{ContextId, GearName}
+  alias AntikytheraCore.GearLog
   alias AntikytheraCore.GearLog.{LogRotation, Level, ContextHelper}
   alias AntikytheraCore.Config.Gear, as: GearConfig
   alias AntikytheraCore.Ets.ConfigCache
@@ -111,26 +112,31 @@ defmodule AntikytheraCore.GearLog.Writer do
   #
   for level <- [:debug, :info, :error] do
     defun unquote(level)(logger_name :: v[atom], msg :: v[String.t()]) :: :ok do
-      unquote(level)(logger_name, Time.now(), ContextHelper.get!(), msg)
+      unquote(level)(logger_name, GearLog.Time.now(), ContextHelper.get!(), msg)
     end
 
     if level == :error do
       # Restrict `logger_name` to `atom` instead of `GenServer.server` for alert manager name resolution
       defun unquote(level)(
               logger_name :: v[atom],
-              t :: v[Time.t()],
+              t :: v[GearLog.Time.t()],
               context_id :: v[ContextId.t()],
               msg :: v[String.t()]
             ) :: :ok do
         # The caller process is responsible for sending an error message to the gear's `AlertManager`,
         # in order to keep `GearLog.Writer` decoupled from the alerting functionality.
-        CoreAlertManager.notify(resolve_alert_manager_name(logger_name), body(msg, context_id), t)
+        CoreAlertManager.notify(
+          resolve_alert_manager_name(logger_name),
+          body(msg, context_id),
+          GearLog.Time.to_antikythera_time(t)
+        )
+
         GenServer.cast(logger_name, {t, unquote(level), context_id, msg})
       end
     else
       defun unquote(level)(
               logger_name :: v[atom],
-              t :: v[Time.t()],
+              t :: v[GearLog.Time.t()],
               context_id :: v[ContextId.t()],
               msg :: v[String.t()]
             ) :: :ok do

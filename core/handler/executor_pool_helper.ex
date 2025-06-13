@@ -13,6 +13,7 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
   alias AntikytheraCore.ExecutorPool.Id, as: CoreEPoolId
   alias AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter, as: WsCounter
   alias AntikytheraCore.Ets.GearActionRunnerPools
+  alias AntikytheraCore.GearLog
   alias AntikytheraCore.GearLog.Writer
 
   defun with_executor(
@@ -62,11 +63,11 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
   defun increment_ws_count(
           %Conn{
             context: %Context{
-              start_time: start_time,
               context_id: context_id,
               executor_pool_id: epool_id
             }
           } = conn,
+          start_time_for_log :: GearLog.Time.t(),
           %{pid: ws_pid} = req :: :cowboy_req.req(),
           %HelperModules{logger: logger},
           f :: (-> a)
@@ -79,7 +80,7 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
       {:error, :too_many_connections} ->
         Writer.error(
           logger,
-          start_time,
+          start_time_for_log,
           context_id,
           "Cannot establish new websocket connection: too many connections in executor pool #{inspect(epool_id)}"
         )
