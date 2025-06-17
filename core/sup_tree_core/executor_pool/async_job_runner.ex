@@ -29,6 +29,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   alias AntikytheraCore.Context, as: CoreContext
   alias AntikytheraCore.GearLog.{Writer, ContextHelper}
   alias AntikytheraCore.ExecutorPool.AsyncJobLog.Writer, as: JobLogWriter
+  alias AntikytheraCore.EndTime
   require AntikytheraCore.Logger, as: L
 
   @idle_timeout 60_000
@@ -53,6 +54,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     run_at = Time.from_epoch_milliseconds(run_at_ms)
     metadata = make_metadata(job, job_id, run_at)
     context = %Context{start_time: context_start_time} = make_context(job, epool_id)
+    start_monotonic_time = System.monotonic_time(:millisecond)
     logger_name = GearModule.logger(job.gear_name)
     decoded_payload = decode_payload(job.payload)
     log_prefix = log_prefix(job, job_id, run_at, decoded_payload)
@@ -72,7 +74,8 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
       context: context,
       logger_name: logger_name,
       log_prefix: log_prefix,
-      start_time: context_start_time
+      start_time: context_start_time,
+      start_monotonic_time: start_monotonic_time
     }
 
     {:noreply, new_state}
@@ -194,7 +197,8 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   end
 
   defp job_succeeded(%{queue_name: queue_name, job_key: job_key} = state) do
-    report_on_finish(state, Time.now(), "success")
+    end_time = EndTime.now()
+    report_on_finish(state, end_time, "success")
     if queue_name, do: Queue.remove_locked_job(queue_name, job_key)
   end
 
@@ -207,8 +211,8 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
          reason,
          stacktrace
        ) do
-    end_time = Time.now()
-    write_failed_log(state, end_time, ErrorReason.format(reason, stacktrace))
+    end_time = EndTime.now()
+    write_failed_log(state, end_time.antikythera_time, ErrorReason.format(reason, stacktrace))
 
     case remaining_attempts do
       1 ->
@@ -240,16 +244,16 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
            context: %Context{context_id: context_id},
            logger_name: logger_name,
            log_prefix: log_prefix,
-           start_time: start_time
+           start_monotonic_time: start_monotonic_time
          } = state,
          end_time,
          job_result
        ) do
-    diff = Time.diff_milliseconds(end_time, start_time)
+    diff = end_time.monotonic - start_monotonic_time
 
     Writer.info(
       logger_name,
-      end_time,
+      end_time.antikythera_time,
       context_id,
       log_prefix <> "END status=#{job_result} time=#{diff}ms"
     )
@@ -258,7 +262,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
       "context=" <> context_id <> " " <> log_prefix <> "END status=#{job_result} time=#{diff}ms"
     )
 
-    submit_metrics(state, end_time, diff, job_result)
+    submit_metrics(state, end_time.antikythera_time, diff, job_result)
   end
 
   defp submit_metrics(

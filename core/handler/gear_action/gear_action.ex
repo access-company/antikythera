@@ -6,7 +6,8 @@ defmodule AntikytheraCore.Handler.GearAction do
   alias Antikythera.{Conn, Context, Request, Time, GearName, PathInfo}
   alias Antikythera.ExecutorPool.Id, as: EPoolId
   alias AntikytheraCore.Conn, as: CoreConn
-  alias AntikytheraCore.{MetricsUploader, Handler.HelperModules, GearLog.Writer}
+  alias AntikytheraCore.Handler.{GearAction, HelperModules}
+  alias AntikytheraCore.{MetricsUploader, GearLog.Writer, EndTime}
 
   @http_headers_to_log Application.compile_env!(:antikythera, :http_headers_to_log)
 
@@ -19,10 +20,11 @@ defmodule AntikytheraCore.Handler.GearAction do
 
   defun with_logging_and_metrics_reporting(
           %Conn{request: %Request{sender: {_web_or_gear, sender_info}}} = conn,
+          context :: v[GearAction.Context.t()],
           %HelperModules{metrics_uploader: metrics_uploader} = helper_modules,
           f :: (-> Conn.t())
         ) :: Conn.t() do
-    {conn2, t_end, processing_time} = with_logging(conn, helper_modules, sender_info, f)
+    {conn2, t_end, processing_time} = with_logging(conn, context, helper_modules, sender_info, f)
     %Conn{status: status, context: %Context{executor_pool_id: epool_id0}} = conn2
     epool_id1 = epool_id0 || EPoolId.nopool()
 
@@ -48,10 +50,12 @@ defmodule AntikytheraCore.Handler.GearAction do
 
   defunp with_logging(
            conn :: v[Conn.t()],
+           context :: v[GearAction.Context.t()],
            %HelperModules{logger: logger},
            sender_info :: v[String.t() | GearName.t()],
            f :: (-> Conn.t())
          ) :: {Conn.t(), Time.t(), non_neg_integer} do
+    %GearAction.Context{start_monotonic_time: start_monotonic_time} = context
     %Conn{context: %Context{start_time: t_start, context_id: context_id}} = conn
     log_message_base = "#{CoreConn.request_info(conn)} from=#{sender_info}"
 
@@ -61,16 +65,16 @@ defmodule AntikytheraCore.Handler.GearAction do
 
     Writer.info(logger, t_start, context_id, "#{log_message_base} START#{headers}")
     %Conn{status: status} = conn2 = f.()
-    t_end = Time.now()
-    processing_time = Time.diff_milliseconds(t_end, t_start)
+    end_time = EndTime.now()
+    processing_time = end_time.monotonic - start_monotonic_time
 
     Writer.info(
       logger,
-      t_end,
+      end_time.antikythera_time,
       context_id,
       "#{log_message_base} END status=#{status} time=#{processing_time}ms"
     )
 
-    {conn2, t_end, processing_time}
+    {conn2, end_time.antikythera_time, processing_time}
   end
 end

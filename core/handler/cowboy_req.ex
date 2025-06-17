@@ -9,7 +9,7 @@ defmodule AntikytheraCore.Handler.CowboyReq do
   alias Antikythera.Request.PathMatches
   alias Antikythera.Context.GearEntryPoint
   alias AntikytheraCore.Conn, as: CoreConn
-  alias AntikytheraCore.Handler.{GearError, BodyParser, HelperModules}
+  alias AntikytheraCore.Handler.{GearAction, GearError, BodyParser, HelperModules}
   alias AntikytheraCore.GearLog.{ContextHelper, Writer}
 
   @type result(a) :: {:ok, a} | {:error, :cowboy_req.req()}
@@ -53,7 +53,8 @@ defmodule AntikytheraCore.Handler.CowboyReq do
       |> R.pure()
     catch
       :exit, {:request_error, :qs, _message} ->
-        {:error, with_conn(req, routing_info, %{}, &GearError.bad_request/1)}
+        {:error,
+         with_conn(req, routing_info, %{}, fn conn, _context -> GearError.bad_request(conn) end)}
     end
   end
 
@@ -68,7 +69,10 @@ defmodule AntikytheraCore.Handler.CowboyReq do
         {:ok, {req2, {raw, parsed}}}
 
       {:error, :invalid_body, req2} ->
-        {:error, with_conn(req2, routing_info, qparams, &GearError.bad_request/1)}
+        {:error,
+         with_conn(req2, routing_info, qparams, fn conn, _context ->
+           GearError.bad_request(conn)
+         end)}
 
       {:error, :timeout} ->
         {:error,
@@ -76,7 +80,7 @@ defmodule AntikytheraCore.Handler.CowboyReq do
            req1,
            routing_info,
            qparams,
-           &bad_request_with_body_timeout_logging(&1, helper_modules)
+           fn conn, _context -> bad_request_with_body_timeout_logging(conn, helper_modules) end
          )}
     end
   end
@@ -100,10 +104,11 @@ defmodule AntikytheraCore.Handler.CowboyReq do
           routing_info :: routing_info,
           qparams :: v[QueryParams.t()],
           body_pair :: {binary, Body.t()} \\ {"", ""},
-          f :: (Conn.t() -> Conn.t())
+          f :: (Conn.t(), GearAction.Context.t() -> Conn.t())
         ) :: :cowboy_req.req() do
+    context = GearAction.Context.make()
     conn = CoreConn.make_from_cowboy_req(req, routing_info, qparams, body_pair)
     ContextHelper.set(conn)
-    f.(conn) |> CoreConn.reply_as_cowboy_res(req)
+    f.(conn, context) |> CoreConn.reply_as_cowboy_res(req)
   end
 end

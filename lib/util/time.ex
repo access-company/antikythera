@@ -168,6 +168,13 @@ defmodule Antikythera.Time do
   defun shift_days(t :: v[t], days :: v[integer]) :: t,
     do: shift_milliseconds(t, days * 24 * 60 * 60 * 1_000)
 
+  @doc """
+  Do not use this if you really want to calculate the difference between two `Antikythera.Time.t`s.
+
+  `Antikythera.Time.t` has `System.system_time/1`. `System.system_time/1` may decrease. Therefore, `diff_milliseconds(end, start)` may return negative value.
+
+  See https://hexdocs.pm/elixir/1.15.8/System.html#module-time for more information.
+  """
   defun diff_milliseconds(t1 :: v[t], t2 :: v[t]) :: integer do
     to_gregorian_milliseconds(t1) - to_gregorian_milliseconds(t2)
   end
