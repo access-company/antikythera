@@ -169,7 +169,7 @@ defmodule Antikythera.Time do
     do: shift_milliseconds(t, days * 24 * 60 * 60 * 1_000)
 
   @doc """
-  Do not use this if you really want to calculate the difference between two `Antikythera.Time.t`s.
+  Do not use this unless you really want to calculate the difference between two `Antikythera.Time.t`s.
 
   `Antikythera.Time.t` has `System.system_time/1`. `System.system_time/1` may decrease. Therefore, `diff_milliseconds(end, start)` may return negative value.
 
