@@ -132,8 +132,10 @@ defmodule Antikythera.Router do
 
       get "/foo", Hello, :long_action, timeout: 60_000
 
+  If not set, the timeout is considered as 10 seconds.
+  This default value can be overwritten by `GEAR_ACTION_TIMEOUT` environment variable.
+
   The maximum timeout is determined by `:gear_action_max_timeout` configuration in `config/config.exs`.
-  The default value is 10 seconds, which can be configured by `GEAR_ACTION_TIMEOUT` environment variable.
   """
 
   alias Antikythera.Router.Impl
