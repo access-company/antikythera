@@ -77,7 +77,7 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            req,
            {gear_name, nil, method, path_info, %{}},
            %{},
-           &GearError.no_route/1
+           fn conn, _context -> GearError.no_route(conn) end
          )}
     end
   end
@@ -108,8 +108,8 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            helper_modules :: v[HelperModules.t()],
            timeout :: v[GearActionTimeout.t()]
          ) :: :cowboy_req.req() do
-    CowboyReq.with_conn(req, routing_info, qparams, body_pair, fn conn ->
-      GearAction.with_logging_and_metrics_reporting(conn, helper_modules, fn ->
+    CowboyReq.with_conn(req, routing_info, qparams, body_pair, fn conn, context ->
+      GearAction.with_logging_and_metrics_reporting(conn, context, helper_modules, fn ->
         run_action_with_executor(conn, gear_name, entry_point, helper_modules, timeout)
       end)
     end)
@@ -123,10 +123,11 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            helper_modules :: v[HelperModules.t()],
            timeout :: v[GearActionTimeout.t()]
          ) :: :cowboy_req.req() | {:cowboy_req.req(), WebsocketState.t()} do
+    context = GearAction.Context.make()
     conn1 = CoreConn.make_from_cowboy_req(req, routing_info, qparams, body_pair)
     ContextHelper.set(conn1)
 
-    GearAction.with_logging_and_metrics_reporting(conn1, helper_modules, fn ->
+    GearAction.with_logging_and_metrics_reporting(conn1, context, helper_modules, fn ->
       case run_action_with_executor(conn1, gear_name, entry_point, helper_modules, timeout) do
         # Fill the status code with "101 Upgrade" in order to correctly report response metrics
         conn2 = %Conn{status: nil} -> %Conn{conn2 | status: 101}

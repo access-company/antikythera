@@ -31,8 +31,8 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
         {controller, action},
         path_info,
         path_matches,
-        fn conn ->
-          GearAction.with_logging_and_metrics_reporting(conn, helper_modules, fn ->
+        fn conn, context ->
+          GearAction.with_logging_and_metrics_reporting(conn, context, helper_modules, fn ->
             run_gear_action_within_separate_process(conn, controller, action, timeout)
           end)
         end
@@ -53,11 +53,15 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
         f.(controller, action, path_matches, timeout)
 
       nil ->
-        with_conn(req, context, receiver_gear, nil, path_info, %{}, &GearError.no_route/1)
+        with_conn(req, context, receiver_gear, nil, path_info, %{}, fn conn, _context ->
+          GearError.no_route(conn)
+        end)
     end
   end
 
   defp with_conn(req, context, receiver_gear, entry_point, path_info, path_matches, f) do
+    gear_action_context = GearAction.Context.make()
+
     conn =
       CoreConn.make_from_g2g_req_and_context(
         req,
@@ -71,7 +75,7 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
     # Most of the time this line is unnecessary since context ID of g2g action is the same as the caller's
     # (except for test processes where no context ID may be set).
     ContextHelper.set(conn)
-    f.(conn) |> CoreConn.reply_as_g2g_res()
+    f.(conn, gear_action_context) |> CoreConn.reply_as_g2g_res()
   end
 
   defunp run_gear_action_within_separate_process(
