@@ -8,12 +8,14 @@ defmodule AntikytheraCore.Handler.WebsocketState do
   alias Antikythera.Websocket.{Frame, FrameList}
   alias Antikythera.Context.GearEntryPoint
   alias AntikytheraCore.Handler.HelperModules
+  alias AntikytheraCore.GearLog
   alias AntikytheraCore.GearLog.{Writer, ContextHelper}
   alias AntikytheraCore.{MetricsUploader, GearProcess}
 
   use Croma.Struct,
     fields: [
       conn: Conn,
+      start_time_for_log: GearLog.Time,
       ws_module: Croma.Atom,
       gear_impl_state: Croma.Any,
       helper_modules: HelperModules,
@@ -24,11 +26,13 @@ defmodule AntikytheraCore.Handler.WebsocketState do
 
   defun make(
           conn :: v[Conn.t()],
+          start_time_for_log :: v[GearLog.Time.t()],
           {ws_module, _action} :: GearEntryPoint.t(),
           helper_modules :: v[HelperModules.t()]
         ) :: t do
     %__MODULE__{
       conn: conn,
+      start_time_for_log: start_time_for_log,
       ws_module: ws_module,
       gear_impl_state: nil,
       helper_modules: helper_modules,
@@ -50,11 +54,13 @@ defmodule AntikytheraCore.Handler.WebsocketState do
           | {:error, :badencoding | :badframe | :closed | atom}
           | {:crash, :error | :exit | :throw, any}
 
-  defun init(%__MODULE__{conn: conn, ws_module: ws_module} = state) :: callback_result do
+  defun init(
+          %__MODULE__{conn: conn, start_time_for_log: start_time_for_log, ws_module: ws_module} =
+            state
+        ) :: callback_result do
     GearProcess.set_max_heap_size()
     ContextHelper.set(conn)
-    %Conn{context: %Context{start_time: start_time}} = conn
-    log_info(state, start_time, "CONNECTED")
+    log_info(state, start_time_for_log, "CONNECTED")
     run_callback_and_reply(state, 0, fn -> ws_module.init(conn) end)
   end
 
@@ -103,7 +109,7 @@ defmodule AntikytheraCore.Handler.WebsocketState do
         end
 
       {error_tuple, stacktrace} ->
-        log_error(state, Time.now(), ErrorReason.format(error_tuple, stacktrace))
+        log_error(state, GearLog.Time.now(), ErrorReason.format(error_tuple, stacktrace))
         state_with_error_reason = %__MODULE__{state | error_reason: error_tuple}
         {:reply, [:close], state_with_error_reason}
     end
@@ -113,7 +119,7 @@ defmodule AntikytheraCore.Handler.WebsocketState do
           %__MODULE__{conn: conn, ws_module: ws_module, gear_impl_state: gear_impl_state} = state,
           cowboy_terminate_reason :: cowboy_ws_terminate_reason
         ) :: any do
-    now = Time.now()
+    now = GearLog.Time.now()
     reason = terminate_reason(state, cowboy_terminate_reason)
     log_info(state, now, build_disconnected_log_message(state, reason))
 
@@ -165,7 +171,7 @@ defmodule AntikytheraCore.Handler.WebsocketState do
                conn: %Conn{context: %Context{context_id: context_id}},
                helper_modules: %HelperModules{logger: logger}
              },
-             time :: v[Time.t()],
+             time :: v[GearLog.Time.t()],
              message :: v[String.t()]
            ) :: :ok do
       Writer.unquote(level)(logger, time, context_id, "<websocket> " <> message)

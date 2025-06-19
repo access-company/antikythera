@@ -5,12 +5,15 @@ use Croma
 defmodule AntikytheraCore.EndTime do
   # Antikythera uses different "time" for different purposes.
 
+  alias AntikytheraCore.GearLog
   alias Antikythera.Time
 
   use Croma.Struct,
     fields: [
       # For calculating execution time
       monotonic: Croma.Integer,
+      # For logging
+      gear_log: GearLog.Time,
       # For general purposes
       antikythera_time: Time
     ]
@@ -18,6 +21,7 @@ defmodule AntikytheraCore.EndTime do
   defun now() :: __MODULE__.t() do
     %__MODULE__{
       monotonic: System.monotonic_time(:millisecond),
+      gear_log: GearLog.Time.now(),
       antikythera_time: Time.now()
     }
   end

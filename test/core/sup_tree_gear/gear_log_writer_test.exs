@@ -5,6 +5,7 @@ defmodule AntikytheraCore.GearLog.WriterTest do
   alias Antikythera.Time
   alias Antikythera.Test.GearConfigHelper
   alias AntikytheraCore.Context
+  alias AntikytheraCore.GearLog
 
   @dir Path.join([__DIR__, "..", "..", "..", "_build", "test", "log", "testgear"])
        |> Path.expand()
@@ -16,9 +17,9 @@ defmodule AntikytheraCore.GearLog.WriterTest do
   end
 
   defp write(msg) do
-    now = Time.now()
+    now = GearLog.Time.now()
     # Testgear.AlertManager process/name atom are not required for info/4 call
-    Writer.info(@logger_name, now, Context.make_context_id(now), msg)
+    Writer.info(@logger_name, now, Context.make_context_id(Time.now()), msg)
   end
 
   defp assert_content_of_rotated(msg) do

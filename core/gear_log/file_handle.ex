@@ -4,6 +4,7 @@ use Croma
 
 defmodule AntikytheraCore.GearLog.FileHandle do
   alias Antikythera.{Time, ContextId}
+  alias AntikytheraCore.GearLog
   alias AntikytheraCore.GearLog.{Level, Message}
 
   defmodule SizeCheck do
@@ -41,6 +42,8 @@ defmodule AntikytheraCore.GearLog.FileHandle do
           {file_path, last_checked_at, io_device, write_to_terminal?} = handle :: t,
           {now, _, _, _} = gear_log :: Message.t()
         ) :: {:kept_open | :rotated, t} do
+    now = GearLog.Time.to_antikythera_time(now)
+
     if SizeCheck.check_now?(now, last_checked_at) do
       if SizeCheck.exceeds_limit?(file_path) do
         {_, _, new_io_device, _} = new_handle = rotate(handle)
@@ -71,9 +74,13 @@ defmodule AntikytheraCore.GearLog.FileHandle do
     if write_to_terminal?, do: write_debug_log(level, formatted_lines_str), else: :ok
   end
 
-  defunp log_prefix(time :: v[Time.t()], level :: v[Level.t()], context_id :: v[ContextId.t()]) ::
+  defunp log_prefix(
+           time :: v[GearLog.Time.t()],
+           level :: v[Level.t()],
+           context_id :: v[ContextId.t()]
+         ) ::
            String.t() do
-    Time.to_iso_timestamp(time) <>
+    GearLog.Time.to_iso_timestamp(time) <>
       " [" <> Atom.to_string(level) <> "] context=" <> context_id <> " "
   end
 

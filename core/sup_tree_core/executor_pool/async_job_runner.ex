@@ -27,6 +27,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   alias AntikytheraCore.AsyncJob.Queue
   alias AntikytheraCore.AsyncJob.Queue.JobKey
   alias AntikytheraCore.Context, as: CoreContext
+  alias AntikytheraCore.GearLog
   alias AntikytheraCore.GearLog.{Writer, ContextHelper}
   alias AntikytheraCore.ExecutorPool.AsyncJobLog.Writer, as: JobLogWriter
   alias AntikytheraCore.EndTime
@@ -53,12 +54,13 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
       }) do
     run_at = Time.from_epoch_milliseconds(run_at_ms)
     metadata = make_metadata(job, job_id, run_at)
-    context = %Context{start_time: context_start_time} = make_context(job, epool_id)
+    context = make_context(job, epool_id)
     start_monotonic_time = System.monotonic_time(:millisecond)
+    start_time_for_log = GearLog.Time.now()
     logger_name = GearModule.logger(job.gear_name)
     decoded_payload = decode_payload(job.payload)
     log_prefix = log_prefix(job, job_id, run_at, decoded_payload)
-    write_start_log(context, logger_name, log_prefix)
+    write_start_log(context, start_time_for_log, logger_name, log_prefix)
     {pid, monitor_ref, timer_ref} = start_monitor(job, metadata, context, decoded_payload)
 
     new_state = %{
@@ -74,7 +76,6 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
       context: context,
       logger_name: logger_name,
       log_prefix: log_prefix,
-      start_time: context_start_time,
       start_monotonic_time: start_monotonic_time
     }
 
@@ -138,11 +139,12 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
   end
 
   defp write_start_log(
-         %Context{start_time: context_start_time, context_id: context_id},
+         %Context{context_id: context_id},
+         start_time_for_log,
          logger_name,
          log_prefix
        ) do
-    Writer.info(logger_name, context_start_time, context_id, log_prefix <> "START")
+    Writer.info(logger_name, start_time_for_log, context_id, log_prefix <> "START")
     JobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "START")
   end
 
@@ -212,7 +214,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
          stacktrace
        ) do
     end_time = EndTime.now()
-    write_failed_log(state, end_time.antikythera_time, ErrorReason.format(reason, stacktrace))
+    write_failed_log(state, end_time.gear_log, ErrorReason.format(reason, stacktrace))
 
     case remaining_attempts do
       1 ->
@@ -232,10 +234,10 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
            logger_name: logger_name,
            log_prefix: log_prefix
          },
-         end_time,
+         end_time_for_log,
          error_reason
        ) do
-    Writer.error(logger_name, end_time, context_id, log_prefix <> error_reason)
+    Writer.error(logger_name, end_time_for_log, context_id, log_prefix <> error_reason)
     JobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "FAILED")
   end
 
@@ -253,7 +255,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
 
     Writer.info(
       logger_name,
-      end_time.antikythera_time,
+      end_time.gear_log,
       context_id,
       log_prefix <> "END status=#{job_result} time=#{diff}ms"
     )
@@ -296,7 +298,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
       fn reason, stacktrace ->
         Writer.error(
           logger_name,
-          Time.now(),
+          GearLog.Time.now(),
           context_id,
           log_prefix <> "error during abandon/3: #{ErrorReason.format(reason, stacktrace)}"
         )

@@ -19,6 +19,15 @@ defmodule Antikythera.MilliSecondsInGregorian do
   use Croma.SubtypeOfInt, min: -@time_epoch_offset_milliseconds - 999
 end
 
+defmodule Antikythera.MicroSecondsInGregorian do
+  @time_epoch_offset_microseconds :calendar.datetime_to_gregorian_seconds(
+                                    {{1970, 1, 1}, {0, 0, 0}}
+                                  ) * 1000 * 1000
+  def time_epoch_offset_microseconds(), do: @time_epoch_offset_microseconds
+
+  use Croma.SubtypeOfInt, min: -@time_epoch_offset_microseconds
+end
+
 defmodule Antikythera.GearActionTimeout do
   alias Antikythera.Env
 
