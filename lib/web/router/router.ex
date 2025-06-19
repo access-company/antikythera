@@ -126,16 +126,14 @@ defmodule Antikythera.Router do
 
   ## Per-API timeout
 
-  You can specify timeout for each API by `:timeout` option.
-  The timeout is specified in milliseconds.
-  For example, the following API times out after 60 seconds.
+  You can set a timeout for each API using the `:timeout` option, specified in milliseconds.
+  For example, the following API times out after 60 seconds:
 
       get "/foo", Hello, :long_action, timeout: 60_000
 
-  If not set, the timeout is considered as 10 seconds.
-  This default value can be overwritten by `GEAR_ACTION_TIMEOUT` environment variable.
+  If not specified, the default timeout is taken from the `GEAR_ACTION_TIMEOUT` environment variable.
 
-  The maximum timeout is determined by `:gear_action_max_timeout` configuration in `config/config.exs`.
+  The maximum allowed value is set by the `:gear_action_max_timeout` configuration in `config/config.exs`.
   """
 
   alias Antikythera.Router.Impl
