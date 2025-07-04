@@ -118,7 +118,7 @@ defmodule Antikythera.Mixfile do
       {:yaml_elixir, "2.11.0", [only: :test]},
       # as a websocket client implementation to use during test (including upgrade_compatibility_test)
       # 1.4.0 requires OTP 21 or later
-      {:websocket_client, "1.3.0", [only: :test]},
+      {:websocket_client, "1.5.0", [only: :test]},
 
       # indirect deps
       # cowboy
