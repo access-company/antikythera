@@ -77,6 +77,12 @@ defmodule Antikythera.Test.WebsocketClient do
       end
 
       @impl true
+      def websocket_info({:tcp_closed, _pid}, _conn, %{caller: pid} = state) do
+        send(pid, :disconnected)
+        {:close, "", state}
+      end
+
+      @impl true
       def websocket_info(_msg, _conn, state) do
         {:ok, state}
       end
