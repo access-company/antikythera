@@ -84,7 +84,7 @@ defmodule Antikythera.Mixfile do
       # these are considered as implementation details of antikythera and thus must not be used by gear implementations.
       {:cowboy, "2.10.0", [antikythera_internal: true]},
       {:cowlib, "2.12.1", [antikythera_internal: true]},
-      {:hackney, "1.24.1", [antikythera_internal: true]},
+      {:hackney, "1.25.0", [antikythera_internal: true]},
       {:calliope,
        [
          git: "git@github.com:access-company/calliope.git",
