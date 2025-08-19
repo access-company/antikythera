@@ -19,9 +19,9 @@ references:
   restore_asdf_directory: &restore_asdf_directory
     restore_cache:
       keys:
-        - asdf_directory-{{ .Branch }}-{{ .Revision }}
-        - asdf_directory-{{ .Branch }}-
-        - asdf_directory-
+        - asdf_directory-v0.15.0-{{ .Branch }}-{{ .Revision }}
+        - asdf_directory-v0.15.0-{{ .Branch }}-
+        - asdf_directory-v0.15.0
   enable_asdf_and_elixir: &enable_asdf_and_elixir
     run:
       name: Enable asdf and elixir by loading asdf.sh
