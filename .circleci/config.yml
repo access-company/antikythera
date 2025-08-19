@@ -87,7 +87,7 @@ jobs:
       - run:
           name: Make sure asdf and its elixir plugin installed
           command: |
-            [ -d /usr/local/asdf ] || git clone https://github.com/asdf-vm/asdf.git /usr/local/asdf --branch v0.4.3
+            [ -d /usr/local/asdf ] || git clone https://github.com/asdf-vm/asdf.git /usr/local/asdf --branch v0.15.0
             echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
             source $BASH_ENV
             asdf plugin-add elixir || asdf plugin-update elixir
