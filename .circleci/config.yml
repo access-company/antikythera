@@ -119,7 +119,7 @@ jobs:
             mix local.rebar --force
             cp -f .tool-versions /usr/local/asdf/tool-versions-copy
       - save_cache:
-          key: asdf_directory-v0.15.0-{{ .Branch }}-{{ .Revision }}
+          key: asdf_directory-{{ .Branch }}-{{ .Revision }}
           paths:
             - /usr/local/asdf
   antikythera_static_analysis:
