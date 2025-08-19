@@ -122,6 +122,7 @@ jobs:
           key: asdf_directory-{{ .Branch }}-{{ .Revision }}
           paths:
             - /usr/local/asdf
+            - ~/.asdf
   antikythera_static_analysis:
     <<: *container_config
     working_directory: /tmp/antikythera
