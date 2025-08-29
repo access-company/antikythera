@@ -108,7 +108,7 @@ defmodule Antikythera.Mixfile do
 
       # tools
       {:exsync, "0.4.1", [only: :dev]},
-      {:ex_doc, "0.33.0", [only: :dev, runtime: false]},
+      {:ex_doc, "0.38.3", [only: :dev, runtime: false]},
       {:dialyxir, "1.4.5", [only: :dev, runtime: false]},
       {:credo, "1.7.10", [only: :dev, runtime: false]},
       {:mix_test_watch, "1.2.0", [only: :dev, runtime: false]},
@@ -146,11 +146,11 @@ defmodule Antikythera.Mixfile do
       # credo
       {:bunt, "1.0.0", [indirect: true, only: :dev]},
       # ex_doc
-      {:earmark_parser, "1.4.41", [indirect: true, only: :dev]},
+      {:earmark_parser, "1.4.44", [indirect: true, only: :dev]},
       # ex_doc
-      {:makeup_elixir, "1.0.0", [indirect: true, only: :dev]},
+      {:makeup_elixir, "1.0.1", [indirect: true, only: :dev]},
       # ex_doc
-      {:makeup_erlang, "1.0.1", [indirect: true, only: :dev]},
+      {:makeup_erlang, "1.0.2", [indirect: true, only: :dev]},
       # makeup_elixir
       {:makeup, "1.2.1", [indirect: true, only: :dev]},
       # makeup
@@ -188,7 +188,7 @@ defmodule Antikythera.Mixfile do
 
   defp docs() do
     [
-      assets: "doc_src/assets",
+      assets: %{"doc_src/assets" => "assets"},
       extras: [
         "README.md",
         "STYLE_GUIDE.md",
