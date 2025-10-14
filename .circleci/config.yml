@@ -22,15 +22,17 @@ references:
         - asdf_directory-{{ .Branch }}-{{ .Revision }}
         - asdf_directory-{{ .Branch }}-
         - asdf_directory-
-  enable_asdf_and_elixir: &enable_asdf_and_elixir
+  enable_asdf_erlang_and_elixir: &enable_asdf_erlang_and_elixir
     run:
-      name: Enable asdf and elixir by loading asdf.sh
+      name: Enable asdf, erlang and elixir by loading asdf.sh
       # Global Elixir version is required for projects that depends on antikythera,
       # since symlinked `.tool-versions` file is not available at the first `mix` invocation.
       command: |
         echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
         source $BASH_ENV
+        erlang_version="$(grep erlang /usr/local/asdf/tool-versions-copy)"
         elixir_version="$(grep elixir /usr/local/asdf/tool-versions-copy)"
+        asdf global ${erlang_version}
         asdf global ${elixir_version}
   add_github_hostkey: &add_github_hostkey
     run:
@@ -137,7 +139,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - restore_cache:
           keys:
             - antikythera-repo-static-analysis-{{ .Branch }}-{{ .Revision }}
@@ -159,7 +161,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - restore_cache:
           keys:
             - antikythera-repo-{{ .Branch }}-{{ .Revision }}
@@ -181,7 +183,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - restore_cache:
           keys:
             - antikythera_instance_example-repo-{{ .Branch }}-
@@ -239,7 +241,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - restore_cache:
           keys:
             - testgear-repo-{{ .Branch }}-
@@ -270,7 +272,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - *restore_updated_antikythera_instance_example_directory
       - *restore_testgear_directory
       - *add_github_hostkey
@@ -282,7 +284,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - *restore_updated_antikythera_instance_example_directory
       - *restore_testgear_directory
       - *edit_etc_hosts
@@ -304,7 +306,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - *restore_testgear_directory
       - *add_github_hostkey
       - run:
@@ -326,7 +328,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - *restore_updated_testgear_directory
       - *edit_etc_hosts
       - run: mix test --trace
@@ -336,7 +338,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - *restore_updated_testgear_directory
       - *edit_etc_hosts
       - run:
