@@ -83,7 +83,8 @@ jobs:
           keys:
             - antikythera-repo-{{ .Branch }}-{{ .Revision }}
             - antikythera-repo-{{ .Branch }}-
-      - checkout
+      - checkout:
+          method: blobless
       - run:
           name: Make sure asdf and its elixir plugin installed
           command: |
@@ -134,7 +135,8 @@ jobs:
           keys:
             - antikythera-repo-static-analysis-{{ .Branch }}-{{ .Revision }}
             - antikythera-repo-static-analysis-{{ .Branch }}-
-      - checkout
+      - checkout:
+          method: blobless
       - run: mix deps.get
       - run: mix credo -a --strict
       - run: mix dialyzer
@@ -155,7 +157,8 @@ jobs:
           keys:
             - antikythera-repo-{{ .Branch }}-{{ .Revision }}
             - antikythera-repo-{{ .Branch }}-
-      - checkout
+      - checkout:
+          method: blobless
       - run: mix deps.get
       - run: mix test --trace
       - run: rm -rf tmp/
