@@ -5,7 +5,7 @@ version: 2
 references:
   container_config: &container_config
     docker:
-      - image: erlang:26.2.5.13 # Using pre-built official image since erlang installation takes long time
+      - image: erlang:26.2.5.13 # Using a Docker image that is pre-configured for installing Erlang.
         environment:
           ANTIKYTHERA_INSTANCE_DEP: '{:antikythera_instance_example, [git: "git@github.com:access-company/antikythera_instance_example.git"]}'
   install_prerequisites: &install_prerequisites
@@ -22,15 +22,17 @@ references:
         - asdf_directory-{{ .Branch }}-{{ .Revision }}
         - asdf_directory-{{ .Branch }}-
         - asdf_directory-
-  enable_asdf_and_elixir: &enable_asdf_and_elixir
+  enable_asdf_erlang_and_elixir: &enable_asdf_erlang_and_elixir
     run:
-      name: Enable asdf and elixir by loading asdf.sh
+      name: Enable asdf, erlang and elixir by loading asdf.sh
       # Global Elixir version is required for projects that depends on antikythera,
       # since symlinked `.tool-versions` file is not available at the first `mix` invocation.
       command: |
         echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
         source $BASH_ENV
+        erlang_version="$(grep erlang /usr/local/asdf/tool-versions-copy)"
         elixir_version="$(grep elixir /usr/local/asdf/tool-versions-copy)"
+        asdf global ${erlang_version}
         asdf global ${elixir_version}
   add_github_hostkey: &add_github_hostkey
     run:
@@ -85,12 +87,19 @@ jobs:
             - antikythera-repo-{{ .Branch }}-
       - checkout
       - run:
-          name: Make sure asdf and its elixir plugin installed
+          name: Make sure asdf and its erlang and elixir plugins installed
           command: |
             [ -d /usr/local/asdf ] || git clone https://github.com/asdf-vm/asdf.git /usr/local/asdf --branch v0.4.3
             echo 'source /usr/local/asdf/asdf.sh' >> $BASH_ENV
             source $BASH_ENV
+            asdf plugin-add erlang || asdf plugin-update erlang
             asdf plugin-add elixir || asdf plugin-update elixir
+      - run:
+          name: Make sure a current version of erlang ready to use
+          command: |
+            erlang_version="$(grep erlang .tool-versions)"
+            asdf install ${erlang_version}
+            asdf global ${erlang_version}
       - run:
           name: Make sure a previous version of elixir installed if this commit updates elixir
           command: |
@@ -129,7 +138,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - restore_cache:
           keys:
             - antikythera-repo-static-analysis-{{ .Branch }}-{{ .Revision }}
@@ -150,7 +159,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - restore_cache:
           keys:
             - antikythera-repo-{{ .Branch }}-{{ .Revision }}
@@ -171,7 +180,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - restore_cache:
           keys:
             - antikythera_instance_example-repo-{{ .Branch }}-
@@ -229,7 +238,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - restore_cache:
           keys:
             - testgear-repo-{{ .Branch }}-
@@ -260,7 +269,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - *restore_updated_antikythera_instance_example_directory
       - *restore_testgear_directory
       - *add_github_hostkey
@@ -272,7 +281,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - *restore_updated_antikythera_instance_example_directory
       - *restore_testgear_directory
       - *edit_etc_hosts
@@ -294,7 +303,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - *restore_testgear_directory
       - *add_github_hostkey
       - run:
@@ -316,7 +325,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - *restore_updated_testgear_directory
       - *edit_etc_hosts
       - run: mix test --trace
@@ -326,7 +335,7 @@ jobs:
     steps:
       - *install_prerequisites
       - *restore_asdf_directory
-      - *enable_asdf_and_elixir
+      - *enable_asdf_erlang_and_elixir
       - *restore_updated_testgear_directory
       - *edit_etc_hosts
       - run:
