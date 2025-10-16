@@ -73,7 +73,7 @@ references:
         - testgear-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
 
 jobs:
-  prepare_elixir:
+  prepare_erlang_and_elixir:
     <<: *container_config
     working_directory: /tmp/antikythera
     steps:
@@ -358,13 +358,13 @@ workflows:
   version: 2
   antikythera:
     jobs:
-      - prepare_elixir
+      - prepare_erlang_and_elixir
       - antikythera_static_analysis:
           requires:
-            - prepare_elixir
+            - prepare_erlang_and_elixir
       - antikythera_whitebox_test:
           requires:
-            - prepare_elixir
+            - prepare_erlang_and_elixir
       - update_antikythera_instance_example:
           requires:
             - antikythera_static_analysis
