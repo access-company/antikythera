@@ -156,7 +156,7 @@ defmodule Antikythera.GearApplication.HttpcWithLoggingTest do
     assert is_integer(used_time) and used_time >= 0
   end
 
-  test "request!/5 sould make HTTP call and log successful response" do
+  test "request!/5 should make HTTP call and log successful response" do
     :meck.expect(Httpc, :request, fn :put, @test_url, @test_body, _headers, _options ->
       {:ok, @success_response}
     end)
@@ -177,7 +177,7 @@ defmodule Antikythera.GearApplication.HttpcWithLoggingTest do
     assert length(log_calls) == 1
   end
 
-  test "request!/5 sould raise on error response but still log" do
+  test "request!/5 should raise on error response but still log" do
     :meck.expect(Httpc, :request, fn :delete, @test_url, @test_body, _headers, _options ->
       @error_response
     end)
