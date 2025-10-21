@@ -55,6 +55,13 @@ defmodule Antikythera.Httpc do
   - `:connect_options` - Subset of TCP/IP options supported by the `gen_tcp` erlang module.
     Currently, the following options are supported:
       - `:inet | :inet6` - Specify the address family to use for the connection.
+
+  ## Recommendation
+
+  For gear applications, it is recommended to use `Antikythera.GearApplication.HttpcWithLogging`
+  instead of directly using this module. `HttpcWithLogging` provides automatic logging of HTTP
+  requests including timing information, request/response details, and error handling, which
+  is valuable for monitoring and debugging purposes.
   """
 
   require AntikytheraCore.Logger, as: L
