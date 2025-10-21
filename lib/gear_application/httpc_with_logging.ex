@@ -2,6 +2,34 @@
 
 use Croma
 
+defmodule Antikythera.GearApplication.HttpcWithLogging.Logger do
+  @moduledoc """
+  Behavior for customizing HTTP request logging in `HttpcWithLogging`.
+
+  This behavior defines an optional callback for HTTP request logging.
+  When you `use Antikythera.GearApplication.HttpcWithLogging`, the behavior
+  is automatically applied to your module, but implementing the callback is optional.
+  """
+
+  alias Antikythera.{Http, Httpc}
+  alias Httpc.{ReqBody, Response}
+  alias Croma.Result, as: R
+
+  @callback log(
+              method :: Http.Method.t(),
+              url :: Antikythera.Url.t(),
+              body :: ReqBody.t(),
+              headers :: Http.Headers.t(),
+              options :: Keyword.t(),
+              response :: R.t(Response.t()),
+              start_time :: Antikythera.Time.t(),
+              end_time :: Antikythera.Time.t(),
+              used_time :: non_neg_integer()
+            ) :: :ok
+
+  @optional_callbacks log: 9
+end
+
 defmodule Antikythera.GearApplication.HttpcWithLogging do
   @moduledoc """
   Helper module to create HTTP client wrapper with logging functionality.
@@ -42,18 +70,23 @@ defmodule Antikythera.GearApplication.HttpcWithLogging do
 
   ## Custom Logging Callback
 
-  To customize HTTP request logging, implement a `log/9` function directly in your HTTP client module:
+  To customize HTTP request logging, simply implement the optional `log/9` callback:
 
       defmodule MyGear.Httpc do
         use Antikythera.GearApplication.HttpcWithLogging
 
+        @impl true
         def log(method, url, body, headers, options, response, start_time, end_time, used_time) do
           # Custom logging logic here
           # This will be called for each HTTP request made via this HTTP client
         end
       end
 
-  The callback receives:
+  The `@behaviour` declaration is automatically added when you `use` this module,
+  and the `log/9` callback is optional - you only need to implement it if you want
+  custom logging behavior.
+
+  The `log/9` callback receives:
   - `method` - HTTP method atom (`:get`, `:post`, etc.)
   - `url` - Request URL string
   - `body` - Request body
@@ -63,6 +96,9 @@ defmodule Antikythera.GearApplication.HttpcWithLogging do
   - `start_time` - Request start time
   - `end_time` - Request end time
   - `used_time` - Request duration in milliseconds
+
+  If no custom logging behavior is implemented, the module will fall back to using
+  the gear's default logger (if available) to log basic HTTP request information.
   """
 
   alias Antikythera.{Http, Httpc}
@@ -116,6 +152,8 @@ defmodule Antikythera.GearApplication.HttpcWithLogging do
       end
 
     quote do
+      @behaviour Antikythera.GearApplication.HttpcWithLogging.Logger
+
       alias Antikythera.{Http, Httpc}
       alias Httpc.{ReqBody, Response}
       alias Croma.Result, as: R
@@ -171,7 +209,7 @@ defmodule Antikythera.GearApplication.HttpcWithLogging do
                end_time :: Antikythera.Time.t(),
                used_time :: non_neg_integer()
              ) :: :ok do
-        # Call custom log function if available
+        # Call custom log function if implemented (optional callback)
         if function_exported?(__MODULE__, :log, 9) do
           try do
             apply(__MODULE__, :log, [

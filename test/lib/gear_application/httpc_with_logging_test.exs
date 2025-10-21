@@ -27,6 +27,7 @@ defmodule Antikythera.GearApplication.HttpcWithLoggingTest do
   defmodule TestGear.Httpc do
     use Antikythera.GearApplication.HttpcWithLogging
 
+    @impl true
     # credo:disable-for-next-line Credo.Check.Refactor.FunctionArity
     def log(method, url, body, headers, options, response, start_time, end_time, used_time) do
       calls = Process.get(:log_calls, [])
@@ -39,7 +40,7 @@ defmodule Antikythera.GearApplication.HttpcWithLoggingTest do
   # Test module for HttpcWithLogging without custom log function
   defmodule TestGearWithoutLogger.Httpc do
     use Antikythera.GearApplication.HttpcWithLogging
-    # No log/9 function defined
+    # No custom log/9 function defined - testing fallback to default logging
   end
 
   # Test module with a gear logger for testing default logging
