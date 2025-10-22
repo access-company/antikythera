@@ -58,6 +58,13 @@ defmodule Antikythera.Conn do
     use Croma.SubtypeOfMap, key_module: Croma.Atom, value_module: Croma.Any, default: %{}
   end
 
+  defmodule ChunkedResponse do
+    @moduledoc """
+    Stores chunked response state when using send_chunked/3 and chunk/2.
+    """
+    use Croma.SubtypeOfMap, key_module: Croma.Atom, value_module: Croma.Any, default: %{}
+  end
+
   use Croma.Struct,
     fields: [
       request: Request,
@@ -67,7 +74,8 @@ defmodule Antikythera.Conn do
       resp_cookies: Http.SetCookiesMap,
       resp_body: Http.RawBody,
       before_send: BeforeSend,
-      assigns: Assigns
+      assigns: Assigns,
+      chunked: ChunkedResponse
     ]
 
   #
@@ -212,6 +220,103 @@ defmodule Antikythera.Conn do
     conn
     |> put_resp_header("location", url)
     |> put_status(status)
+  end
+
+  @doc """
+  Initiates a chunked response with the given status and headers.
+
+  This function prepares the connection for sending a chunked transfer-encoded response.
+  After calling this function, use `chunk/2` to send chunks of data to the client.
+
+  The actual HTTP streaming will be initiated when `AntikytheraCore.Conn.reply_as_cowboy_res/2`
+  is called with this conn.
+
+  ## Example
+
+      conn
+      |> Conn.send_chunked(200, %{"content-type" => "text/plain"})
+      |> Conn.chunk("First chunk\n")
+      |> Conn.chunk("Second chunk\n")
+  """
+  defun send_chunked(
+          conn :: v[t],
+          status :: v[Http.Status.t()],
+          headers :: v[Http.Headers.t()]
+        ) :: t do
+    %__MODULE__{
+      conn
+      | status: Http.Status.code(status),
+        resp_headers: headers,
+        chunked: %{enabled: true, chunks: []}
+    }
+  end
+
+  @doc """
+  Sends a chunk of data in a chunked response.
+
+  This function must be called after `send_chunked/3`. It appends the chunk
+  to the list of chunks to be sent. The actual sending happens when
+  `AntikytheraCore.Conn.reply_as_cowboy_res/2` processes the conn.
+
+  ## Example
+
+      conn
+      |> Conn.send_chunked(200, %{"content-type" => "text/plain"})
+      |> Conn.chunk("First chunk\n")
+      |> Conn.chunk("Second chunk\n")
+  """
+  defun chunk(%__MODULE__{chunked: chunked} = conn, body :: v[String.t()]) :: t do
+    chunks = Map.get(chunked, :chunks, [])
+    # Use cons instead of append for efficiency; list will be reversed when sending
+    %__MODULE__{conn | chunked: Map.put(chunked, :chunks, [body | chunks])}
+  end
+
+  @doc """
+  Ends a chunked response stream.
+
+  This function signals that no more chunks will be sent. For HTTP streaming connections,
+  this will cause the infinite loop to exit and close the connection.
+
+  ## Example
+
+      conn
+      |> Conn.send_chunked(200, %{"content-type" => "text/event-stream"})
+      |> Conn.chunk("data: event 1\\n\\n")
+      |> Conn.end_chunked()
+  """
+  defun end_chunked(%__MODULE__{chunked: chunked} = conn) :: t do
+    %__MODULE__{conn | chunked: Map.put(chunked, :finished, true)}
+  end
+
+  @doc """
+  Gets the streaming state from the connection.
+
+  For HTTP streaming connections, this returns the state that persists across
+  iterations of the infinite loop. Returns `nil` if no state has been set.
+
+  ## Example
+
+      state = Conn.get_streaming_state(conn)
+      count = Map.get(state || %{}, :count, 0)
+  """
+  defun get_streaming_state(%__MODULE__{chunked: chunked}) :: nil | any do
+    Map.get(chunked, :streaming_state)
+  end
+
+  @doc """
+  Puts streaming state into the connection.
+
+  For HTTP streaming connections, this stores state that will persist across
+  iterations of the infinite loop. This allows the gear to track
+  iteration count, last event ID, or any other state.
+
+  ## Example
+
+      conn
+      |> Conn.put_streaming_state(%{count: count + 1, last_id: event_id})
+  """
+  defun put_streaming_state(%__MODULE__{chunked: chunked} = conn, state :: any) :: t do
+    %__MODULE__{conn | chunked: Map.put(chunked, :streaming_state, state)}
   end
 
   @doc """

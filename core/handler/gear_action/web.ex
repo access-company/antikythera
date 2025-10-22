@@ -37,7 +37,7 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
       path_info = CowboyReq.path_info(req1)
       helper_modules = GearModule.request_helper_modules(gear_name)
 
-      {entry_point, path_matches, ws?, timeout} <-
+      {entry_point, path_matches, ws?, http_streaming?, timeout} <-
         find_route(req1, gear_name, method, path_info, helper_modules)
 
       routing_info = {gear_name, entry_point, method, path_info, path_matches}
@@ -47,7 +47,16 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
         CowboyReq.request_body_pair(req1, routing_info, qparams, helper_modules)
 
       pure(
-        run_action_with_conn(req2, routing_info, qparams, body_pair, helper_modules, ws?, timeout)
+        run_action_with_conn(
+          req2,
+          routing_info,
+          qparams,
+          body_pair,
+          helper_modules,
+          ws?,
+          http_streaming?,
+          timeout
+        )
       )
     end
     |> case do
@@ -66,10 +75,10 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            method :: v[Method.t()],
            path_info :: v[PathInfo.t()],
            %HelperModules{router: router}
-         ) :: R.t({GearEntryPoint.t(), PathMatches.t(), boolean}) do
+         ) :: R.t({GearEntryPoint.t(), PathMatches.t(), boolean, boolean, GearActionTimeout.t()}) do
     case router.__web_route__(method, path_info) do
-      {controller, action, path_matches, websocket?, timeout} ->
-        {:ok, {{controller, action}, path_matches, websocket?, timeout}}
+      {controller, action, path_matches, websocket?, http_streaming?, timeout} ->
+        {:ok, {{controller, action}, path_matches, websocket?, http_streaming?, timeout}}
 
       nil ->
         {:error,
@@ -89,13 +98,24 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            body_pair :: {binary, Body.t()},
            helper_modules :: v[HelperModules.t()],
            websocket? :: v[boolean],
+           http_streaming? :: v[boolean],
            timeout :: v[GearActionTimeout.t()]
          ) :: :cowboy_req.req() | {:cowboy_req.req(), WebsocketState.t()} do
-    case websocket? do
-      true ->
+    cond do
+      websocket? ->
         run_action_with_conn_ws(req, routing_info, qparams, body_pair, helper_modules, timeout)
 
-      false ->
+      http_streaming? ->
+        run_action_with_conn_http_streaming(
+          req,
+          routing_info,
+          qparams,
+          body_pair,
+          helper_modules,
+          timeout
+        )
+
+      true ->
         run_action_with_conn_http(req, routing_info, qparams, body_pair, helper_modules, timeout)
     end
   end
@@ -113,6 +133,121 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
         run_action_with_executor(conn, gear_name, entry_point, helper_modules, timeout)
       end)
     end)
+  end
+
+  defunp run_action_with_conn_http_streaming(
+           req :: :cowboy_req.req(),
+           {gear_name, entry_point, _, _, _} = routing_info :: CowboyReq.routing_info(),
+           qparams :: v[QueryParams.t()],
+           body_pair :: {binary, Body.t()},
+           helper_modules :: v[HelperModules.t()],
+           timeout :: v[GearActionTimeout.t()]
+         ) :: :cowboy_req.req() do
+    context = GearAction.Context.make()
+    conn1 = CoreConn.make_from_cowboy_req(req, routing_info, qparams, body_pair)
+    ContextHelper.set(conn1)
+
+    # For HTTP streaming, we call the gear callback in an infinite loop until end_chunked is called
+    final_conn =
+      GearAction.with_logging_and_metrics_reporting(conn1, context, helper_modules, fn ->
+        http_streaming_infinite_loop(
+          conn1,
+          gear_name,
+          entry_point,
+          helper_modules,
+          timeout,
+          req,
+          nil
+        )
+      end)
+
+    # Send final chunk to close the stream if req2 exists (meaning stream was started)
+    case Map.get(final_conn.chunked, :cowboy_req) do
+      nil -> CoreConn.reply_as_cowboy_res(final_conn, req)
+      req2 -> :cowboy_req.stream_body("", :fin, req2)
+    end
+  end
+
+  defunp http_streaming_infinite_loop(
+           conn :: v[Conn.t()],
+           gear_name :: v[GearName.t()],
+           entry_point :: v[GearEntryPoint.t()],
+           helper_modules :: v[HelperModules.t()],
+           timeout :: v[GearActionTimeout.t()],
+           req :: :cowboy_req.req(),
+           req2 :: nil | :cowboy_req.req()
+         ) :: Conn.t() do
+    conn_after_action =
+      run_action_with_executor_for_http_streaming(
+        conn,
+        gear_name,
+        entry_point,
+        helper_modules,
+        timeout
+      )
+
+    # Initialize streaming on first iteration if chunked is enabled
+    req2_updated =
+      if req2 == nil and Map.get(conn_after_action.chunked, :enabled) do
+        # Prepare headers (lowercase and add defaults)
+        headers_downcased =
+          Map.new(conn_after_action.resp_headers, fn {key, value} ->
+            {String.downcase(key), value}
+          end)
+
+        headers_without_cl = Map.delete(headers_downcased, "content-length")
+
+        headers_with_defaults =
+          Map.merge(
+            %{
+              "x-frame-options" => "DENY",
+              "x-xss-protection" => "1; mode=block",
+              "x-content-type-options" => "nosniff",
+              "strict-transport-security" => "max-age=31536000"
+            },
+            headers_without_cl
+          )
+
+        :cowboy_req.stream_reply(conn_after_action.status, headers_with_defaults, req)
+      else
+        req2
+      end
+
+    # Send any accumulated chunks immediately
+    if req2_updated != nil do
+      chunks = Map.get(conn_after_action.chunked, :chunks, [])
+
+      Enum.each(Enum.reverse(chunks), fn chunk_body ->
+        :cowboy_req.stream_body(chunk_body, :nofin, req2_updated)
+      end)
+    end
+
+    # Clear chunks after sending and store the cowboy_req for final close
+    conn_cleared =
+      %Conn{
+        conn_after_action
+        | chunked:
+            conn_after_action.chunked
+            |> Map.put(:chunks, [])
+            |> Map.put(:cowboy_req, req2_updated)
+      }
+
+    # Check if end_chunked was called
+    case Map.get(conn_cleared.chunked, :finished) do
+      true ->
+        conn_cleared
+
+      _ ->
+        http_streaming_infinite_loop(
+          conn_cleared,
+          gear_name,
+          entry_point,
+          helper_modules,
+          timeout,
+          req,
+          req2_updated
+        )
+    end
   end
 
   defunp run_action_with_conn_ws(
@@ -161,6 +296,19 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
          ) :: Conn.t() do
     ExecutorPoolHelper.with_executor(conn1, gear_name, helper_modules, fn pid, conn2 ->
       ActionRunner.run(pid, conn2, entry_point, timeout)
+    end)
+  end
+
+  defunp run_action_with_executor_for_http_streaming(
+           conn1 :: v[Conn.t()],
+           gear_name :: v[GearName.t()],
+           entry_point :: v[GearEntryPoint.t()],
+           helper_modules :: v[HelperModules.t()],
+           _timeout :: v[GearActionTimeout.t()]
+         ) :: Conn.t() do
+    ExecutorPoolHelper.with_executor_for_http_streaming(conn1, gear_name, helper_modules, fn pid,
+                                                                                             conn2 ->
+      ActionRunner.run(pid, conn2, entry_point, :infinity)
     end)
   end
 

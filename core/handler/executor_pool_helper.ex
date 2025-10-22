@@ -13,6 +13,7 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
   alias AntikytheraCore.ExecutorPool.Id, as: CoreEPoolId
   alias AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter, as: WsCounter
   alias AntikytheraCore.Ets.GearActionRunnerPools
+  alias AntikytheraCore.Ets.GearHttpStreamingRunnerPools
   alias AntikytheraCore.GearLog
   alias AntikytheraCore.GearLog.Writer
 
@@ -25,6 +26,21 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
     case find_executor_pool(conn, gear_name, helper_modules) do
       {:ok, epool_id} -> run_within_executor_pool(conn, helper_modules, epool_id, f)
       {:error, reason} -> GearError.bad_executor_pool_id(conn, reason)
+    end
+  end
+
+  defun with_executor_for_http_streaming(
+          conn :: v[Conn.t()],
+          gear_name :: v[GearName.t()],
+          helper_modules :: v[HelperModules.t()],
+          f :: (pid, Conn.t() -> Conn.t())
+        ) :: Conn.t() do
+    case find_executor_pool(conn, gear_name, helper_modules) do
+      {:ok, epool_id} ->
+        run_within_executor_pool_for_http_streaming(conn, helper_modules, epool_id, f)
+
+      {:error, reason} ->
+        GearError.bad_executor_pool_id(conn, reason)
     end
   end
 
@@ -46,6 +62,25 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
 
     try do
       PoolSup.Multi.transaction(GearActionRunnerPools.table_name(), epool_id, fn pid ->
+        f.(pid, conn2)
+      end)
+    catch
+      :exit, {:timeout, _} ->
+        report_failure_in_checkout(helper_modules, epool_id)
+        GearError.error(conn2, :timeout_in_epool_checkout, [])
+    end
+  end
+
+  defunp run_within_executor_pool_for_http_streaming(
+           %Conn{context: context} = conn1,
+           helper_modules :: v[HelperModules.t()],
+           epool_id :: v[EPoolId.t()],
+           f :: (pid, Conn.t() -> Conn.t())
+         ) :: Conn.t() do
+    conn2 = %Conn{conn1 | context: %Context{context | executor_pool_id: epool_id}}
+
+    try do
+      PoolSup.Multi.transaction(GearHttpStreamingRunnerPools.table_name(), epool_id, fn pid ->
         f.(pid, conn2)
       end)
     catch

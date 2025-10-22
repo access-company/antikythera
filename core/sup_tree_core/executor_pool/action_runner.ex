@@ -60,7 +60,7 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
           pid :: v[pid],
           conn :: v[Conn.t()],
           entry_point :: v[GearEntryPoint.t()],
-          timeout :: v[GearActionTimeout.t()]
+          timeout :: v[GearActionTimeout.t() | :infinity]
         ) :: Conn.t() do
     false = Process.flag(:trap_exit, true)
 

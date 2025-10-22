@@ -33,6 +33,19 @@ defmodule AntikytheraCore.ExecutorPool.RegisteredName do
     common_parts(epool_id, "ActionRunnerPoolMulti")
   end
 
+  defun http_streaming_runner_pool_multi(epool_id :: v[EPoolId.t()]) :: atom do
+    Module.safe_concat(http_streaming_runner_pool_multi_parts(epool_id))
+  end
+
+  defun http_streaming_runner_pool_multi_unsafe(epool_id :: v[EPoolId.t()]) :: atom do
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
+    Module.concat(http_streaming_runner_pool_multi_parts(epool_id))
+  end
+
+  defunp http_streaming_runner_pool_multi_parts(epool_id :: v[EPoolId.t()]) :: [String.t()] do
+    common_parts(epool_id, "HttpStreamingRunnerPoolMulti")
+  end
+
   defun async_job_runner_pool(epool_id :: v[EPoolId.t()]) :: atom do
     Module.safe_concat(async_job_runner_pool_parts(epool_id))
   end
