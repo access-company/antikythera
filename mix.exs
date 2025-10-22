@@ -112,7 +112,7 @@ defmodule Antikythera.Mixfile do
       {:dialyxir, "1.4.5", [only: :dev, runtime: false]},
       {:credo, "1.7.10", [only: :dev, runtime: false]},
       {:mix_test_watch, "1.2.0", [only: :dev, runtime: false]},
-      {:meck, "0.9.2", [only: :test]},
+      {:meck, "1.1.0", [only: :test]},
       {:excoveralls, "0.18.3", [only: :test]},
       {:stream_data, "1.1.2", [only: :test]},
       {:yaml_elixir, "2.11.0", [only: :test]},
