@@ -77,8 +77,13 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            %HelperModules{router: router}
          ) :: R.t({GearEntryPoint.t(), PathMatches.t(), boolean, boolean, GearActionTimeout.t()}) do
     case router.__web_route__(method, path_info) do
+      # New format (6-tuple) with http_streaming flag
       {controller, action, path_matches, websocket?, http_streaming?, timeout} ->
         {:ok, {{controller, action}, path_matches, websocket?, http_streaming?, timeout}}
+
+      # Old format (5-tuple) without http_streaming flag - for backward compatibility
+      {controller, action, path_matches, websocket?, timeout} ->
+        {:ok, {{controller, action}, path_matches, websocket?, false, timeout}}
 
       nil ->
         {:error,

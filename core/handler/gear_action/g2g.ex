@@ -49,7 +49,12 @@ defmodule AntikytheraCore.Handler.GearAction.G2g do
            f :: (module, atom, PathInfo.t(), GearActionTimeout.t() -> GRes.t())
          ) :: GRes.t() do
     case router.__gear_route__(method, path_info) do
+      # New format (6-tuple) with http_streaming flag
       {controller, action, path_matches, _, _, timeout} ->
+        f.(controller, action, path_matches, timeout)
+
+      # Old format (5-tuple) without http_streaming flag - for backward compatibility
+      {controller, action, path_matches, _, timeout} ->
         f.(controller, action, path_matches, timeout)
 
       nil ->
