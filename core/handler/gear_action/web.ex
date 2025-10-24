@@ -162,9 +162,10 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
       end)
 
     # Send final chunk to close the stream if req2 exists (meaning stream was started)
-    case Map.get(final_conn.chunked, :cowboy_req) do
-      nil -> CoreConn.reply_as_cowboy_res(final_conn, req)
-      req2 -> :cowboy_req.stream_body("", :fin, req2)
+    case {Map.get(final_conn.chunked, :enabled), Map.get(final_conn.chunked, :cowboy_req)} do
+      {true, nil} -> CoreConn.reply_as_cowboy_res(final_conn, req)
+      {_, req2} when not is_nil(req2) -> :cowboy_req.stream_body("", :fin, req2)
+      _ -> CoreConn.reply_as_cowboy_res(final_conn, req)
     end
   end
 
