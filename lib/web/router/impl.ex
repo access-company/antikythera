@@ -255,13 +255,14 @@ defmodule Antikythera.Router.Impl do
     path_matches_expr_without_last ++ [wildcard_pair]
   end
 
+  # New signature with http_streaming flag
   defun route_clause_body(
           controller :: v[module],
           action :: v[atom],
           path_matches :: Keyword.t(String.t()),
           websocket? :: v[boolean],
           http_streaming? :: v[boolean],
-          timeout :: v[pos_integer] \\ GearActionTimeout.default()
+          timeout :: v[pos_integer]
         ) :: route_result do
     if Enum.all?(path_matches, fn {_placeholder, match} -> String.printable?(match) end) do
       timeout_limited = min(timeout, GearActionTimeout.max())
@@ -269,5 +270,17 @@ defmodule Antikythera.Router.Impl do
     else
       nil
     end
+  end
+
+  # Old signature without http_streaming flag - for backward compatibility with old compiled routers
+  defun route_clause_body(
+          controller :: v[module],
+          action :: v[atom],
+          path_matches :: Keyword.t(String.t()),
+          websocket? :: v[boolean],
+          timeout :: v[pos_integer] \\ GearActionTimeout.default()
+        ) :: route_result do
+    # Call the new version with http_streaming? = false
+    route_clause_body(controller, action, path_matches, websocket?, false, timeout)
   end
 end
