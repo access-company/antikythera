@@ -148,6 +148,7 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            helper_modules :: v[HelperModules.t()],
            timeout :: v[GearActionTimeout.t()]
          ) :: :cowboy_req.req() do
+    :cowboy_req.cast({:set_options, %{idle_timeout: :infinity}}, req)
     context = GearAction.Context.make()
     conn1 = CoreConn.make_from_cowboy_req(req, routing_info, qparams, body_pair)
     ContextHelper.set(conn1)
@@ -175,10 +176,9 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
       end)
 
     # Send final chunk to close the stream if req2 exists (meaning stream was started)
-    case {Map.get(final_conn.chunked, :enabled), Map.get(final_conn.chunked, :cowboy_req)} do
-      {true, nil} -> CoreConn.reply_as_cowboy_res(final_conn, req)
-      {_, req2} when not is_nil(req2) -> :cowboy_req.stream_body("", :fin, req2)
-      _ -> CoreConn.reply_as_cowboy_res(final_conn, req)
+    case Map.get(final_conn.chunked, :cowboy_req) do
+      nil -> CoreConn.reply_as_cowboy_res(final_conn, req)
+      req2 -> :cowboy_req.stream_body("", :fin, req2)
     end
   end
 
