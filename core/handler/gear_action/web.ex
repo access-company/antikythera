@@ -4,7 +4,7 @@ use Croma
 
 defmodule AntikytheraCore.Handler.GearAction.Web do
   alias Croma.Result, as: R
-  alias Antikythera.{GearName, PathInfo, Conn, GearActionTimeout}
+  alias Antikythera.{GearName, PathInfo, Conn, GearActionTimeout, VersionStr}
   alias Antikythera.Http.{Method, QueryParams, Body}
   alias Antikythera.Request.PathMatches
   alias Antikythera.Context.GearEntryPoint
@@ -152,6 +152,12 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
     conn1 = CoreConn.make_from_cowboy_req(req, routing_info, qparams, body_pair)
     ContextHelper.set(conn1)
 
+    # Capture initial versions to detect module updates
+    initial_core_version =
+      AntikytheraCore.Version.current_version(Antikythera.Env.antikythera_instance_name())
+
+    initial_gear_version = AntikytheraCore.Version.current_version(gear_name)
+
     # For HTTP streaming, we call the gear callback in an infinite loop until end_chunked is called
     final_conn =
       GearAction.with_logging_and_metrics_reporting(conn1, context, helper_modules, fn ->
@@ -162,7 +168,9 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
           helper_modules,
           timeout,
           req,
-          nil
+          nil,
+          initial_core_version,
+          initial_gear_version
         )
       end)
 
@@ -181,7 +189,9 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            helper_modules :: v[HelperModules.t()],
            timeout :: v[GearActionTimeout.t()],
            req :: :cowboy_req.req(),
-           req2 :: nil | :cowboy_req.req()
+           req2 :: nil | :cowboy_req.req(),
+           initial_core_version :: nil | VersionStr.t(),
+           initial_gear_version :: nil | VersionStr.t()
          ) :: Conn.t() do
     conn_after_action =
       run_action_with_executor_for_http_streaming(
@@ -244,15 +254,41 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
         conn_cleared
 
       _ ->
-        http_streaming_infinite_loop(
-          conn_cleared,
-          gear_name,
-          entry_point,
-          helper_modules,
-          timeout,
-          req,
-          req2_updated
-        )
+        # Check for module updates after action runs and before continuing loop
+        current_core_version =
+          AntikytheraCore.Version.current_version(Antikythera.Env.antikythera_instance_name())
+
+        current_gear_version = AntikytheraCore.Version.current_version(gear_name)
+
+        version_changed? =
+          current_core_version != initial_core_version or
+            current_gear_version != initial_gear_version
+
+        if version_changed? do
+          message =
+            "Stopping HTTP streaming loop due to module update (core: #{initial_core_version} -> #{current_core_version}, gear: #{initial_gear_version} -> #{current_gear_version})"
+
+          AntikytheraCore.GearLog.Writer.info(
+            AntikytheraCore.GearModule.logger(gear_name),
+            AntikytheraCore.GearLog.Time.now(),
+            conn_cleared.context.context_id,
+            message
+          )
+
+          conn_cleared
+        else
+          http_streaming_infinite_loop(
+            conn_cleared,
+            gear_name,
+            entry_point,
+            helper_modules,
+            timeout,
+            req,
+            req2_updated,
+            initial_core_version,
+            initial_gear_version
+          )
+        end
     end
   end
 
