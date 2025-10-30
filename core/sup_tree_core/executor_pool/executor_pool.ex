@@ -16,6 +16,7 @@ defmodule AntikytheraCore.ExecutorPool do
   alias AntikytheraCore.ExecutorPool.MemcacheWriter
   alias AntikytheraCore.MetricsUploader
   alias AntikytheraCore.Ets.GearActionRunnerPools
+  alias AntikytheraCore.Ets.GearHttpStreamingRunnerPools
   alias AntikytheraCore.TenantExecutorPoolsManager
   require AntikytheraCore.Logger, as: L
 
@@ -38,6 +39,8 @@ defmodule AntikytheraCore.ExecutorPool do
           %EPoolSetting{
             n_pools_a: n_pools_a,
             pool_size_a: size_a,
+            n_pools_s: n_pools_s,
+            pool_size_s: size_s,
             pool_size_j: size_j,
             ws_max_connections: ws_max
           }
@@ -51,7 +54,17 @@ defmodule AntikytheraCore.ExecutorPool do
     memcache_name = RegName.memcache_writer_unsafe(epool_id)
 
     children = [
-      {PoolSup.Multi, action_runner_pool_multi_args(epool_id, n_pools_a, size_a)},
+      %{
+        id: :action_runner_pool_multi,
+        start:
+          {PoolSup.Multi, :start_link, action_runner_pool_multi_args(epool_id, n_pools_a, size_a)}
+      },
+      %{
+        id: :http_streaming_runner_pool_multi,
+        start:
+          {PoolSup.Multi, :start_link,
+           http_streaming_runner_pool_multi_args(epool_id, n_pools_s, size_s)}
+      },
       {PoolSup, async_job_runner_pool_args(epool_id, size_j, job_pool_name)},
       {JobBroker, [job_pool_name, queue_name, broker_name]},
       {TimedJobStarter, [queue_name, uploader, epool_id]},
@@ -78,6 +91,26 @@ defmodule AntikytheraCore.ExecutorPool do
       [
         name: RegName.action_runner_pool_multi_unsafe(epool_id),
         # chosen as (1) sufficiently longer than gear action timeout, (2) not too frequent
+        checkout_max_duration: div(GearActionTimeout.max(), 1_000) + 30
+      ]
+    ]
+  end
+
+  defp http_streaming_runner_pool_multi_args(epool_id, n_pools_s, size_s) do
+    [
+      GearHttpStreamingRunnerPools.table_name(),
+      # key for the ETS record of this PoolSup.Multi
+      epool_id,
+      n_pools_s,
+      ActionRunner,
+      # arg for `ActionRunner.start_link/1`
+      epool_id,
+      size_s,
+      # we don't use ondemand worker processes for HTTP streaming
+      0,
+      [
+        name: RegName.http_streaming_runner_pool_multi_unsafe(epool_id),
+        # HTTP streaming connections are long-lived, so we use a longer checkout duration
         checkout_max_duration: div(GearActionTimeout.max(), 1_000) + 30
       ]
     ]
@@ -159,15 +192,19 @@ defmodule AntikytheraCore.ExecutorPool do
           %EPoolSetting{
             n_pools_a: n_pools_a,
             pool_size_a: size_a,
+            n_pools_s: n_pools_s,
+            pool_size_s: size_s,
             pool_size_j: size_j,
             ws_max_connections: ws_max
           }
         ) :: :ok do
     L.info("changing setting of executor pool for #{inspect(epool_id)}")
     action_pool_name = RegName.action_runner_pool_multi(epool_id)
+    http_streaming_pool_name = RegName.http_streaming_runner_pool_multi(epool_id)
     job_pool_name = RegName.async_job_runner_pool(epool_id)
     broker_name = RegName.async_job_broker(epool_id)
     PoolSup.Multi.change_configuration(action_pool_name, n_pools_a, size_a, 0)
+    PoolSup.Multi.change_configuration(http_streaming_pool_name, n_pools_s, size_s, 0)
     PoolSup.change_capacity(job_pool_name, 0, size_j)
     JobBroker.notify_pool_capacity_may_have_changed(broker_name)
     WebsocketConnectionsCounter.set_max(epool_id, ws_max)

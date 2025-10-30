@@ -7,6 +7,7 @@ defmodule AntikytheraCore.Ets do
     AntikytheraCore.Ets.SystemCache.init()
     AntikytheraCore.Ets.ConfigCache.init()
     AntikytheraCore.Ets.GearActionRunnerPools.init()
+    AntikytheraCore.Ets.GearHttpStreamingRunnerPools.init()
     AntikytheraCore.Ets.TenantToGearsMapping.init()
     AntikytheraCore.Ets.Memcache.init()
   end

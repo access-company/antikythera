@@ -22,7 +22,14 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
 
   @epool_id {:gear, :testgear}
   @queue_name RegName.async_job_queue_unsafe(@epool_id)
-  @setting %EPoolSetting{n_pools_a: 2, pool_size_a: 1, pool_size_j: 1, ws_max_connections: 10}
+  @setting %EPoolSetting{
+    n_pools_a: 2,
+    pool_size_a: 1,
+    n_pools_s: 1,
+    pool_size_s: 1,
+    pool_size_j: 1,
+    ws_max_connections: 10
+  }
   @payload %{foo: "bar"}
   @job_id "foobar"
 

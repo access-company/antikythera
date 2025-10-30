@@ -41,6 +41,8 @@ defmodule AntikytheraCore.GearExecutorPoolsManagerTest do
     setting1 = %EPoolSetting{
       n_pools_a: 2,
       pool_size_a: 1,
+      n_pools_s: 1,
+      pool_size_s: 1,
       pool_size_j: 1,
       ws_max_connections: 200
     }
@@ -51,6 +53,8 @@ defmodule AntikytheraCore.GearExecutorPoolsManagerTest do
     setting2 = %EPoolSetting{
       n_pools_a: 3,
       pool_size_a: 2,
+      n_pools_s: 1,
+      pool_size_s: 1,
       pool_size_j: 2,
       ws_max_connections: 100
     }

@@ -14,7 +14,8 @@ defmodule AntikytheraCore.ConnTest do
       resp_cookies: %{},
       resp_body: body,
       before_send: [],
-      assigns: %{}
+      assigns: %{},
+      chunked: %{}
     }
   end
 

@@ -18,7 +18,7 @@ defmodule Antikythera.Router do
     it's automatically prepended by antikythera.
   - Name of the controller action as an atom.
   - Keyword list of options.
-    Currently available options are `:from` and `:as`. See below for further explanations.
+    Currently available options are `:from`, `:as`, `:timeout`, and `:streaming`. See below for further explanations.
 
   ## Example
 
@@ -134,6 +134,38 @@ defmodule Antikythera.Router do
   If not specified, the default timeout is taken from the `GEAR_ACTION_TIMEOUT` environment variable.
 
   The maximum allowed value is set by the `:gear_action_max_timeout` configuration in `config/config.exs`.
+
+  ## HTTP streaming (Server-Sent Events)
+
+  You can enable HTTP streaming for a route using the `:streaming` option.
+  HTTP streaming allows the server to send multiple chunks of data over a single long-lived HTTP connection,
+  which is useful for implementing Server-Sent Events (SSE) or other real-time streaming scenarios.
+
+      get "/events", EventController, :stream, streaming: true
+
+  When `:streaming` is set to `true`, the controller action will be called repeatedly in an infinite loop
+  until `Conn.end_chunked/1` is called. Use `Conn.send_chunked/3` to initialize the streaming response
+  and `Conn.chunk/2` to send data chunks.
+
+  To maintain state across iterations, use `Conn.get_streaming_state/1` and `Conn.put_streaming_state/2`.
+
+  Example controller action for streaming:
+
+      def stream(conn) do
+        state = Conn.get_streaming_state(conn) || %{count: 0}
+
+        conn
+        |> Conn.send_chunked(200, %{"content-type" => "text/event-stream"})
+        |> Conn.chunk("data: Event \#{state.count}\\n\\n")
+        |> Conn.put_streaming_state(%{count: state.count + 1})
+        |> (fn conn -> if state.count >= 10, do: Conn.end_chunked(conn), else: conn end).()
+      end
+
+  **Note:** Streaming routes use a separate executor pool from normal HTTP requests to prevent
+  long-lived connections from exhausting the request handler pool. This pool can be configured
+  via the `n_pools_s` and `pool_size_s` settings in the executor pool configuration.
+
+  Streaming routes cannot be accessed via gear-to-gear communication.
   """
 
   alias Antikythera.Router.Impl

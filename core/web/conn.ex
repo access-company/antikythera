@@ -86,23 +86,32 @@ defmodule AntikytheraCore.Conn do
       resp_cookies: %{},
       resp_body: "",
       before_send: [],
-      assigns: %{}
+      assigns: %{},
+      chunked: %{}
     }
   end
 
   def reply_as_cowboy_res(
-        %Conn{status: status, resp_headers: headers, resp_cookies: resp_cookies, resp_body: body} =
-          conn,
+        %Conn{
+          status: status,
+          resp_headers: headers,
+          resp_cookies: resp_cookies,
+          resp_body: body,
+          chunked: chunked
+        } = conn,
         req
       ) do
     try do
       headers_with_defaults = add_default_resp_headers(headers)
       req2 = CoreCookies.merge_cookies_to_cowboy_req(resp_cookies, req)
 
-      if body == nil or body == "" do
-        :cowboy_req.reply(status, headers_with_defaults, req2)
-      else
-        :cowboy_req.reply(status, headers_with_defaults, body, req2)
+      # Check if this is a chunked response
+      case Map.get(chunked, :enabled) do
+        true ->
+          send_chunked_response(status, headers_with_defaults, chunked, req2)
+
+        _ ->
+          send_normal_response(status, headers_with_defaults, body, req2)
       end
     rescue
       e ->
@@ -129,6 +138,29 @@ defmodule AntikytheraCore.Conn do
     # content-length header should be calculated based on the actual body and thus neglected (if any)
     headers_without_cl = Map.delete(headers_downcased, "content-length")
     Map.merge(@default_secure_headers, headers_without_cl)
+  end
+
+  defp send_chunked_response(status, headers, chunked, req) do
+    # Initiate chunked response
+    req2 = :cowboy_req.stream_reply(status, headers, req)
+
+    # Send all accumulated chunks (reverse because we cons'd them)
+    chunks = Map.get(chunked, :chunks, [])
+
+    Enum.each(Enum.reverse(chunks), fn chunk_body ->
+      :cowboy_req.stream_body(chunk_body, :nofin, req2)
+    end)
+
+    # Send final chunk to close the stream
+    :cowboy_req.stream_body("", :fin, req2)
+  end
+
+  defp send_normal_response(status, headers, body, req) do
+    if body == nil or body == "" do
+      :cowboy_req.reply(status, headers, req)
+    else
+      :cowboy_req.reply(status, headers, body, req)
+    end
   end
 
   def reply_as_g2g_res(

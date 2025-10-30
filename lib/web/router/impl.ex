@@ -10,7 +10,7 @@ defmodule Antikythera.Router.Impl do
   alias Antikythera.{Http.Method, PathSegment, PathInfo, Request.PathMatches, GearActionTimeout}
 
   @typep route_entry :: {Method.t(), String.t(), module, atom, Keyword.t(any)}
-  @typep route_result_success :: {module, atom, PathMatches.t(), boolean}
+  @typep route_result_success :: {module, atom, PathMatches.t(), boolean, boolean}
   @typep route_result :: nil | route_result_success
 
   defun generate_route_function_clauses(
@@ -117,6 +117,12 @@ defmodule Antikythera.Router.Impl do
       raise "option `:websocket?` must be boolean but given: #{websocket?}"
     end
 
+    http_streaming? = Keyword.get(opts, :streaming, false)
+
+    unless is_boolean(http_streaming?) do
+      raise "option `:streaming` must be boolean but given: #{http_streaming?}"
+    end
+
     timeout = Keyword.get(opts, :timeout, GearActionTimeout.default())
 
     unless GearActionTimeout.valid?(timeout) do
@@ -141,6 +147,7 @@ defmodule Antikythera.Router.Impl do
             unquote(action),
             unquote(path_matches_expr),
             unquote(websocket?),
+            unquote(http_streaming?),
             unquote(timeout)
           )
         end
@@ -161,6 +168,7 @@ defmodule Antikythera.Router.Impl do
             unquote(action),
             unquote(path_matches_expr),
             unquote(websocket?),
+            unquote(http_streaming?),
             unquote(timeout)
           )
         end
@@ -172,6 +180,7 @@ defmodule Antikythera.Router.Impl do
             unquote(action),
             unquote(path_matches_expr),
             unquote(websocket?),
+            unquote(http_streaming?),
             unquote(timeout)
           )
         end
@@ -246,6 +255,24 @@ defmodule Antikythera.Router.Impl do
     path_matches_expr_without_last ++ [wildcard_pair]
   end
 
+  # New signature with http_streaming flag
+  defun route_clause_body(
+          controller :: v[module],
+          action :: v[atom],
+          path_matches :: Keyword.t(String.t()),
+          websocket? :: v[boolean],
+          http_streaming? :: v[boolean],
+          timeout :: v[pos_integer]
+        ) :: route_result do
+    if Enum.all?(path_matches, fn {_placeholder, match} -> String.printable?(match) end) do
+      timeout_limited = min(timeout, GearActionTimeout.max())
+      {controller, action, Map.new(path_matches), websocket?, http_streaming?, timeout_limited}
+    else
+      nil
+    end
+  end
+
+  # Old signature without http_streaming flag - for backward compatibility with old compiled routers
   defun route_clause_body(
           controller :: v[module],
           action :: v[atom],
@@ -253,11 +280,7 @@ defmodule Antikythera.Router.Impl do
           websocket? :: v[boolean],
           timeout :: v[pos_integer] \\ GearActionTimeout.default()
         ) :: route_result do
-    if Enum.all?(path_matches, fn {_placeholder, match} -> String.printable?(match) end) do
-      timeout_limited = min(timeout, GearActionTimeout.max())
-      {controller, action, Map.new(path_matches), websocket?, timeout_limited}
-    else
-      nil
-    end
+    # Call the new version with http_streaming? = false
+    route_clause_body(controller, action, path_matches, websocket?, false, timeout)
   end
 end

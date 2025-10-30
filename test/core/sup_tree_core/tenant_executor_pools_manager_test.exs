@@ -49,6 +49,8 @@ defmodule AntikytheraCore.TenantExecutorPoolsManagerTest do
     %TenantSetting{
       n_pools_a: na,
       pool_size_a: sa,
+      n_pools_s: 1,
+      pool_size_s: 1,
       pool_size_j: sj,
       ws_max_connections: ws,
       gears: gears
