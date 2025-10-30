@@ -23,7 +23,7 @@ defmodule AntikytheraCore.ExecutorPool.Setting do
     n_pools_a: 1,
     pool_size_a: 5,
     n_pools_s: 1,
-    pool_size_s: 5,
+    pool_size_s: 1,
     pool_size_j: 2,
     ws_max_connections: 100
   }
