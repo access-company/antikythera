@@ -11,6 +11,8 @@ defmodule AntikytheraCore.ExecutorPool.Setting do
     fields: [
       n_pools_a: Croma.NonNegInteger,
       pool_size_a: Croma.NonNegInteger,
+      n_pools_s: Croma.NonNegInteger,
+      pool_size_s: Croma.NonNegInteger,
       pool_size_j: Croma.NonNegInteger,
       ws_max_connections: Croma.NonNegInteger
     ]
@@ -20,6 +22,8 @@ defmodule AntikytheraCore.ExecutorPool.Setting do
     __struct__: __MODULE__,
     n_pools_a: 1,
     pool_size_a: 5,
+    n_pools_s: 1,
+    pool_size_s: 1,
     pool_size_j: 2,
     ws_max_connections: 100
   }
