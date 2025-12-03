@@ -56,8 +56,13 @@ defmodule AntikytheraCore.ExecutorPool.TenantSetting do
       gear_names = Enum.map(parsed["gears"], &String.to_atom/1)
       replaced1 = Map.put(parsed, "gears", gear_names)
 
-      # fill the default value to migrate from JSON without "ws_max_connections" to JSON with the field
-      replaced2 = Map.put_new(replaced1, "ws_max_connections", 100)
+      # fill the default values to migrate from JSON without these fields
+      replaced2 =
+        replaced1
+        |> Map.put_new("ws_max_connections", 100)
+        |> Map.put_new("n_pools_s", 1)
+        |> Map.put_new("pool_size_s", 1)
+
       tsetting <- new(replaced2)
       capped = WsConnectionsCapping.cap_based_on_available_memory(tsetting)
       pure({tenant_id, capped})
