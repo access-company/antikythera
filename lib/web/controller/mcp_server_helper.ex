@@ -172,7 +172,7 @@ defmodule Antikythera.Controller.McpServerHelper do
               inputSchema: tool.inputSchema
             }
 
-            if Map.has_key?(tool, :outputSchema) do
+            if tool.outputSchema do
               Map.put(base, :outputSchema, tool.outputSchema)
             else
               base
