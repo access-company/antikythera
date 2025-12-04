@@ -171,7 +171,7 @@ defmodule Antikythera.Controller.McpServerHelperTest do
 
       result = TestMcpController.handle_mcp_request(conn)
 
-      assert result.status == 204
+      assert result.status == 202
     end
 
     test "should handle tools/list method" do

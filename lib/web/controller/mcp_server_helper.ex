@@ -164,7 +164,7 @@ defmodule Antikythera.Controller.McpServerHelper do
       end
 
       defp handle_mcp_notification(conn) do
-        Conn.put_status(conn, 204)
+        Conn.put_status(conn, 202)
       end
 
       defp handle_mcp_tools_list(conn, request) do
