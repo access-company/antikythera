@@ -45,6 +45,12 @@ defmodule Antikythera.Controller.McpServerHelper do
       end
   """
 
+  # JSON-RPC 2.0 error codes
+  # https://www.jsonrpc.org/specification#error_object
+  @error_code_method_not_found -32_601
+  @error_code_internal_error -32_603
+  @error_code_server_error -32_000
+
   defmodule ToolCallback do
     @moduledoc """
     Type definition for a tool callback function.
@@ -213,7 +219,7 @@ defmodule Antikythera.Controller.McpServerHelper do
                 %{
                   jsonrpc: "2.0",
                   error: %{
-                    code: -32_603,
+                    code: unquote(@error_code_internal_error),
                     message: "Internal error: #{Exception.message(error)}"
                   },
                   id: id
@@ -223,7 +229,7 @@ defmodule Antikythera.Controller.McpServerHelper do
             %{
               jsonrpc: "2.0",
               error: %{
-                code: -32_601,
+                code: unquote(@error_code_method_not_found),
                 message: "Tool not found: #{tool_name}"
               },
               id: id
@@ -265,7 +271,7 @@ defmodule Antikythera.Controller.McpServerHelper do
     response = %{
       jsonrpc: "2.0",
       error: %{
-        code: -32_000,
+        code: @error_code_server_error,
         message: "Method not allowed."
       },
       id: nil
