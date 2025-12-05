@@ -252,8 +252,8 @@ defmodule Antikythera.Controller.McpServerHelperTest do
 
       assert response["jsonrpc"] == "2.0"
       assert response["id"] == 4
-      assert response["error"]["code"] == -32_601
-      assert response["error"]["message"] == "Tool not found: unknown_tool"
+      assert response["error"]["code"] == -32_602
+      assert response["error"]["message"] == "MCP error -32602: Tool unknown_tool not found"
     end
 
     test "should return error for tools/call with tool that raises error" do
@@ -283,7 +283,7 @@ defmodule Antikythera.Controller.McpServerHelperTest do
       assert String.contains?(response["error"]["message"], "Internal error:")
     end
 
-    test "should return 400 for unknown method" do
+    test "should return JSON-RPC method not found error for unknown method" do
       conn =
         ConnHelper.make_conn(%{
           body: %{"method" => "unknown/method", "id" => 6}
@@ -291,9 +291,44 @@ defmodule Antikythera.Controller.McpServerHelperTest do
 
       result = TestMcpController.handle_mcp_request(conn)
 
+      assert result.status == 200
+      body = Jason.decode!(result.resp_body)
+      assert body["jsonrpc"] == "2.0"
+      assert body["error"]["code"] == -32_601
+      assert body["error"]["message"] == "Method not found"
+      assert body["id"] == 6
+    end
+
+    test "should return JSON-RPC parse error for invalid JSON body" do
+      conn =
+        ConnHelper.make_conn(%{
+          body: "invalid json"
+        })
+
+      result = TestMcpController.handle_mcp_request(conn)
+
       assert result.status == 400
       body = Jason.decode!(result.resp_body)
-      assert body["error"] == "Unknown method"
+      assert body["jsonrpc"] == "2.0"
+      assert body["error"]["code"] == -32_700
+      assert body["error"]["message"] == "Parse error: Invalid JSON"
+      assert body["id"] == nil
+    end
+
+    test "should return JSON-RPC invalid params error for missing method" do
+      conn =
+        ConnHelper.make_conn(%{
+          body: %{"id" => 8}
+        })
+
+      result = TestMcpController.handle_mcp_request(conn)
+
+      assert result.status == 400
+      body = Jason.decode!(result.resp_body)
+      assert body["jsonrpc"] == "2.0"
+      assert body["error"]["code"] == -32_602
+      assert body["error"]["message"] == "Invalid params: Missing method"
+      assert body["id"] == 8
     end
 
     test "should return error for tools/call with missing params" do
@@ -314,7 +349,7 @@ defmodule Antikythera.Controller.McpServerHelperTest do
       response = Jason.decode!(json_str)
 
       # Should return tool not found error since tool_name is nil
-      assert response["error"]["code"] == -32_601
+      assert response["error"]["code"] == -32_602
     end
   end
 

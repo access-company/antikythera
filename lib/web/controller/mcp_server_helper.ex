@@ -45,9 +45,13 @@ defmodule Antikythera.Controller.McpServerHelper do
       end
   """
 
+  alias Antikythera.Conn
+
   # JSON-RPC 2.0 error codes
   # https://www.jsonrpc.org/specification#error_object
+  @error_code_parse_error -32_700
   @error_code_method_not_found -32_601
+  @error_code_invalid_params -32_602
   @error_code_internal_error -32_603
   @error_code_server_error -32_000
 
@@ -111,10 +115,9 @@ defmodule Antikythera.Controller.McpServerHelper do
     server_name = Keyword.fetch!(opts, :server_name)
     server_version = Keyword.fetch!(opts, :server_version)
     tools = Keyword.fetch!(opts, :tools)
+    helper = __MODULE__
 
     quote do
-      alias Antikythera.{Conn, G2gResponse}
-
       @mcp_server_name unquote(server_name)
       @mcp_server_version unquote(server_version)
       @mcp_tools unquote(tools)
@@ -122,148 +125,218 @@ defmodule Antikythera.Controller.McpServerHelper do
       def handle_mcp_request(conn) do
         request_body = conn.request.body
 
-        case request_body do
-          %{"method" => "initialize"} ->
-            handle_mcp_initialize(conn, request_body)
-
-          %{"method" => "notifications/initialized"} ->
-            handle_mcp_notification(conn)
-
-          %{"method" => "tools/list"} ->
-            handle_mcp_tools_list(conn, request_body)
-
-          %{"method" => "tools/call"} ->
-            handle_mcp_tools_call(conn, request_body)
-
-          _ ->
-            Conn.json(conn, 400, %{error: "Unknown method"})
+        if is_map(request_body) do
+          unquote(helper).dispatch_method(
+            conn,
+            request_body,
+            @mcp_server_name,
+            @mcp_server_version,
+            @mcp_tools
+          )
+        else
+          unquote(helper).handle_parse_error(conn)
         end
       end
 
-      defp handle_mcp_initialize(conn, request) do
-        id = request["id"]
-
-        response = %{
-          result: %{
-            protocolVersion: "2025-03-26",
-            capabilities: %{
-              tools: %{
-                listChanged: false
-              }
-            },
-            serverInfo: %{
-              name: @mcp_server_name,
-              version: @mcp_server_version
-            }
-          },
-          jsonrpc: "2.0",
-          id: id
-        }
-
-        send_mcp_sse_response(conn, response)
-      end
-
-      defp handle_mcp_notification(conn) do
-        Conn.put_status(conn, 202)
-      end
-
-      defp handle_mcp_tools_list(conn, request) do
-        id = request["id"]
-
-        tools =
-          Enum.map(@mcp_tools, fn tool ->
-            base = %{
-              name: tool.name,
-              description: tool.description,
-              inputSchema: tool.inputSchema
-            }
-
-            if tool.outputSchema do
-              Map.put(base, :outputSchema, tool.outputSchema)
-            else
-              base
-            end
-          end)
-
-        response = %{
-          result: %{
-            tools: tools
-          },
-          jsonrpc: "2.0",
-          id: id
-        }
-
-        send_mcp_sse_response(conn, response)
-      end
-
-      defp handle_mcp_tools_call(conn, request) do
-        id = request["id"]
-        params = request["params"] || %{}
-        tool_name = params["name"]
-        arguments = params["arguments"] || %{}
-
-        tool = Enum.find(@mcp_tools, fn t -> t.name == tool_name end)
-
-        response =
-          if tool do
-            try do
-              result = tool.callback.(conn, arguments)
-
-              %{
-                result: result,
-                jsonrpc: "2.0",
-                id: id
-              }
-            rescue
-              error ->
-                %{
-                  jsonrpc: "2.0",
-                  error: %{
-                    code: unquote(@error_code_internal_error),
-                    message: "Internal error: #{Exception.message(error)}"
-                  },
-                  id: id
-                }
-            end
-          else
-            %{
-              jsonrpc: "2.0",
-              error: %{
-                code: unquote(@error_code_method_not_found),
-                message: "Tool not found: #{tool_name}"
-              },
-              id: id
-            }
-          end
-
-        send_mcp_sse_response(conn, response)
-      end
-
-      defp send_mcp_sse_response(conn, response) do
-        json_data = Jason.encode!(response)
-        sse_message = "event: message\ndata: #{json_data}\n\n"
-
-        conn
-        |> Conn.send_chunked(200, %{"content-type" => "text/event-stream"})
-        |> Conn.chunk(sse_message)
-        |> Conn.end_chunked()
-      end
-
-      @doc """
-      Returns a standard JSON-RPC 2.0 error response for method not allowed (405).
-
-      This is useful for handling GET/DELETE requests on MCP endpoints that only support POST.
-
-      ## Example
-
-          def method_not_allowed(conn) do
-            Antikythera.Controller.McpServerHelper.method_not_allowed(conn)
-          end
-      """
       def method_not_allowed(conn) do
-        Antikythera.Controller.McpServerHelper.method_not_allowed(conn)
+        unquote(helper).method_not_allowed(conn)
       end
     end
+  end
+
+  # Helper functions called from generated code
+
+  @doc false
+  def dispatch_method(conn, request, server_name, server_version, tools) do
+    case request do
+      %{"method" => "initialize"} ->
+        handle_initialize(conn, request, server_name, server_version)
+
+      %{"method" => "notifications/initialized"} ->
+        handle_notification(conn)
+
+      %{"method" => "tools/list"} ->
+        handle_tools_list(conn, request, tools)
+
+      %{"method" => "tools/call"} ->
+        handle_tools_call(conn, request, tools)
+
+      %{"method" => _method} ->
+        handle_method_not_found(conn, request)
+
+      _ ->
+        handle_invalid_params(conn, request)
+    end
+  end
+
+  @doc false
+  def handle_parse_error(conn) do
+    response = %{
+      jsonrpc: "2.0",
+      error: %{
+        code: @error_code_parse_error,
+        message: "Parse error: Invalid JSON"
+      },
+      id: nil
+    }
+
+    Conn.json(conn, 400, response)
+  end
+
+  @doc false
+  def handle_invalid_params(conn, request) do
+    id = request["id"]
+
+    response = %{
+      jsonrpc: "2.0",
+      error: %{
+        code: @error_code_invalid_params,
+        message: "Invalid params: Missing method"
+      },
+      id: id
+    }
+
+    Conn.json(conn, 400, response)
+  end
+
+  @doc false
+  def handle_method_not_found(conn, request) do
+    id = request["id"]
+
+    response = %{
+      jsonrpc: "2.0",
+      error: %{
+        code: @error_code_method_not_found,
+        message: "Method not found"
+      },
+      id: id
+    }
+
+    Conn.json(conn, 200, response)
+  end
+
+  @doc false
+  def handle_notification(conn) do
+    Conn.put_status(conn, 202)
+  end
+
+  @doc false
+  def handle_initialize(conn, request, server_name, server_version) do
+    id = request["id"]
+
+    response = %{
+      result: %{
+        protocolVersion: "2025-03-26",
+        capabilities: %{
+          tools: %{
+            listChanged: false
+          }
+        },
+        serverInfo: %{
+          name: server_name,
+          version: server_version
+        }
+      },
+      jsonrpc: "2.0",
+      id: id
+    }
+
+    send_sse_response(conn, response)
+  end
+
+  @doc false
+  def handle_tools_list(conn, request, tools) do
+    id = request["id"]
+
+    tool_list =
+      Enum.map(tools, fn tool ->
+        base = %{
+          name: tool.name,
+          description: tool.description,
+          inputSchema: tool.inputSchema
+        }
+
+        if tool.outputSchema do
+          Map.put(base, :outputSchema, tool.outputSchema)
+        else
+          base
+        end
+      end)
+
+    response = %{
+      result: %{
+        tools: tool_list
+      },
+      jsonrpc: "2.0",
+      id: id
+    }
+
+    send_sse_response(conn, response)
+  end
+
+  @doc false
+  def handle_tools_call(conn, request, tools) do
+    id = request["id"]
+    params = request["params"] || %{}
+    tool_name = params["name"]
+    arguments = params["arguments"] || %{}
+
+    tool = Enum.find(tools, fn t -> t.name == tool_name end)
+
+    response =
+      if tool do
+        execute_tool_callback(conn, tool, arguments, id)
+      else
+        tool_not_found_response(tool_name, id)
+      end
+
+    send_sse_response(conn, response)
+  end
+
+  @doc false
+  def execute_tool_callback(conn, tool, arguments, id) do
+    try do
+      result = tool.callback.(conn, arguments)
+
+      %{
+        result: result,
+        jsonrpc: "2.0",
+        id: id
+      }
+    rescue
+      error ->
+        %{
+          jsonrpc: "2.0",
+          error: %{
+            code: @error_code_internal_error,
+            message: "Internal error: #{Exception.message(error)}"
+          },
+          id: id
+        }
+    end
+  end
+
+  @doc false
+  def tool_not_found_response(tool_name, id) do
+    %{
+      jsonrpc: "2.0",
+      error: %{
+        code: @error_code_invalid_params,
+        message: "MCP error #{@error_code_invalid_params}: Tool #{tool_name} not found"
+      },
+      id: id
+    }
+  end
+
+  @doc false
+  def send_sse_response(conn, response) do
+    json_data = Jason.encode!(response)
+    sse_message = "event: message\ndata: #{json_data}\n\n"
+
+    conn
+    |> Conn.send_chunked(200, %{"content-type" => "text/event-stream"})
+    |> Conn.chunk(sse_message)
+    |> Conn.end_chunked()
   end
 
   @doc false
@@ -277,7 +350,7 @@ defmodule Antikythera.Controller.McpServerHelper do
       id: nil
     }
 
-    Antikythera.Conn.json(conn, 405, response)
+    Conn.json(conn, 405, response)
   end
 
   @doc """
