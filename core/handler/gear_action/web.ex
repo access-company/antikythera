@@ -248,10 +248,14 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
             |> Map.put(:cowboy_req, req2_updated)
       }
 
-    # Check if end_chunked was called
-    case Map.get(conn_cleared.chunked, :finished) do
-      true ->
+    # Check if end_chunked was called or streaming was never started
+    case {Map.get(conn_cleared.chunked, :finished), req2_updated} do
+      {true, _} ->
         conn_cleared
+
+      # Streaming was never started - exit for regular response handling
+      {_, nil} ->
+        %Conn{conn_cleared | chunked: %{}}
 
       _ ->
         # Check for module updates after action runs and before continuing loop
