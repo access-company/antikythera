@@ -38,7 +38,7 @@ defmodule Antikythera.Controller.McpServerHelper do
             })
           ]
 
-        def handle_my_tool(_conn, arguments) do
+        defun handle_my_tool(_conn :: Conn.t(), arguments :: map) :: map do
           param = arguments["param"] || "default"
           McpServerHelper.response_text("Result: \#{param}")
         end
@@ -147,7 +147,13 @@ defmodule Antikythera.Controller.McpServerHelper do
   # Helper functions called from generated code
 
   @doc false
-  def dispatch_method(conn, request, server_name, server_version, tools) do
+  defun dispatch_method(
+          conn :: Conn.t(),
+          request :: map,
+          server_name :: String.t(),
+          server_version :: String.t(),
+          tools :: [Tool.t()]
+        ) :: Conn.t() do
     case request do
       %{"method" => "initialize"} ->
         handle_initialize(conn, request, server_name, server_version)
@@ -170,7 +176,7 @@ defmodule Antikythera.Controller.McpServerHelper do
   end
 
   @doc false
-  def handle_parse_error(conn) do
+  defun handle_parse_error(conn :: Conn.t()) :: Conn.t() do
     response = %{
       jsonrpc: "2.0",
       error: %{
@@ -184,7 +190,7 @@ defmodule Antikythera.Controller.McpServerHelper do
   end
 
   @doc false
-  def handle_invalid_params(conn, request) do
+  defun handle_invalid_params(conn :: Conn.t(), request :: map) :: Conn.t() do
     id = request["id"]
 
     response = %{
@@ -200,7 +206,7 @@ defmodule Antikythera.Controller.McpServerHelper do
   end
 
   @doc false
-  def handle_method_not_found(conn, request) do
+  defun handle_method_not_found(conn :: Conn.t(), request :: map) :: Conn.t() do
     id = request["id"]
 
     response = %{
@@ -216,12 +222,17 @@ defmodule Antikythera.Controller.McpServerHelper do
   end
 
   @doc false
-  def handle_notification(conn) do
+  defun handle_notification(conn :: Conn.t()) :: Conn.t() do
     Conn.put_status(conn, 202)
   end
 
   @doc false
-  def handle_initialize(conn, request, server_name, server_version) do
+  defun handle_initialize(
+          conn :: Conn.t(),
+          request :: map,
+          server_name :: String.t(),
+          server_version :: String.t()
+        ) :: Conn.t() do
     id = request["id"]
 
     response = %{
@@ -245,7 +256,7 @@ defmodule Antikythera.Controller.McpServerHelper do
   end
 
   @doc false
-  def handle_tools_list(conn, request, tools) do
+  defun handle_tools_list(conn :: Conn.t(), request :: map, tools :: [Tool.t()]) :: Conn.t() do
     id = request["id"]
 
     tool_list =
@@ -275,7 +286,7 @@ defmodule Antikythera.Controller.McpServerHelper do
   end
 
   @doc false
-  def handle_tools_call(conn, request, tools) do
+  defun handle_tools_call(conn :: Conn.t(), request :: map, tools :: [Tool.t()]) :: Conn.t() do
     id = request["id"]
     params = request["params"] || %{}
     tool_name = params["name"]
@@ -293,8 +304,8 @@ defmodule Antikythera.Controller.McpServerHelper do
     send_sse_response(conn, response)
   end
 
-  @doc false
-  def execute_tool_callback(conn, tool, arguments, id) do
+  defunp execute_tool_callback(conn :: Conn.t(), tool :: Tool.t(), arguments :: map, id :: any) ::
+           map do
     try do
       result = tool.callback.(conn, arguments)
 
@@ -316,8 +327,7 @@ defmodule Antikythera.Controller.McpServerHelper do
     end
   end
 
-  @doc false
-  def tool_not_found_response(tool_name, id) do
+  defunp tool_not_found_response(tool_name :: any, id :: any) :: map do
     %{
       jsonrpc: "2.0",
       error: %{
@@ -328,8 +338,7 @@ defmodule Antikythera.Controller.McpServerHelper do
     }
   end
 
-  @doc false
-  def send_sse_response(conn, response) do
+  defunp send_sse_response(conn :: Conn.t(), response :: map) :: Conn.t() do
     json_data = Jason.encode!(response)
     sse_message = "event: message\ndata: #{json_data}\n\n"
 
