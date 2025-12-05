@@ -299,22 +299,6 @@ defmodule Antikythera.Controller.McpServerHelperTest do
       assert body["id"] == 6
     end
 
-    test "should return JSON-RPC parse error for invalid JSON body" do
-      conn =
-        ConnHelper.make_conn(%{
-          body: "invalid json"
-        })
-
-      result = TestMcpController.handle_mcp_request(conn)
-
-      assert result.status == 400
-      body = Jason.decode!(result.resp_body)
-      assert body["jsonrpc"] == "2.0"
-      assert body["error"]["code"] == -32_700
-      assert body["error"]["message"] == "Parse error: Invalid JSON"
-      assert body["id"] == nil
-    end
-
     test "should return JSON-RPC invalid params error for missing method" do
       conn =
         ConnHelper.make_conn(%{

@@ -49,7 +49,6 @@ defmodule Antikythera.Controller.McpServerHelper do
 
   # JSON-RPC 2.0 error codes
   # https://www.jsonrpc.org/specification#error_object
-  @error_code_parse_error -32_700
   @error_code_method_not_found -32_601
   @error_code_invalid_params -32_602
   @error_code_internal_error -32_603
@@ -123,19 +122,13 @@ defmodule Antikythera.Controller.McpServerHelper do
       @mcp_tools unquote(tools)
 
       def handle_mcp_request(conn) do
-        request_body = conn.request.body
-
-        if is_map(request_body) do
-          unquote(helper).dispatch_method(
-            conn,
-            request_body,
-            @mcp_server_name,
-            @mcp_server_version,
-            @mcp_tools
-          )
-        else
-          unquote(helper).handle_parse_error(conn)
-        end
+        unquote(helper).dispatch_method(
+          conn,
+          conn.request.body,
+          @mcp_server_name,
+          @mcp_server_version,
+          @mcp_tools
+        )
       end
 
       def method_not_allowed(conn) do
@@ -173,20 +166,6 @@ defmodule Antikythera.Controller.McpServerHelper do
       _ ->
         handle_invalid_params(conn, request)
     end
-  end
-
-  @doc false
-  defun handle_parse_error(conn :: Conn.t()) :: Conn.t() do
-    response = %{
-      jsonrpc: "2.0",
-      error: %{
-        code: @error_code_parse_error,
-        message: "Parse error: Invalid JSON"
-      },
-      id: nil
-    }
-
-    Conn.json(conn, 400, response)
   end
 
   @doc false
