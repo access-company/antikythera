@@ -66,10 +66,6 @@ defmodule Antikythera.Controller.McpServerHelper do
     defun valid?(f :: any) :: boolean do
       is_function(f, 2)
     end
-
-    defun default() :: nil do
-      nil
-    end
   end
 
   defmodule Tool do
