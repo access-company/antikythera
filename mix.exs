@@ -95,7 +95,7 @@ defmodule Antikythera.Mixfile do
       {:raft_fleet, "0.10.2", [antikythera_internal: true]},
       {:rafted_value, "0.11.2", [antikythera_internal: true]},
       {:syn, "3.3.0", [antikythera_internal: true]},
-      {:fast_xml, "1.1.53", [antikythera_internal: true]},
+      {:fast_xml, "1.1.57", [antikythera_internal: true]},
       {:foretoken, "0.3.0", [antikythera_internal: true]},
       {:recon, "2.5.6", [antikythera_internal: true]},
 
@@ -109,12 +109,12 @@ defmodule Antikythera.Mixfile do
       # tools
       {:exsync, "0.4.1", [only: :dev]},
       {:ex_doc, "0.38.3", [only: :dev, runtime: false]},
-      {:dialyxir, "1.4.5", [only: :dev, runtime: false]},
-      {:credo, "1.7.10", [only: :dev, runtime: false]},
+      {:dialyxir, "1.4.7", [only: :dev, runtime: false]},
+      {:credo, "1.7.14", [only: :dev, runtime: false]},
       {:mix_test_watch, "1.2.0", [only: :dev, runtime: false]},
       {:meck, "1.1.0", [only: :test]},
-      {:excoveralls, "0.18.3", [only: :test]},
-      {:stream_data, "1.1.2", [only: :test]},
+      {:excoveralls, "0.18.5", [only: :test]},
+      {:stream_data, "1.2.0", [only: :test]},
       {:yaml_elixir, "2.11.0", [only: :test]},
       # as a websocket client implementation to use during test (including upgrade_compatibility_test)
       # 1.4.0 requires OTP 21 or later
@@ -138,7 +138,7 @@ defmodule Antikythera.Mixfile do
       # idna
       {:unicode_util_compat, "0.7.1", [indirect: true]},
       # fast_xml
-      {:p1_utils, "1.0.26", [indirect: true]},
+      {:p1_utils, "1.0.28", [indirect: true]},
       # jason and ex_json_schema
       {:decimal, "2.3.0", [indirect: true]},
 
@@ -156,9 +156,9 @@ defmodule Antikythera.Mixfile do
       # makeup
       {:nimble_parsec, "1.4.2", [indirect: true, only: :dev]},
       # credo, exsync and mix_test_watch
-      {:file_system, "1.0.1", [indirect: true, only: :dev]},
+      {:file_system, "1.1.1", [indirect: true, only: :dev]},
       # dialyxir
-      {:erlex, "0.2.7", [indirect: true, only: :dev]},
+      {:erlex, "0.2.8", [indirect: true, only: :dev]},
       # yaml_elixir
       {:yamerl, "0.10.0", [indirect: true, only: :test]}
     ]
