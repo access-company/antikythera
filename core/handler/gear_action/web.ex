@@ -12,6 +12,7 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
   alias AntikytheraCore.Handler.GearError
   alias AntikytheraCore.Handler.HelperModules
   alias AntikytheraCore.Handler.CowboyReq
+  alias AntikytheraCore.Handler.BodyParser
   alias AntikytheraCore.Handler.ExecutorPoolHelper
   alias AntikytheraCore.Handler.WebsocketState
   alias AntikytheraCore.Conn, as: CoreConn
@@ -69,13 +70,9 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
     end
   end
 
-  defunp find_route(
-           req :: :cowboy_req.req(),
-           gear_name :: v[GearName.t()],
-           method :: v[Method.t()],
-           path_info :: v[PathInfo.t()],
-           %HelperModules{router: router}
-         ) :: R.t({GearEntryPoint.t(), PathMatches.t(), boolean, boolean, GearActionTimeout.t()}) do
+  defunp lookup_route(router :: v[module], method :: v[Method.t()], path_info :: v[PathInfo.t()]) ::
+           {:ok, {GearEntryPoint.t(), PathMatches.t(), boolean, boolean, GearActionTimeout.t()}}
+           | :no_route do
     case router.__web_route__(method, path_info) do
       # New format (6-tuple) with http_streaming flag
       {controller, action, path_matches, websocket?, http_streaming?, timeout} ->
@@ -86,6 +83,22 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
         {:ok, {{controller, action}, path_matches, websocket?, false, timeout}}
 
       nil ->
+        :no_route
+    end
+  end
+
+  defunp find_route(
+           req :: :cowboy_req.req(),
+           gear_name :: v[GearName.t()],
+           method :: v[Method.t()],
+           path_info :: v[PathInfo.t()],
+           %HelperModules{router: router}
+         ) :: R.t({GearEntryPoint.t(), PathMatches.t(), boolean, boolean, GearActionTimeout.t()}) do
+    case lookup_route(router, method, path_info) do
+      {:ok, result} ->
+        {:ok, result}
+
+      :no_route ->
         {:error,
          CowboyReq.with_conn(
            req,
@@ -404,5 +417,71 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
   def terminate(_reason, _maybe_req, _state) do
     # normal HTTP request, do nothing
     :ok
+  end
+
+  # In-process request handling for Antikythera.Test.InProcessClient.
+  # Shares routing with init/2 via lookup_route/3. Differences from init/2:
+  #   - body arrives as a raw binary; we parse it here via BodyParser's shared logic
+  #     (skips :cowboy_req.read_body)
+  #   - action runs directly in the calling process (no executor pool, no timeout)
+  #   - executor_pool_id is hardcoded to {:gear, gear_name}; the gear's
+  #     executor_pool_for_web_request/1 callback is not consulted
+  defun handle_in_process(
+          req :: :cowboy_req.req(),
+          gear_name :: v[GearName.t()],
+          raw_body :: v[binary]
+        ) :: Conn.t() do
+    method = :cowboy_req.method(req) |> Method.from_string()
+    path_info = CowboyReq.path_info(req)
+    helper_modules = GearModule.request_helper_modules(gear_name)
+    %HelperModules{router: router} = helper_modules
+    content_encoding = Map.get(req.headers, "content-encoding", "")
+    content_type = Map.get(req.headers, "content-type", "")
+
+    case BodyParser.parse_raw_with_headers(raw_body, content_encoding, content_type) do
+      {:error, :invalid_body} ->
+        routing_info = {gear_name, nil, method, path_info, %{}}
+        {:ok, qparams} = CowboyReq.query_params(req, routing_info)
+        conn = CoreConn.make_from_cowboy_req(req, routing_info, qparams, {raw_body, ""})
+        ContextHelper.set(conn)
+        GearError.bad_request(conn)
+
+      {:ok, parsed} ->
+        body_pair = {raw_body, parsed}
+
+        case lookup_route(router, method, path_info) do
+          {:ok, {entry_point, path_matches, _ws?, _streaming?, _timeout}} ->
+            routing_info = {gear_name, entry_point, method, path_info, path_matches}
+            {:ok, qparams} = CowboyReq.query_params(req, routing_info)
+
+            conn =
+              CoreConn.make_from_cowboy_req(req, routing_info, qparams, body_pair)
+              |> put_default_executor_pool_id(gear_name)
+
+            ContextHelper.set(conn)
+
+            GearAction.with_logging_and_metrics_reporting(
+              conn,
+              GearAction.Context.make(),
+              helper_modules,
+              fn ->
+                case ActionRunner.run_action(conn, entry_point) do
+                  {:ok, conn2} -> CoreConn.run_before_send(conn2, conn)
+                  {:error, reason, st} -> GearError.error(conn, reason, st)
+                end
+              end
+            )
+
+          :no_route ->
+            routing_info = {gear_name, nil, method, path_info, %{}}
+            conn = CoreConn.make_from_cowboy_req(req, routing_info, %{}, {"", ""})
+            ContextHelper.set(conn)
+            GearError.no_route(conn)
+        end
+    end
+  end
+
+  defp put_default_executor_pool_id(%Conn{context: ctx} = conn, gear_name) do
+    %Conn{conn | context: %Antikythera.Context{ctx | executor_pool_id: {:gear, gear_name}}}
   end
 end
