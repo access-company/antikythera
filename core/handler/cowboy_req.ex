@@ -65,25 +65,26 @@ defmodule AntikytheraCore.Handler.CowboyReq do
           qparams :: v[QueryParams.t()],
           helper_modules :: v[HelperModules.t()]
         ) :: result({:cowboy_req.req(), {binary, Body.t()}}) do
-    case BodyParser.parse(req1) do
-      {:ok, req2, raw, parsed} ->
-        {:ok, {req2, {raw, parsed}}}
+    in_process_body_pair(req1) ||
+      case BodyParser.parse(req1) do
+        {:ok, req2, raw, parsed} ->
+          {:ok, {req2, {raw, parsed}}}
 
-      {:error, :invalid_body, req2} ->
-        {:error,
-         with_conn(req2, routing_info, qparams, fn conn, _context ->
-           GearError.bad_request(conn)
-         end)}
+        {:error, :invalid_body, req2} ->
+          {:error,
+           with_conn(req2, routing_info, qparams, fn conn, _context ->
+             GearError.bad_request(conn)
+           end)}
 
-      {:error, :timeout} ->
-        {:error,
-         with_conn(
-           req1,
-           routing_info,
-           qparams,
-           fn conn, _context -> bad_request_with_body_timeout_logging(conn, helper_modules) end
-         )}
-    end
+        {:error, :timeout} ->
+          {:error,
+           with_conn(
+             req1,
+             routing_info,
+             qparams,
+             fn conn, _context -> bad_request_with_body_timeout_logging(conn, helper_modules) end
+           )}
+      end
   end
 
   defunp bad_request_with_body_timeout_logging(
@@ -111,5 +112,12 @@ defmodule AntikytheraCore.Handler.CowboyReq do
     conn = CoreConn.make_from_cowboy_req(req, routing_info, qparams, body_pair)
     ContextHelper.set(conn)
     f.(conn, context) |> CoreConn.reply_as_cowboy_res(req)
+  end
+
+  if Mix.env() == :test do
+    defp in_process_body_pair(%{__body_pair__: body_pair} = req), do: {:ok, {req, body_pair}}
+    defp in_process_body_pair(_req), do: nil
+  else
+    defp in_process_body_pair(_req), do: nil
   end
 end

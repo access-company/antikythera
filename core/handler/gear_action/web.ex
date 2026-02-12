@@ -340,9 +340,13 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            helper_modules :: v[HelperModules.t()],
            timeout :: v[GearActionTimeout.t()]
          ) :: Conn.t() do
-    ExecutorPoolHelper.with_executor(conn1, gear_name, helper_modules, fn pid, conn2 ->
-      ActionRunner.run(pid, conn2, entry_point, timeout)
-    end)
+    if in_process_test?() do
+      run_action_in_process(conn1, entry_point)
+    else
+      ExecutorPoolHelper.with_executor(conn1, gear_name, helper_modules, fn pid, conn2 ->
+        ActionRunner.run(pid, conn2, entry_point, timeout)
+      end)
+    end
   end
 
   defunp run_action_with_executor_for_http_streaming(
@@ -404,5 +408,19 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
   def terminate(_reason, _maybe_req, _state) do
     # normal HTTP request, do nothing
     :ok
+  end
+
+  if Mix.env() == :test do
+    defp in_process_test?(), do: Process.get(:antikythera_in_process_test, false)
+
+    defp run_action_in_process(conn, entry_point) do
+      case ActionRunner.run_action(conn, entry_point) do
+        {:ok, conn2} -> CoreConn.run_before_send(conn2, conn)
+        {:error, reason, stacktrace} -> GearError.error(conn, reason, stacktrace)
+      end
+    end
+  else
+    defp in_process_test?(), do: false
+    defp run_action_in_process(_conn, _entry_point), do: raise("not available in non-test env")
   end
 end
