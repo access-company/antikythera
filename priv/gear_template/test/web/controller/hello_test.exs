@@ -3,7 +3,7 @@ defmodule <%= gear_name_camel %>.Controller.HelloTest do
 
   describe "GET /hello" do
     test "should render HAML template as HTML" do
-      response = Req.get("/hello", %{}, [params: %{"locale" => "ja"}])
+      response = Req.get("/hello", %{}, params: %{"locale" => "ja"})
       assert response.status == 200
       assert response.headers["content-type"] == "text/html; charset=utf-8"
       body = response.body
@@ -17,7 +17,7 @@ defmodule <%= gear_name_camel %>.Controller.HelloTest do
         {%{}, "Hello"}
       ]
       |> Enum.each(fn {params, message} ->
-        assert %{status: 200, body: body} = Req.get("/hello", %{}, [params: params])
+        assert %{status: 200, body: body} = Req.get("/hello", %{}, params: params)
         assert String.contains?(body, "Message from <%= gear_name %>: #{message}")
       end)
     end
@@ -29,7 +29,7 @@ defmodule <%= gear_name_camel %>.Controller.HelloTest do
         %{"locale" => "!invalid"}
       ]
       |> Enum.each(fn params ->
-        assert %{status: 400} = Req.get("/hello", %{}, [params: params])
+        assert %{status: 400} = Req.get("/hello", %{}, params: params)
       end)
     end
   end
