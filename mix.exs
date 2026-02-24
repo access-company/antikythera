@@ -104,7 +104,7 @@ defmodule Antikythera.Mixfile do
       {:jason, "1.4.4"},
       {:gettext, "0.17.1"},
       {:croma, "0.12.0"},
-      {:ex_json_schema, "0.10.2"},
+      {:ex_json_schema, "0.11.2"},
 
       # tools
       {:exsync, "0.4.1", [only: :dev]},

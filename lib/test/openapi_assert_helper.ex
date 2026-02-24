@@ -637,11 +637,16 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
       if Map.has_key?(schema, "allOf") do
         ref_targets =
           schema["allOf"]
-          # e.g. item %{"$ref" => [:root, "components", "schemas", "AdminUser"]},
+          # e.g. item %{"$ref" => %ExJsonSchema.Schema.Ref{location: :root, fragment: ["components", "schemas", "AdminUser"]}},
           |> Enum.filter(fn x -> Map.has_key?(x, "$ref") end)
-          |> Enum.map(fn x ->
-            [:root, "components" | rest_path] = x["$ref"]
-            rest_path
+          |> Enum.map(fn
+            %{
+              "$ref" => %ExJsonSchema.Schema.Ref{
+                location: :root,
+                fragment: ["components" | rest_path]
+              }
+            } ->
+              rest_path
           end)
 
           # e.g. item ["schemas", "AdminUser"]
