@@ -18,6 +18,6 @@ defmodule <%= gear_name_camel %>.Controller.Hello do
 
   defun hello(%Conn{assigns: %{validated: validated}} = conn) :: v[Conn.t()] do
     <%= gear_name_camel %>.Gettext.put_locale(validated.query_params.locale)
-    Conn.render(conn, 200, "hello", [gear_name: :<%= gear_name %>])
+    Conn.render(conn, 200, "hello", gear_name: :<%= gear_name %>)
   end
 end

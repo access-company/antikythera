@@ -5,7 +5,9 @@ defmodule <%= gear_name_camel %>.Controller.Api.HelloTest do
 
   describe "POST /api/hello" do
     test "should return a JSON response" do
-      response = OpenApiAssert.post_json_for_success(@api_schema, "/api/hello", %{"name" => "John"})
+      response =
+        OpenApiAssert.post_json_for_success(@api_schema, "/api/hello", %{"name" => "John"})
+
       assert response.status == 200
       body = response.body
       assert %{"message" => "Hello, John!"} = Jason.decode!(body)
