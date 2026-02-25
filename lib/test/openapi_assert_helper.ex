@@ -567,8 +567,13 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
     defunp dereference_top_level_ref(schema :: v[map]) :: v[map] do
       case schema do
         %{"$ref" => "#/components/schemas/" <> ref, "components" => components} ->
-          Map.get(components["schemas"], ref)
-          |> Map.put("components", components)
+          case get_in(components, ["schemas", ref]) do
+            nil ->
+              schema
+
+            dereferenced ->
+              Map.put(dereferenced, "components", components)
+          end
 
         _ ->
           schema
