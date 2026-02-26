@@ -544,6 +544,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
             Map.merge(schema, %{
               "components" => asserter.components
             })
+            |> dereference_top_level_ref()
 
           resolved_schema = ExJsonSchema.Schema.resolve(with_ref_target)
           ExJsonSchema.Validator.validate(resolved_schema, filtered_body, error_formatter: false)
@@ -560,6 +561,22 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
 
         _ ->
           nil
+      end
+    end
+
+    defunp dereference_top_level_ref(schema :: v[map]) :: v[map] do
+      case schema do
+        %{"$ref" => "#/components/schemas/" <> ref, "components" => components} ->
+          case get_in(components, ["schemas", ref]) do
+            nil ->
+              schema
+
+            dereferenced ->
+              Map.put(dereferenced, "components", components)
+          end
+
+        _ ->
+          schema
       end
     end
 
@@ -614,6 +631,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
             Map.merge(schema, %{
               "components" => asserter.components
             })
+            |> dereference_top_level_ref()
 
           resolved_schema = ExJsonSchema.Schema.resolve(with_ref_target)
           schema_without_additional_properties = resolve_reference_if_all_of(resolved_schema)
@@ -703,6 +721,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
             Map.merge(schema, %{
               "components" => asserter.components
             })
+            |> dereference_top_level_ref()
 
           resolved_schema = ExJsonSchema.Schema.resolve(with_ref_target)
           ExJsonSchema.Validator.validate(resolved_schema, body, error_formatter: false)
