@@ -37,14 +37,6 @@ When writing Elixir code in projects that use Croma, follow these conventions:
   defp calculate_discount(price, :silver), do: round(price * 0.85)
   defp calculate_discount(price, _), do: price
   ```
-- **Exception**: For multi-clause functions with structurally different arguments (different tuple shapes, structs) or guards, use `def`/`defp` with `@spec`. Croma's `v[]` requires plain variables as parameters, and multiple `defun` declarations for the same function cause warnings.
-  ```elixir
-  # Good - structurally different arguments need multi-clause
-  @spec categorize(integer) :: String.t()
-  def categorize(n) when n < 0, do: "negative"
-  def categorize(n) when n >= 10, do: "large"
-  def categorize(_n), do: "small"
-  ```
 
 ## Type Validation with `v[]`
 
@@ -60,10 +52,12 @@ When writing Elixir code in projects that use Croma, follow these conventions:
   defun pretty_print(str :: v[String.t()]) :: :ok do  # Good
   defun pretty_print(str :: v[String.t()]) :: v[:ok] do  # Bad
   ```
-- **Do NOT use `v[]`** on types without Croma's `valid?/1` (e.g., `DateTime.t()`, `Keyword.t()`) — causes `UndefinedFunctionError`:
+- **Do NOT use `v[]`** on types without Croma's `valid?/1` (e.g., `DateTime.t()`, `Keyword.t()`, `term()`) — causes `UndefinedFunctionError` or `RuntimeError`:
   ```elixir
   defun process(dt :: DateTime.t()) :: v[String.t()] do  # Good
   defun process(dt :: v[DateTime.t()]) :: v[String.t()] do  # Bad
+  defun process(arg :: v[{:ok, term()} | :timeout]) :: term() do  # Good
+  defun process(arg :: v[{:ok, term()} | :timeout]) :: v[term()] do  # Bad
   ```
 
 ## Return Types
