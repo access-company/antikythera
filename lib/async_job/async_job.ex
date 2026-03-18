@@ -170,10 +170,11 @@ defmodule Antikythera.AsyncJob do
 
   - #{RateLimit.tokens_per_command()} tokens per `register/3`
   - #{RateLimit.tokens_per_command()} tokens per `cancel/3`
+  - #{RateLimit.tokens_per_command()} tokens per `force_stop/3`
   - 1 token per `status/2`
   - 1 token per `list/1`
 
-  When there are not enough tokens in the bucket, `register/3` and `cancel/3` return
+  When there are not enough tokens in the bucket, `register/3`, `cancel/3` and `force_stop/3` return
   `{:error, {:rate_limit_reached, milliseconds_to_wait}}`.
   On the other hand `status/2` and `list/1` automatically wait and retry several times
   when hitting the rate limit.
@@ -257,6 +258,32 @@ defmodule Antikythera.AsyncJob do
 
     case CoreEPoolId.validate_association(epool_id1, gear_name) do
       {:ok, epool_id2} -> Queue.cancel(RegName.async_job_queue(epool_id2), job_id)
+      error -> error
+    end
+  end
+
+  @doc """
+  Forcibly terminates an async job, including currently-running job executions.
+
+  Unlike `cancel/3` which only removes the job from the queue,
+  `force_stop/3` also kills the worker process that is executing the job.
+  This is useful when a running job is producing incorrect data and needs to be stopped immediately.
+
+  For jobs that are not currently running (waiting or runnable), use `cancel/3` instead.
+  The `abandon/3` callback is not invoked when a job is force-stopped.
+  """
+  defun force_stop(
+          gear_name :: v[GearName.t()],
+          context_or_epool_id :: v[Context.t() | EPoolId.t()],
+          job_id :: v[Id.t()]
+        ) ::
+          :ok
+          | {:error,
+             :not_found | :not_running | BadIdReason.t() | {:rate_limit_reached, pos_integer}} do
+    epool_id1 = exec_pool_id(context_or_epool_id)
+
+    case CoreEPoolId.validate_association(epool_id1, gear_name) do
+      {:ok, epool_id2} -> Queue.force_stop(RegName.async_job_queue(epool_id2), job_id)
       error -> error
     end
   end
