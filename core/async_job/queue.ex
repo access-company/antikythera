@@ -125,11 +125,9 @@ defmodule AntikytheraCore.AsyncJob.Queue do
 
   # Handle old Raft snapshots that lack new fields, and clear ephemeral fields
   defp normalize_for_backward_compat(q) do
-    %__MODULE__{
-      q
-      | running_pids: q.running_pids || %{},
-        runner_pids_to_stop: []
-    }
+    q
+    |> Map.put(:running_pids, Map.get(q, :running_pids) || %{})
+    |> Map.put(:runner_pids_to_stop, [])
   end
 
   defp maintain_invariants(q, now_millis) do

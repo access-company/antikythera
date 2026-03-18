@@ -257,7 +257,7 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
     assert Queue.status(@queue_name, @job_id) == {:error, :not_found}
   end
 
-  test "consecutive registrations/cancels should be rejected by rate limit" do
+  test "consecutive registrations/cancels/force_stops should be rejected by rate limit" do
     n = div(RateLimit.max_tokens(), RateLimit.tokens_per_command())
 
     Enum.each(1..n, fn i ->
@@ -274,6 +274,13 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
     end)
 
     {:error, {:rate_limit_reached, _}} = Queue.cancel(@queue_name, @job_id <> "0")
+    AsyncJobHelper.reset_rate_limit_status(@epool_id)
+
+    Enum.each(1..n, fn _ ->
+      Queue.force_stop(@queue_name, @job_id)
+    end)
+
+    {:error, {:rate_limit_reached, _}} = Queue.force_stop(@queue_name, @job_id)
   end
 
   test "consecutive fetchings of status should sleep-and-retry on hitting rate limit" do
