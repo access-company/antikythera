@@ -196,7 +196,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
         :no_worker
 
       pid ->
-        case Queue.fetch_job(queue_name) do
+        case Queue.fetch_job(queue_name, pid) do
           nil ->
             PoolSup.checkin(pool_name, pid)
             :no_job
