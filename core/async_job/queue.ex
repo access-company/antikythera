@@ -80,7 +80,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   @impl true
-  defun command(q1 :: v[t], cmd :: RVData.command_arg()) :: {RVData.command_ret(), t} do
+  defun command(q1 :: t, cmd :: RVData.command_arg()) :: {RVData.command_ret(), t} do
     q1 = normalize_for_backward_compat(q1)
 
     case cmd do
