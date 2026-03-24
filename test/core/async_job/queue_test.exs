@@ -233,7 +233,31 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
     assert Queue.cancel(@queue_name, @job_id) == {:error, :not_found}
   end
 
-  test "consecutive registrations/cancels should be rejected by rate limit" do
+  test "force_stop nonexisting job" do
+    assert Queue.force_stop(@queue_name, @job_id) == {:error, :not_found}
+  end
+
+  test "force_stop waiting job should return :not_running" do
+    second_after = Time.now() |> Time.shift_seconds(1)
+    assert register_job(id: @job_id, schedule: {:once, second_after}) == :ok
+    {:ok, status1} = Queue.status(@queue_name, @job_id)
+    assert status1.state == :waiting
+    assert Queue.force_stop(@queue_name, @job_id) == {:error, :not_running}
+    # job should still be in the queue
+    {:ok, status2} = Queue.status(@queue_name, @job_id)
+    assert status2.state == :waiting
+  end
+
+  test "force_stop running job" do
+    assert register_job(id: @job_id) == :ok
+    {_key, _job} = Queue.fetch_job(@queue_name)
+    {:ok, status1} = Queue.status(@queue_name, @job_id)
+    assert status1.state == :running
+    assert Queue.force_stop(@queue_name, @job_id) == :ok
+    assert Queue.status(@queue_name, @job_id) == {:error, :not_found}
+  end
+
+  test "consecutive registrations/cancels/force_stops should be rejected by rate limit" do
     n = div(RateLimit.max_tokens(), RateLimit.tokens_per_command())
 
     Enum.each(1..n, fn i ->
@@ -250,6 +274,13 @@ defmodule AntikytheraCore.AsyncJob.QueueTest do
     end)
 
     {:error, {:rate_limit_reached, _}} = Queue.cancel(@queue_name, @job_id <> "0")
+    AsyncJobHelper.reset_rate_limit_status(@epool_id)
+
+    Enum.each(1..n, fn _ ->
+      Queue.force_stop(@queue_name, @job_id)
+    end)
+
+    {:error, {:rate_limit_reached, _}} = Queue.force_stop(@queue_name, @job_id)
   end
 
   test "consecutive fetchings of status should sleep-and-retry on hitting rate limit" do
@@ -427,6 +458,58 @@ defmodule AntikytheraCore.AsyncJob.QueueCommandTest do
     q = Queue.new()
     assert Queue.command(q, nil) == {:ok, q}
     assert Queue.query(q, nil) == q
+  end
+
+  test "command/2 force_stop running job removes it and stores runner pid for hook" do
+    q0 = Queue.new()
+    {_, q1} = Queue.command(q0, {{:add, @job_key, @job}, @now_millis - 1_000})
+    assert_job_waiting(q1)
+    # Fetch with runner_pid (self()) to store it in running_pids
+    {{@job_key, _job}, q2} = Queue.command(q1, {{:fetch, self(), self()}, @now_millis})
+    assert_job_running(q2)
+    assert q2.running_pids[@job_id] == self()
+
+    {:ok, q3} = Queue.command(q2, {{:force_stop, @job_id}, @now_millis})
+    assert_job_removed(q3)
+    assert q3.running_pids == %{}
+    # runner_pids_to_stop should contain {pid, job_id} for the LeaderHook to send :force_stop
+    assert q3.runner_pids_to_stop == [{self(), @job_id}]
+  end
+
+  test "command/2 force_stop non-running job returns :not_running" do
+    q0 = Queue.new()
+    {_, q1} = Queue.command(q0, {{:add, @job_key, @job}, @now_millis - 1_000})
+    assert_job_waiting(q1)
+
+    {{:error, :not_running}, q2} =
+      Queue.command(q1, {{:force_stop, @job_id}, @now_millis + 1_000})
+
+    # Job should still be in queue (moved to runnable by maintain_invariants)
+    assert Map.has_key?(q2.jobs, @job_id)
+  end
+
+  test "command/2 force_stop nonexistent job returns :not_found" do
+    q0 = Queue.new()
+    {{:error, :not_found}, q1} = Queue.command(q0, {{:force_stop, @job_id}, @now_millis})
+    assert q1.jobs == %{}
+  end
+
+  test "running_pids is cleaned up on remove_locked" do
+    q0 = Queue.new()
+    {_, q1} = Queue.command(q0, {{:add, @job_key, @job}, @now_millis - 1_000})
+    {{@job_key, _job}, q2} = Queue.command(q1, {{:fetch, self(), self()}, @now_millis})
+    assert q2.running_pids[@job_id] == self()
+    {:ok, q3} = Queue.command(q2, {{:remove_locked, @job_key}, @now_millis})
+    assert q3.running_pids == %{}
+  end
+
+  test "running_pids is cleaned up on unlock_for_retry" do
+    q0 = Queue.new()
+    {_, q1} = Queue.command(q0, {{:add, @job_key, @job}, @now_millis - 1_000})
+    {{@job_key, _job}, q2} = Queue.command(q1, {{:fetch, self(), self()}, @now_millis})
+    assert q2.running_pids[@job_id] == self()
+    {:ok, q3} = Queue.command(q2, {{:unlock_for_retry, @job_key}, @now_millis})
+    assert q3.running_pids == %{}
   end
 
   test "remove_locked with outdated job key should simply be ignored" do

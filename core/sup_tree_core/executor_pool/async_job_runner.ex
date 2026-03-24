@@ -82,6 +82,25 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
     {:noreply, new_state}
   end
 
+  def handle_cast(
+        {:force_stop, target_job_id},
+        %{job_key: {_time, job_id}, worker: worker, monitor: monitor_ref, timer: timer_ref} =
+          state
+      )
+      when target_job_id == job_id do
+    Process.cancel_timer(timer_ref)
+    Process.demonitor(monitor_ref, [:flush])
+    Process.exit(worker, :kill)
+    end_time = EndTime.now()
+    write_force_stop_log(state, end_time.gear_log)
+    report_on_finish(state, end_time, "force_stopped")
+    {:stop, :normal, state}
+  end
+
+  def handle_cast({:force_stop, _target_job_id}, state) do
+    {:noreply, state}
+  end
+
   defp make_context(%AsyncJob{gear_name: gear_name, module: module}, epool_id) do
     now = Time.now()
 
@@ -239,6 +258,18 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobRunner do
        ) do
     Writer.error(logger_name, end_time_for_log, context_id, log_prefix <> error_reason)
     JobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "FAILED")
+  end
+
+  defp write_force_stop_log(
+         %{
+           context: %Context{context_id: context_id},
+           logger_name: logger_name,
+           log_prefix: log_prefix
+         },
+         end_time_for_log
+       ) do
+    Writer.info(logger_name, end_time_for_log, context_id, log_prefix <> "FORCE_STOPPED")
+    JobLogWriter.info("context=" <> context_id <> " " <> log_prefix <> "FORCE_STOPPED")
   end
 
   defp report_on_finish(
