@@ -39,7 +39,7 @@
   "recon": {:hex, :recon, "2.5.6", "9052588e83bfedfd9b72e1034532aee2a5369d9d9343b61aeb7fbce761010741", [:mix, :rebar3], [], "hexpm", "96c6799792d735cc0f0fd0f86267e9d351e63339cbe03df9d162010cefc26bb0"},
   "ssl_verify_fun": {:hex, :ssl_verify_fun, "1.1.7", "354c321cf377240c7b8716899e182ce4890c5938111a1296add3ec74cf1715df", [:make, :mix, :rebar3], [], "hexpm", "fe4c190e8f37401d30167c8c405eda19469f34577987c76dde613e838bbc67f8"},
   "stream_data": {:hex, :stream_data, "1.2.0", "58dd3f9e88afe27dc38bef26fce0c84a9e7a96772b2925c7b32cd2435697a52b", [:mix], [], "hexpm", "eb5c546ee3466920314643edf68943a5b14b32d1da9fe01698dc92b73f89a9ed"},
-  "syn": {:hex, :syn, "3.3.0", "4684a909efdfea35ce75a9662fc523e4a8a4e8169a3df275e4de4fa63f99c486", [:rebar3], [], "hexpm", "e58ee447bc1094bdd21bf0acc102b1fbf99541a508cd48060bf783c245eaf7d6"},
+  "syn": {:hex, :syn, "3.4.0", "cc16c2107bef0a729f96e95827def83e6a8d078d643f822e49419b153d475112", [:rebar3], [], "hexpm", "69e30a2181c11211791183aad148975adc6e4b3ec9718510e5ea42cf5d73de9d"},
   "unicode_util_compat": {:hex, :unicode_util_compat, "0.7.1", "a48703a25c170eedadca83b11e88985af08d35f37c6f664d6dcfb106a97782fc", [:rebar3], [], "hexpm", "b3a917854ce3ae233619744ad1e0102e05673136776fb2fa76234f3e03b23642"},
   "websocket_client": {:hex, :websocket_client, "1.5.0", "e825f23c51a867681a222148ed5200cc4a12e4fb5ff0b0b35963e916e2b5766b", [:rebar3], [], "hexpm", "2b9b201cc5c82b9d4e6966ad8e605832eab8f4ddb39f57ac62f34cb208b68de9"},
   "yamerl": {:hex, :yamerl, "0.10.0", "4ff81fee2f1f6a46f1700c0d880b24d193ddb74bd14ef42cb0bcf46e81ef2f8e", [:rebar3], [], "hexpm", "346adb2963f1051dc837a2364e4acf6eb7d80097c0f53cbdc3046ec8ec4b4e6e"},
