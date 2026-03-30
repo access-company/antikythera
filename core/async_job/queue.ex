@@ -80,8 +80,8 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   @impl true
-  defun command(q1 :: t, cmd :: RVData.command_arg()) :: {RVData.command_ret(), t} do
-    q1 = normalize_for_backward_compat(q1)
+  defun command(q1 :: v[t], cmd :: RVData.command_arg()) :: {RVData.command_ret(), t} do
+    q1 = %__MODULE__{q1 | runner_pids_to_stop: []}
 
     case cmd do
       {{:add, job_key, job}, now_millis} ->
@@ -121,13 +121,6 @@ defmodule AntikytheraCore.AsyncJob.Queue do
 
   defp maintain_invariants_and_return({ret, q}, now_millis) do
     {ret, maintain_invariants(q, now_millis)}
-  end
-
-  # Handle old Raft snapshots that lack new fields, and clear ephemeral fields
-  defp normalize_for_backward_compat(q) do
-    q
-    |> Map.put(:running_pids, Map.get(q, :running_pids) || %{})
-    |> Map.put(:runner_pids_to_stop, [])
   end
 
   defp maintain_invariants(q, now_millis) do
@@ -546,19 +539,15 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     @behaviour RaftedValue.LeaderHook
 
     @impl true
-    def on_command_committed(
-          _,
-          _,
-          _,
-          %Queue{
-            brokers_to_notify: bs,
-            abandoned_jobs: abandoned_jobs
-          } = q
-        ) do
+    def on_command_committed(_, _, _, %Queue{
+          brokers_to_notify: bs,
+          abandoned_jobs: abandoned_jobs,
+          runner_pids_to_stop: runner_pids_to_stop
+        }) do
       Enum.each(bs, &Broker.notify_job_registered/1)
       Enum.each(abandoned_jobs, &log_abandoned_job/1)
 
-      Enum.each(q.runner_pids_to_stop || [], fn {pid, job_id} ->
+      Enum.each(runner_pids_to_stop, fn {pid, job_id} ->
         GenServer.cast(pid, {:force_stop, job_id})
       end)
     end
