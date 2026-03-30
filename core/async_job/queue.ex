@@ -81,7 +81,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
 
   @impl true
   defun command(q1 :: v[t], cmd :: RVData.command_arg()) :: {RVData.command_ret(), t} do
-    q1 = %__MODULE__{q1 | runner_pids_to_stop: []}
+    q1 = normalize_for_backward_compat(q1)
 
     case cmd do
       {{:add, job_key, job}, now_millis} ->
@@ -121,6 +121,13 @@ defmodule AntikytheraCore.AsyncJob.Queue do
 
   defp maintain_invariants_and_return({ret, q}, now_millis) do
     {ret, maintain_invariants(q, now_millis)}
+  end
+
+  # Handle old Raft snapshots that lack new fields, and clear ephemeral fields
+  defp normalize_for_backward_compat(q) do
+    q
+    |> Map.put(:running_pids, Map.get(q, :running_pids) || %{})
+    |> Map.put(:runner_pids_to_stop, [])
   end
 
   defp maintain_invariants(q, now_millis) do
