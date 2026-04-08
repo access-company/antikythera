@@ -108,17 +108,16 @@ defmodule Antikythera.Mixfile do
 
       # tools
       {:exsync, "0.4.1", [only: :dev]},
-      {:ex_doc, "0.38.3", [only: :dev, runtime: false]},
+      {:ex_doc, "0.40.1", [only: :dev, runtime: false]},
       {:dialyxir, "1.4.7", [only: :dev, runtime: false]},
-      {:credo, "1.7.14", [only: :dev, runtime: false]},
+      {:credo, "1.7.17", [only: :dev, runtime: false]},
       {:mix_test_watch, "1.2.0", [only: :dev, runtime: false]},
-      {:meck, "1.1.0", [only: :test]},
+      {:meck, "1.1.1", [only: :test]},
       {:excoveralls, "0.18.5", [only: :test]},
-      {:stream_data, "1.2.0", [only: :test]},
+      {:stream_data, "1.3.0", [only: :test]},
       {:yaml_elixir, "2.11.0", [only: :test]},
       # as a websocket client implementation to use during test (including upgrade_compatibility_test)
-      # 1.4.0 requires OTP 21 or later
-      {:websocket_client, "1.5.0", [only: :test]},
+      {:websocket_client, "1.6.1", [only: :test]},
 
       # indirect deps
       # cowboy
@@ -150,7 +149,7 @@ defmodule Antikythera.Mixfile do
       # ex_doc
       {:makeup_elixir, "1.0.1", [indirect: true, only: :dev]},
       # ex_doc
-      {:makeup_erlang, "1.0.2", [indirect: true, only: :dev]},
+      {:makeup_erlang, "1.0.3", [indirect: true, only: :dev]},
       # makeup_elixir
       {:makeup, "1.2.1", [indirect: true, only: :dev]},
       # makeup
