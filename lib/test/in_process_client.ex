@@ -19,6 +19,35 @@ defmodule Antikythera.Test.InProcessClient do
 
       # Then in tests, use ReqInProcess instead of Req:
       ReqInProcess.get("/api/hello")
+
+  ## Limitations
+
+  The following aspects of production request handling are **not** reproduced;
+  tests that depend on them must use `Antikythera.Test.HttpClient` instead.
+
+    * **HTTP streaming (SSE).** Routes declared with `streaming: true` are not
+      dispatched through the in-process path; behavior is undefined.
+    * **WebSocket.** WebSocket upgrades go through `cowboy_websocket`; they
+      cannot be exercised here.
+    * **Static files (`:cowboy_static`).** `static_prefix` routes are served by
+      cowboy directly and never reach a gear action, so they resolve to
+      `no_route`.
+    * **Response body compression.** Cowboy applies gzip based on
+      `Accept-Encoding` after the gear returns; in-process callers see the
+      uncompressed body.
+    * **Action timeout and heap limit.** The action runs synchronously in the
+      caller's process with no `spawn_opt` `max_heap_size` and no enforced
+      timeout, so `:timeout` / `:killed` error-handler paths are unreachable
+      and long-running actions block the test.
+    * **Request body size cap.** Cowboy's 8 MB `read_body` limit is not
+      enforced; oversized bodies are passed through.
+    * **Executor pool resolution.** `executor_pool_id` is hardcoded to
+      `{:gear, gear_name}`; the gear's `executor_pool_for_web_request/1`
+      callback is not consulted, so tenant pools and the
+      `bad_executor_pool_id` error path cannot be tested.
+    * **Handler process lifetime.** The action runs in the calling test
+      process, so assertions about a separate handler process (e.g.
+      `Process.info(handler_pid, :dictionary)`) do not apply.
   """
 
   defmacro __using__(_) do
@@ -82,7 +111,16 @@ defmodule Antikythera.Test.InProcessClient do
     qs = build_qs(uri.query, Keyword.get(options, :params))
     path_info = GearAction.split_path_to_segments(path_only)
     {body_pair, body_headers} = make_body_pair(method, body)
-    req_headers = Map.merge(body_headers, downcase_keys(headers))
+
+    option_headers =
+      %{}
+      |> add_cookie_header(Keyword.get(options, :cookie))
+      |> add_basic_auth_header(Keyword.get(options, :basic_auth))
+
+    req_headers =
+      body_headers
+      |> Map.merge(option_headers)
+      |> Map.merge(downcase_keys(headers))
 
     raw_body = elem(body_pair, 0)
     pid = self()
@@ -190,5 +228,26 @@ defmodule Antikythera.Test.InProcessClient do
 
   defunp downcase_keys(map :: v[Headers.t()]) :: v[Headers.t()] do
     Map.new(map, fn {k, v} -> {String.downcase(k), v} end)
+  end
+
+  # Match `Httpc`'s `:cookie` option handling (URL-encoded name=value joined by "; ").
+  defp add_cookie_header(headers, nil), do: headers
+  defp add_cookie_header(headers, []), do: headers
+
+  defp add_cookie_header(headers, cookies) do
+    value =
+      Enum.map_join(cookies, "; ", fn {name, val} ->
+        "#{URI.encode_www_form(to_string(name))}=#{URI.encode_www_form(to_string(val))}"
+      end)
+
+    Map.put(headers, "cookie", value)
+  end
+
+  # Match `Httpc`'s `:basic_auth` option (adds an `Authorization: Basic ...` header).
+  defp add_basic_auth_header(headers, nil), do: headers
+
+  defp add_basic_auth_header(headers, {user, pass}) do
+    encoded = Base.encode64("#{user}:#{pass}")
+    Map.put(headers, "authorization", "Basic #{encoded}")
   end
 end

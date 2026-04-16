@@ -414,10 +414,16 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
     defp in_process_test?(), do: Process.get(:antikythera_in_process_test, false)
 
     defp run_action_in_process(conn, entry_point) do
+      conn = put_default_executor_pool_id(conn)
+
       case ActionRunner.run_action(conn, entry_point) do
         {:ok, conn2} -> CoreConn.run_before_send(conn2, conn)
         {:error, reason, stacktrace} -> GearError.error(conn, reason, stacktrace)
       end
+    end
+
+    defp put_default_executor_pool_id(%Conn{context: ctx} = conn) do
+      %Conn{conn | context: %Antikythera.Context{ctx | executor_pool_id: {:gear, ctx.gear_name}}}
     end
   else
     defp in_process_test?(), do: false
