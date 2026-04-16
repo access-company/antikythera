@@ -25,8 +25,12 @@ defmodule Antikythera.Test.InProcessClient do
   The following aspects of production request handling are **not** reproduced;
   tests that depend on them must use `Antikythera.Test.HttpClient` instead.
 
-    * **HTTP streaming (SSE).** Routes declared with `streaming: true` are not
-      dispatched through the in-process path; behavior is undefined.
+    * **HTTP streaming (SSE).** Streaming primitives (`start_chunked`/
+      `end_chunked`) rely on cowboy-internal semantics that are not emulated
+      here. Routes declared with `streaming: true` that actually call
+      streaming primitives will either raise (no `{:response, ...}` cast
+      captured) or loop indefinitely (if `end_chunked` is never reached).
+      Use `Antikythera.Test.HttpClient` for streaming tests.
     * **WebSocket.** WebSocket upgrades go through `cowboy_websocket`; they
       cannot be exercised here.
     * **Static files (`:cowboy_static`).** `static_prefix` routes are served by
@@ -92,7 +96,7 @@ defmodule Antikythera.Test.InProcessClient do
   end
 
   alias Antikythera.GearName
-  alias Antikythera.Http.{Method, Headers, Body}
+  alias Antikythera.Http.{Method, Headers}
   alias Antikythera.Httpc.{Response, ReqBody}
   alias Antikythera.Http.SetCookie
   alias AntikytheraCore.Handler.GearAction
@@ -109,8 +113,14 @@ defmodule Antikythera.Test.InProcessClient do
     uri = URI.parse(url)
     path_only = uri.path || "/"
     qs = build_qs(uri.query, Keyword.get(options, :params))
-    path_info = GearAction.split_path_to_segments(path_only)
-    {body_pair, body_headers} = make_body_pair(method, body)
+    # Match cowboy's convention: `req.path_info` is the decoded segments WITHOUT
+    # the trailing "" for paths ending in "/". `CowboyReq.path_info/1` re-appends
+    # the trailing "" by looking at `req.path`, so we must not pre-append it here.
+    path_info =
+      GearAction.split_path_to_segments(path_only)
+      |> strip_trailing_empty()
+
+    {raw_body, body_headers} = make_raw_body(method, body)
 
     option_headers =
       %{}
@@ -122,7 +132,6 @@ defmodule Antikythera.Test.InProcessClient do
       |> Map.merge(option_headers)
       |> Map.merge(downcase_keys(headers))
 
-    raw_body = elem(body_pair, 0)
     pid = self()
     streamid = 1
 
@@ -144,13 +153,14 @@ defmodule Antikythera.Test.InProcessClient do
       has_body: raw_body != "",
       body_length: byte_size(raw_body),
       path_info: path_info,
-      __body_pair__: body_pair
+      __raw_body__: raw_body
     }
 
     try do
       Process.put(:antikythera_in_process_test, true)
       Web.init(fake_req, gear_name)
 
+      # :cowboy_req.reply sends {response, Status, Headers, Body} via cast to pid
       # :cowboy_req.reply sends {response, Status, Headers, Body} via cast to pid
       receive do
         {{^pid, ^streamid}, {:response, status, headers, body}} ->
@@ -164,56 +174,69 @@ defmodule Antikythera.Test.InProcessClient do
   end
 
   # ---------------------------------------------------------------------------
-  # Body pair construction — mirrors BodyParser.parse / parse_raw_body
+  # Raw body construction — only serializes bytes and supplies default
+  # content-type/content-length headers. Parsing happens inside `BodyParser.parse`
+  # via the normal content-type dispatch (our fake req carries `__raw_body__`, so
+  # `BodyParser.get_body/1` returns it instead of calling `:cowboy_req.read_body`).
   # ---------------------------------------------------------------------------
 
-  defunp make_body_pair(method :: v[Method.t()], body :: ReqBody.t()) ::
-           {{binary, Body.t()}, Headers.t()} do
+  defunp make_raw_body(method :: v[Method.t()], body :: ReqBody.t()) :: {binary, Headers.t()} do
     if method in [:get, :delete, :head, :options] do
-      {{"", ""}, %{}}
+      {"", %{}}
     else
       case body do
-        {:json, map} -> encode_json(map)
-        {:form, params} -> encode_form(params)
-        body when is_binary(body) and byte_size(body) > 0 -> encode_raw(body)
-        body when is_binary(body) -> {{"", ""}, %{}}
-        body when is_map(body) or is_list(body) -> encode_json(body)
+        {:json, data} ->
+          raw = Poison.encode!(data)
+          {raw, content_headers(raw, "application/json")}
+
+        {:form, params} ->
+          binary_params = Enum.map(params, fn {k, v} -> {to_string(k), to_string(v)} end)
+          raw = :cow_qs.qs(binary_params)
+          {raw, content_headers(raw, "application/x-www-form-urlencoded")}
+
+        body when is_binary(body) and byte_size(body) > 0 ->
+          {body, %{"content-length" => byte_size(body) |> Integer.to_string()}}
+
+        body when is_binary(body) ->
+          {"", %{}}
+
+        body when is_map(body) or is_list(body) ->
+          raw = Poison.encode!(body)
+          {raw, content_headers(raw, "application/json")}
       end
     end
   end
 
-  defunp encode_json(data :: map | list) :: {{binary, Body.t()}, Headers.t()} do
-    raw = Poison.encode!(data)
-    parsed = Poison.decode!(raw)
-    with_content_type(raw, parsed, "application/json")
-  end
-
-  defunp encode_form(params :: [{term, term}]) :: {{binary, Body.t()}, Headers.t()} do
-    binary_params = Enum.map(params, fn {k, v} -> {to_string(k), to_string(v)} end)
-    raw = :cow_qs.qs(binary_params)
-    parsed = :cow_qs.parse_qs(raw) |> Map.new()
-    with_content_type(raw, parsed, "application/x-www-form-urlencoded")
-  end
-
-  defunp encode_raw(raw :: v[binary]) :: {{binary, Body.t()}, Headers.t()} do
-    {{raw, raw}, %{"content-length" => byte_size(raw) |> Integer.to_string()}}
-  end
-
-  defunp with_content_type(raw :: v[binary], parsed :: Body.t(), content_type :: v[String.t()]) ::
-           {{binary, Body.t()}, Headers.t()} do
-    len = byte_size(raw) |> Integer.to_string()
-    {{raw, parsed}, %{"content-type" => content_type, "content-length" => len}}
+  defunp content_headers(raw :: v[binary], content_type :: v[String.t()]) :: v[Headers.t()] do
+    %{
+      "content-type" => content_type,
+      "content-length" => byte_size(raw) |> Integer.to_string()
+    }
   end
 
   # ---------------------------------------------------------------------------
   # Response construction from cowboy cast message
   # ---------------------------------------------------------------------------
 
-  defunp make_response(status :: v[non_neg_integer], headers :: v[map], body :: v[binary]) ::
+  defunp make_response(status :: v[non_neg_integer], headers :: v[map], body :: iodata) ::
            v[Response.t()] do
+    # Cowboy stores `set-cookie` response values as a list of iolists (one iolist
+    # per cookie); other header values may also be iolists. Normalize to binaries.
     {cookie_values, rest_headers} = Map.pop(headers, "set-cookie", [])
-    cookies = Map.new(List.wrap(cookie_values), &SetCookie.parse!/1)
-    %Response{status: status, body: body, headers: rest_headers, cookies: cookies}
+
+    cookies =
+      cookie_values
+      |> Enum.map(&IO.iodata_to_binary/1)
+      |> Map.new(&SetCookie.parse!/1)
+
+    normalized_headers = Map.new(rest_headers, fn {k, v} -> {k, IO.iodata_to_binary(v)} end)
+
+    %Response{
+      status: status,
+      body: IO.iodata_to_binary(body),
+      headers: normalized_headers,
+      cookies: cookies
+    }
   end
 
   # ---------------------------------------------------------------------------
@@ -249,5 +272,12 @@ defmodule Antikythera.Test.InProcessClient do
   defp add_basic_auth_header(headers, {user, pass}) do
     encoded = Base.encode64("#{user}:#{pass}")
     Map.put(headers, "authorization", "Basic #{encoded}")
+  end
+
+  defunp strip_trailing_empty(segments :: v[list]) :: v[list] do
+    case List.last(segments) do
+      "" -> List.delete_at(segments, -1)
+      _ -> segments
+    end
   end
 end

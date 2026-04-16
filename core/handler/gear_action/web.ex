@@ -148,6 +148,13 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            helper_modules :: v[HelperModules.t()],
            timeout :: v[GearActionTimeout.t()]
          ) :: :cowboy_req.req() do
+    if in_process_test?() do
+      # The streaming loop calls `:cowboy_req.stream_reply/stream_body`, which block
+      # without a real cowboy connection. Fail fast instead of letting the ExUnit
+      # test hit its 60s timeout.
+      raise "Antikythera.Test.InProcessClient does not support http streaming routes; use Antikythera.Test.HttpClient for end-to-end streaming tests"
+    end
+
     :cowboy_req.cast({:set_options, %{idle_timeout: :infinity}}, req)
     context = GearAction.Context.make()
     conn1 = CoreConn.make_from_cowboy_req(req, routing_info, qparams, body_pair)
@@ -410,23 +417,21 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
     :ok
   end
 
-  if Mix.env() == :test do
-    defp in_process_test?(), do: Process.get(:antikythera_in_process_test, false)
+  # `:antikythera_in_process_test` is only set by `Antikythera.Test.InProcessClient`;
+  # in production requests it's absent and `in_process_test?/0` returns false so the
+  # normal `ExecutorPoolHelper.with_executor` path runs.
+  defp in_process_test?(), do: Process.get(:antikythera_in_process_test, false)
 
-    defp run_action_in_process(conn, entry_point) do
-      conn = put_default_executor_pool_id(conn)
+  defp run_action_in_process(conn, entry_point) do
+    conn = put_default_executor_pool_id(conn)
 
-      case ActionRunner.run_action(conn, entry_point) do
-        {:ok, conn2} -> CoreConn.run_before_send(conn2, conn)
-        {:error, reason, stacktrace} -> GearError.error(conn, reason, stacktrace)
-      end
+    case ActionRunner.run_action(conn, entry_point) do
+      {:ok, conn2} -> CoreConn.run_before_send(conn2, conn)
+      {:error, reason, stacktrace} -> GearError.error(conn, reason, stacktrace)
     end
+  end
 
-    defp put_default_executor_pool_id(%Conn{context: ctx} = conn) do
-      %Conn{conn | context: %Antikythera.Context{ctx | executor_pool_id: {:gear, ctx.gear_name}}}
-    end
-  else
-    defp in_process_test?(), do: false
-    defp run_action_in_process(_conn, _entry_point), do: raise("not available in non-test env")
+  defp put_default_executor_pool_id(%Conn{context: ctx} = conn) do
+    %Conn{conn | context: %Antikythera.Context{ctx | executor_pool_id: {:gear, ctx.gear_name}}}
   end
 end
