@@ -187,16 +187,27 @@ defmodule Antikythera.Test.InProcessClient do
           raw = :cow_qs.qs(binary_params)
           {raw, content_headers(raw, "application/x-www-form-urlencoded")}
 
-        body when is_binary(body) and byte_size(body) > 0 ->
-          {body, %{"content-length" => byte_size(body) |> Integer.to_string()}}
+        {:file, path} ->
+          raw_body_with_length(File.read!(path))
 
         body when is_binary(body) ->
-          {"", %{}}
+          raw_body_with_length(body)
 
-        body when is_map(body) or is_list(body) ->
+        body when is_map(body) ->
           raw = Poison.encode!(body)
           {raw, content_headers(raw, "application/json")}
+
+        # iodata — hackney sends this as-is, so we convert to binary without JSON-encoding
+        body when is_list(body) ->
+          raw_body_with_length(IO.iodata_to_binary(body))
       end
+    end
+  end
+
+  defunp raw_body_with_length(raw :: v[binary]) :: {binary, Headers.t()} do
+    case byte_size(raw) do
+      0 -> {"", %{}}
+      len -> {raw, %{"content-length" => Integer.to_string(len)}}
     end
   end
 
