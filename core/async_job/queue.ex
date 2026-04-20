@@ -80,7 +80,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   @impl true
-  defun command(q1 :: t, cmd :: RVData.command_arg()) :: {RVData.command_ret(), t} do
+  defun command(q1 :: v[t], cmd :: RVData.command_arg()) :: {RVData.command_ret(), t} do
     q1 = normalize_for_backward_compat(q1)
 
     case cmd do
@@ -546,19 +546,15 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     @behaviour RaftedValue.LeaderHook
 
     @impl true
-    def on_command_committed(
-          _,
-          _,
-          _,
-          %Queue{
-            brokers_to_notify: bs,
-            abandoned_jobs: abandoned_jobs
-          } = q
-        ) do
+    def on_command_committed(_, _, _, %Queue{
+          brokers_to_notify: bs,
+          abandoned_jobs: abandoned_jobs,
+          runner_pids_to_stop: runner_pids_to_stop
+        }) do
       Enum.each(bs, &Broker.notify_job_registered/1)
       Enum.each(abandoned_jobs, &log_abandoned_job/1)
 
-      Enum.each(q.runner_pids_to_stop || [], fn {pid, job_id} ->
+      Enum.each(runner_pids_to_stop, fn {pid, job_id} ->
         GenServer.cast(pid, {:force_stop, job_id})
       end)
     end
