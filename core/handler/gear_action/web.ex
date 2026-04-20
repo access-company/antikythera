@@ -441,7 +441,7 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
     case BodyParser.parse_raw_with_headers(raw_body, content_encoding, content_type) do
       {:error, :invalid_body} ->
         routing_info = {gear_name, nil, method, path_info, %{}}
-        {:ok, qparams} = CowboyReq.query_params(req, routing_info)
+        qparams = safe_query_params(req, routing_info)
         conn = CoreConn.make_from_cowboy_req(req, routing_info, qparams, {raw_body, ""})
         ContextHelper.set(conn)
         GearError.bad_request(conn)
@@ -452,25 +452,32 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
         case lookup_route(router, method, path_info) do
           {:ok, {entry_point, path_matches, _ws?, _streaming?, _timeout}} ->
             routing_info = {gear_name, entry_point, method, path_info, path_matches}
-            {:ok, qparams} = CowboyReq.query_params(req, routing_info)
 
-            conn =
-              CoreConn.make_from_cowboy_req(req, routing_info, qparams, body_pair)
-              |> put_default_executor_pool_id(gear_name)
+            case CowboyReq.query_params(req, routing_info) do
+              {:ok, qparams} ->
+                conn =
+                  CoreConn.make_from_cowboy_req(req, routing_info, qparams, body_pair)
+                  |> put_default_executor_pool_id(gear_name)
 
-            ContextHelper.set(conn)
+                ContextHelper.set(conn)
 
-            GearAction.with_logging_and_metrics_reporting(
-              conn,
-              GearAction.Context.make(),
-              helper_modules,
-              fn ->
-                case ActionRunner.run_action(conn, entry_point) do
-                  {:ok, conn2} -> CoreConn.run_before_send(conn2, conn)
-                  {:error, reason, st} -> GearError.error(conn, reason, st)
-                end
-              end
-            )
+                GearAction.with_logging_and_metrics_reporting(
+                  conn,
+                  GearAction.Context.make(),
+                  helper_modules,
+                  fn ->
+                    case ActionRunner.run_action(conn, entry_point) do
+                      {:ok, conn2} -> CoreConn.run_before_send(conn2, conn)
+                      {:error, reason, st} -> GearError.error(conn, reason, st)
+                    end
+                  end
+                )
+
+              {:error, _req_reply} ->
+                conn = CoreConn.make_from_cowboy_req(req, routing_info, %{}, body_pair)
+                ContextHelper.set(conn)
+                GearError.bad_request(conn)
+            end
 
           :no_route ->
             routing_info = {gear_name, nil, method, path_info, %{}}
@@ -478,6 +485,16 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
             ContextHelper.set(conn)
             GearError.no_route(conn)
         end
+    end
+  end
+
+  # CowboyReq.query_params/2 can return {:error, _} for malformed query strings;
+  # the error path already runs GearError.bad_request via with_conn (which sends
+  # a cowboy cast we discard), so fall back to empty params for our own conn.
+  defp safe_query_params(req, routing_info) do
+    case CowboyReq.query_params(req, routing_info) do
+      {:ok, qparams} -> qparams
+      {:error, _req_reply} -> %{}
     end
   end
 
