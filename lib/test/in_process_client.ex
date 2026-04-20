@@ -130,6 +130,7 @@ defmodule Antikythera.Test.InProcessClient do
       body_headers
       |> Map.merge(option_headers)
       |> Map.merge(downcase_keys(headers))
+      |> Map.put_new("accept-encoding", "gzip")
 
     # Produce decoded path segments the same way cowboy's router does.
     # CowboyReq.path_info/1 will append "" for trailing slash, so we must not include it here.
