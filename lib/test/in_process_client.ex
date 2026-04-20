@@ -119,6 +119,9 @@ defmodule Antikythera.Test.InProcessClient do
     uri = URI.parse(url)
     path_only = uri.path || "/"
     qs = build_qs(uri.query, Keyword.get(options, :params))
+    scheme = uri.scheme || "http"
+    host = uri.host || "localhost"
+    port = uri.port || 80
     {raw_body, body_headers} = make_raw_body(method, body)
 
     option_headers =
@@ -131,6 +134,7 @@ defmodule Antikythera.Test.InProcessClient do
       |> Map.merge(option_headers)
       |> Map.merge(downcase_keys(headers))
       |> Map.put_new("accept-encoding", "gzip")
+      |> Map.put_new("host", default_host_header(scheme, host, port))
 
     # Produce decoded path segments the same way cowboy's router does.
     # CowboyReq.path_info/1 will append "" for trailing slash, so we must not include it here.
@@ -143,9 +147,9 @@ defmodule Antikythera.Test.InProcessClient do
     fake_req = %{
       method: method |> Atom.to_string() |> String.upcase(),
       version: :"HTTP/1.1",
-      scheme: uri.scheme || "http",
-      host: uri.host || "localhost",
-      port: uri.port || 80,
+      scheme: scheme,
+      host: host,
+      port: port,
       path: path_only,
       path_info: decoded_path_info,
       qs: qs,
@@ -254,6 +258,16 @@ defmodule Antikythera.Test.InProcessClient do
 
   defunp downcase_keys(map :: v[Headers.t()]) :: v[Headers.t()] do
     Map.new(map, fn {k, v} -> {String.downcase(k), v} end)
+  end
+
+  # Build a default HTTP/1.1 `Host` header. Include the port only when it is
+  # non-default so the value matches what a typical HTTP client would send.
+  defunp default_host_header(scheme :: v[String.t()], host :: v[String.t()], port :: v[non_neg_integer]) :: v[String.t()] do
+    if (scheme == "http" and port == 80) or (scheme == "https" and port == 443) do
+      host
+    else
+      "#{host}:#{port}"
+    end
   end
 
   # Match `Httpc`'s `:cookie` option handling (URL-encoded name=value joined by "; ").
