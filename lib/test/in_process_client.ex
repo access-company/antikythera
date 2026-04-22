@@ -273,7 +273,11 @@ defmodule Antikythera.Test.InProcessClient do
 
   # Build a default HTTP/1.1 `Host` header. Include the port only when it is
   # non-default so the value matches what a typical HTTP client would send.
-  defunp default_host_header(scheme :: v[String.t()], host :: v[String.t()], port :: v[non_neg_integer]) :: v[String.t()] do
+  defunp default_host_header(
+           scheme :: v[String.t()],
+           host :: v[String.t()],
+           port :: v[non_neg_integer]
+         ) :: v[String.t()] do
     if (scheme == "http" and port == 80) or (scheme == "https" and port == 443) do
       host
     else
