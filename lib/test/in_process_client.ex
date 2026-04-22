@@ -108,6 +108,7 @@ defmodule Antikythera.Test.InProcessClient do
     "strict-transport-security" => "max-age=31536000"
   }
 
+  @doc false
   defun dispatch(
           gear_name :: v[GearName.t()],
           method :: v[Method.t()],
