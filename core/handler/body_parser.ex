@@ -17,6 +17,39 @@ defmodule AntikytheraCore.Handler.BodyParser do
          do: {:ok, req2, raw, parsed}
   end
 
+  @doc """
+  Parse a raw body given explicit `content-encoding` and `content-type` header values.
+
+  Mirrors the same JSON / ld-json / form / unknown dispatch as `parse/1` (without reading
+  from a `:cowboy_req` request). Returns `{:ok, parsed}` or `{:error, :invalid_body}`.
+  Empty strings for either header mean "absent".
+  """
+  defun parse_raw_with_headers(
+          raw :: v[RawBody.t()],
+          content_encoding :: v[String.t()],
+          content_type :: v[String.t()]
+        ) :: {:ok, Body.t()} | {:error, :invalid_body} do
+    case content_encoding do
+      "" -> dispatch_by_content_type(raw, content_type)
+      _ -> {:ok, raw}
+    end
+  end
+
+  defunp dispatch_by_content_type(raw :: v[RawBody.t()], content_type :: v[String.t()]) ::
+           {:ok, Body.t()} | {:error, :invalid_body} do
+    case content_type do
+      "application/json" <> _charset -> parse_json(raw)
+      "application/x-ldjson" <> _charset -> parse_json_stream(raw)
+      "application/x-ndjson" <> _charset -> parse_json_stream(raw)
+      "application/x-www-form-urlencoded" <> _charset -> parse_form_urlencoded(raw)
+      _ -> {:ok, raw}
+    end
+    |> case do
+      {:ok, parsed} -> {:ok, parsed}
+      {:error, _} -> {:error, :invalid_body}
+    end
+  end
+
   defunp get_body(req :: :cowboy_req.req()) ::
            {:ok, RawBody.t(), :cowboy_req.req()} | invalid_tuple | timeout_tuple do
     try do

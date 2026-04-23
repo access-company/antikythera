@@ -32,7 +32,11 @@ defmodule AntikytheraCore.ExecutorPool.ActionRunner do
     {:reply, run_action(conn, entry_point), state}
   end
 
-  defp run_action(conn, {controller, action}) do
+  @doc false
+  defun run_action(conn :: v[Conn.t()], entry_point :: v[GearEntryPoint.t()]) ::
+          {:ok, Conn.t()} | {:error, any, list} do
+    {controller, action} = entry_point
+
     try do
       conn2 = controller.__action__(conn, action)
       CoreConn.validate(conn2)
