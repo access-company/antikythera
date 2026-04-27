@@ -76,21 +76,6 @@ defmodule Antikythera.Test.WebsocketClient do
         {:ok, state}
       end
 
-      # Workaround for ondisconnect/2 not being called in 1.5.0
-      # See https://github.com/sanmiguel/websocket_client/pull/78
-      @impl true
-      def websocket_info({:tcp_closed, _pid}, _conn, %{caller: pid} = state) do
-        send(pid, :disconnected)
-        {:close, "", state}
-      end
-
-      # Workaround for ondisconnect/2 not being called in 1.5.0
-      @impl true
-      def websocket_info({:ssl_closed, _pid}, _conn, %{caller: pid} = state) do
-        send(pid, :disconnected)
-        {:close, "", state}
-      end
-
       @impl true
       def websocket_info(_msg, _conn, state) do
         {:ok, state}
