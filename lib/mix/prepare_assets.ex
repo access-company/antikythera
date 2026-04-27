@@ -32,7 +32,11 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
 
   ### Package Installation
 
-  Use [`yarn`](https://yarnpkg.com/en/) if `yarn.lock` file exists, otherwise use `npm install`.
+  Use [`yarn install --frozen-lockfile`](https://yarnpkg.com/en/) if `yarn.lock` file exists,
+  otherwise use `npm ci`.
+  Both commands install exact versions from the lock file for reproducible builds, so
+  `package-lock.json` (or `npm-shrinkwrap.json`) must be present and in sync with `package.json`
+  when `yarn.lock` does not exist.
 
   ### Auditing the packages
 
@@ -99,29 +103,9 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
 
   defp install_packages!(env) do
     if File.exists?("yarn.lock") do
-      run_command!("yarn", [], env)
+      run_command!("yarn", ["install", "--frozen-lockfile"], env)
     else
-      remove_node_modules_if_dependencies_changed!()
-      run_command!("npm", ["install"], env)
-    end
-  end
-
-  defp remove_node_modules_if_dependencies_changed!() do
-    case System.get_env("GIT_PREVIOUS_SUCCESSFUL_COMMIT") do
-      nil ->
-        :ok
-
-      commit ->
-        files_to_check = ["package.json", "npm-shrinkwrap.json", "package-lock.json"]
-        {_output, status} = System.cmd("git", ["diff", "--quiet", commit, "--" | files_to_check])
-
-        if status == 1 do
-          IO.puts(
-            "Removing node_modules/ in order to avoid potential issues in npm's dependency resolution."
-          )
-
-          File.rm_rf!("node_modules")
-        end
+      run_command!("npm", ["ci"], env)
     end
   end
 
@@ -148,12 +132,7 @@ defmodule Mix.Tasks.Antikythera.PrepareAssets do
     {_, status, _} = run_command("npm", ["audit", "--audit-level", "critical"], env)
 
     if status != 0 do
-      if File.exists?("package-lock.json") || File.exists?("npm-shrinkwrap.json") do
-        raise "One or more critical packages are found: #{status}"
-      else
-        # Failure due to missing lock file.
-        raise "No lock file is found."
-      end
+      raise "One or more critical packages are found: #{status}"
     end
   end
 
