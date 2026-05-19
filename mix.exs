@@ -101,7 +101,7 @@ defmodule Antikythera.Mixfile do
 
       # The following libraries are used by both antikythera itself and gears.
       {:poison, "6.0.0"},
-      {:jason, "1.4.4"},
+      {:jason, "1.4.5"},
       {:gettext, "0.17.1"},
       {:croma, "0.12.0"},
       {:ex_json_schema, "0.11.2"},
