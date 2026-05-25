@@ -104,7 +104,7 @@ defmodule Antikythera.Mixfile do
       {:jason, "1.4.5"},
       {:gettext, "0.17.1"},
       {:croma, "0.12.0"},
-      {:ex_json_schema, "0.11.2"},
+      {:ex_json_schema, "0.11.4"},
 
       # tools
       {:exsync, "0.4.1", [only: :dev]},
@@ -139,7 +139,8 @@ defmodule Antikythera.Mixfile do
       # fast_xml
       {:p1_utils, "1.0.28", [indirect: true]},
       # jason and ex_json_schema
-      {:decimal, "2.3.0", [indirect: true]},
+      # Gears must not use poison's Decimal feature; its ~> 2.1 constraint is unverified against 3.x.
+      {:decimal, "3.1.0", [indirect: true, override: true]},
 
       # indirect tool deps
       # credo
