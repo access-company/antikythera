@@ -47,9 +47,25 @@ defmodule AntikytheraCore.ExecutorPoolTest do
     assert PoolSup.Multi.transaction(GearActionRunnerPools.table_name(), epool_id, &is_pid/1)
     assert PoolSup.transaction(job_pool_sup, &is_pid/1)
 
+    # a dedicated hackney connection pool should be created and sized for this executor pool
+    pool_name = AntikytheraCore.Httpc.connection_pool_name(epool_id)
+    assert is_pid(:hackney_pool.find_pool(pool_name))
+
+    assert :hackney_pool.max_connections(pool_name) ==
+             AntikytheraCore.Httpc.connection_pool_size(setting)
+
+    # changing the executor pool's setting should resize its connection pool too
+    new_setting = %EPoolSetting{setting | pool_size_a: 3}
+    assert ExecutorPool.apply_setting(epool_id, new_setting) == :ok
+
+    assert :hackney_pool.max_connections(pool_name) ==
+             AntikytheraCore.Httpc.connection_pool_size(new_setting)
+
     ExecutorPoolHelper.kill_and_wait(epool_id)
     refute Process.alive?(epool_pid)
     assert Process.whereis(RegName.supervisor(epool_id)) == nil
+    # the connection pool should be stopped together with the executor pool
+    assert :hackney_pool.find_pool(pool_name) == :undefined
     # should be idempotent
     assert ExecutorPool.kill_executor_pool(epool_id) == :ok
   end

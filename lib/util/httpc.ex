@@ -55,6 +55,8 @@ defmodule Antikythera.Httpc do
   - `:connect_options` - Subset of TCP/IP options supported by the `gen_tcp` erlang module.
     Currently, the following options are supported:
       - `:inet | :inet6` - Specify the address family to use for the connection.
+  - `:pool` - An `Antikythera.Context.t` whose executor pool's dedicated connection pool should be used,
+    so that requests don't share TCP connections with other executor pools (gears/tenants).
 
   ## Recommendation
 
@@ -67,7 +69,7 @@ defmodule Antikythera.Httpc do
   require AntikytheraCore.Logger, as: L
 
   alias Croma.Result, as: R
-  alias Antikythera.{MapUtil, Url}
+  alias Antikythera.{MapUtil, Url, Context}
   alias Antikythera.Http.{Status, Method, Headers, SetCookie, SetCookiesMap}
 
   defmodule ReqBody do
@@ -376,9 +378,22 @@ defmodule Antikythera.Httpc do
     :connect_options, connect_options ->
       {:connect_options, Enum.filter(connect_options, &filter_hackney_connect_option/1)}
 
+    :pool, %Context{} = context ->
+      case pool_name_from_context(context) do
+        nil -> nil
+        name -> {:pool, name}
+      end
+
     # :skip_body_decompression is used in processing response body, not here
     _, _ ->
       nil
+  end
+
+  defunpt pool_name_from_context(context :: v[Context.t()]) :: v[nil | String.t()] do
+    case context.executor_pool_id do
+      nil -> nil
+      id -> AntikytheraCore.Httpc.connection_pool_name(id)
+    end
   end
 
   defunpt filter_hackney_connect_option(option :: :gen_tcp.connect_option()) :: v[boolean] do
