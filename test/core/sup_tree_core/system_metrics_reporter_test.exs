@@ -23,17 +23,37 @@ defmodule AntikytheraCore.SystemMetricsReporterTest do
   end
 
   test "should report hackney default connection pool metrics when the pool exists", context do
-    :ok = :hackney_pool.start_pool(:default, max_connections: 11)
+    # The default pool is created lazily and shared, so only start/stop it if it isn't already running.
+    pool_started_by_test = :hackney_pool.find_pool(:default) == :undefined
+    if pool_started_by_test, do: :ok = :hackney_pool.start_pool(:default, max_connections: 11)
 
     try do
+      stats = :hackney_pool.get_stats(:default)
+      in_use = Keyword.fetch!(stats, :in_use_count)
+      free = Keyword.fetch!(stats, :free_count)
+      queued = Keyword.fetch!(stats, :queue_count)
+
       send(context[:pid], :timeout)
       {_t, data_list, :nopool} = GenServerHelper.receive_cast_message()
-      assert Enum.any?(data_list, &match?({"default_connection_pool_in_use_count", Gauge, 0}, &1))
-      assert Enum.any?(data_list, &match?({"default_connection_pool_in_use_%", Gauge, 0.0}, &1))
-      assert Enum.any?(data_list, &match?({"default_connection_pool_free_count", Gauge, 0}, &1))
-      assert Enum.any?(data_list, &match?({"default_connection_pool_queue_count", Gauge, 0}, &1))
+
+      assert Enum.any?(
+               data_list,
+               &match?({"default_connection_pool_in_use_count", Gauge, ^in_use}, &1)
+             )
+
+      assert Enum.any?(data_list, &match?({"default_connection_pool_in_use_%", Gauge, _}, &1))
+
+      assert Enum.any?(
+               data_list,
+               &match?({"default_connection_pool_free_count", Gauge, ^free}, &1)
+             )
+
+      assert Enum.any?(
+               data_list,
+               &match?({"default_connection_pool_queue_count", Gauge, ^queued}, &1)
+             )
     after
-      :hackney_pool.stop_pool(:default)
+      if pool_started_by_test, do: :hackney_pool.stop_pool(:default)
     end
   end
 
