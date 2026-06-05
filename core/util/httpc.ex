@@ -77,4 +77,59 @@ defmodule AntikytheraCore.Httpc do
     _ = :hackney_pool.stop_pool(connection_pool_name(epool_id))
     :ok
   end
+
+  @typedoc """
+  Current connection counts of a hackney connection pool.
+
+  - `:max`     - configured `max_connections`, i.e. the pool's capacity
+  - `:in_use`  - connections currently checked out for in-flight requests
+  - `:free`    - idle keep-alive connections available for reuse
+  - `:queued`  - requests waiting for a connection because the pool is saturated
+  """
+  @type pool_stats :: %{
+          max: non_neg_integer,
+          in_use: non_neg_integer,
+          free: non_neg_integer,
+          queued: non_neg_integer
+        }
+
+  @doc """
+  Current connection counts of the executor pool's dedicated hackney connection pool
+  (see `t:pool_stats/0`).
+
+  Returns `nil` if the pool does not exist (e.g. it has not been created yet or has already been
+  stopped).
+  """
+  defun connection_pool_stats(epool_id :: v[EPoolId.t()]) :: nil | pool_stats do
+    pool_stats(connection_pool_name(epool_id))
+  end
+
+  @doc """
+  Current connection counts of hackney's shared default connection pool (see `t:pool_stats/0`).
+
+  This is the pool used for outbound requests that don't specify an executor pool's dedicated pool
+  (i.e. `Antikythera.Httpc` calls made without the `:pool` option). Returns `nil` if the default
+  pool has not been created yet (hackney starts it lazily on its first use).
+  """
+  defun default_connection_pool_stats() :: nil | pool_stats do
+    pool_stats(:default)
+  end
+
+  # `name` is a per-executor-pool pool name (`String.t()`) or hackney's shared default pool (`:default`).
+  defunp pool_stats(name :: String.t() | :default) :: nil | pool_stats do
+    case :hackney_pool.find_pool(name) do
+      pid when is_pid(pid) ->
+        stats = :hackney_pool.get_stats(name)
+
+        %{
+          max: Keyword.fetch!(stats, :max),
+          in_use: Keyword.fetch!(stats, :in_use_count),
+          free: Keyword.fetch!(stats, :free_count),
+          queued: Keyword.fetch!(stats, :queue_count)
+        }
+
+      _ ->
+        nil
+    end
+  end
 end
