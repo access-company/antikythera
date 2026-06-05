@@ -57,13 +57,21 @@ defmodule AntikytheraCore.HttpcTest do
   end
 
   test "default_connection_pool_stats/0 should report connection counts of hackney's default pool" do
-    # The default pool is created lazily; ensure it exists for a deterministic assertion.
-    :ok = :hackney_pool.start_pool(:default, max_connections: 9)
+    # The default pool is created lazily and shared, so only start/stop it if it isn't already running.
+    pool_started_by_test = :hackney_pool.find_pool(:default) == :undefined
+    if pool_started_by_test, do: :ok = :hackney_pool.start_pool(:default, max_connections: 9)
 
     try do
-      assert %{max: 9, in_use: 0, free: 0, queued: 0} = Httpc.default_connection_pool_stats()
+      stats = :hackney_pool.get_stats(:default)
+
+      assert Httpc.default_connection_pool_stats() == %{
+               max: Keyword.fetch!(stats, :max),
+               in_use: Keyword.fetch!(stats, :in_use_count),
+               free: Keyword.fetch!(stats, :free_count),
+               queued: Keyword.fetch!(stats, :queue_count)
+             }
     after
-      :hackney_pool.stop_pool(:default)
+      if pool_started_by_test, do: :hackney_pool.stop_pool(:default)
     end
   end
 end
