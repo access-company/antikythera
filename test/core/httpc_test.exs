@@ -39,4 +39,31 @@ defmodule AntikytheraCore.HttpcTest do
 
     assert Httpc.connection_pool_size(setting) == 1
   end
+
+  test "connection_pool_stats/1 should return nil when the pool does not exist" do
+    assert Httpc.connection_pool_stats({:gear, :nonexistent_gear}) == nil
+  end
+
+  test "connection_pool_stats/1 should report connection counts of an existing pool" do
+    epool_id = {:gear, :testgear_for_stats}
+    name = Httpc.connection_pool_name(epool_id)
+    :ok = :hackney_pool.start_pool(name, max_connections: 7)
+
+    try do
+      assert %{max: 7, in_use: 0, free: 0, queued: 0} = Httpc.connection_pool_stats(epool_id)
+    after
+      :hackney_pool.stop_pool(name)
+    end
+  end
+
+  test "default_connection_pool_stats/0 should report connection counts of hackney's default pool" do
+    # The default pool is created lazily; ensure it exists for a deterministic assertion.
+    :ok = :hackney_pool.start_pool(:default, max_connections: 9)
+
+    try do
+      assert %{max: 9, in_use: 0, free: 0, queued: 0} = Httpc.default_connection_pool_stats()
+    after
+      :hackney_pool.stop_pool(:default)
+    end
+  end
 end

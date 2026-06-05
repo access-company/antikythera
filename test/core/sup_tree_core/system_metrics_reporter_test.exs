@@ -22,6 +22,21 @@ defmodule AntikytheraCore.SystemMetricsReporterTest do
     assert Enum.any?(data_list, &match?({"vm_reductions", Gauge, _}, &1))
   end
 
+  test "should report hackney default connection pool metrics when the pool exists", context do
+    :ok = :hackney_pool.start_pool(:default, max_connections: 11)
+
+    try do
+      send(context[:pid], :timeout)
+      {_t, data_list, :nopool} = GenServerHelper.receive_cast_message()
+      assert Enum.any?(data_list, &match?({"default_connection_pool_in_use_count", Gauge, 0}, &1))
+      assert Enum.any?(data_list, &match?({"default_connection_pool_in_use_%", Gauge, 0.0}, &1))
+      assert Enum.any?(data_list, &match?({"default_connection_pool_free_count", Gauge, 0}, &1))
+      assert Enum.any?(data_list, &match?({"default_connection_pool_queue_count", Gauge, 0}, &1))
+    after
+      :hackney_pool.stop_pool(:default)
+    end
+  end
+
   describe "get_recon_infos_for_too_many_messages/1" do
     test "should return a list containing five elements if threshold is zero" do
       infos = SystemMetricsReporter.list_details_of_too_many_messages_processes(0)
