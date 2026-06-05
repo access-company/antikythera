@@ -47,8 +47,12 @@ defmodule AntikytheraCore.Httpc do
       pool_size_j: pool_size_j
     } = setting
 
-    (n_pools_a * pool_size_a + n_pools_s * pool_size_s + pool_size_j) *
-      @connection_pool_size_factor
+    size =
+      (n_pools_a * pool_size_a + n_pools_s * pool_size_s + pool_size_j) *
+        @connection_pool_size_factor
+
+    # Worker pool sizes are `Croma.NonNegInteger`, so `size` can be 0; keep at least 1 connection.
+    max(size, 1)
   end
 
   @doc """

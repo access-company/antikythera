@@ -26,4 +26,17 @@ defmodule AntikytheraCore.HttpcTest do
 
     assert Httpc.connection_pool_size(setting) == (4 * 5 + 2 * 3 + 6) * 2
   end
+
+  test "connection_pool_size/1 should be at least 1 even when all worker pool sizes are 0" do
+    setting = %EPoolSetting{
+      n_pools_a: 0,
+      pool_size_a: 0,
+      n_pools_s: 0,
+      pool_size_s: 0,
+      pool_size_j: 0,
+      ws_max_connections: 0
+    }
+
+    assert Httpc.connection_pool_size(setting) == 1
+  end
 end
