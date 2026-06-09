@@ -31,7 +31,6 @@ defmodule AntikytheraCore.SystemMetricsReporterTest do
       stats = :hackney_pool.get_stats(:default)
       in_use = Keyword.fetch!(stats, :in_use_count)
       free = Keyword.fetch!(stats, :free_count)
-      queued = Keyword.fetch!(stats, :queue_count)
 
       send(context[:pid], :timeout)
       {_t, data_list, :nopool} = GenServerHelper.receive_cast_message()
@@ -46,11 +45,6 @@ defmodule AntikytheraCore.SystemMetricsReporterTest do
       assert Enum.any?(
                data_list,
                &match?({"default_connection_pool_free_count", Gauge, ^free}, &1)
-             )
-
-      assert Enum.any?(
-               data_list,
-               &match?({"default_connection_pool_queue_count", Gauge, ^queued}, &1)
              )
     after
       if pool_started_by_test, do: :hackney_pool.stop_pool(:default)

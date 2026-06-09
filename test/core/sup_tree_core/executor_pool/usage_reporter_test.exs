@@ -49,6 +49,5 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporterTest do
     assert Enum.any?(data_list, &match?({"epool_connection_pool_in_use_count", Gauge, 0}, &1))
     assert Enum.any?(data_list, &match?({"epool_connection_pool_in_use_%", Gauge, 0.0}, &1))
     assert Enum.any?(data_list, &match?({"epool_connection_pool_free_count", Gauge, 0}, &1))
-    assert Enum.any?(data_list, &match?({"epool_connection_pool_queue_count", Gauge, 0}, &1))
   end
 end

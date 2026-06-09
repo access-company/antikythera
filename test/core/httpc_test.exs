@@ -50,7 +50,7 @@ defmodule AntikytheraCore.HttpcTest do
     :ok = :hackney_pool.start_pool(name, max_connections: 7)
 
     try do
-      assert %{max: 7, in_use: 0, free: 0, queued: 0} = Httpc.connection_pool_stats(epool_id)
+      assert %{max: 7, in_use: 0, free: 0} = Httpc.connection_pool_stats(epool_id)
     after
       :hackney_pool.stop_pool(name)
     end
@@ -67,8 +67,7 @@ defmodule AntikytheraCore.HttpcTest do
       assert Httpc.default_connection_pool_stats() == %{
                max: Keyword.fetch!(stats, :max),
                in_use: Keyword.fetch!(stats, :in_use_count),
-               free: Keyword.fetch!(stats, :free_count),
-               queued: Keyword.fetch!(stats, :queue_count)
+               free: Keyword.fetch!(stats, :free_count)
              }
     after
       if pool_started_by_test, do: :hackney_pool.stop_pool(:default)
