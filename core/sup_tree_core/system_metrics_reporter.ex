@@ -99,14 +99,13 @@ defmodule AntikytheraCore.SystemMetricsReporter do
       nil ->
         []
 
-      %{max: max, in_use: in_use, free: free, queued: queued} ->
+      %{max: max, in_use: in_use, free: free} ->
         in_use_ratio =
           if max == 0, do: [], else: [{"default_connection_pool_in_use_%", 100 * in_use / max}]
 
         [
           {"default_connection_pool_in_use_count", in_use},
-          {"default_connection_pool_free_count", free},
-          {"default_connection_pool_queue_count", queued}
+          {"default_connection_pool_free_count", free}
         ] ++ in_use_ratio
     end
   end

@@ -84,13 +84,11 @@ defmodule AntikytheraCore.Httpc do
   - `:max`     - configured `max_connections`, i.e. the pool's capacity
   - `:in_use`  - connections currently checked out for in-flight requests
   - `:free`    - idle keep-alive connections available for reuse
-  - `:queued`  - requests waiting for a connection because the pool is saturated
   """
   @type pool_stats :: %{
           max: non_neg_integer,
           in_use: non_neg_integer,
-          free: non_neg_integer,
-          queued: non_neg_integer
+          free: non_neg_integer
         }
 
   @doc """
@@ -124,8 +122,7 @@ defmodule AntikytheraCore.Httpc do
         %{
           max: Keyword.fetch!(stats, :max),
           in_use: Keyword.fetch!(stats, :in_use_count),
-          free: Keyword.fetch!(stats, :free_count),
-          queued: Keyword.fetch!(stats, :queue_count)
+          free: Keyword.fetch!(stats, :free_count)
         }
 
       _ ->
