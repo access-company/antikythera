@@ -62,10 +62,10 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporter do
         []
 
       %{max: max, in_use: in_use, free: free} ->
-        count_and_ratio("epool_connection_pool_in_use", in_use, max) ++
-          [
-            {"epool_connection_pool_free_count", :gauge, free}
-          ]
+        [
+          {"epool_connection_pool_free_count", :gauge, free}
+          | count_and_ratio("epool_connection_pool_in_use", in_use, max)
+        ]
     end
   end
 
