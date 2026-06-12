@@ -113,6 +113,7 @@ defmodule Antikythera.Mixfile do
       {:credo, "1.7.17", [only: :dev, runtime: false]},
       {:mix_test_watch, "1.2.0", [only: :dev, runtime: false]},
       {:meck, "1.1.1", [only: :test]},
+      {:mimic, "1.7.4", [only: :test]},
       {:excoveralls, "0.18.5", [only: :test]},
       {:stream_data, "1.3.0", [only: :test]},
       {:yaml_elixir, "2.11.0", [only: :test]},
