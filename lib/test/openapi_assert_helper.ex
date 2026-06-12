@@ -43,8 +43,9 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
   - `:yaml_files`: OpenAPI YAML files
   - `:json_files`: OpenAPI JSON files
   - `:allows_null_for_optional`: Optional request body keys allow null. Defaults to `true`
-  - `:client`: HTTP client module to inject (must expose the same API as
-    `Antikythera.Test.HttpClient`). Defaults to `Antikythera.Test.HttpClient`;
+  - `:client`: HTTP client module to `use` for sending requests. The module's
+    `__using__/1` must inject the same functions as `Antikythera.Test.HttpClient`
+    (`get`/`post`/`put`/`delete`, etc.). Defaults to `Antikythera.Test.HttpClient`;
     pass `Antikythera.Test.InProcessClient` to drive the gear handler pipeline
     in-process.
 
