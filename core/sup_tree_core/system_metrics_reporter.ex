@@ -18,14 +18,13 @@ defmodule AntikytheraCore.SystemMetricsReporter do
   use GenServer
   alias Antikythera.Metrics.DataList
   alias Antikythera.ExecutorPool.Id, as: EPoolId
-  alias AntikytheraCore.Httpc, as: CoreHttpc
   alias AntikytheraCore.MetricsUploader
   alias AntikytheraCore.Vm
   require AntikytheraCore.Logger, as: L
 
   @log_message_queue_length 100_000
   @interval 300_000
-  @typep metrics_t :: [{String.t(), number}]
+  @typep metrics_t :: [{String.t(), non_neg_integer}]
 
   def start_link([uploader_name]) do
     GenServer.start_link(__MODULE__, uploader_name, [])
@@ -70,18 +69,17 @@ defmodule AntikytheraCore.SystemMetricsReporter do
     memory_kw = :erlang.memory()
     log_too_many_messages_processes()
 
-    absolute_values =
-      [
-        {"vm_messages_in_mailboxes", Vm.count_messages_in_all_mailboxes()},
-        {"vm_process_count", :erlang.system_info(:process_count)},
-        {"vm_total_run_queue_lengths", :erlang.statistics(:total_run_queue_lengths)},
-        {"vm_total_active_tasks", :erlang.statistics(:total_active_tasks)},
-        {"vm_memory_total", Keyword.fetch!(memory_kw, :total)},
-        {"vm_memory_proc", Keyword.fetch!(memory_kw, :processes_used)},
-        {"vm_memory_atom", Keyword.fetch!(memory_kw, :atom_used)},
-        {"vm_memory_binary", Keyword.fetch!(memory_kw, :binary)},
-        {"vm_memory_ets", Keyword.fetch!(memory_kw, :ets)}
-      ] ++ default_connection_pool_metrics()
+    absolute_values = [
+      {"vm_messages_in_mailboxes", Vm.count_messages_in_all_mailboxes()},
+      {"vm_process_count", :erlang.system_info(:process_count)},
+      {"vm_total_run_queue_lengths", :erlang.statistics(:total_run_queue_lengths)},
+      {"vm_total_active_tasks", :erlang.statistics(:total_active_tasks)},
+      {"vm_memory_total", Keyword.fetch!(memory_kw, :total)},
+      {"vm_memory_proc", Keyword.fetch!(memory_kw, :processes_used)},
+      {"vm_memory_atom", Keyword.fetch!(memory_kw, :atom_used)},
+      {"vm_memory_binary", Keyword.fetch!(memory_kw, :binary)},
+      {"vm_memory_ets", Keyword.fetch!(memory_kw, :ets)}
+    ]
 
     cumulative_values =
       Enum.zip(old_metrics, new_metrics)
@@ -90,24 +88,6 @@ defmodule AntikytheraCore.SystemMetricsReporter do
       end)
 
     Enum.map(absolute_values ++ cumulative_values, fn {label, value} -> {label, :gauge, value} end)
-  end
-
-  # Connection counts of hackney's shared default pool (used for outbound requests that don't specify
-  # an executor pool's dedicated pool). Empty until the default pool is created lazily on first use.
-  defunp default_connection_pool_metrics() :: metrics_t do
-    case CoreHttpc.default_connection_pool_stats() do
-      nil ->
-        []
-
-      %{max: max, in_use: in_use, free: free} ->
-        in_use_ratio =
-          if max == 0, do: [], else: [{"default_connection_pool_in_use_%", 100 * in_use / max}]
-
-        [
-          {"default_connection_pool_in_use_count", in_use},
-          {"default_connection_pool_free_count", free}
-        ] ++ in_use_ratio
-    end
   end
 
   defp log_too_many_messages_processes() do
