@@ -60,4 +60,21 @@ defmodule Antikythera.HttpcTest do
     refute Httpc.filter_hackney_connect_option(:local)
     refute Httpc.filter_hackney_connect_option({:fd, 0})
   end
+
+  test "pool_name_from_context/1 should derive a hackney pool name from the context's executor pool ID" do
+    gear_context =
+      Antikythera.Test.ConnHelper.make_conn(%{executor_pool_id: {:gear, :testgear}}).context
+
+    assert Httpc.pool_name_from_context(gear_context) == "gear-testgear"
+
+    tenant_context =
+      Antikythera.Test.ConnHelper.make_conn(%{executor_pool_id: {:tenant, "abcdefghij0123456789"}}).context
+
+    assert Httpc.pool_name_from_context(tenant_context) == "tenant-abcdefghij0123456789"
+  end
+
+  test "pool_name_from_context/1 should return nil when there is no executor pool" do
+    context = Antikythera.Test.ConnHelper.make_conn(%{executor_pool_id: nil}).context
+    assert Httpc.pool_name_from_context(context) == nil
+  end
 end

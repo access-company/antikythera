@@ -5,6 +5,7 @@ use Croma
 defmodule AntikytheraCore.ExecutorPool do
   alias Antikythera.{GearName, GearActionTimeout}
   alias Antikythera.ExecutorPool.Id, as: EPoolId
+  alias AntikytheraCore.Httpc, as: CoreHttpc
   alias AntikytheraCore.ExecutorPool.Setting, as: EPoolSetting
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.ExecutorPool.AsyncJobBroker, as: JobBroker
@@ -138,7 +139,7 @@ defmodule AntikytheraCore.ExecutorPool do
            __MODULE__.Sup,
            {__MODULE__, [epool_id, MetricsUploader, setting]}
          ) do
-      {:ok, _pid} -> :ok
+      {:ok, _pid} -> CoreHttpc.set_connection_pool(epool_id, setting)
       {:error, {:already_started, _pid}} -> apply_setting(epool_id, setting)
     end
   end
@@ -162,6 +163,7 @@ defmodule AntikytheraCore.ExecutorPool do
       pid ->
         L.info("killing executor pool for #{inspect(epool_id)}")
         :ok = DynamicSupervisor.terminate_child(__MODULE__.Sup, pid)
+        :ok = CoreHttpc.stop_connection_pool(epool_id)
         remove_job_queue(epool_id)
     end
   end
@@ -196,7 +198,7 @@ defmodule AntikytheraCore.ExecutorPool do
             pool_size_s: size_s,
             pool_size_j: size_j,
             ws_max_connections: ws_max
-          }
+          } = setting
         ) :: :ok do
     L.info("changing setting of executor pool for #{inspect(epool_id)}")
     action_pool_name = RegName.action_runner_pool_multi(epool_id)
@@ -208,6 +210,7 @@ defmodule AntikytheraCore.ExecutorPool do
     PoolSup.change_capacity(job_pool_name, 0, size_j)
     JobBroker.notify_pool_capacity_may_have_changed(broker_name)
     WebsocketConnectionsCounter.set_max(epool_id, ws_max)
+    CoreHttpc.set_connection_pool(epool_id, setting)
   end
 
   defmodule Sup do
