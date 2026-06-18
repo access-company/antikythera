@@ -16,6 +16,7 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporter do
   use GenServer
   alias Antikythera.Metrics.DataList
   alias Antikythera.ExecutorPool.Id, as: EPoolId
+  alias AntikytheraCore.Httpc, as: CoreHttpc
   alias AntikytheraCore.MetricsUploader
   alias AntikytheraCore.ExecutorPool.RegisteredName, as: RegName
   alias AntikytheraCore.ExecutorPool.WebsocketConnectionsCounter
@@ -50,8 +51,22 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporter do
       count_and_ratio("epool_working_action_runner", working_a, max_a),
       count_and_ratio("epool_working_job_runner", working_j, max_j),
       count_and_ratio("epool_websocket_connections", count_ws, max_ws),
-      {"epool_websocket_rejected_count", :gauge, rejected_ws}
+      {"epool_websocket_rejected_count", :gauge, rejected_ws},
+      connection_pool_metrics(epool_id)
     ])
+  end
+
+  defunp connection_pool_metrics(epool_id :: v[EPoolId.t()]) :: [Antikythera.Metrics.Data.t()] do
+    case CoreHttpc.connection_pool_stats(epool_id) do
+      nil ->
+        []
+
+      %{max: max, in_use: in_use, free: free} ->
+        [
+          {"epool_connection_pool_free_count", :gauge, free}
+          | count_and_ratio("epool_connection_pool_in_use", in_use, max)
+        ]
+    end
   end
 
   defunp fetch_usage_action(epool_id :: v[EPoolId.t()]) :: usage_rational do

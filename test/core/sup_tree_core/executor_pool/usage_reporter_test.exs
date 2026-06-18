@@ -20,7 +20,12 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporterTest do
 
     ExecutorPoolHelper.wait_until_async_job_queue_added(@epool_id)
 
+    # `ExecutorPool.start_link/3` does not create the dedicated hackney connection pool (that is done
+    # by `ExecutorPool.start_executor_pool/2`); create it here so the reporter can fetch its stats.
+    :ok = AntikytheraCore.Httpc.set_connection_pool(@epool_id, EPoolSetting.default())
+
     on_exit(fn ->
+      AntikytheraCore.Httpc.stop_connection_pool(@epool_id)
       ExecutorPoolHelper.kill_and_wait(@epool_id, fn -> :auto_killed_and_do_nothing end)
     end)
 
@@ -41,5 +46,8 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporterTest do
     assert Enum.any?(data_list, &match?({"epool_websocket_connections_count", Gauge, 0}, &1))
     assert Enum.any?(data_list, &match?({"epool_websocket_connections_%", Gauge, 0.0}, &1))
     assert Enum.any?(data_list, &match?({"epool_websocket_rejected_count", Gauge, 0}, &1))
+    assert Enum.any?(data_list, &match?({"epool_connection_pool_in_use_count", Gauge, 0}, &1))
+    assert Enum.any?(data_list, &match?({"epool_connection_pool_in_use_%", Gauge, 0.0}, &1))
+    assert Enum.any?(data_list, &match?({"epool_connection_pool_free_count", Gauge, 0}, &1))
   end
 end
