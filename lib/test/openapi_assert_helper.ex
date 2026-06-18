@@ -18,6 +18,17 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
   end
   ```
 
+  To use `Antikythera.Test.InProcessClient` instead of the default
+  `Antikythera.Test.HttpClient` for sending requests, pass `:client`:
+
+  ```elixir
+  defmodule OpenApiAssertInProcess do
+    use Antikythera.Test.OpenApiAssertHelper,
+      yaml_files: ["doc/api/openapi_one.yaml"],
+      client: Antikythera.Test.InProcessClient
+  end
+  ```
+
   In your test files
 
   ```elixir
@@ -32,6 +43,11 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
   - `:yaml_files`: OpenAPI YAML files
   - `:json_files`: OpenAPI JSON files
   - `:allows_null_for_optional`: Optional request body keys allow null. Defaults to `true`
+  - `:client`: HTTP client module to `use` for sending requests. The module's
+    `__using__/1` must inject the same functions as `Antikythera.Test.HttpClient`
+    (`get`/`post`/`put`/`delete`, etc.). Defaults to `Antikythera.Test.HttpClient`;
+    pass `Antikythera.Test.InProcessClient` to drive the gear handler pipeline
+    in-process.
 
   ## Description
 
@@ -64,10 +80,11 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
     yaml_files = opts[:yaml_files] || []
     json_files = opts[:json_files] || []
     allows_null_for_optional = Keyword.get(opts, :allows_null_for_optional, true)
+    client = Keyword.get(opts, :client, Antikythera.Test.HttpClient)
 
     # credo:disable-for-next-line Credo.Check.Refactor.LongQuoteBlocks
     quote do
-      use Antikythera.Test.HttpClient
+      use unquote(client)
       alias Antikythera.Http.Headers
       alias Antikythera.Httpc.Response
       alias Antikythera.Test.OpenApiAssertHelper.{Normalizer, SchemaAsserter}
