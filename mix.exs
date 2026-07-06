@@ -84,7 +84,7 @@ defmodule Antikythera.Mixfile do
       # these are considered as implementation details of antikythera and thus must not be used by gear implementations.
       {:cowboy, "2.14.2", [antikythera_internal: true]},
       {:cowlib, "2.16.0", [antikythera_internal: true]},
-      {:hackney, "1.25.0", [antikythera_internal: true]},
+      {:hackney, "4.5.1", [antikythera_internal: true]},
       {:calliope,
        [
          git: "git@github.com:access-company/calliope.git",
@@ -126,19 +126,21 @@ defmodule Antikythera.Mixfile do
       # cowboy
       {:ranch, "1.8.1", [indirect: true]},
       # hackney
-      {:certifi, "2.15.0", [indirect: true]},
+      {:certifi, "2.17.0", [indirect: true]},
       # hackney
       {:ssl_verify_fun, "1.1.7", [indirect: true]},
       # hackney
-      {:idna, "6.1.1", [indirect: true]},
+      {:idna, "7.1.0", [indirect: true]},
       # hackney
-      {:metrics, "1.0.1", [indirect: true]},
+      {:mimerl, "1.5.0", [indirect: true]},
       # hackney
-      {:mimerl, "1.4.0", [indirect: true]},
+      {:parse_trans, "3.4.2", [indirect: true]},
       # hackney
-      {:parse_trans, "3.4.1", [indirect: true]},
-      # idna
-      {:unicode_util_compat, "0.7.1", [indirect: true]},
+      {:h2, "0.10.4", [indirect: true]},
+      # hackney
+      {:quic, "1.6.5", [indirect: true]},
+      # hackney (and h2, quic)
+      {:webtransport, "0.4.2", [indirect: true]},
       # fast_xml
       {:p1_utils, "1.0.28", [indirect: true]},
       # jason and ex_json_schema

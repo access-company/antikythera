@@ -290,8 +290,9 @@ defmodule Antikythera.Httpc do
 
       {:ok, %Response{status: status, body: body2, headers: headers_map, cookies: cookies_map}}
     else
-      # The returned body might be truncated and thus we can't reliably uncompress the body if it's compressed.
-      # In this case we give up returning partial information and simply return an error.
+      # The body exceeds `:max_body`, so we reject it. hackney buffers the whole body before returning
+      # (the `:max_body` hackney option no longer aborts the download early as of hackney 4.x), but we
+      # can't reliably uncompress an over-limit body if it's compressed, so we give up and return an error.
       {:error, :response_too_large}
     end
   end
@@ -332,7 +333,7 @@ defmodule Antikythera.Httpc do
 
   defp hackney_options(options_map) do
     max_body = Map.fetch!(options_map, :max_body)
-    base_opts = [{:path_encode_fun, &encode_path/1}, {:max_body, max_body}, {:with_body, true}]
+    base_opts = [{:path_encode_fun, &encode_path/1}, {:max_body, max_body}]
 
     Enum.reduce(options_map, base_opts, fn {k, v}, opts ->
       case convert_option(k, v) do
