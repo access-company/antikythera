@@ -46,6 +46,7 @@ Run from the project root. Ensure the runtime versions in [`.tool-versions`](./.
 | Typecheck (success typing) | `mix dialyzer` |
 | Static code analysis | `mix credo -a --strict` |
 | Generate documentation | `mix docs` |
+| Lint Markdown | `markdownlint-cli2 --fix "**/*.md"` |
 
 If a dependency/compile error occurs, refresh dependencies (see [`CONTRIBUTING.md`](./CONTRIBUTING.md)):
 
