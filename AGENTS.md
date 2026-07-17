@@ -18,7 +18,7 @@ Read these before making changes. They are the source of truth; this file only s
 
 ## Overview
 
-Antikythera is an [Elixir] framework (a PaaS framework) for building your own in-house PaaS.
+Antikythera is an [Elixir] framework for building your own in-house PaaS.
 A single cluster of [ErlangVM][Erlang] nodes (an **"antikythera instance"**) runs multiple web
 services (**"gears"**) co-located within the same VMs (a "nano-services architecture"), giving gear
 developers a FaaS-like development experience while eliminating per-service infrastructure overhead.
