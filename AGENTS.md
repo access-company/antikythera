@@ -94,6 +94,6 @@ Verify each of these when writing or reviewing code:
 A change is done only when **all** of the following pass, in order:
 
 1. **Run tests** — `mix test` passes.
-2. **Lint / typecheck** — `mix format` (no diff), `mix credo -a --strict`, and `mix dialyzer` all pass with no new issues.
+2. **Lint / typecheck** — `mix format` (no diff), `mix credo -a --strict`, and `mix dialyzer` all pass with no new issues. Run `markdownlint-cli2` when Markdown files are changed.
 3. **Review** — the change satisfies the reviewer checklist in [Development Rules](#development-rules).
 4. **Re-run after modifications** — if any files are changed while addressing steps 1–3, re-run the relevant tests, lint, and typecheck (steps 1–2) until they pass again.
