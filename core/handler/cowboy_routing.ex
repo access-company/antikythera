@@ -26,7 +26,10 @@ defmodule AntikytheraCore.Handler.CowboyRouting do
 
   defunp wildcard_domain_routes(initialized? :: v[boolean]) :: :cowboy_router.routes() do
     path_rules = [
-      if(initialized?, do: @healthcheck_route_initialized, else: @healthcheck_route_uninitialized),
+      if(initialized?,
+        do: @healthcheck_route_initialized,
+        else: @healthcheck_route_uninitialized
+      ),
       @version_report_route,
       @upgradability_check_route,
       @total_error_count_route,
