@@ -88,7 +88,7 @@ defmodule Antikythera.Mixfile do
       {:calliope,
        [
          git: "git@github.com:access-company/calliope.git",
-         ref: "733b9973b51ab5e4bc70fcae832466867485ecba",
+         ref: "29d15fb0fdfd46ba8d3e03b73e2ec36661796f74",
          antikythera_internal: true
        ]},
       {:pool_sup, "0.6.2", [antikythera_internal: true]},
@@ -103,7 +103,7 @@ defmodule Antikythera.Mixfile do
       {:poison, "6.0.0"},
       {:jason, "1.4.5"},
       {:gettext, "0.17.1"},
-      {:croma, "0.12.0"},
+      {:croma, "0.13.0"},
       {:ex_json_schema, "0.11.4"},
 
       # tools
