@@ -286,6 +286,7 @@ defmodule Antikythera.GearProject do
   - (required) `:antikythera_instance_dep` : Dependency on the antikythera instance which this gear belongs to.
   - (optional) `:source_url`               : If given it's used as both `source_url` (and also `homepage_url`).
   - (optional) `:docs`                     : If given it's used to `:docs` in addition to the default `:docs` options for gears.
+  - (optional) `:test_ignore_filters`      : If given it's used as `:test_ignore_filters` for `mix test`; defaults to `[]`.
 
   The following private functions are used by this module and thus mandatory.
 
@@ -325,6 +326,7 @@ defmodule Antikythera.GearProject do
                                       |> List.wrap()
       @source_url Keyword.get(opts, :source_url)
       @docs Keyword.get(opts, :docs, [])
+      @test_ignore_filters Keyword.get(opts, :test_ignore_filters, [])
       Antikythera.GearProject.load_antikythera_instance_mix_config_file!(
         @antikythera_instance_name
       )
@@ -349,6 +351,7 @@ defmodule Antikythera.GearProject do
               [:croma, :gear_static_analysis] ++ @antikythera_instance_compilers,
           start_permanent: false,
           deps: deps(),
+          test_ignore_filters: @test_ignore_filters,
           docs: @docs ++ [output: "exdoc"],
           antikythera_gear: [
             instance_dep: @antikythera_instance_dep,
