@@ -35,4 +35,15 @@ defmodule AntikytheraCoreTest do
       end
     )
   end
+
+  test "add_log_filters/0 registers the primary filters that drop noisy OTP reports" do
+    primary_filter_ids = :logger.get_primary_config().filters |> Keyword.keys()
+    assert :antikythera_reject_progress in primary_filter_ids
+    assert :antikythera_reject_mnesia_down in primary_filter_ids
+    assert :antikythera_reject_poolsup_kill in primary_filter_ids
+  end
+
+  test "the alert backend handler is registered via logger_backends" do
+    assert LoggerBackends in :logger.get_handler_ids()
+  end
 end

@@ -203,6 +203,15 @@ defmodule Antikythera.MixConfig do
     default_configs() ++ croma_configs() ++ exsync_configs()
   end
 
+  # Filters currently installed on the `:default` logger handler, so we can append to them instead of
+  # replacing. Evaluated at config-read time, when `:logger` is already running under mix/release build.
+  defp existing_default_handler_filters() do
+    case :logger.get_handler_config(:default) do
+      {:ok, %{filters: filters}} -> filters
+      _ -> []
+    end
+  end
+
   defp default_configs() do
     [
       # Logger configurations.
@@ -213,10 +222,21 @@ defmodule Antikythera.MixConfig do
       logger: [
         utc_log: true,
         handle_sasl_reports: true,
-        backends: [:console, AntikytheraCore.Alert.LoggerBackend],
-        console: [
+        # Console output goes through `:logger`'s default handler; `AntikytheraCore.Alert.LoggerBackend`
+        # is registered at runtime via `LoggerBackends.add/1` in `AntikytheraCore.start/2`.
+        default_formatter: [
           format: "$dateT$time+00:00 [$level] $metadata$message\n",
           metadata: [:module]
+        ],
+        # Drop SASL progress reports ("supervisor started child X"): `handle_sasl_reports: true` above
+        # keeps supervisor crash reports but also lets progress reports through, so this filter drops
+        # only the latter. It is placed on the handler via config so it is active before dependency
+        # applications emit progress reports during boot. Setting `:filters` replaces the default
+        # handler's filter list, so we append to the filters already installed (e.g. `:remote_gl`).
+        default_handler: [
+          filters:
+            existing_default_handler_filters() ++
+              [antikythera_reject_progress: {&:logger_filters.progress/2, :stop}]
         ],
         # To suppress progress reports during start-up in development environments
         level: if(Mix.env() == :prod, do: :info, else: :notice)
