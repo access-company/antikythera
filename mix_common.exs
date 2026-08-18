@@ -16,18 +16,23 @@ defmodule Antikythera.MixCommon do
       build_path: build_path(),
       build_embedded: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.detail": :test,
-        "coveralls.html": :test,
-        "antikythera_local.upgrade_compatibility_test": :test
-      ],
       # Suppress undefined application warnings
       xref: [exclude: [EEx, EEx.Engine]],
 
       # Avoid inclusion of consolidated protocol information in the core PLT file also in Elixir 1.11+.
       # Since the release build have not used protocol consolidation, this setting does not affect performance in release.
       consolidate_protocols: false
+    ]
+  end
+
+  def cli_settings() do
+    [
+      preferred_envs: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.html": :test,
+        "antikythera_local.upgrade_compatibility_test": :test
+      ]
     ]
   end
 
@@ -331,6 +336,10 @@ defmodule Antikythera.GearProject do
             use_antikythera_internal_modules?: @use_antikythera_internal_modules?
           ]
         ] ++ urls() ++ Antikythera.MixCommon.common_project_settings()
+      end
+
+      def cli() do
+        Antikythera.MixCommon.cli_settings()
       end
 
       defp urls() do

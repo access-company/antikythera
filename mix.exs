@@ -57,6 +57,10 @@ defmodule Antikythera.Mixfile do
     ] ++ Antikythera.MixCommon.common_project_settings()
   end
 
+  def cli() do
+    Antikythera.MixCommon.cli_settings()
+  end
+
   def application() do
     [
       mod: {AntikytheraCore, []},
