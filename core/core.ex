@@ -45,7 +45,13 @@ defmodule AntikytheraCore do
   def start(_type, _args) do
     add_log_filters()
     # Register the alert backend that forwards error logs to `AntikytheraCore.Alert.Manager`.
-    {:ok, _} = LoggerBackends.add(AntikytheraCore.Alert.LoggerBackend)
+    # `:already_present` is treated as success since it means the backend is already registered
+    # (e.g. `start/2` running again after the application restarts).
+    case LoggerBackends.add(AntikytheraCore.Alert.LoggerBackend) do
+      {:ok, _} -> :ok
+      {:error, :already_present} -> :ok
+    end
+
     # In dev or local environment, the log level is initially set to `:notice` at mix_common.exs
     # in order to avoid SASL progress reports.
     # The log level is restored to `:info` after loading antikythera.
