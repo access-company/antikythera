@@ -119,7 +119,7 @@ defmodule AntikytheraCore.ExecutorPool.TenantSetting do
            broadcast? :: v[boolean],
            f :: ([GearName.t()] -> [GearName.t()])
          ) :: :ok do
-    tsetting = fetch_or_default(tenant_id)
+    %__MODULE__{} = tsetting = fetch_or_default(tenant_id)
     new_gears = f.(tsetting.gears)
     new_tsetting = %__MODULE__{tsetting | gears: new_gears}
     put(tenant_id, new_tsetting)

@@ -666,7 +666,7 @@ defmodule Antikythera.Test.OpenApiAssertHelper do
     # This function is intentionally `defp` because the caller uses `ExJsonSchema.Schema.resolve/1`,
     # `resolve/1` has `no_return` and it breaks `resolved_schema :: ExJsonSchema.Schema.Root`
     # credo:disable-for-next-line Credo.Check.Refactor.ABCSize
-    defp resolve_reference_if_all_of(resolved_schema) do
+    defp resolve_reference_if_all_of(%ExJsonSchema.Schema.Root{} = resolved_schema) do
       schema = resolved_schema.schema
 
       if Map.has_key?(schema, "allOf") do

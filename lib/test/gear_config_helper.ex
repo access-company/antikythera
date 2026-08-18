@@ -16,7 +16,7 @@ defmodule Antikythera.Test.GearConfigHelper do
           kv :: v[%{String.t() => any}]
         ) :: :ok do
     Antikythera.GearApplication.ConfigGetter.cleanup_configs_in_process_dictionary()
-    old_config = GearConfig.read(gear_name)
+    %GearConfig{} = old_config = GearConfig.read(gear_name)
     new_config = %GearConfig{old_config | kv: kv}
     GearConfig.write(gear_name, new_config)
     ConfigCache.Gear.write(gear_name, new_config)

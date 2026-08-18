@@ -99,7 +99,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
     Process.send_after(self(), :readiness_check_timeout, millis)
   end
 
-  defp become_active_if_ready(state) do
+  defp become_active_if_ready(%State{} = state) do
     if StartupManager.initialized?() and ensure_queue_added(state) do
       case TerminationManager.register_broker() do
         :ok -> become_active(state)
@@ -159,7 +159,7 @@ defmodule AntikytheraCore.ExecutorPool.AsyncJobBroker do
                                                 do: 60_000,
                                                 else: 1
 
-  defp become_active(state1) do
+  defp become_active(%State{} = state1) do
     wait_time =
       @base_wait_time_before_accepting_jobs +
         :rand.uniform(@random_wait_time_max_before_accepting_jobs)

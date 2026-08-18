@@ -89,7 +89,7 @@ defmodule Antikythera.Conn do
     request.query_params[key]
   end
 
-  defun put_status(conn :: v[t], status :: v[Http.Status.t()]) :: t do
+  defun put_status(%__MODULE__{} = conn :: v[t], status :: v[Http.Status.t()]) :: t do
     %__MODULE__{conn | status: Http.Status.code(status)}
   end
 
@@ -108,7 +108,7 @@ defmodule Antikythera.Conn do
     %__MODULE__{conn | resp_headers: Map.merge(resp_headers, headers)}
   end
 
-  defun put_resp_body(conn :: v[t], body :: v[String.t()]) :: t do
+  defun put_resp_body(%__MODULE__{} = conn :: v[t], body :: v[String.t()]) :: t do
     %__MODULE__{conn | resp_body: body}
   end
 
@@ -239,7 +239,7 @@ defmodule Antikythera.Conn do
       |> Conn.chunk("Second chunk\n")
   """
   defun send_chunked(
-          conn :: v[t],
+          %__MODULE__{} = conn :: v[t],
           status :: v[Http.Status.t()],
           headers :: v[Http.Headers.t()]
         ) :: t do

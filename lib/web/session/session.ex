@@ -36,15 +36,15 @@ defmodule Antikythera.Session do
     %__MODULE__{session | data: Map.delete(data, key)}
   end
 
-  defun clear(session :: t) :: t do
+  defun clear(%__MODULE__{} = session :: t) :: t do
     %__MODULE__{session | data: %{}}
   end
 
-  defun renew(session :: t) :: t do
+  defun renew(%__MODULE__{} = session :: t) :: t do
     %__MODULE__{session | state: :renew}
   end
 
-  defun destroy(session :: t) :: t do
+  defun destroy(%__MODULE__{} = session :: t) :: t do
     %__MODULE__{session | state: :destroy}
   end
 end

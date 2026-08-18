@@ -117,7 +117,7 @@ defmodule AntikytheraCore.GearLog.FileHandle do
     import Antikythera.StringFormat
     {Time, {y, mon, d}, {h, minute, s}, _ms} = Time.now()
     now_str_with_ext = "#{y}#{pad2(mon)}#{pad2(d)}#{pad2(h)}#{pad2(minute)}#{pad2(s)}.gz"
-    String.replace(base_file_path, ~R/gz\z/, now_str_with_ext)
+    String.replace(base_file_path, ~r/gz\z/, now_str_with_ext)
   end
 
   defunp write_debug_log(level :: v[Level.t()], formatted :: v[String.t()]) :: :ok do

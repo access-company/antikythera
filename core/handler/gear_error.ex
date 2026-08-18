@@ -11,7 +11,8 @@ defmodule AntikytheraCore.Handler.GearError do
   @typep reason :: ErrorReason.gear_action_error_reason()
   @typep stacktrace :: ErrorReason.stacktrace()
 
-  defun error(conn :: v[Conn.t()], reason :: reason, stacktrace :: stacktrace) :: Conn.t() do
+  defun error(%Conn{} = conn :: v[Conn.t()], reason :: reason, stacktrace :: stacktrace) ::
+          Conn.t() do
     output_error_to_log(conn, reason, stacktrace)
 
     invoke_error_handler(
@@ -23,7 +24,7 @@ defmodule AntikytheraCore.Handler.GearError do
     )
   end
 
-  defun no_route(conn :: v[Conn.t()]) :: Conn.t() do
+  defun no_route(%Conn{} = conn :: v[Conn.t()]) :: Conn.t() do
     invoke_error_handler(
       conn,
       fn mod -> mod.no_route(conn) end,
@@ -31,7 +32,7 @@ defmodule AntikytheraCore.Handler.GearError do
     )
   end
 
-  defun bad_request(conn :: v[Conn.t()]) :: Conn.t() do
+  defun bad_request(%Conn{} = conn :: v[Conn.t()]) :: Conn.t() do
     invoke_error_handler(
       conn,
       fn mod -> mod.bad_request(conn) end,
@@ -39,7 +40,8 @@ defmodule AntikytheraCore.Handler.GearError do
     )
   end
 
-  defun bad_executor_pool_id(conn :: v[Conn.t()], reason :: v[BadIdReason.t()]) :: Conn.t() do
+  defun bad_executor_pool_id(%Conn{} = conn :: v[Conn.t()], reason :: v[BadIdReason.t()]) ::
+          Conn.t() do
     invoke_error_handler(
       conn,
       fn mod -> mod.bad_executor_pool_id(conn, reason) end,
@@ -47,7 +49,7 @@ defmodule AntikytheraCore.Handler.GearError do
     )
   end
 
-  defun ws_too_many_connections(conn :: v[Conn.t()]) :: Conn.t() do
+  defun ws_too_many_connections(%Conn{} = conn :: v[Conn.t()]) :: Conn.t() do
     invoke_error_handler(
       conn,
       fn mod -> mod.ws_too_many_connections(conn) end,
@@ -56,7 +58,7 @@ defmodule AntikytheraCore.Handler.GearError do
   end
 
   defun parameter_validation_error(
-          conn :: v[Conn.t()],
+          %Conn{} = conn :: v[Conn.t()],
           parameter_type :: Antikythera.Plug.ParamsValidator.parameter_type_t(),
           reason :: AntikytheraCore.BaseParamStruct.validate_error_t()
         ) :: v[Conn.t()] do
