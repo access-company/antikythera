@@ -27,7 +27,7 @@ defmodule AntikytheraCore.Request do
 
       ip_str ->
         # Take the last IP address in "x-forwarded-for" as it is added by reliable component (upstream load balancer).
-        String.split(ip_str, ~R/, */) |> List.last()
+        String.split(ip_str, ~r/, */) |> List.last()
     end
   end
 end

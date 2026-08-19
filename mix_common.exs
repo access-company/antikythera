@@ -12,22 +12,27 @@ defmodule Antikythera.MixCommon do
   def common_project_settings() do
     [
       elixir: "~> 1.15",
-      elixirc_options: [warnings_as_errors: true],
+      aliases: [compile: "compile --warnings-as-errors"],
       build_path: build_path(),
       build_embedded: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.detail": :test,
-        "coveralls.html": :test,
-        "antikythera_local.upgrade_compatibility_test": :test
-      ],
       # Suppress undefined application warnings
       xref: [exclude: [EEx, EEx.Engine]],
 
       # Avoid inclusion of consolidated protocol information in the core PLT file also in Elixir 1.11+.
       # Since the release build have not used protocol consolidation, this setting does not affect performance in release.
       consolidate_protocols: false
+    ]
+  end
+
+  def cli_settings() do
+    [
+      preferred_envs: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.html": :test,
+        "antikythera_local.upgrade_compatibility_test": :test
+      ]
     ]
   end
 
@@ -198,6 +203,15 @@ defmodule Antikythera.MixConfig do
     default_configs() ++ croma_configs() ++ exsync_configs()
   end
 
+  # Filters currently installed on the `:default` logger handler, so we can append to them instead of
+  # replacing. Evaluated at config-read time, when `:logger` is already running under mix/release build.
+  defp existing_default_handler_filters() do
+    case :logger.get_handler_config(:default) do
+      {:ok, %{filters: filters}} -> filters
+      _ -> []
+    end
+  end
+
   defp default_configs() do
     [
       # Logger configurations.
@@ -208,10 +222,21 @@ defmodule Antikythera.MixConfig do
       logger: [
         utc_log: true,
         handle_sasl_reports: true,
-        backends: [:console, AntikytheraCore.Alert.LoggerBackend],
-        console: [
+        # Console output goes through `:logger`'s default handler; `AntikytheraCore.Alert.LoggerBackend`
+        # is registered at runtime via `LoggerBackends.add/1` in `AntikytheraCore.start/2`.
+        default_formatter: [
           format: "$dateT$time+00:00 [$level] $metadata$message\n",
           metadata: [:module]
+        ],
+        # Drop SASL progress reports ("supervisor started child X"): `handle_sasl_reports: true` above
+        # keeps supervisor crash reports but also lets progress reports through, so this filter drops
+        # only the latter. It is placed on the handler via config so it is active before dependency
+        # applications emit progress reports during boot. Setting `:filters` replaces the default
+        # handler's filter list, so we append to the filters already installed (e.g. `:remote_gl`).
+        default_handler: [
+          filters:
+            existing_default_handler_filters() ++
+              [antikythera_reject_progress: {&:logger_filters.progress/2, :stop}]
         ],
         # To suppress progress reports during start-up in development environments
         level: if(Mix.env() == :prod, do: :info, else: :notice)
@@ -261,6 +286,7 @@ defmodule Antikythera.GearProject do
   - (required) `:antikythera_instance_dep` : Dependency on the antikythera instance which this gear belongs to.
   - (optional) `:source_url`               : If given it's used as both `source_url` (and also `homepage_url`).
   - (optional) `:docs`                     : If given it's used to `:docs` in addition to the default `:docs` options for gears.
+  - (optional) `:test_ignore_filters`      : If given it's used as `:test_ignore_filters` for `mix test`; defaults to `[]`.
 
   The following private functions are used by this module and thus mandatory.
 
@@ -300,6 +326,7 @@ defmodule Antikythera.GearProject do
                                       |> List.wrap()
       @source_url Keyword.get(opts, :source_url)
       @docs Keyword.get(opts, :docs, [])
+      @test_ignore_filters Keyword.get(opts, :test_ignore_filters, [])
       Antikythera.GearProject.load_antikythera_instance_mix_config_file!(
         @antikythera_instance_name
       )
@@ -324,6 +351,7 @@ defmodule Antikythera.GearProject do
               [:croma, :gear_static_analysis] ++ @antikythera_instance_compilers,
           start_permanent: false,
           deps: deps(),
+          test_ignore_filters: @test_ignore_filters,
           docs: @docs ++ [output: "exdoc"],
           antikythera_gear: [
             instance_dep: @antikythera_instance_dep,
@@ -331,6 +359,10 @@ defmodule Antikythera.GearProject do
             use_antikythera_internal_modules?: @use_antikythera_internal_modules?
           ]
         ] ++ urls() ++ Antikythera.MixCommon.common_project_settings()
+      end
+
+      def cli() do
+        Antikythera.MixCommon.cli_settings()
       end
 
       defp urls() do

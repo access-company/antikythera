@@ -225,7 +225,7 @@ defmodule Antikythera.Test.InProcessClient do
   # content-length) so callers see a response equivalent to an HTTP round trip.
   # ---------------------------------------------------------------------------
 
-  defunp build_response(conn :: Antikythera.Conn.t()) :: v[Response.t()] do
+  defunp build_response(%Antikythera.Conn{} = conn :: Antikythera.Conn.t()) :: v[Response.t()] do
     try do
       body = conn.resp_body
 

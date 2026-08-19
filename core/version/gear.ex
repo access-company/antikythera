@@ -163,11 +163,7 @@ defmodule AntikytheraCore.Version.Gear do
     sec = div(microsec, 1_000_000)
     msg = "Finish gear installation. time: #{sec} seconds, num_of_gaers: #{length(gear_names)}"
 
-    if is_number(@notify_threshold) and sec > @notify_threshold do
-      L.error(msg)
-    else
-      L.info(msg)
-    end
+    log_gear_installation_time(sec, msg)
 
     Enum.each(pairs_not_installed, fn {gear_name, deps} ->
       L.error("#{gear_name} is not installed due to unmatched dependencies: #{inspect(deps)}")
@@ -187,6 +183,17 @@ defmodule AntikytheraCore.Version.Gear do
     else
       :error
     end
+  end
+
+  # `@notify_threshold` is a compile-time constant (`nil` unless configured), so we generate the
+  # appropriate clause at compile time. This avoids an always-false `sec > nil` type comparison
+  # warning when the threshold is not configured.
+  if is_number(@notify_threshold) do
+    defp log_gear_installation_time(sec, msg) do
+      if sec > @notify_threshold, do: L.error(msg), else: L.info(msg)
+    end
+  else
+    defp log_gear_installation_time(_sec, msg), do: L.info(msg)
   end
 
   # public for mock

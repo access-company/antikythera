@@ -73,7 +73,7 @@ defmodule AntikytheraCore.GearLog.Writer do
   end
 
   @impl true
-  def handle_cast({:set_min_level, level}, state) do
+  def handle_cast({:set_min_level, level}, %State{} = state) do
     {:noreply, %State{state | min_level: level}}
   end
 
@@ -98,7 +98,7 @@ defmodule AntikytheraCore.GearLog.Writer do
     {:noreply, %State{state | log_state: next_log_state}}
   end
 
-  def handle_info({:DOWN, _ref, :process, _pid, _reason}, state) do
+  def handle_info({:DOWN, _ref, :process, _pid, _reason}, %State{} = state) do
     {:noreply, %State{state | uploader: nil}}
   end
 

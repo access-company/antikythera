@@ -132,7 +132,8 @@ defmodule Antikythera.Httpc do
     headers_with_encoding = Map.put_new(downcased_headers, "accept-encoding", "gzip")
     options_map = normalize_options(options)
 
-    uri =
+    %URI{} =
+      uri =
       with %URI{path: nil} = uri <- URI.parse(url) do
         L.info("URL with empty path detected: url=#{url}")
         uri

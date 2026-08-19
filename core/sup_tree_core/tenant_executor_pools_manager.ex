@@ -155,7 +155,7 @@ defmodule AntikytheraCore.TenantExecutorPoolsManager do
 
     disassociated_settings =
       MapUtil.map_values(to_disassociate, fn {tenant_id, target_gears} ->
-        tsetting = old_settings[tenant_id]
+        %TenantSetting{} = tsetting = old_settings[tenant_id]
         gears_after_disassociate = tsetting.gears -- target_gears
 
         if Enum.empty?(gears_after_disassociate) do
@@ -185,7 +185,7 @@ defmodule AntikytheraCore.TenantExecutorPoolsManager do
            modified :: %{TenantId.t() => {TenantSetting.t(), TenantSetting.t()}}
          ) :: {settings, %{TenantId.t() => [GearName.t()]}} do
     m =
-      MapUtil.map_values(modified, fn {tenant_id, {old, new}} ->
+      MapUtil.map_values(modified, fn {tenant_id, {old, %TenantSetting{} = new}} ->
         case {old.gears, new.gears} do
           {[], []} ->
             {new, []}

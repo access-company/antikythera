@@ -94,7 +94,7 @@ defmodule AntikytheraCore.TerminationManager do
   end
 
   @impl true
-  def handle_call({:register_broker, pid}, _from, state) do
+  def handle_call({:register_broker, pid}, _from, %State{} = state) do
     case state do
       %State{in_service?: true, brokers: bs} -> {:reply, :ok, %State{state | brokers: [pid | bs]}}
       %State{in_service?: false} -> {:reply, {:error, :not_in_service}, state}

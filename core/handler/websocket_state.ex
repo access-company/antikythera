@@ -83,7 +83,7 @@ defmodule AntikytheraCore.Handler.WebsocketState do
   end
 
   defunp run_callback_and_reply(
-           state :: v[t],
+           %__MODULE__{} = state :: v[t],
            n_received :: v[non_neg_integer],
            f :: (-> callback_result)
          ) :: callback_result do

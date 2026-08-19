@@ -19,7 +19,7 @@ defmodule Antikythera.VersionStr do
   this is just to simplify deployment and not an intrinsic limitation.
   """
 
-  use Croma.SubtypeOfString, pattern: ~R/\A\d\.\d\.\d-\d{14}\+[0-9a-f]{40}\z/
+  use Croma.SubtypeOfString, pattern: ~r/\A\d\.\d\.\d-\d{14}\+[0-9a-f]{40}\z/
 end
 
 defmodule Antikythera.Domain do
@@ -180,7 +180,7 @@ defmodule Antikythera.GearName do
 end
 
 defmodule Antikythera.GearNameStr do
-  use Croma.SubtypeOfString, pattern: ~R/\A[a-z][0-9a-z_]{2,31}\z/
+  use Croma.SubtypeOfString, pattern: ~r/\A[a-z][0-9a-z_]{2,31}\z/
 end
 
 defmodule Antikythera.TenantId do

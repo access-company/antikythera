@@ -57,6 +57,10 @@ defmodule Antikythera.Mixfile do
     ] ++ Antikythera.MixCommon.common_project_settings()
   end
 
+  def cli() do
+    Antikythera.MixCommon.cli_settings()
+  end
+
   def application() do
     [
       mod: {AntikytheraCore, []},
@@ -104,6 +108,7 @@ defmodule Antikythera.Mixfile do
       {:jason, "1.4.5"},
       {:gettext, "0.17.1"},
       {:croma, "0.13.0"},
+      {:logger_backends, "1.0.1"},
       {:ex_json_schema, "0.11.4"},
 
       # tools

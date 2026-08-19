@@ -194,10 +194,10 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
 
     case app_name do
       @instance_name ->
-        override_file(mixfile_path, ~R/(version\:[^\(]+\()([^\)]+)(\),\n)/, replacement)
+        override_file(mixfile_path, ~r/(version\:[^\(]+\()([^\)]+)(\),\n)/, replacement)
 
       :testgear ->
-        override_file(mixfile_path, ~R/(defp\sversion[^\:]+\:\s)([^\n]+)(\n)/, replacement)
+        override_file(mixfile_path, ~r/(defp\sversion[^\:]+\:\s)([^\n]+)(\n)/, replacement)
     end
   end
 

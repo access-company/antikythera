@@ -206,7 +206,8 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
            initial_core_version :: nil | VersionStr.t(),
            initial_gear_version :: nil | VersionStr.t()
          ) :: Conn.t() do
-    conn_after_action =
+    %Conn{} =
+      conn_after_action =
       run_action_with_executor_for_http_streaming(
         conn,
         gear_name,
@@ -498,7 +499,10 @@ defmodule AntikytheraCore.Handler.GearAction.Web do
     end
   end
 
-  defp put_default_executor_pool_id(%Conn{context: ctx} = conn, gear_name) do
+  defp put_default_executor_pool_id(
+         %Conn{context: %Antikythera.Context{} = ctx} = conn,
+         gear_name
+       ) do
     %Conn{conn | context: %Antikythera.Context{ctx | executor_pool_id: {:gear, gear_name}}}
   end
 end

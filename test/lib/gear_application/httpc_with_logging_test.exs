@@ -61,8 +61,11 @@ defmodule Antikythera.GearApplication.HttpcWithLoggingTest do
       defoverridable find_gear_logger_module: 0
 
       defp find_gear_logger_module do
-        # Use test GearLogger for testing
-        TestGearWithGearLogger.Logger
+        # Use test GearLogger for testing. Build the module name via `Module.safe_concat/2` so its
+        # inferred type is the general `module()` rather than a specific literal; otherwise
+        # Elixir 1.19's type checker flags the `nil` clause of the generated `default_gear_log/6`
+        # as unreachable.
+        Module.safe_concat(TestGearWithGearLogger, "Logger")
       end
     end
   end

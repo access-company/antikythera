@@ -8,8 +8,30 @@ defmodule AntikytheraCore do
   alias AntikytheraEal.ClusterConfiguration
   require AntikytheraCore.Logger, as: L
 
-  defun add_translator_to_logger() :: :ok do
-    Logger.add_translator({AntikytheraCore.ErlangLogTranslator, :translate})
+  # `:logger` primary filters that drop noisy OTP reports: SASL progress reports and the `:syn`
+  # mnesia-down / PoolSup brutal-kill reports. The progress filter is also declared on the `:default`
+  # handler in `mix_common.exs`, which drops reports emitted during dependency boot before this callback
+  # runs. See `AntikytheraCore.LoggerFilter`.
+  defun add_log_filters() :: :ok do
+    :ok =
+      :logger.add_primary_filter(
+        :antikythera_reject_progress,
+        {&:logger_filters.progress/2, :stop}
+      )
+
+    :ok =
+      :logger.add_primary_filter(
+        :antikythera_reject_mnesia_down,
+        {&AntikytheraCore.LoggerFilter.reject_mnesia_down/2, []}
+      )
+
+    :ok =
+      :logger.add_primary_filter(
+        :antikythera_reject_poolsup_kill,
+        {&AntikytheraCore.LoggerFilter.reject_poolsup_kill/2, []}
+      )
+
+    :ok
   end
 
   @doc """
@@ -21,7 +43,15 @@ defmodule AntikytheraCore do
   """
   @impl true
   def start(_type, _args) do
-    add_translator_to_logger()
+    add_log_filters()
+    # Register the alert backend that forwards error logs to `AntikytheraCore.Alert.Manager`.
+    # `:already_present` is treated as success since it means the backend is already registered
+    # (e.g. `start/2` running again after the application restarts).
+    case LoggerBackends.add(AntikytheraCore.Alert.LoggerBackend) do
+      {:ok, _} -> :ok
+      {:error, :already_present} -> :ok
+    end
+
     # In dev or local environment, the log level is initially set to `:notice` at mix_common.exs
     # in order to avoid SASL progress reports.
     # The log level is restored to `:info` after loading antikythera.

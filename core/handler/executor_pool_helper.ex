@@ -53,7 +53,7 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
   end
 
   defunp run_within_executor_pool(
-           %Conn{context: context} = conn1,
+           %Conn{context: %Context{} = context} = conn1,
            helper_modules :: v[HelperModules.t()],
            epool_id :: v[EPoolId.t()],
            f :: (pid, Conn.t() -> Conn.t())
@@ -72,7 +72,7 @@ defmodule AntikytheraCore.Handler.ExecutorPoolHelper do
   end
 
   defunp run_within_executor_pool_for_http_streaming(
-           %Conn{context: context} = conn1,
+           %Conn{context: %Context{} = context} = conn1,
            helper_modules :: v[HelperModules.t()],
            epool_id :: v[EPoolId.t()],
            f :: (pid, Conn.t() -> Conn.t())

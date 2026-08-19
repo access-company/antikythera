@@ -136,7 +136,10 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     |> move_now_runnable_jobs(now_millis)
   end
 
-  defunp release_locks_of_jobs_running_too_long(q :: v[t], now_millis :: v[pos_integer]) :: t do
+  defunp release_locks_of_jobs_running_too_long(
+           %__MODULE__{} = q :: v[t],
+           now_millis :: v[pos_integer]
+         ) :: t do
     %__MODULE__{q | abandoned_jobs: []}
     |> move_jobs_running_too_long(now_millis)
   end
@@ -193,7 +196,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
   end
 
   defunp try_update_job_triplet_for_retry(
-           {job, time, :running} = current :: v[JobsMap.Triplet.t()]
+           {%AsyncJob{} = job, time, :running} = current :: v[JobsMap.Triplet.t()]
          ) :: {JobsMap.Triplet.t(), JobsMap.Triplet.t()} | :pop do
     case job.remaining_attempts do
       1 -> :pop
@@ -215,7 +218,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
     end
   end
 
-  defunp move_now_runnable_jobs(q :: v[t], now_millis :: v[pos_integer]) :: t do
+  defunp move_now_runnable_jobs(%__MODULE__{} = q :: v[t], now_millis :: v[pos_integer]) :: t do
     %__MODULE__{q | brokers_to_notify: []}
     |> move_now_runnable_jobs_impl(now_millis)
   end
@@ -252,7 +255,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
 
   defp move_waiting_broker_to_be_notified([], q), do: q
 
-  defp move_waiting_broker_to_be_notified([b | bs], q) do
+  defp move_waiting_broker_to_be_notified([b | bs], %__MODULE__{} = q) do
     %__MODULE__{q | brokers_waiting: bs, brokers_to_notify: [b | q.brokers_to_notify]}
   end
 
@@ -375,7 +378,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
 
   defp requeue_if_recurring(
          %__MODULE__{jobs: jobs, index_waiting: index_waiting} = q,
-         j,
+         %AsyncJob{} = j,
          job_id,
          now_millis
        ) do
@@ -415,7 +418,7 @@ defmodule AntikytheraCore.AsyncJob.Queue do
          {_, job_id} = job_key,
          now_millis
        ) do
-    {job, _, :running} = Map.fetch!(jobs, job_id)
+    {%AsyncJob{} = job, _, :running} = Map.fetch!(jobs, job_id)
     next_start = now_millis + AsyncJob.compute_retry_interval(job)
     new_job = %AsyncJob{job | remaining_attempts: job.remaining_attempts - 1}
     jobs2 = Map.put(jobs, job_id, {new_job, next_start, :waiting})
