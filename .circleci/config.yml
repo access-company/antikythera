@@ -5,7 +5,7 @@ version: 2
 references:
   container_config: &container_config
     docker:
-      - image: erlang:26.2.5.13 # Using a Docker image that is pre-configured for installing Erlang.
+      - image: erlang:27.3.4.16 # Using a Docker image that is pre-configured for installing Erlang.
         environment:
           ANTIKYTHERA_INSTANCE_DEP: '{:antikythera_instance_example, [git: "git@github.com:access-company/antikythera_instance_example.git"]}'
   install_prerequisites: &install_prerequisites
