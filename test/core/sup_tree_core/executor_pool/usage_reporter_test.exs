@@ -40,14 +40,14 @@ defmodule AntikytheraCore.ExecutorPool.UsageReporterTest do
     {t, data_list, @epool_id} = GenServerHelper.receive_cast_message()
     assert t0 <= t
     assert Enum.any?(data_list, &match?({"epool_working_action_runner_count", Gauge, 0}, &1))
-    assert Enum.any?(data_list, &match?({"epool_working_action_runner_%", Gauge, 0.0}, &1))
+    assert Enum.any?(data_list, &match?({"epool_working_action_runner_%", Gauge, +0.0}, &1))
     assert Enum.any?(data_list, &match?({"epool_working_job_runner_count", Gauge, 0}, &1))
-    assert Enum.any?(data_list, &match?({"epool_working_job_runner_%", Gauge, 0.0}, &1))
+    assert Enum.any?(data_list, &match?({"epool_working_job_runner_%", Gauge, +0.0}, &1))
     assert Enum.any?(data_list, &match?({"epool_websocket_connections_count", Gauge, 0}, &1))
-    assert Enum.any?(data_list, &match?({"epool_websocket_connections_%", Gauge, 0.0}, &1))
+    assert Enum.any?(data_list, &match?({"epool_websocket_connections_%", Gauge, +0.0}, &1))
     assert Enum.any?(data_list, &match?({"epool_websocket_rejected_count", Gauge, 0}, &1))
     assert Enum.any?(data_list, &match?({"epool_connection_pool_in_use_count", Gauge, 0}, &1))
-    assert Enum.any?(data_list, &match?({"epool_connection_pool_in_use_%", Gauge, 0.0}, &1))
+    assert Enum.any?(data_list, &match?({"epool_connection_pool_in_use_%", Gauge, +0.0}, &1))
     assert Enum.any?(data_list, &match?({"epool_connection_pool_free_count", Gauge, 0}, &1))
   end
 end

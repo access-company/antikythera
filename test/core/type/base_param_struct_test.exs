@@ -346,7 +346,9 @@ defmodule AntikytheraCore.BaseParamStructTest do
                TestStructWithAcceptCaseSnake.from_params(%{"paramNamedWithMultipleWords" => 1})
 
       assert {:ok, %TestStructWithAcceptCaseSnake{paramNamedWithMultipleWords: 1}} =
-               TestStructWithAcceptCaseSnake.from_params(%{"param_named_with_multiple_words" => 1})
+               TestStructWithAcceptCaseSnake.from_params(%{
+                 "param_named_with_multiple_words" => 1
+               })
     end
 
     test "should return value missing error if the field name is not acceptable" do
@@ -358,7 +360,9 @@ defmodule AntikytheraCore.BaseParamStructTest do
       assert {:error,
               {:value_missing,
                [TestStructWithAcceptCaseSnake, {Croma.PosInteger, :paramNamedWithMultipleWords}]}} =
-               TestStructWithAcceptCaseSnake.from_params(%{"PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1})
+               TestStructWithAcceptCaseSnake.from_params(%{
+                 "PARAM_NAMED_WITH_MULTIPLE_WORDS" => 1
+               })
     end
   end
 

@@ -25,7 +25,11 @@ defmodule AntikytheraCore.Version.Artifact do
   end
 
   defunp core_release_tgz_path(version :: v[VersionStr.t()]) :: Path.t() do
-    Path.join([CorePath.compiled_core_dir(), version, "#{Env.antikythera_instance_name()}.tar.gz"])
+    Path.join([
+      CorePath.compiled_core_dir(),
+      version,
+      "#{Env.antikythera_instance_name()}.tar.gz"
+    ])
   end
 
   defunp core_releases_dir(version :: v[VersionStr.t()]) :: Path.t() do
