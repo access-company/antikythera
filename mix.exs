@@ -116,7 +116,7 @@ defmodule Antikythera.Mixfile do
       {:ex_doc, "0.40.1", [only: :dev, runtime: false]},
       {:dialyxir, "1.4.7", [only: :dev, runtime: false]},
       {:credo, "1.7.17", [only: :dev, runtime: false]},
-      {:mix_test_watch, "1.2.0", [only: :dev, runtime: false]},
+      {:mix_test_watch, "1.4.0", [only: :dev, runtime: false]},
       # Both are mocking libraries for tests. `mimic` is recommended for new tests since
       # it also supports `async: true`, while `meck` is kept for existing gears.
       {:meck, "1.1.1", [only: :test]},

@@ -68,7 +68,9 @@ defmodule Antikythera.HttpcTest do
     assert Httpc.pool_name_from_context(gear_context) == "gear-testgear"
 
     tenant_context =
-      Antikythera.Test.ConnHelper.make_conn(%{executor_pool_id: {:tenant, "abcdefghij0123456789"}}).context
+      Antikythera.Test.ConnHelper.make_conn(%{
+        executor_pool_id: {:tenant, "abcdefghij0123456789"}
+      }).context
 
     assert Httpc.pool_name_from_context(tenant_context) == "tenant-abcdefghij0123456789"
   end

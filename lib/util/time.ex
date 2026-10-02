@@ -173,7 +173,7 @@ defmodule Antikythera.Time do
 
   `Antikythera.Time.t` has `System.system_time/1`. `System.system_time/1` may decrease. Therefore, `diff_milliseconds(end, start)` may return negative value.
 
-  See https://hexdocs.pm/elixir/1.15.8/System.html#module-time for more information.
+  See https://hexdocs.pm/elixir/1.19.5/System.html#module-time for more information.
   """
   defun diff_milliseconds(t1 :: v[t], t2 :: v[t]) :: integer do
     to_gregorian_milliseconds(t1) - to_gregorian_milliseconds(t2)

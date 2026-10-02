@@ -210,7 +210,11 @@ defmodule Antikythera.BodyJsonListTest do
   describe "new/1 of a list based on BodyJsonList with a custom preprocessor" do
     test "should return :ok with a list when all the elements are valid" do
       assert {:ok, [~D[1970-01-01], ~D[1970-01-02], ~D[1970-01-03]]} =
-               TestListWithCustomPreprocessor.new([~D[1970-01-01], ~D[1970-01-02], ~D[1970-01-03]])
+               TestListWithCustomPreprocessor.new([
+                 ~D[1970-01-01],
+                 ~D[1970-01-02],
+                 ~D[1970-01-03]
+               ])
     end
 
     test "should return invalid value error when an element is invalid" do

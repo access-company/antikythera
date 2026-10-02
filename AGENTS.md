@@ -9,7 +9,7 @@ Read these before making changes. They are the source of truth; this file only s
 - [`README.md`](./README.md) — project overview, architecture, and getting started.
 - [`STYLE_GUIDE.md`](./STYLE_GUIDE.md) — coding rules (the review checklist below is derived from it).
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — contribution workflow, branching, and how to test with an actual gear.
-- [`.tool-versions`](./.tool-versions) — required runtime versions (Erlang `26.2.5.14`, Elixir `1.15.8-otp-26`).
+- [`.tool-versions`](./.tool-versions) — required runtime versions (Erlang `26.2.5.14`, Elixir `1.19.5-otp-26`).
 - External:
     - [Antikythera documentation](https://hexdocs.pm/antikythera) / [API Reference](https://hexdocs.pm/antikythera/api-reference.html)
     - [Credo's Elixir Style Guide](https://github.com/rrrene/elixir-style-guide)
