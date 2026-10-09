@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 # Note that each `run` command is executed by a separate bash process.
 # We have to use `$BASH_ENV`, which contains file path to `.bashrc` file, to pass information to the subsequent bash processes.
