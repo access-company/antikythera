@@ -47,6 +47,9 @@ defmodule Antikythera.Mixfile do
       app: :antikythera,
       version: @project_version,
       elixirc_paths: elixirc_paths(),
+      # Put `:croma` after `:elixir` (as gear projects do) so that `Croma.New1Existence.has_new1?/1` doesn't raise
+      # for type modules generated concurrently by multiple files (e.g. test files compiled in parallel).
+      compilers: Mix.compilers() ++ [:croma],
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       source_url: @github_url,
