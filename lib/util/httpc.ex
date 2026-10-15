@@ -240,9 +240,14 @@ defmodule Antikythera.Httpc do
       {:ok, _} = ok ->
         ok
 
-      # connection is closed on server side
-      {:error, :closed} ->
-        L.info("{:error, :closed} returned by hackney: attempts=#{attempts} url=#{url}")
+      # A pooled connection has been closed on server side (e.g. keep-alive timeout).
+      # hackney returns `:einval` instead of `:closed` when the closure is notified after
+      # hackney checked the socket and before it sent the request, as the socket has already been discarded.
+      {:error, reason} when reason in [:closed, :einval] ->
+        L.info(
+          "{:error, #{inspect(reason)}} returned by hackney: attempts=#{attempts} url=#{url}"
+        )
+
         attempts2 = attempts + 1
 
         if attempts2 < @max_retry_attempts do
@@ -259,7 +264,7 @@ defmodule Antikythera.Httpc do
             attempts2
           )
         else
-          {:error, :closed}
+          {:error, reason}
         end
 
       {:error, _} = error ->

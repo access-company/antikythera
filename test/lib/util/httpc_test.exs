@@ -3,6 +3,9 @@
 defmodule Antikythera.HttpcTest do
   use Croma.TestCase
   use ExUnitProperties
+  use Mimic
+
+  setup :verify_on_exit!
 
   test "encode_path/1 should percent-encode ascii chars as in URI.encode/1" do
     assert Httpc.encode_path("") == ""
@@ -52,6 +55,31 @@ defmodule Antikythera.HttpcTest do
 
     actual = Httpc.post("http://example.com", {:json, %{t: wrong_time}}, %{})
     assert actual == expect
+  end
+
+  @url "http://example.com/"
+
+  defp expect_hackney_request(n, result) do
+    expect(:hackney, :request, n, fn :get, @url, _headers, _body, _opts -> result end)
+  end
+
+  for reason <- [:closed, :einval] do
+    test "request/5 should retry when hackney returns {:error, #{inspect(reason)}}" do
+      expect_hackney_request(1, {:error, unquote(reason)})
+      expect_hackney_request(1, {:ok, 200, [], "ok"})
+      assert {:ok, %Httpc.Response{status: 200, body: "ok"}} = Httpc.get(@url, %{})
+    end
+
+    test "request/5 should give up retrying {:error, #{inspect(reason)}} after the max attempts" do
+      # 3 is `@max_retry_attempts` in `Antikythera.Httpc`
+      expect_hackney_request(3, {:error, unquote(reason)})
+      assert Httpc.get(@url, %{}) == {:error, unquote(reason)}
+    end
+  end
+
+  test "request/5 should not retry on other errors" do
+    expect_hackney_request(1, {:error, :timeout})
+    assert Httpc.get(@url, %{}) == {:error, :timeout}
   end
 
   test "filter_hackney_connect_option/1 should accept only IP address family" do
