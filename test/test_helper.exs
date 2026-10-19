@@ -1,5 +1,7 @@
 # Copyright(c) 2015-2024 ACCESS CO., LTD. All rights reserved.
 
+Mimic.copy(:hackney)
+
 ExUnit.start()
 
 ExUnit.after_suite(fn _result ->
