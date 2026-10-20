@@ -26,17 +26,20 @@ defmodule Mix.Tasks.AntikytheraLocal.VersionUpgradeTest do
   def run([testgear_dir]) do
     start_antikythera_local(testgear_dir)
 
-    instance_mixfile_path = Path.expand("mix.exs")
-    testgear_mixfile_path = Path.join(testgear_dir, "mix.exs")
-    instance_original_version = Mix.Project.config()[:version]
-
-    {testgear_version_output, 0} =
-      System.cmd("mix", ["antikythera.print_version"], cd: testgear_dir)
-
-    testgear_original_version =
-      String.split(testgear_version_output, "\n", trim: true) |> List.last()
-
     try do
+      instance_mixfile_path = Path.expand("mix.exs")
+      testgear_mixfile_path = Path.join(testgear_dir, "mix.exs")
+      instance_original_version = Mix.Project.config()[:version]
+
+      {testgear_version_output, 0} =
+        System.cmd("mix", ["antikythera.print_version"],
+          cd: testgear_dir,
+          env: [{"ANTIKYTHERA_COMPILE_ENV", "local"}, {"MIX_ENV", "prod"}]
+        )
+
+      testgear_original_version =
+        String.split(testgear_version_output, "\n", trim: true) |> List.last()
+
       [
         check_version: [@instance_name, instance_original_version],
         check_version: [:testgear, testgear_original_version],
