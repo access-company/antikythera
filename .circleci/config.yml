@@ -71,6 +71,15 @@ references:
     restore_cache:
       keys:
         - testgear-updated_repo-{{ .Branch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+  invalidate_build_local_of_fetched_deps: &invalidate_build_local_of_fetched_deps
+    run:
+      name: Invalidate builds of fetched deps under _build_local
+      # `mix deps.get` marks fetched deps to be recompiled only under `_build`; do the same under `_build_local`.
+      # Run this step after `mix deps.get` and before `MIX_ENV=dev mix compile`.
+      command: |
+        for d in _build_local/*/lib/*; do
+          [ -f "_build/dev/lib/$(basename "$d")/.mix/compile.elixir_scm" ] || rm -f "$d/.mix/compile.elixir_scm"
+        done
 
 jobs:
   prepare_erlang_and_elixir:
@@ -192,11 +201,15 @@ jobs:
             EXTERNAL_GIT_REPOSITORY: git@github.com:access-company/antikythera_instance_example.git
             EXTERNAL_GIT_BRANCH: master
       - run:
-          name: Compile antikythera_instance_example
-          # Compile beforehand in order to create cache for later builds/jobs.
+          name: Fetch dependencies of antikythera_instance_example
           command: |
             mix deps.get || mix deps.get
             mix deps.get
+      - *invalidate_build_local_of_fetched_deps
+      - run:
+          name: Compile antikythera_instance_example
+          # Compile beforehand in order to create cache for later builds/jobs.
+          command: |
             MIX_ENV=dev mix compile
             MIX_ENV=test mix compile
             MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
@@ -224,6 +237,10 @@ jobs:
               git --no-pager diff
               git -c user.name='AntikytheraDeploy' -c user.email='antikythera-gr@access-company.com' commit -a -m '[CI] Update antikythera'
             fi
+      - *invalidate_build_local_of_fetched_deps
+      - run:
+          name: Compile antikythera_instance_example with updated antikythera
+          command: |
             MIX_ENV=dev mix compile
             MIX_ENV=test mix compile
             MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
@@ -250,11 +267,15 @@ jobs:
             EXTERNAL_GIT_REPOSITORY: git@github.com:access-company/testgear.git
             EXTERNAL_GIT_BRANCH: master
       - run:
-          name: Fetch dependencies with latest antikythera_instance_example and compile
+          name: Fetch dependencies with latest antikythera_instance_example
           command: |
             mix deps.update antikythera_instance_example
             mix deps.get || mix deps.get
             mix deps.get
+      - *invalidate_build_local_of_fetched_deps
+      - run:
+          name: Compile testgear
+          command: |
             MIX_ENV=dev mix compile
             MIX_ENV=test mix compile
             MIX_ENV=prod ANTIKYTHERA_COMPILE_ENV=local mix compile
