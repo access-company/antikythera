@@ -134,7 +134,8 @@ defmodule Antikythera.Mixfile do
       # cowboy
       {:ranch, "1.8.1", [indirect: true]},
       # hackney
-      {:certifi, "2.15.0", [indirect: true]},
+      # hackney 1.x requires ~> 2.15.0, but it only calls `certifi:cacerts/0`, which this version also provides.
+      {:certifi, "2.18.0", [indirect: true, override: true]},
       # hackney
       {:ssl_verify_fun, "1.1.7", [indirect: true]},
       # hackney
