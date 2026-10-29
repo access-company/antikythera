@@ -6,7 +6,7 @@ defmodule AntikytheraLocal.RunningEnvironment do
   alias Croma.Result, as: R
   alias Antikythera.{Env, GearNameStr, VersionStr, Httpc, EnumUtil}
   alias AntikytheraCore.Path, as: CorePath
-  alias AntikytheraLocal.{Cmd, StartScript}
+  alias AntikytheraLocal.{Cmd, StaleDepBuilds, StartScript}
 
   # Paths for test process that controls the ErlangVM that runs the release
   @release_output_dir "rel_local_erlang-#{System.otp_release()}"
@@ -178,6 +178,10 @@ defmodule AntikytheraLocal.RunningEnvironment do
       cd: gear_repo_dir,
       env: @compile_environment_vars
     )
+
+    # The gear directory can also be used with `_build` (e.g. by the gear's own CI job),
+    # so builds of fetched deps can be stale under either `_build_local` or `_build`.
+    :ok = StaleDepBuilds.remove(gear_repo_dir)
 
     Cmd.exec_and_output_log!("mix", ["compile"],
       cd: gear_repo_dir,
