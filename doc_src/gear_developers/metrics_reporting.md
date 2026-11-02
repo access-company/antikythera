@@ -23,6 +23,7 @@ Current contents describes how we are handling our antikythera instance's and ge
 - The following metrics are automatically gathered by antikythera:
     - Metrics about web/[g2g](https://hexdocs.pm/antikythera/g2g.html) requests
         - Number of processed requests (`web/g2g_request_count_*`)
+            - `total`, `4XX`, `401` (also counted in `4XX`) and `5XX`
         - Time distribution of response times (`web/g2g_response_time_ms_*`)
         - Executor pool checkout failure count (`web_timeout_in_epool_checkout_sum`)
         - Number of working processes for web request handling in an executor pool (`epool_working_action_runner_*`)

@@ -81,6 +81,23 @@ defmodule AntikytheraCore.MetricsUploaderTest do
     assert_in_delta(v2, 0.5, 0.00001)
   end
 
+  test "request_count metrics should be uploaded with total, 4XX, 401 and 5XX fields" do
+    t = Time.shift_minutes(Time.now(), -1)
+    t1 = Time.truncate_to_minute(t)
+    t2 = Time.shift_minutes(t1, 1)
+    epool_id = {:gear, :testgear}
+    metrics_data = Enum.map([200, 401, 401, 404, 500], &{"web_request_count", :request_count, &1})
+    U.submit_with_time(U, t, metrics_data, epool_id)
+    _ = force_data_flushing()
+
+    [{_time, doc}] = Storage.Memory.download(:antikythera, epool_id, t1, t2)
+    assert doc["web_request_count_total"] == 5
+    assert doc["web_request_count_4XX"] == 3
+    assert doc["web_request_count_401"] == 2
+    assert doc["web_request_count_5XX"] == 1
+    clear_existing_metrics()
+  end
+
   test "data should be transferred on termination" do
     epool_id = {:gear, :testgear}
     t1 = Time.truncate_to_minute(Time.now())
