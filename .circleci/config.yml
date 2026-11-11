@@ -19,9 +19,9 @@ references:
   restore_asdf_directory: &restore_asdf_directory
     restore_cache:
       keys:
-        - asdf_directory-{{ .Branch }}-{{ .Revision }}
-        - asdf_directory-{{ .Branch }}-
-        - asdf_directory-
+        - asdf_elixir_directory-{{ .Branch }}-{{ .Revision }}
+        - asdf_elixir_directory-{{ .Branch }}-
+        - asdf_elixir_directory-
   enable_asdf_and_elixir: &enable_asdf_and_elixir
     run:
       name: Enable asdf and elixir by loading asdf.sh
@@ -128,7 +128,7 @@ jobs:
             mix local.rebar --force
             cp -f .tool-versions /usr/local/asdf/tool-versions-copy
       - save_cache:
-          key: asdf_directory-{{ .Branch }}-{{ .Revision }}
+          key: asdf_elixir_directory-{{ .Branch }}-{{ .Revision }}
           paths:
             - /usr/local/asdf
             - ~/.asdf
