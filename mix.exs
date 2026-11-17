@@ -137,7 +137,7 @@ defmodule Antikythera.Mixfile do
       # hackney 1.x requires ~> 2.15.0, but it only calls `certifi:cacerts/0`, which this version also provides.
       {:certifi, "2.18.0", [indirect: true, override: true]},
       # hackney
-      {:ssl_verify_fun, "1.1.7", [indirect: true]},
+      {:ssl_verify_fun, "1.1.9", [indirect: true]},
       # hackney
       {:idna, "6.1.1", [indirect: true]},
       # hackney
@@ -152,7 +152,7 @@ defmodule Antikythera.Mixfile do
       {:p1_utils, "1.0.28", [indirect: true]},
       # jason and ex_json_schema
       # Gears must not use poison's Decimal feature; its ~> 2.1 constraint is unverified against 3.x.
-      {:decimal, "3.1.0", [indirect: true, override: true]},
+      {:decimal, "3.1.2", [indirect: true, override: true]},
 
       # indirect tool deps
       # credo
