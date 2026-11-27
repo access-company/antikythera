@@ -82,6 +82,15 @@ defmodule Antikythera.HttpcTest do
     assert Httpc.get(@url, %{}) == {:error, :timeout}
   end
 
+  test "request/5 should return {:error, :response_too_large} when the body exceeds :max_body" do
+    expect(:hackney, :request, fn :get, @url, _headers, _body, opts ->
+      assert Keyword.fetch!(opts, :max_body) == 100
+      {:error, :body_too_large}
+    end)
+
+    assert Httpc.get(@url, %{}, max_body: 100) == {:error, :response_too_large}
+  end
+
   test "filter_hackney_connect_option/1 should accept only IP address family" do
     assert Httpc.filter_hackney_connect_option(:inet)
     assert Httpc.filter_hackney_connect_option(:inet6)
